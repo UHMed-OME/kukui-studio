@@ -4,6 +4,9 @@ import tailwindcss from "@tailwindcss/vite";
 import { resolve } from "node:path";
 
 export default defineConfig({
+  // Relative base so the same Vite build can be packaged into SCORM zips that
+  // D2L serves from a sub-path. Without this, `/assets/...` 404s on the LMS.
+  base: "./",
   plugins: [react(), tailwindcss()],
   build: {
     rollupOptions: {

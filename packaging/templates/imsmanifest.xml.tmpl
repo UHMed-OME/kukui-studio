@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  SCORM 1.2 IMS Manifest template for Kukui activities.
+  Substitution placeholders are filled in by packaging/pack-scorm.js:
+    {{IDENTIFIER}}     - Unique manifest identifier (e.g. KUKUI-MULTIPLE-CHOICE-1)
+    {{TITLE}}          - Human-readable activity title
+    {{DEFAULT_CONFIG}} - Default config path passed to the wrapper as ?config=
+                         (e.g. samples/multiple-choice/basic.json)
+    {{MASTERY_SCORE}}  - Pass threshold against the SCORM-scaled (0-100) score.
+-->
+<manifest identifier="{{IDENTIFIER}}"
+          version="1.0"
+          xmlns="http://www.imsproject.org/xsd/imscp_rootv1p1p2"
+          xmlns:adlcp="http://www.adlnet.org/xsd/adlcp_rootv1p2"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://www.imsproject.org/xsd/imscp_rootv1p1p2 imscp_rootv1p1p2.xsd
+                              http://www.imsglobal.org/xsd/imsmd_rootv1p2p1 imsmd_rootv1p2p1.xsd
+                              http://www.adlnet.org/xsd/adlcp_rootv1p2 adlcp_rootv1p2.xsd">
+
+  <metadata>
+    <schema>ADL SCORM</schema>
+    <schemaversion>1.2</schemaversion>
+  </metadata>
+
+  <organizations default="{{IDENTIFIER}}-ORG">
+    <organization identifier="{{IDENTIFIER}}-ORG">
+      <title>{{TITLE}}</title>
+      <item identifier="{{IDENTIFIER}}-ITEM" identifierref="{{IDENTIFIER}}-RES" isvisible="true">
+        <title>{{TITLE}}</title>
+        <adlcp:masteryscore>{{MASTERY_SCORE}}</adlcp:masteryscore>
+      </item>
+    </organization>
+  </organizations>
+
+  <resources>
+    <resource identifier="{{IDENTIFIER}}-RES"
+              type="webcontent"
+              adlcp:scormtype="sco"
+              href="index.html?config={{DEFAULT_CONFIG}}">
+      <file href="index.html"/>
+      <file href="pipwerks.SCORM.min.js"/>
+    </resource>
+  </resources>
+</manifest>

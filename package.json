@@ -15,9 +15,13 @@
     "typecheck": "tsc -b",
     "lint": "eslint .",
     "format": "prettier --write .",
-    "build:scorm": "node packaging/pack-scorm.js"
+    "build:scorm": "node packaging/pack-scorm.js",
+    "build:scorm:all": "pnpm build && node packaging/pack-scorm.js --all"
   },
   "devDependencies": {
+    "archiver": "^7.0.1",
+    "commander": "^12.1.0",
+    "@types/archiver": "^6.0.3",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.1.0",
     "@testing-library/user-event": "^14.5.2",
