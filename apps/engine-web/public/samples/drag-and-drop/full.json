@@ -1,0 +1,75 @@
+{
+  "version": "1.0",
+  "title": "Label the major rivers of South America",
+  "background": {
+    "src": "images/south-america-rivers.png",
+    "alt": "Outline map of South America showing four unlabeled river systems"
+  },
+  "draggables": [
+    {
+      "id": "d-amazon",
+      "label": "Amazon",
+      "correctZones": ["z-amazon"],
+      "feedback": "Correct. The Amazon is the largest river by discharge in the world."
+    },
+    {
+      "id": "d-orinoco",
+      "label": "Orinoco",
+      "image": { "src": "images/icons/river.png", "alt": "River icon" },
+      "correctZones": ["z-orinoco"],
+      "feedback": "Correct. The Orinoco drains much of Venezuela and eastern Colombia."
+    },
+    {
+      "id": "d-parana",
+      "label": "Paraná",
+      "correctZones": ["z-parana"],
+      "feedback": "Correct. The Paraná flows through Brazil, Paraguay, and Argentina."
+    },
+    {
+      "id": "d-magdalena",
+      "label": "Magdalena",
+      "correctZones": ["z-magdalena"],
+      "feedback": "Correct. The Magdalena is Colombia's principal river."
+    }
+  ],
+  "dropZones": [
+    {
+      "id": "z-amazon",
+      "label": "Amazon basin",
+      "rect": { "x": 0.30, "y": 0.30, "w": 0.30, "h": 0.15 },
+      "capacity": 1,
+      "showLabel": false
+    },
+    {
+      "id": "z-orinoco",
+      "label": "Orinoco basin",
+      "rect": { "x": 0.35, "y": 0.15, "w": 0.20, "h": 0.10 },
+      "capacity": 1,
+      "showLabel": false
+    },
+    {
+      "id": "z-parana",
+      "label": "Paraná basin",
+      "rect": { "x": 0.40, "y": 0.65, "w": 0.20, "h": 0.15 },
+      "capacity": 1,
+      "showLabel": false
+    },
+    {
+      "id": "z-magdalena",
+      "label": "Magdalena basin",
+      "rect": { "x": 0.20, "y": 0.18, "w": 0.10, "h": 0.15 },
+      "capacity": 1,
+      "showLabel": false
+    }
+  ],
+  "behaviour": {
+    "enableRetry": true,
+    "enableSolutionsButton": true,
+    "singlePoint": false
+  },
+  "ui": {
+    "checkAnswerButton": "Check labels",
+    "showSolutionButton": "Show solution",
+    "tryAgainButton": "Try again"
+  }
+}

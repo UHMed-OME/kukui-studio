@@ -1,0 +1,21 @@
+{
+  "version": "1.0",
+  "title": "Label the parts of a plant cell",
+  "background": {
+    "src": "images/plant-cell.png"
+  },
+  "draggables": [
+    { "id": "d-nucleus", "label": "Nucleus", "correctZones": ["z-nucleus"] },
+    { "id": "d-chloroplast", "label": "Chloroplast", "correctZones": ["z-chloroplast"] }
+  ],
+  "dropZones": [
+    {
+      "id": "z-nucleus",
+      "rect": { "x": 0.4, "y": 0.4, "w": 0.2, "h": 0.2 }
+    },
+    {
+      "id": "z-chloroplast",
+      "rect": { "x": 0.65, "y": 0.55, "w": 0.15, "h": 0.15 }
+    }
+  ]
+}

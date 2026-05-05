@@ -1,0 +1,62 @@
+{
+  "version": "1.0",
+  "title": "Anatomy of the Human Heart",
+  "prompt": "<p>Click the <strong>left ventricle</strong> &mdash; the chamber that pumps oxygenated blood to the body.</p>",
+  "model": {
+    "src": "models/heart.glb",
+    "scale": 1.5,
+    "rotation": { "x": 0, "y": -15, "z": 0 },
+    "position": { "x": 0, "y": 0, "z": 0 }
+  },
+  "camera": {
+    "mode": "orbit",
+    "initialDistance": 3.5,
+    "minDistance": 1.5,
+    "maxDistance": 7.0,
+    "target": { "x": 0, "y": 0.5, "z": 0 }
+  },
+  "hotspots": [
+    {
+      "id": "left-ventricle",
+      "label": "Left ventricle",
+      "position": { "x": -0.3, "y": -0.4, "z": 0.0 },
+      "radius": 0.35,
+      "correct": true,
+      "feedback": "Correct. The left ventricle has the thickest muscular wall because it pumps blood through the entire systemic circulation."
+    },
+    {
+      "id": "right-ventricle",
+      "label": "Right ventricle",
+      "position": { "x": 0.3, "y": -0.4, "z": 0.0 },
+      "radius": 0.35,
+      "correct": false,
+      "feedback": "That is the right ventricle. It pumps deoxygenated blood to the lungs at lower pressure."
+    },
+    {
+      "id": "left-atrium",
+      "label": "Left atrium",
+      "position": { "x": -0.3, "y": 0.5, "z": -0.1 },
+      "radius": 0.25,
+      "correct": false,
+      "feedback": "That is the left atrium. It receives oxygenated blood from the lungs."
+    },
+    {
+      "id": "aorta",
+      "label": "Aorta",
+      "position": { "x": 0.0, "y": 1.0, "z": 0.0 },
+      "radius": 0.20,
+      "correct": false,
+      "feedback": "That is the aorta &mdash; the artery that carries oxygenated blood from the left ventricle."
+    }
+  ],
+  "behaviour": {
+    "enableRetry": true,
+    "showHotspotMarkers": false,
+    "allowOrbit": true,
+    "singlePoint": true
+  },
+  "ui": {
+    "tryAgainButton": "Try again",
+    "resetViewButton": "Reset view"
+  }
+}

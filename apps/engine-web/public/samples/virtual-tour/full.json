@@ -1,0 +1,87 @@
+{
+  "version": "1.0",
+  "title": "Walking Tour of a Loʻi Kalo",
+  "scene": {
+    "src": "scenes/loi-kalo.glb",
+    "spawn": {
+      "position": { "x": 0, "y": 1.6, "z": -3 },
+      "yaw": 0
+    }
+  },
+  "movement": {
+    "mode": "hybrid",
+    "speed": 2.5,
+    "navmeshConstrained": true
+  },
+  "overlays": [
+    {
+      "id": "kalo-1",
+      "position": { "x": 1.5, "y": 1.2, "z": 2.0 },
+      "trigger": "click",
+      "icon": "images/icons/info.png",
+      "title": "Kalo",
+      "content": [
+        {
+          "type": "text",
+          "html": "<h2>Kalo</h2><p>The kalo plant is the foundation of Hawaiian agriculture and central to Hawaiian cosmology &mdash; in the Kumulipo, kalo is the elder sibling of humanity.</p>"
+        },
+        {
+          "type": "image",
+          "src": "images/kalo-leaf.png",
+          "alt": "A heart-shaped kalo leaf in a flooded paddy",
+          "caption": "A mature kalo leaf in a flooded loʻi."
+        },
+        {
+          "type": "audio",
+          "src": "audio/kalo-pronunciation.mp3",
+          "autoplay": false,
+          "loop": false,
+          "caption": "Pronunciation of 'kalo'"
+        }
+      ]
+    },
+    {
+      "id": "kalo-2",
+      "position": { "x": -2.0, "y": 1.0, "z": 4.5 },
+      "trigger": "proximity",
+      "proximityRadius": 1.5,
+      "title": "ʻAuwai",
+      "content": [
+        {
+          "type": "text",
+          "html": "<h2>ʻAuwai</h2><p>The ʻauwai is the irrigation channel that diverts cool stream water through the loʻi. Traditional Hawaiian water rights guaranteed downstream loʻi enough flow to keep kalo healthy.</p>"
+        }
+      ]
+    },
+    {
+      "id": "kalo-3",
+      "position": { "x": 3.0, "y": 1.0, "z": -1.0 },
+      "trigger": "click",
+      "title": "Huli",
+      "content": [
+        {
+          "type": "text",
+          "html": "<h2>Huli</h2><p>The huli is the top of a harvested kalo corm, replanted to start the next generation. Each loʻi cycles through harvest and replanting on a roughly 9-12 month rhythm.</p>"
+        },
+        {
+          "type": "image",
+          "src": "images/huli.png",
+          "alt": "A bundle of huli ready for replanting"
+        }
+      ]
+    }
+  ],
+  "completion": {
+    "mode": "visitAll",
+    "requiredOverlayIds": ["kalo-1", "kalo-2", "kalo-3"]
+  },
+  "behaviour": {
+    "showMinimap": true,
+    "enableRetry": false,
+    "showOverlayMarkers": true
+  },
+  "ui": {
+    "doneButton": "I'm done exploring",
+    "closeOverlayButton": "Close"
+  }
+}

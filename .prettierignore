@@ -1,0 +1,8 @@
+node_modules
+dist
+build
+.vite
+coverage
+packaging/build
+*.scorm.zip
+pnpm-lock.yaml

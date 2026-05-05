@@ -1,0 +1,197 @@
+/*
+ * Multiple Choice — visual implementation of pattern A (inline-below feedback,
+ * space reserved from initial render, opacity-only fade). Layout-stable:
+ * borders are constant 2 px; only color and opacity change between states.
+ */
+
+.kukui-mc {
+  display: flex;
+  justify-content: center;
+  padding: var(--spacing-2xl, 24px);
+}
+
+.kukui-mc__card {
+  width: 100%;
+  max-width: 720px;
+  background: var(--color-surface, #ffffff);
+  border: 1px solid var(--color-border, #dad2c6);
+  border-radius: var(--radius-card, 12px);
+  padding: var(--spacing-3xl, 28px);
+}
+
+.kukui-mc__title {
+  margin: 0 0 var(--spacing-lg, 16px);
+  font-size: var(--font-size-title, 24px);
+  font-weight: 700;
+  color: var(--color-text-primary, #1c1e20);
+}
+
+.kukui-mc__question {
+  margin-bottom: var(--spacing-xl, 20px);
+  font-size: var(--font-size-prompt, 16px);
+  line-height: 1.5;
+  color: var(--color-text-primary, #1c1e20);
+}
+
+.kukui-mc__answers {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm, 8px);
+}
+
+.kukui-mc__answer-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.kukui-mc__answer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-md, 12px);
+  width: 100%;
+  min-height: 48px;
+  padding: var(--spacing-md, 12px) var(--spacing-lg, 16px);
+  background: var(--color-surface, #ffffff);
+  border: 2px solid var(--color-border, #dad2c6);
+  border-radius: var(--radius-md, 8px);
+  text-align: left;
+  font-size: var(--font-size-answer, 15px);
+  color: var(--color-text-primary, #1c1e20);
+  transition:
+    background-color 150ms ease,
+    border-color 150ms ease;
+}
+
+.kukui-mc__answer:hover:not(:disabled):not(.is-selected) {
+  border-color: var(--color-border-hover, #bbae9a);
+}
+
+.kukui-mc__answer:disabled {
+  cursor: default;
+}
+
+.kukui-mc__answer.is-selected {
+  border-color: var(--color-primary, #7b4324);
+  background: var(--color-primary-soft);
+}
+
+.kukui-mc__answer.is-correct {
+  border-color: var(--color-success, #2e6e41);
+  background: var(--color-success-soft);
+  color: var(--color-text-primary);
+}
+
+.kukui-mc__answer.is-incorrect {
+  border-color: var(--color-error, #c34132);
+  background: var(--color-error-soft);
+  color: var(--color-text-primary);
+  opacity: 1;
+}
+
+.kukui-mc__answer.is-reveal {
+  border-color: var(--color-success, #2e6e41);
+  border-style: dashed;
+}
+
+.kukui-mc__answer-text {
+  flex: 1 1 auto;
+  white-space: normal;
+}
+
+.kukui-mc__answer-icon {
+  flex: 0 0 auto;
+  font-weight: 700;
+  font-size: 18px;
+  width: 24px;
+  text-align: center;
+  color: inherit;
+}
+
+/*
+ * Feedback row — pattern A: always present at constant min-height so the
+ * reveal does not reflow neighbours. Default opacity 0; .is-visible fades to 1.
+ */
+.kukui-mc__feedback {
+  min-height: 0;
+  opacity: 0;
+  font-size: var(--font-size-meta, 13px);
+  color: var(--color-text-secondary, #606069);
+  padding: 0 var(--spacing-lg, 16px);
+  transition:
+    opacity 200ms ease,
+    min-height 200ms ease;
+}
+
+.kukui-mc__feedback.is-visible {
+  opacity: 1;
+  min-height: 28px;
+  padding-top: var(--spacing-xs, 4px);
+  padding-bottom: var(--spacing-sm, 8px);
+}
+
+.kukui-mc__actions {
+  margin-top: var(--spacing-xl, 20px);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--spacing-md, 12px);
+}
+
+.kukui-mc__primary {
+  min-height: 44px;
+  padding: 10px 20px;
+  background: var(--color-primary, #7b4324);
+  color: #ffffff;
+  border: none;
+  border-radius: var(--radius-md, 8px);
+  font-size: var(--font-size-answer, 15px);
+  font-weight: 700;
+}
+
+.kukui-mc__primary:hover:not(:disabled) {
+  background: var(--color-primary-hover, #9b5830);
+}
+
+.kukui-mc__primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.kukui-mc__secondary {
+  min-height: 44px;
+  padding: 10px 20px;
+  background: transparent;
+  color: var(--color-primary, #7b4324);
+  border: 2px solid var(--color-primary, #7b4324);
+  border-radius: var(--radius-md, 8px);
+  font-size: var(--font-size-answer, 15px);
+  font-weight: 700;
+}
+
+.kukui-mc__score {
+  font-size: var(--font-size-prompt, 16px);
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+.kukui-mc__band {
+  font-weight: 400;
+  color: var(--color-text-secondary);
+}
+
+.kukui-mc__hint {
+  font-size: var(--font-size-meta, 13px);
+  color: var(--color-text-secondary);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kukui-mc__answer,
+  .kukui-mc__feedback {
+    transition: none;
+  }
+}

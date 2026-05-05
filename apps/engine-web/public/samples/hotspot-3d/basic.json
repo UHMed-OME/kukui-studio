@@ -1,0 +1,22 @@
+{
+  "version": "1.0",
+  "title": "Parts of a Hawaiian Voyaging Canoe",
+  "prompt": "<p>Click the part labeled <em>iako</em> (the cross-beam connecting hull and outrigger).</p>",
+  "model": {
+    "src": "models/voyaging-canoe.glb"
+  },
+  "hotspots": [
+    {
+      "id": "iako",
+      "position": { "x": 0.3, "y": 0.8, "z": 0.0 },
+      "radius": 0.2,
+      "correct": true
+    },
+    {
+      "id": "ama",
+      "position": { "x": 1.2, "y": 0.0, "z": 0.0 },
+      "radius": 0.25,
+      "correct": false
+    }
+  ]
+}

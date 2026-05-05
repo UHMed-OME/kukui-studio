@@ -1,0 +1,27 @@
+{
+  "version": "1.0",
+  "title": "Module 1 Quick Check",
+  "questions": [
+    {
+      "type": "multipleChoice",
+      "config": {
+        "version": "1.0",
+        "title": "Largest planet",
+        "question": "<p>Which is the largest planet in our solar system?</p>",
+        "answers": [
+          { "text": "Earth", "correct": false },
+          { "text": "Jupiter", "correct": true },
+          { "text": "Saturn", "correct": false }
+        ]
+      }
+    },
+    {
+      "type": "fillInTheBlanks",
+      "config": {
+        "version": "1.0",
+        "title": "Distance unit",
+        "text": "An *astronomical unit* is the average distance from the Earth to the Sun."
+      }
+    }
+  ]
+}

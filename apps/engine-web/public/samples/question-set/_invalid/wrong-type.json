@@ -1,0 +1,17 @@
+{
+  "_comment": "INTENTIONALLY INVALID: 'passPercentage' must be a number 0-100, but is given as a string here. Also questions[0].type uses an unsupported value 'trueFalse'.",
+  "version": "1.0",
+  "title": "Module 1 Quick Check",
+  "passPercentage": "seventy",
+  "questions": [
+    {
+      "type": "trueFalse",
+      "config": {
+        "version": "1.0",
+        "title": "Largest planet",
+        "question": "<p>Jupiter is the largest planet.</p>",
+        "answer": true
+      }
+    }
+  ]
+}

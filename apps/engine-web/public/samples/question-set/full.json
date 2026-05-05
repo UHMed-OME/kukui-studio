@@ -1,0 +1,58 @@
+{
+  "version": "1.0",
+  "title": "World Geography · Module 3 Quiz",
+  "questions": [
+    {
+      "type": "multipleChoice",
+      "weight": 1.0,
+      "config": {
+        "version": "1.0",
+        "title": "Capital of France",
+        "question": "<p>Which city is the capital of France?</p>",
+        "answers": [
+          { "text": "Lyon", "correct": false, "feedback": "Lyon is France's third-largest city, but not the capital." },
+          { "text": "Marseille", "correct": false, "feedback": "Marseille is France's largest port city, but not the capital." },
+          { "text": "Paris", "correct": true, "feedback": "Correct." }
+        ],
+        "behaviour": { "enableRetry": false, "singlePoint": true }
+      }
+    },
+    {
+      "type": "multipleChoice",
+      "weight": 1.0,
+      "config": {
+        "version": "1.0",
+        "title": "Continents",
+        "question": "<p>Which two continents share the largest land border?</p>",
+        "answers": [
+          { "text": "Asia and Europe", "correct": true, "feedback": "Correct. They form Eurasia, often divided at the Ural Mountains." },
+          { "text": "North America and South America", "correct": false, "feedback": "They are joined only by the narrow Isthmus of Panama." },
+          { "text": "Africa and Asia", "correct": false, "feedback": "They are joined only at the Sinai Peninsula." }
+        ]
+      }
+    },
+    {
+      "type": "fillInTheBlanks",
+      "weight": 2.0,
+      "config": {
+        "version": "1.0",
+        "title": "Mountain ranges",
+        "text": "The longest mountain range above sea level is the *Andes*, which runs along the western coast of *South America*.",
+        "behaviour": { "caseSensitive": false, "acceptSpellingErrors": true, "enableRetry": true }
+      }
+    }
+  ],
+  "passPercentage": 70,
+  "behaviour": {
+    "randomQuestions": false,
+    "showResults": true,
+    "enableRetry": true,
+    "showProgressBar": true
+  },
+  "ui": {
+    "nextQuestionButton": "Next",
+    "previousQuestionButton": "Back",
+    "submitSetButton": "Submit quiz",
+    "tryAgainButton": "Retake quiz"
+  }
+}

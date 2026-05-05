@@ -1,0 +1,41 @@
+{
+  "version": "1.0",
+  "title": "Capital of Hawaii",
+  "question": "<p>What is the capital of Hawaii?</p>",
+  "answers": [
+    {
+      "text": "Honolulu",
+      "correct": true,
+      "tip": "It's the largest city in the state.",
+      "feedback": "Correct! Honolulu is the capital and largest city of Hawaiʻi, located on the island of Oʻahu."
+    },
+    {
+      "text": "Hilo",
+      "correct": false,
+      "tip": "Hilo is the second-largest, but on a different island.",
+      "feedback": "Hilo is on the Big Island (Hawaiʻi Island), not the capital."
+    },
+    {
+      "text": "Kailua",
+      "correct": false,
+      "tip": "There are several towns named Kailua across the islands.",
+      "feedback": "Kailua is a town — there's one on Oʻahu and one on the Big Island, but neither is the capital."
+    }
+  ],
+  "behaviour": {
+    "enableRetry": true,
+    "enableSolutionsButton": true,
+    "singlePoint": false,
+    "randomAnswers": false
+  },
+  "ui": {
+    "checkAnswerButton": "Check",
+    "showSolutionButton": "Show solution",
+    "tryAgainButton": "Try again"
+  },
+  "overallFeedback": [
+    { "from": 0, "to": 50, "message": "Worth reviewing the islands and their main cities." },
+    { "from": 51, "to": 99, "message": "Close — nice work." },
+    { "from": 100, "to": 100, "message": "Perfect score!" }
+  ]
+}

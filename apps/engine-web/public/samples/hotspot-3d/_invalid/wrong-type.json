@@ -1,0 +1,23 @@
+{
+  "_comment": "INTENTIONALLY INVALID: 'hotspots[0].radius' must be a number, but is given as a string. Also 'hotspots[0].position.x' is a string instead of number.",
+  "version": "1.0",
+  "title": "Parts of a Hawaiian Voyaging Canoe",
+  "prompt": "<p>Click the part labeled <em>iako</em>.</p>",
+  "model": {
+    "src": "models/voyaging-canoe.glb"
+  },
+  "hotspots": [
+    {
+      "id": "iako",
+      "position": { "x": "0.3", "y": 0.8, "z": 0.0 },
+      "radius": "0.2",
+      "correct": true
+    },
+    {
+      "id": "ama",
+      "position": { "x": 1.2, "y": 0.0, "z": 0.0 },
+      "radius": 0.25,
+      "correct": false
+    }
+  ]
+}

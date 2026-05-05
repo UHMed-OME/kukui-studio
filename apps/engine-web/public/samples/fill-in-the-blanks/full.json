@@ -1,0 +1,17 @@
+{
+  "version": "1.0",
+  "title": "Cell Biology Vocabulary",
+  "text": "The basic structural unit of all living things is the *cell/Cell*. The control center of the eukaryotic cell is the *nucleus*, which contains the cell's genetic material in the form of *DNA/deoxyribonucleic acid*. Energy for cellular processes is produced primarily in organelles called *mitochondria/mitochondrion*.",
+  "behaviour": {
+    "enableRetry": true,
+    "caseSensitive": false,
+    "acceptSpellingErrors": true,
+    "showSolutionsButton": true,
+    "singlePoint": false
+  },
+  "ui": {
+    "checkAnswerButton": "Check my answers",
+    "showSolutionButton": "Show the answers",
+    "tryAgainButton": "Try again"
+  }
+}

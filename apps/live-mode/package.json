@@ -1,0 +1,10 @@
+{
+  "name": "@kukui/live-mode",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "echo 'Live is Phase 3 — not yet implemented' && exit 0",
+    "build": "echo 'Live is Phase 3 — not yet implemented' && exit 0"
+  }
+}

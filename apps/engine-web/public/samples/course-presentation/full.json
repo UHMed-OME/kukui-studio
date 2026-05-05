@@ -1,0 +1,86 @@
+{
+  "version": "1.0",
+  "title": "Introduction to the Water Cycle",
+  "slides": [
+    {
+      "title": "Title slide",
+      "background": { "color": "#0F4C81" },
+      "elements": [
+        {
+          "type": "text",
+          "html": "<h1 style=\"color:white;\">The Water Cycle</h1><p style=\"color:white;\">Module 2 · Earth Science</p>",
+          "rect": { "x": 0.1, "y": 0.3, "w": 0.8, "h": 0.4 }
+        }
+      ]
+    },
+    {
+      "title": "Evaporation",
+      "background": { "src": "images/sky.png" },
+      "elements": [
+        {
+          "type": "text",
+          "html": "<h2>Evaporation</h2><p>Solar energy turns liquid water at the surface into water vapor.</p>",
+          "rect": { "x": 0.05, "y": 0.05, "w": 0.5, "h": 0.4 }
+        },
+        {
+          "type": "image",
+          "src": "images/evaporation-diagram.png",
+          "alt": "Diagram showing water evaporating from a lake into the atmosphere",
+          "rect": { "x": 0.55, "y": 0.1, "w": 0.4, "h": 0.5 }
+        }
+      ]
+    },
+    {
+      "title": "Knowledge check",
+      "elements": [
+        {
+          "type": "text",
+          "html": "<h2>Knowledge check</h2>",
+          "rect": { "x": 0.05, "y": 0.05, "w": 0.9, "h": 0.1 }
+        },
+        {
+          "type": "interaction",
+          "kind": "multipleChoice",
+          "rect": { "x": 0.1, "y": 0.2, "w": 0.8, "h": 0.7 },
+          "config": {
+            "version": "1.0",
+            "title": "Which phase change is evaporation?",
+            "question": "<p>Evaporation is the change from which phase to which phase?</p>",
+            "answers": [
+              { "text": "Solid to liquid", "correct": false, "feedback": "That is melting." },
+              { "text": "Liquid to gas", "correct": true, "feedback": "Correct." },
+              { "text": "Gas to liquid", "correct": false, "feedback": "That is condensation." }
+            ],
+            "behaviour": { "enableRetry": true, "singlePoint": true }
+          }
+        }
+      ]
+    },
+    {
+      "title": "Fill the gap",
+      "elements": [
+        {
+          "type": "interaction",
+          "kind": "fillInTheBlanks",
+          "rect": { "x": 0.1, "y": 0.2, "w": 0.8, "h": 0.5 },
+          "config": {
+            "version": "1.0",
+            "title": "Condensation",
+            "text": "When water vapor cools, it returns to a liquid state through a process called *condensation*.",
+            "behaviour": { "caseSensitive": false, "enableRetry": true }
+          }
+        }
+      ]
+    }
+  ],
+  "behaviour": {
+    "showProgressBar": true,
+    "showKeywords": false,
+    "enableRetry": true
+  },
+  "ui": {
+    "nextSlideButton": "Next",
+    "previousSlideButton": "Back",
+    "finishButton": "Finish"
+  }
+}

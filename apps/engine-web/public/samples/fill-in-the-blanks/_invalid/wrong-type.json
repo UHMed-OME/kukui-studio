@@ -1,0 +1,9 @@
+{
+  "_comment": "INTENTIONALLY INVALID: 'text' must be a string, but here it is an array. Additionally, 'behaviour.caseSensitive' is a string instead of boolean.",
+  "version": "1.0",
+  "title": "Hawaiian Geography",
+  "text": ["The capital of Hawaii is *Honolulu*."],
+  "behaviour": {
+    "caseSensitive": "no"
+  }
+}

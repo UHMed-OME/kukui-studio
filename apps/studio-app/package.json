@@ -1,0 +1,10 @@
+{
+  "name": "@kukui/studio-app",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "echo 'Studio is Phase 2 — not yet implemented' && exit 0",
+    "build": "echo 'Studio is Phase 2 — not yet implemented' && exit 0"
+  }
+}

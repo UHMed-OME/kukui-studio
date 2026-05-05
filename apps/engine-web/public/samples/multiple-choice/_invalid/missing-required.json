@@ -1,0 +1,6 @@
+{
+  "_comment": "INTENTIONALLY INVALID: required field 'answers' is missing.",
+  "version": "1.0",
+  "title": "Capital of Hawaii",
+  "question": "<p>What is the capital of Hawaii?</p>"
+}

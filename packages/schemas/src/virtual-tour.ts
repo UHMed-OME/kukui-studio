@@ -1,0 +1,97 @@
+import { z } from "zod";
+
+const versionRe = /^\d+\.\d+(\.\d+)?$/;
+
+const Vector3 = z.object({ x: z.number(), y: z.number(), z: z.number() }).strict();
+
+const TextContent = z
+  .object({ type: z.literal("text"), html: z.string().min(1) })
+  .strict();
+
+const ImageContent = z
+  .object({
+    type: z.literal("image"),
+    src: z.string().min(1),
+    alt: z.string().optional(),
+    caption: z.string().optional(),
+  })
+  .strict();
+
+const AudioContent = z
+  .object({
+    type: z.literal("audio"),
+    src: z.string().min(1),
+    autoplay: z.boolean().optional(),
+    loop: z.boolean().optional(),
+    caption: z.string().optional(),
+  })
+  .strict();
+
+const ContentItem = z.discriminatedUnion("type", [TextContent, ImageContent, AudioContent]);
+
+export const VirtualTourConfigSchema = z
+  .object({
+    _comment: z.string().optional(),
+    version: z.string().regex(versionRe),
+    title: z.string().min(1),
+    scene: z
+      .object({
+        src: z.string().min(1),
+        spawn: z
+          .object({
+            position: Vector3,
+            yaw: z.number().optional(),
+          })
+          .strict()
+          .optional(),
+      })
+      .strict(),
+    movement: z
+      .object({
+        mode: z.enum(["firstPerson", "clickToMove", "hybrid"]).optional(),
+        speed: z.number().positive().optional(),
+        navmeshConstrained: z.boolean().optional(),
+      })
+      .strict()
+      .optional(),
+    overlays: z
+      .array(
+        z
+          .object({
+            id: z.string().min(1),
+            position: Vector3,
+            trigger: z.enum(["click", "proximity"]).optional(),
+            proximityRadius: z.number().positive().optional(),
+            icon: z.string().optional(),
+            title: z.string().optional(),
+            content: z.array(ContentItem).min(1),
+          })
+          .strict(),
+      )
+      .min(1),
+    completion: z
+      .object({
+        mode: z.enum(["visitAll", "manual"]).optional(),
+        requiredOverlayIds: z.array(z.string()).optional(),
+      })
+      .strict()
+      .optional(),
+    behaviour: z
+      .object({
+        showMinimap: z.boolean().optional(),
+        enableRetry: z.boolean().optional(),
+        showOverlayMarkers: z.boolean().optional(),
+      })
+      .strict()
+      .optional(),
+    ui: z
+      .object({
+        doneButton: z.string().optional(),
+        closeOverlayButton: z.string().optional(),
+      })
+      .strict()
+      .optional(),
+  })
+  .strict();
+
+export type VirtualTourConfig = z.infer<typeof VirtualTourConfigSchema>;

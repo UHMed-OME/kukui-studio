@@ -1,0 +1,43 @@
+{
+  "version": "1.0",
+  "title": "Photosynthesis Inputs",
+  "question": "<p>Which of the following are <strong>required inputs</strong> for photosynthesis? Select all that apply.</p>",
+  "answers": [
+    {
+      "text": "Carbon dioxide (CO<sub>2</sub>)",
+      "correct": true,
+      "feedback": "Correct. CO<sub>2</sub> enters the leaf through stomata and is fixed in the Calvin cycle."
+    },
+    {
+      "text": "Water (H<sub>2</sub>O)",
+      "correct": true,
+      "feedback": "Correct. Water is split during the light reactions to release oxygen and electrons."
+    },
+    {
+      "text": "Sunlight",
+      "correct": true,
+      "feedback": "Correct. Light energy drives the light-dependent reactions in the thylakoid membrane."
+    },
+    {
+      "text": "Glucose (C<sub>6</sub>H<sub>12</sub>O<sub>6</sub>)",
+      "correct": false,
+      "feedback": "Glucose is a product of photosynthesis, not an input."
+    },
+    {
+      "text": "Oxygen (O<sub>2</sub>)",
+      "correct": false,
+      "feedback": "Oxygen is released as a byproduct of photosynthesis, not consumed by it."
+    }
+  ],
+  "behaviour": {
+    "enableRetry": true,
+    "enableSolutionsButton": true,
+    "singlePoint": false,
+    "randomAnswers": true
+  },
+  "ui": {
+    "checkAnswerButton": "Check my answers",
+    "showSolutionButton": "Show the correct answers",
+    "tryAgainButton": "Try again"
+  }
+}

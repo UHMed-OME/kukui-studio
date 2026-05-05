@@ -1,0 +1,10 @@
+{
+  "_comment": "INTENTIONALLY INVALID: 'answers[0].correct' is a string instead of a boolean.",
+  "version": "1.0",
+  "title": "Capital of Hawaii",
+  "question": "<p>What is the capital of Hawaii?</p>",
+  "answers": [
+    { "text": "Honolulu", "correct": "yes" },
+    { "text": "Hilo", "correct": false }
+  ]
+}

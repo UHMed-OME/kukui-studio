@@ -1,0 +1,23 @@
+{
+  "_comment": "INTENTIONALLY INVALID: 'overlays[0].position' must be a vector3 object {x,y,z}, but is given as an array. Also 'movement.mode' uses an unsupported value 'teleport'.",
+  "version": "1.0",
+  "title": "Tour of a Loʻi Kalo",
+  "scene": {
+    "src": "scenes/loi-kalo.glb"
+  },
+  "movement": {
+    "mode": "teleport"
+  },
+  "overlays": [
+    {
+      "id": "kalo-1",
+      "position": [1.5, 1.2, 2.0],
+      "content": [
+        {
+          "type": "text",
+          "html": "<h2>Kalo</h2><p>Kalo is the foundation of Hawaiian agriculture.</p>"
+        }
+      ]
+    }
+  ]
+}

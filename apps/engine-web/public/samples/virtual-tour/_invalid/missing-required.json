@@ -1,0 +1,17 @@
+{
+  "_comment": "INTENTIONALLY INVALID: required field 'scene' is missing at the top level.",
+  "version": "1.0",
+  "title": "Tour of a Loʻi Kalo",
+  "overlays": [
+    {
+      "id": "kalo-1",
+      "position": { "x": 1.5, "y": 1.2, "z": 2.0 },
+      "content": [
+        {
+          "type": "text",
+          "html": "<h2>Kalo</h2><p>Kalo is the foundation of Hawaiian agriculture.</p>"
+        }
+      ]
+    }
+  ]
+}

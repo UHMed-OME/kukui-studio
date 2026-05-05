@@ -1,0 +1,14 @@
+{
+  "_comment": "INTENTIONALLY INVALID: 'background' is required at the top level but missing here.",
+  "version": "1.0",
+  "title": "Label the parts of a plant cell",
+  "draggables": [
+    { "id": "d-nucleus", "label": "Nucleus", "correctZones": ["z-nucleus"] }
+  ],
+  "dropZones": [
+    {
+      "id": "z-nucleus",
+      "rect": { "x": 0.4, "y": 0.4, "w": 0.2, "h": 0.2 }
+    }
+  ]
+}
