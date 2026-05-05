@@ -30,7 +30,7 @@ A Unity 6 / WebGL prototype with the same 7 activities exists at `~/OME Projects
 
 Multiple Choice · Fill in the Blanks · Drag and Drop · Course Presentation · Question Set · 3D Hotspot Identification · Virtual Environment Tour
 
-Future roadmap (see Notion spec): True/False, Image Hotspot 2D, Sequence/Order, Categorization, Audio Identification, Lab Panel Interpretation, Differential Diagnosis Tree, Math Input with KaTeX, Interactive Video, OSCE Clinical Encounter — plus JABSOM-specific activities (TBL round, OSCE, etc.).
+The full taxonomy (~30 types across selection, text, spatial, sorting, media, structured-flow, reflection, med-ed-specialized, and Live-only) lives in the [Notion spec § Activity types](https://www.notion.so/357ee4627a7481c68ad9eb5b50628e4a). Highlights beyond the MVP: Multiple Select, Short Answer, Highlight Text, Image Annotation, Branching Scenario (parent of DDx Tree + OSCE), Flashcards, plus six Live-only formats including TBL Round.
 
 ## Reference layout
 
