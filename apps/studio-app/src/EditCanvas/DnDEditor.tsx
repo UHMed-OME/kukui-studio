@@ -1,13 +1,35 @@
-import { useRef, useState, type CSSProperties, type PointerEvent } from "react";
+import {
+  useEffect,
+  useRef,
+  useState,
+  type CSSProperties,
+  type PointerEvent,
+} from "react";
 import type { DragAndDropConfig } from "@kukui/schemas";
 
 type Rect = DragAndDropConfig["dropZones"][number]["rect"];
 
 type DragState =
   | { kind: "idle" }
-  | { kind: "draw"; startX: number; startY: number; rect: Rect }
-  | { kind: "move"; zoneId: string; offsetX: number; offsetY: number }
-  | { kind: "resize"; zoneId: string; anchorX: number; anchorY: number };
+  | { kind: "draw"; pointerId: number; startX: number; startY: number; rect: Rect }
+  | {
+      kind: "move";
+      pointerId: number;
+      zoneId: string;
+      offsetX: number;
+      offsetY: number;
+      rect: Rect;
+    }
+  | {
+      kind: "resize";
+      pointerId: number;
+      zoneId: string;
+      anchorX: number;
+      anchorY: number;
+      rect: Rect;
+    };
+
+const MIN_RECT = 0.02;
 
 const DEFAULT_NEW_ZONE_ID = (existing: string[]): string => {
   let i = existing.length + 1;
@@ -18,10 +40,12 @@ const DEFAULT_NEW_ZONE_ID = (existing: string[]): string => {
 /**
  * Drag-and-Drop visual editor.
  *
- * Click-and-drag on empty space draws a new drop zone. Click a zone to
- * select it. Drag a selected zone to move it. Drag the corner handle to
- * resize. ✕ on a selected zone deletes it. All edits flow through onChange
- * back to the form's value, so the schema-form pane stays in sync.
+ * Draw on the board to create zones, drag to move, corner handle to resize,
+ * ✕ or Delete to remove. The dragged zone is tracked in local state during
+ * the gesture, so the cursor stays glued to the element regardless of how
+ * slow the upstream form re-render is. The committed state is emitted via
+ * onChange on pointer-up only — the schema-form pane updates once per
+ * gesture instead of once per frame.
  */
 export function DnDEditor({
   config,
@@ -34,9 +58,16 @@ export function DnDEditor({
   const [drag, setDrag] = useState<DragState>({ kind: "idle" });
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
-  const board = boardRef.current;
+  // Local override for the zone currently being dragged. Lets the visible
+  // element track the cursor at the device's refresh rate without bouncing
+  // through the parent state.
+  const liveRect: { id: string; rect: Rect } | null =
+    drag.kind === "move" || drag.kind === "resize"
+      ? { id: drag.zoneId, rect: drag.rect }
+      : null;
 
   const toNormalized = (clientX: number, clientY: number) => {
+    const board = boardRef.current;
     if (!board) return { x: 0, y: 0 };
     const r = board.getBoundingClientRect();
     return {
@@ -46,11 +77,17 @@ export function DnDEditor({
   };
 
   const startDrawZone = (e: PointerEvent<HTMLDivElement>) => {
-    if (e.target !== boardRef.current) return; // only when clicking blank board
+    if (e.target !== boardRef.current) return;
     const { x, y } = toNormalized(e.clientX, e.clientY);
     setSelectedId(null);
-    setDrag({ kind: "draw", startX: x, startY: y, rect: { x, y, w: 0, h: 0 } });
-    (e.target as HTMLElement).setPointerCapture(e.pointerId);
+    setDrag({
+      kind: "draw",
+      pointerId: e.pointerId,
+      startX: x,
+      startY: y,
+      rect: { x, y, w: 0, h: 0 },
+    });
+    boardRef.current?.setPointerCapture(e.pointerId);
   };
 
   const startMoveZone = (zoneId: string) => (e: PointerEvent<HTMLDivElement>) => {
@@ -61,9 +98,11 @@ export function DnDEditor({
     setSelectedId(zoneId);
     setDrag({
       kind: "move",
+      pointerId: e.pointerId,
       zoneId,
       offsetX: x - zone.rect.x,
       offsetY: y - zone.rect.y,
+      rect: zone.rect,
     });
     (e.target as HTMLElement).setPointerCapture(e.pointerId);
   };
@@ -75,9 +114,11 @@ export function DnDEditor({
     setSelectedId(zoneId);
     setDrag({
       kind: "resize",
+      pointerId: e.pointerId,
       zoneId,
       anchorX: zone.rect.x,
       anchorY: zone.rect.y,
+      rect: zone.rect,
     });
     (e.target as HTMLElement).setPointerCapture(e.pointerId);
   };
@@ -96,33 +137,26 @@ export function DnDEditor({
           h: Math.abs(y - drag.startY),
         },
       });
-    } else if (drag.kind === "move") {
-      const zone = config.dropZones.find((z) => z.id === drag.zoneId);
-      if (!zone) return;
-      const newX = Math.max(0, Math.min(1 - zone.rect.w, x - drag.offsetX));
-      const newY = Math.max(0, Math.min(1 - zone.rect.h, y - drag.offsetY));
-      onChange({
-        ...config,
-        dropZones: config.dropZones.map((z) =>
-          z.id === drag.zoneId ? { ...z, rect: { ...z.rect, x: newX, y: newY } } : z,
-        ),
-      });
-    } else if (drag.kind === "resize") {
-      const w = Math.max(0.02, x - drag.anchorX);
-      const h = Math.max(0.02, y - drag.anchorY);
-      onChange({
-        ...config,
-        dropZones: config.dropZones.map((z) =>
-          z.id === drag.zoneId ? { ...z, rect: { ...z.rect, w, h } } : z,
-        ),
-      });
+      return;
+    }
+
+    if (drag.kind === "move") {
+      const newX = Math.max(0, Math.min(1 - drag.rect.w, x - drag.offsetX));
+      const newY = Math.max(0, Math.min(1 - drag.rect.h, y - drag.offsetY));
+      setDrag({ ...drag, rect: { ...drag.rect, x: newX, y: newY } });
+      return;
+    }
+
+    if (drag.kind === "resize") {
+      const w = Math.max(MIN_RECT, x - drag.anchorX);
+      const h = Math.max(MIN_RECT, y - drag.anchorY);
+      setDrag({ ...drag, rect: { x: drag.anchorX, y: drag.anchorY, w, h } });
     }
   };
 
   const handlePointerUp = () => {
     if (drag.kind === "draw") {
-      // Commit the drawn rect as a new zone, but only if it has size.
-      if (drag.rect.w >= 0.02 && drag.rect.h >= 0.02) {
+      if (drag.rect.w >= MIN_RECT && drag.rect.h >= MIN_RECT) {
         const id = DEFAULT_NEW_ZONE_ID(config.dropZones.map((z) => z.id));
         onChange({
           ...config,
@@ -133,24 +167,55 @@ export function DnDEditor({
         });
         setSelectedId(id);
       }
+    } else if (drag.kind === "move" || drag.kind === "resize") {
+      const next = drag.rect;
+      onChange({
+        ...config,
+        dropZones: config.dropZones.map((z) =>
+          z.id === drag.zoneId ? { ...z, rect: next } : z,
+        ),
+      });
     }
     setDrag({ kind: "idle" });
   };
+
+  // Keyboard: Delete / Backspace removes the selected zone (when not typing
+  // into an input). Esc deselects.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const tag = (document.activeElement?.tagName ?? "").toUpperCase();
+      if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return;
+      if (selectedId && (e.key === "Delete" || e.key === "Backspace")) {
+        e.preventDefault();
+        deleteZone(selectedId);
+      } else if (e.key === "Escape") {
+        setSelectedId(null);
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedId]);
 
   const deleteZone = (zoneId: string) => {
     onChange({ ...config, dropZones: config.dropZones.filter((z) => z.id !== zoneId) });
     setSelectedId(null);
   };
 
+  const isDragging = drag.kind !== "idle";
+
   return (
     <div className="ks-edit-dnd">
       <p className="ks-edit-dnd__hint">
-        Drag on the background to draw a drop zone. Click a zone to select it; drag to move; drag
-        the corner handle to resize; ✕ to delete. The schema form on the left updates as you go.
+        Drag on the background to draw a zone. Click a zone to select it; drag to move, corner
+        handle to resize, ✕ or <kbd>Delete</kbd> to remove. Form on the left updates when you let
+        go.
       </p>
       <div
         ref={boardRef}
-        className="ks-edit-dnd__board"
+        className={["ks-edit-dnd__board", isDragging ? "is-dragging" : ""]
+          .filter(Boolean)
+          .join(" ")}
         style={{
           backgroundImage: config.background.src ? `url(${config.background.src})` : undefined,
         }}
@@ -160,17 +225,26 @@ export function DnDEditor({
         onPointerCancel={handlePointerUp}
       >
         {config.dropZones.map((z) => {
+          // If this zone is currently being dragged, render with the live
+          // rect so the element tracks the cursor 1:1.
+          const rect = liveRect && liveRect.id === z.id ? liveRect.rect : z.rect;
           const style: CSSProperties = {
-            left: `${z.rect.x * 100}%`,
-            top: `${z.rect.y * 100}%`,
-            width: `${z.rect.w * 100}%`,
-            height: `${z.rect.h * 100}%`,
+            left: `${rect.x * 100}%`,
+            top: `${rect.y * 100}%`,
+            width: `${rect.w * 100}%`,
+            height: `${rect.h * 100}%`,
           };
           const isSelected = z.id === selectedId;
+          const isThisDragging =
+            drag.kind !== "idle" && "zoneId" in drag && drag.zoneId === z.id;
           return (
             <div
               key={z.id}
-              className={["ks-edit-dnd__zone", isSelected ? "is-selected" : ""]
+              className={[
+                "ks-edit-dnd__zone",
+                isSelected ? "is-selected" : "",
+                isThisDragging ? "is-dragging" : "",
+              ]
                 .filter(Boolean)
                 .join(" ")}
               style={style}
@@ -195,6 +269,8 @@ export function DnDEditor({
                     className="ks-edit-dnd__handle ks-edit-dnd__handle--se"
                     onPointerDown={startResizeZone(z.id)}
                     aria-label="Resize"
+                    role="button"
+                    tabIndex={-1}
                   />
                 </>
               ) : null}
