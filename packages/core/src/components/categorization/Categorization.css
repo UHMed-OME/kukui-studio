@@ -1,0 +1,262 @@
+/*
+ * Categorization — tray of unsorted item chips on top, labeled category bins
+ * below. Drag a chip into any bin, between bins, or back to the tray. Keyboard
+ * fallback: per-item <select> picks a category. Layout-stable: borders
+ * constant 2 px, color-only state changes.
+ */
+
+.kukui-cat {
+  display: flex;
+  justify-content: center;
+  padding: var(--spacing-2xl, 24px);
+}
+
+.kukui-cat__card {
+  width: 100%;
+  max-width: 960px;
+  background: var(--color-surface, #ffffff);
+  border: 1px solid var(--color-border, #dad2c6);
+  border-radius: var(--radius-card, 12px);
+  padding: var(--spacing-3xl, 28px);
+}
+
+.kukui-cat__title {
+  margin: 0 0 var(--spacing-sm, 8px);
+  font-size: var(--font-size-title, 24px);
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+.kukui-cat__prompt {
+  margin: 0 0 var(--spacing-lg, 16px);
+  font-size: var(--font-size-answer, 15px);
+  color: var(--color-text-primary);
+}
+
+.kukui-cat__prompt p {
+  margin: 0 0 var(--spacing-sm, 8px);
+}
+.kukui-cat__prompt p:last-child {
+  margin-bottom: 0;
+}
+
+.kukui-cat__tray {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-sm, 8px);
+  min-height: 64px;
+  padding: var(--spacing-md, 12px);
+  background: var(--color-tip-bg, #f2f0e8);
+  border: 2px dashed var(--color-border);
+  border-radius: var(--radius-md, 8px);
+  transition: background-color 150ms ease;
+}
+
+.kukui-cat__tray.is-over {
+  background: var(--color-primary-soft);
+}
+
+.kukui-cat__tray-empty {
+  margin: 0;
+  font-size: var(--font-size-meta, 13px);
+  color: var(--color-text-secondary);
+}
+
+.kukui-cat__bins {
+  margin-top: var(--spacing-lg, 16px);
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--spacing-md, 12px);
+}
+
+.kukui-cat__bin {
+  display: flex;
+  flex-direction: column;
+  min-height: 160px;
+  background: var(--color-tip-bg, #f2f0e8);
+  border: 2px dashed var(--color-border-hover, #bbae9a);
+  border-radius: var(--radius-md, 8px);
+  transition: background-color 150ms ease;
+}
+
+.kukui-cat__bin.is-over {
+  background: var(--color-primary-soft);
+}
+
+.kukui-cat__bin-label {
+  padding: var(--spacing-sm, 8px) var(--spacing-md, 12px);
+  font-size: var(--font-size-answer, 15px);
+  font-weight: 700;
+  color: var(--color-text-primary);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.kukui-cat__bin-body {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-xs, 4px);
+  padding: var(--spacing-sm, 8px);
+  flex: 1;
+}
+
+.kukui-cat__chip-wrap {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 2px;
+}
+
+.kukui-cat__chip {
+  min-height: 44px;
+  padding: 8px 14px;
+  background: var(--color-surface, #ffffff);
+  border: 2px solid var(--color-primary, #7b4324);
+  border-radius: var(--radius-md, 8px);
+  font-size: var(--font-size-answer, 15px);
+  color: var(--color-text-primary);
+  cursor: grab;
+  text-align: left;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs, 4px);
+}
+
+.kukui-cat__chip:hover:not(:disabled) {
+  background: var(--color-primary-soft);
+}
+
+.kukui-cat__chip.is-correct {
+  border-color: var(--color-success, #2e6e41);
+  background: var(--color-success-soft);
+}
+
+.kukui-cat__chip.is-incorrect {
+  border-color: var(--color-error, #c34132);
+  background: var(--color-error-soft);
+}
+
+.kukui-cat__chip.is-dragging {
+  opacity: 0.6;
+}
+
+.kukui-cat__chip-icon {
+  font-weight: 700;
+  font-size: 16px;
+}
+
+.kukui-cat__chip.is-correct .kukui-cat__chip-icon {
+  color: var(--color-success);
+}
+.kukui-cat__chip.is-incorrect .kukui-cat__chip-icon {
+  color: var(--color-error);
+}
+
+.kukui-cat__chip-correction {
+  font-size: var(--font-size-meta, 13px);
+  color: var(--color-error);
+  font-weight: 700;
+}
+
+.kukui-cat__feedback {
+  min-height: 0;
+  margin-top: var(--spacing-lg, 16px);
+  font-size: var(--font-size-meta, 13px);
+  color: var(--color-text-secondary);
+  opacity: 0;
+  transition:
+    opacity 200ms ease,
+    min-height 200ms ease;
+}
+
+.kukui-cat__feedback.is-visible {
+  opacity: 1;
+  min-height: 28px;
+}
+
+.kukui-cat__actions {
+  margin-top: var(--spacing-xl, 20px);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-md, 12px);
+}
+
+.kukui-cat__primary,
+.kukui-cat__secondary {
+  min-height: 44px;
+  padding: 10px 20px;
+  border-radius: var(--radius-md, 8px);
+  font-size: var(--font-size-answer, 15px);
+  font-weight: 700;
+}
+
+.kukui-cat__primary {
+  background: var(--color-primary);
+  color: #ffffff;
+  border: none;
+}
+
+.kukui-cat__primary:hover:not(:disabled) {
+  background: var(--color-primary-hover);
+}
+
+.kukui-cat__primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.kukui-cat__secondary {
+  background: transparent;
+  color: var(--color-primary);
+  border: 2px solid var(--color-primary);
+}
+
+.kukui-cat__fallback {
+  margin-top: var(--spacing-xl, 20px);
+  padding: var(--spacing-md, 12px) var(--spacing-lg, 16px);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md, 8px);
+  background: var(--color-tip-bg, #f2f0e8);
+}
+
+.kukui-cat__fallback-legend {
+  font-size: var(--font-size-meta, 13px);
+  font-weight: 700;
+  color: var(--color-text-secondary);
+  padding: 0 var(--spacing-xs, 4px);
+}
+
+.kukui-cat__fallback-list {
+  list-style: none;
+  margin: var(--spacing-sm, 8px) 0 0;
+  padding: 0;
+  display: grid;
+  gap: var(--spacing-sm, 8px);
+}
+
+.kukui-cat__fallback-row {
+  display: grid;
+  grid-template-columns: minmax(120px, 1fr) 2fr;
+  gap: var(--spacing-md, 12px);
+  align-items: center;
+}
+
+.kukui-cat__fallback-label {
+  font-size: var(--font-size-answer, 15px);
+}
+
+.kukui-cat__fallback-select {
+  min-height: 44px;
+  padding: 4px 10px;
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-md, 8px);
+  background: var(--color-surface);
+  font-size: var(--font-size-answer, 15px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kukui-cat__feedback,
+  .kukui-cat__tray,
+  .kukui-cat__bin {
+    transition: none;
+  }
+}

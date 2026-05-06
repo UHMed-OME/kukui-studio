@@ -15,6 +15,14 @@
     "./hotspot-3d": "./src/hotspot-3d.ts",
     "./hotspot-2d": "./src/hotspot-2d.ts",
     "./virtual-tour": "./src/virtual-tour.ts",
+    "./highlight-text": "./src/highlight-text.ts",
+    "./reflection-prompt": "./src/reflection-prompt.ts",
+    "./flashcards": "./src/flashcards.ts",
+    "./image-comparison-slider": "./src/image-comparison-slider.ts",
+    "./matching-pairs": "./src/matching-pairs.ts",
+    "./categorization": "./src/categorization.ts",
+    "./sequence-steps": "./src/sequence-steps.ts",
+    "./anatomy-labeling": "./src/anatomy-labeling.ts",
     "./stub": "./src/stub.ts"
   },
   "dependencies": {

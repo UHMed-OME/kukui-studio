@@ -1,0 +1,290 @@
+/*
+ * Matching Pairs — two columns of items; click-to-pair (select left, then
+ * click right). Layout-stable: borders are constant 2 px; only color, fill,
+ * and badge content change between states. A keyboard fallback fieldset of
+ * <select>s mirrors the picker for non-pointer users.
+ */
+
+.kukui-mp {
+  display: flex;
+  justify-content: center;
+  padding: var(--spacing-2xl, 24px);
+}
+
+.kukui-mp__card {
+  width: 100%;
+  max-width: 880px;
+  background: var(--color-surface, #ffffff);
+  border: 1px solid var(--color-border, #dad2c6);
+  border-radius: var(--radius-card, 12px);
+  padding: var(--spacing-3xl, 28px);
+}
+
+.kukui-mp__title {
+  margin: 0 0 var(--spacing-md, 12px);
+  font-size: var(--font-size-title, 24px);
+  font-weight: 700;
+  color: var(--color-text-primary, #1c1e20);
+}
+
+.kukui-mp__prompt {
+  margin-bottom: var(--spacing-md, 12px);
+  font-size: var(--font-size-prompt, 16px);
+  line-height: 1.5;
+  color: var(--color-text-primary, #1c1e20);
+}
+
+.kukui-mp__instructions {
+  margin: 0 0 var(--spacing-lg, 16px);
+  min-height: 20px; /* layout-stable: reserve space whether text changes or not */
+  font-size: var(--font-size-meta, 13px);
+  color: var(--color-text-secondary, #606069);
+}
+
+.kukui-mp__columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--spacing-lg, 16px);
+}
+
+@media (max-width: 560px) {
+  .kukui-mp__columns {
+    grid-template-columns: 1fr;
+  }
+}
+
+.kukui-mp__col {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm, 8px);
+}
+
+.kukui-mp__row {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs, 4px);
+}
+
+.kukui-mp__item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md, 12px);
+  width: 100%;
+  min-height: 48px;
+  padding: var(--spacing-md, 12px) var(--spacing-lg, 16px);
+  background: var(--color-surface, #ffffff);
+  border: 2px solid var(--color-border, #dad2c6);
+  border-radius: var(--radius-md, 8px);
+  text-align: left;
+  font-size: var(--font-size-answer, 15px);
+  color: var(--color-text-primary, #1c1e20);
+  cursor: pointer;
+  transition:
+    background-color 150ms ease,
+    border-color 150ms ease;
+}
+
+.kukui-mp__item:hover:not(:disabled):not(.is-selected):not(.is-correct):not(.is-incorrect) {
+  border-color: var(--color-border-hover, #bbae9a);
+}
+
+.kukui-mp__item:disabled {
+  cursor: default;
+}
+
+.kukui-mp__item.is-selected {
+  border-color: var(--color-primary, #7b4324);
+  background: var(--color-primary-soft);
+}
+
+.kukui-mp__item.is-paired {
+  border-color: var(--color-primary, #7b4324);
+}
+
+/* Right-column items get a subtle "pick me" cue while a left-row is selected. */
+.kukui-mp__item--right.is-target:not(.is-paired) {
+  border-color: var(--color-border-hover, #bbae9a);
+  background: var(--color-tip-bg, #f2f0e8);
+}
+
+.kukui-mp__item.is-correct {
+  border-color: var(--color-success, #2e6e41);
+  background: var(--color-success-soft);
+}
+
+.kukui-mp__item.is-incorrect {
+  border-color: var(--color-error, #c34132);
+  background: var(--color-error-soft);
+}
+
+.kukui-mp__badge {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 24px;
+  height: 24px;
+  padding: 0 6px;
+  border-radius: var(--radius-pill, 4px);
+  background: var(--color-tip-bg, #f2f0e8);
+  border: 2px solid var(--color-border, #dad2c6);
+  font-size: var(--font-size-meta, 13px);
+  font-weight: 700;
+  color: var(--color-text-primary);
+  /* Reserve box even when empty so layout doesn't shift on pairing. */
+  box-sizing: border-box;
+}
+
+.kukui-mp__item.is-selected .kukui-mp__badge,
+.kukui-mp__item.is-paired .kukui-mp__badge {
+  border-color: var(--color-primary, #7b4324);
+  color: var(--color-primary, #7b4324);
+}
+
+.kukui-mp__item.is-correct .kukui-mp__badge {
+  border-color: var(--color-success, #2e6e41);
+  color: var(--color-success, #2e6e41);
+}
+
+.kukui-mp__item.is-incorrect .kukui-mp__badge {
+  border-color: var(--color-error, #c34132);
+  color: var(--color-error, #c34132);
+}
+
+.kukui-mp__item-text {
+  flex: 1 1 auto;
+  white-space: normal;
+}
+
+.kukui-mp__item-icon {
+  flex: 0 0 auto;
+  font-weight: 700;
+  font-size: 18px;
+  width: 24px;
+  text-align: center;
+}
+
+.kukui-mp__item.is-correct .kukui-mp__item-icon {
+  color: var(--color-success, #2e6e41);
+}
+.kukui-mp__item.is-incorrect .kukui-mp__item-icon {
+  color: var(--color-error, #c34132);
+}
+
+.kukui-mp__clear {
+  align-self: flex-start;
+  min-height: 28px;
+  padding: 2px 8px;
+  background: transparent;
+  border: none;
+  font-size: var(--font-size-meta, 13px);
+  color: var(--color-text-secondary, #606069);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.kukui-mp__clear:hover {
+  color: var(--color-primary, #7b4324);
+}
+
+.kukui-mp__reveal {
+  margin: 0;
+  font-size: var(--font-size-meta, 13px);
+  color: var(--color-text-secondary, #606069);
+}
+
+.kukui-mp__fallback {
+  margin-top: var(--spacing-xl, 20px);
+  padding: var(--spacing-md, 12px) var(--spacing-lg, 16px);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md, 8px);
+  background: var(--color-tip-bg, #f2f0e8);
+}
+
+.kukui-mp__fallback-legend {
+  font-size: var(--font-size-meta, 13px);
+  font-weight: 700;
+  color: var(--color-text-secondary);
+  padding: 0 var(--spacing-xs, 4px);
+}
+
+.kukui-mp__fallback-list {
+  list-style: none;
+  margin: var(--spacing-sm, 8px) 0 0;
+  padding: 0;
+  display: grid;
+  gap: var(--spacing-sm, 8px);
+}
+
+.kukui-mp__fallback-row {
+  display: grid;
+  grid-template-columns: minmax(120px, 1fr) 2fr;
+  gap: var(--spacing-md, 12px);
+  align-items: center;
+}
+
+.kukui-mp__fallback-label {
+  font-size: var(--font-size-answer, 15px);
+}
+
+.kukui-mp__fallback-select {
+  min-height: 44px;
+  padding: 4px 10px;
+  border: 2px solid var(--color-border, #dad2c6);
+  border-radius: var(--radius-md, 8px);
+  background: var(--color-surface, #ffffff);
+  font-size: var(--font-size-answer, 15px);
+}
+
+.kukui-mp__actions {
+  margin-top: var(--spacing-xl, 20px);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--spacing-md, 12px);
+}
+
+.kukui-mp__primary,
+.kukui-mp__secondary {
+  min-height: 44px;
+  padding: 10px 20px;
+  border-radius: var(--radius-md, 8px);
+  font-size: var(--font-size-answer, 15px);
+  font-weight: 700;
+}
+
+.kukui-mp__primary {
+  background: var(--color-primary, #7b4324);
+  color: #ffffff;
+  border: none;
+}
+
+.kukui-mp__primary:hover:not(:disabled) {
+  background: var(--color-primary-hover, #9b5830);
+}
+
+.kukui-mp__primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.kukui-mp__secondary {
+  background: transparent;
+  color: var(--color-primary, #7b4324);
+  border: 2px solid var(--color-primary, #7b4324);
+}
+
+.kukui-mp__score {
+  font-size: var(--font-size-prompt, 16px);
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kukui-mp__item {
+    transition: none;
+  }
+}

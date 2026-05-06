@@ -1,0 +1,32 @@
+{
+  "version": "1.0",
+  "title": "Find the Verbs",
+  "prompt": "<p>Highlight every <strong>verb</strong> in the sentence below.</p>",
+  "tokens": [
+    { "id": "t0", "text": "The", "correct": false },
+    { "id": "t1", "text": "voyaging", "correct": false },
+    { "id": "t2", "text": "canoe", "correct": false },
+    { "id": "t3", "text": "sailed", "correct": true },
+    { "id": "t4", "text": "across", "correct": false },
+    { "id": "t5", "text": "the", "correct": false },
+    { "id": "t6", "text": "Pacific", "correct": false, "separator": ", " },
+    { "id": "t7", "text": "guided", "correct": true },
+    { "id": "t8", "text": "by", "correct": false },
+    { "id": "t9", "text": "stars", "correct": false },
+    { "id": "t10", "text": "and", "correct": false },
+    { "id": "t11", "text": "swells", "correct": false, "separator": "." }
+  ],
+  "behaviour": {
+    "enableRetry": true,
+    "singlePoint": false
+  },
+  "ui": {
+    "checkAnswerButton": "Check",
+    "tryAgainButton": "Try again"
+  },
+  "overallFeedback": [
+    { "from": 0, "to": 50, "message": "Re-read the sentence and look for action words." },
+    { "from": 51, "to": 99, "message": "Close — one more verb hides in there." },
+    { "from": 100, "to": 100, "message": "Both verbs found." }
+  ]
+}

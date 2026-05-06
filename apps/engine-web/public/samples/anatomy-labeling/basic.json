@@ -1,0 +1,23 @@
+{
+  "_comment": "Demo fixture using a placehold.co diagram. Replace image.src with author-provided art for production.",
+  "version": "1.0",
+  "title": "Label the parts of a neuron",
+  "prompt": "<p>Drag each name onto the matching numbered target on the neuron.</p>",
+  "image": {
+    "src": "https://placehold.co/1024x480/eef0f6/4b5563?text=Neuron+diagram+(placeholder)",
+    "alt": "Placeholder for a labeled neuron diagram"
+  },
+  "labels": [
+    { "id": "l-dendrite", "text": "Dendrite", "correctTargetId": "t-dendrite" },
+    { "id": "l-soma", "text": "Soma", "correctTargetId": "t-soma" },
+    { "id": "l-axon", "text": "Axon", "correctTargetId": "t-axon" },
+    { "id": "l-synapse", "text": "Synapse", "correctTargetId": "t-synapse" }
+  ],
+  "targets": [
+    { "id": "t-dendrite", "position": { "x": 0.18, "y": 0.42 } },
+    { "id": "t-soma", "position": { "x": 0.34, "y": 0.5 } },
+    { "id": "t-axon", "position": { "x": 0.6, "y": 0.5 } },
+    { "id": "t-synapse", "position": { "x": 0.86, "y": 0.5 } }
+  ],
+  "behaviour": { "enableRetry": true, "randomizeLabels": true }
+}

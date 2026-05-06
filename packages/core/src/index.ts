@@ -19,6 +19,14 @@ export { QuestionSet } from "./components/question-set/index.js";
 export { Hotspot3D } from "./components/hotspot-3d/index.js";
 export { Hotspot2D } from "./components/hotspot-2d/index.js";
 export { VirtualTour } from "./components/virtual-tour/index.js";
+export { Categorization } from "./components/categorization/index.js";
+export { AnatomyLabeling } from "./components/anatomy-labeling/index.js";
+export { SequenceSteps } from "./components/sequence-steps/index.js";
+export { MatchingPairs } from "./components/matching-pairs/index.js";
+export { HighlightText } from "./components/highlight-text/index.js";
+export { ImageComparisonSlider } from "./components/image-comparison-slider/index.js";
+export { Flashcards } from "./components/flashcards/index.js";
+export { ReflectionPrompt } from "./components/reflection-prompt/index.js";
 export { StubActivity } from "./components/_stub/StubActivity.js";
 export {
   PLANNED_ACTIVITY_KINDS,

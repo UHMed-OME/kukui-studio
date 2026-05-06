@@ -1,0 +1,225 @@
+/*
+ * Image Comparison Slider — fixed-aspect stage with two stacked images and
+ * a draggable vertical seam. Layout-stable: the seam moves via `left:` and
+ * the "before" image is revealed via `clip-path`; nothing reflows.
+ */
+
+.kukui-ics {
+  display: flex;
+  justify-content: center;
+  padding: var(--spacing-2xl, 24px);
+}
+
+.kukui-ics__card {
+  width: 100%;
+  max-width: 720px;
+  background: var(--color-surface, #ffffff);
+  border: 1px solid var(--color-border, #dad2c6);
+  border-radius: var(--radius-card, 12px);
+  padding: var(--spacing-3xl, 28px);
+}
+
+.kukui-ics__title {
+  margin: 0 0 var(--spacing-lg, 16px);
+  font-size: var(--font-size-title, 24px);
+  font-weight: 700;
+  color: var(--color-text-primary, #1c1e20);
+}
+
+.kukui-ics__prompt {
+  margin-bottom: var(--spacing-xl, 20px);
+  font-size: var(--font-size-prompt, 16px);
+  line-height: 1.5;
+  color: var(--color-text-primary, #1c1e20);
+}
+
+/* Fixed aspect ratio (4:3) so layout doesn't shift with image load. */
+.kukui-ics__stage {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  background: var(--color-bg, #fcf8f2);
+  border: 2px solid var(--color-border, #dad2c6);
+  border-radius: var(--radius-md, 8px);
+  overflow: hidden;
+  cursor: pointer;
+  user-select: none;
+  touch-action: none;
+}
+
+.kukui-ics__img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  pointer-events: none;
+  -webkit-user-drag: none;
+  user-select: none;
+}
+
+.kukui-ics__img--before {
+  z-index: 2;
+}
+
+.kukui-ics__img--after {
+  z-index: 1;
+}
+
+/* Vertical seam line — purely decorative; the button below carries the
+   interaction and a11y semantics. */
+.kukui-ics__seam-line {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: var(--color-surface, #ffffff);
+  box-shadow: 0 0 0 1px rgba(28, 30, 32, 0.25);
+  z-index: 3;
+  transform: translateX(-1px);
+  pointer-events: none;
+}
+
+/* The seam handle: a 48 × 48 round button centered on the seam line. */
+.kukui-ics__seam {
+  position: absolute;
+  top: 50%;
+  width: 48px;
+  height: 48px;
+  margin-top: -24px;
+  background: var(--color-surface, #ffffff);
+  border: 2px solid var(--color-primary, #7b4324);
+  border-radius: 50%;
+  cursor: ew-resize;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  padding: 0;
+  z-index: 4;
+  color: var(--color-primary, #7b4324);
+  font-weight: 700;
+  /* Tap target ≥ 44 × 44 — already 48 × 48. */
+}
+
+.kukui-ics__seam:hover:not(:disabled) {
+  border-color: var(--color-primary-hover, #9b5830);
+}
+
+.kukui-ics__seam:focus-visible {
+  outline: 2px solid var(--color-primary, #7b4324);
+  outline-offset: 2px;
+}
+
+.kukui-ics__seam:disabled {
+  cursor: default;
+  opacity: 0.6;
+}
+
+.kukui-ics__seam-grip {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  font-size: 18px;
+  line-height: 1;
+}
+
+.kukui-ics__seam-arrow {
+  display: inline-block;
+}
+
+.kukui-ics__caption {
+  position: absolute;
+  bottom: var(--spacing-sm, 8px);
+  z-index: 3;
+  padding: 4px var(--spacing-sm, 8px);
+  background: rgba(28, 30, 32, 0.65);
+  color: #ffffff;
+  font-size: var(--font-size-meta, 13px);
+  border-radius: var(--radius-sm, 6px);
+  pointer-events: none;
+}
+
+.kukui-ics__caption--before {
+  left: var(--spacing-sm, 8px);
+}
+
+.kukui-ics__caption--after {
+  right: var(--spacing-sm, 8px);
+}
+
+.kukui-ics__prompts {
+  margin: var(--spacing-lg, 16px) 0 0;
+  padding: var(--spacing-md, 12px) var(--spacing-lg, 16px);
+  background: var(--color-tip-bg, #f2f0e8);
+  border-radius: var(--radius-sm, 6px);
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm, 8px);
+}
+
+.kukui-ics__prompt-item {
+  display: flex;
+  align-items: baseline;
+  gap: var(--spacing-md, 12px);
+  font-size: var(--font-size-meta, 13px);
+  color: var(--color-text-secondary, #606069);
+}
+
+.kukui-ics__prompt-pos {
+  flex: 0 0 auto;
+  min-width: 40px;
+  font-weight: 700;
+  color: var(--color-primary, #7b4324);
+}
+
+.kukui-ics__prompt-text {
+  flex: 1 1 auto;
+  color: var(--color-text-primary, #1c1e20);
+}
+
+.kukui-ics__actions {
+  margin-top: var(--spacing-xl, 20px);
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: var(--spacing-md, 12px);
+  /* Reserve height so the swap from button → status doesn't reflow. */
+  min-height: 44px;
+}
+
+.kukui-ics__done {
+  min-height: 44px;
+  padding: 10px 20px;
+  background: var(--color-primary, #7b4324);
+  color: #ffffff;
+  border: none;
+  border-radius: var(--radius-md, 8px);
+  font-size: var(--font-size-answer, 15px);
+  font-weight: 700;
+}
+
+.kukui-ics__done:hover {
+  background: var(--color-primary-hover, #9b5830);
+}
+
+.kukui-ics__done:focus-visible {
+  outline: 2px solid var(--color-primary, #7b4324);
+  outline-offset: 2px;
+}
+
+.kukui-ics__done-msg {
+  font-size: var(--font-size-meta, 13px);
+  color: var(--color-success, #2e6e41);
+  font-weight: 700;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kukui-ics__seam,
+  .kukui-ics__done {
+    transition: none;
+  }
+}

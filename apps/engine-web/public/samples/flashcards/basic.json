@@ -1,0 +1,46 @@
+{
+  "version": "1.0",
+  "title": "Match the symbol to the element",
+  "prompt": "<p>Step through each card. Click to reveal the element name, then rate yourself honestly — you'll see the cards you didn't know again before finishing.</p>",
+  "cards": [
+    {
+      "id": "h",
+      "front": "<p><strong>H</strong></p>",
+      "back": "<p>Hydrogen</p>",
+      "hint": "Atomic number 1 — the lightest element."
+    },
+    {
+      "id": "o",
+      "front": "<p><strong>O</strong></p>",
+      "back": "<p>Oxygen</p>",
+      "hint": "About 21% of the atmosphere by volume."
+    },
+    {
+      "id": "na",
+      "front": "<p><strong>Na</strong></p>",
+      "back": "<p>Sodium</p>",
+      "hint": "Symbol comes from Latin <em>natrium</em>."
+    },
+    {
+      "id": "fe",
+      "front": "<p><strong>Fe</strong></p>",
+      "back": "<p>Iron</p>",
+      "hint": "Latin <em>ferrum</em>; gives blood its red colour."
+    },
+    {
+      "id": "au",
+      "front": "<p><strong>Au</strong></p>",
+      "back": "<p>Gold</p>",
+      "hint": "Latin <em>aurum</em>, meaning glowing dawn."
+    }
+  ],
+  "behaviour": {
+    "shuffle": false,
+    "passThreshold": 80
+  },
+  "ui": {
+    "knewItButton": "I knew it",
+    "didntKnowButton": "I didn't know it",
+    "nextButton": "Reveal answer"
+  }
+}

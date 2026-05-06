@@ -11,6 +11,14 @@ import { QuestionSet } from "./components/question-set/index.js";
 import { Hotspot3D } from "./components/hotspot-3d/index.js";
 import { Hotspot2D } from "./components/hotspot-2d/index.js";
 import { VirtualTour } from "./components/virtual-tour/index.js";
+import { Categorization } from "./components/categorization/index.js";
+import { AnatomyLabeling } from "./components/anatomy-labeling/index.js";
+import { SequenceSteps } from "./components/sequence-steps/index.js";
+import { MatchingPairs } from "./components/matching-pairs/index.js";
+import { HighlightText } from "./components/highlight-text/index.js";
+import { ImageComparisonSlider } from "./components/image-comparison-slider/index.js";
+import { Flashcards } from "./components/flashcards/index.js";
+import { ReflectionPrompt } from "./components/reflection-prompt/index.js";
 import { StubActivity } from "./components/_stub/StubActivity.js";
 import { PLANNED_ACTIVITY_KINDS } from "./planned.js";
 
@@ -130,6 +138,22 @@ export function ActivityHost({ kind, configUrl, loader = loadContent }: Activity
       return <Hotspot2D config={cfg} {...callbacks} />;
     case "virtual-tour":
       return <VirtualTour config={cfg} {...callbacks} />;
+    case "categorization":
+      return <Categorization config={cfg} {...callbacks} />;
+    case "anatomy-labeling":
+      return <AnatomyLabeling config={cfg} {...callbacks} />;
+    case "sequence-steps":
+      return <SequenceSteps config={cfg} {...callbacks} />;
+    case "matching-pairs":
+      return <MatchingPairs config={cfg} {...callbacks} />;
+    case "highlight-text":
+      return <HighlightText config={cfg} {...callbacks} />;
+    case "image-comparison-slider":
+      return <ImageComparisonSlider config={cfg} {...callbacks} />;
+    case "flashcards":
+      return <Flashcards config={cfg} {...callbacks} />;
+    case "reflection-prompt":
+      return <ReflectionPrompt config={cfg} {...callbacks} />;
     default:
       return <StubActivity config={cfg} {...callbacks} />;
   }

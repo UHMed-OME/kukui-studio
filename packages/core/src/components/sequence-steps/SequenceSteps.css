@@ -1,0 +1,252 @@
+/*
+ * Sequence / Order Steps — vertical sortable list. Layout-stable: borders are
+ * constant 2 px; only color and opacity change between states. The numeric
+ * index badge updates as items reorder; the post-submit "correct position"
+ * badge appears in space already reserved next to the row's label.
+ */
+
+.kukui-seq {
+  display: flex;
+  justify-content: center;
+  padding: var(--spacing-2xl, 24px);
+}
+
+.kukui-seq__card {
+  width: 100%;
+  max-width: 720px;
+  background: var(--color-surface, #ffffff);
+  border: 1px solid var(--color-border, #dad2c6);
+  border-radius: var(--radius-card, 12px);
+  padding: var(--spacing-3xl, 28px);
+}
+
+.kukui-seq__title {
+  margin: 0 0 var(--spacing-lg, 16px);
+  font-size: var(--font-size-title, 24px);
+  font-weight: 700;
+  color: var(--color-text-primary, #1c1e20);
+}
+
+.kukui-seq__prompt {
+  margin-bottom: var(--spacing-xl, 20px);
+  font-size: var(--font-size-prompt, 16px);
+  line-height: 1.5;
+  color: var(--color-text-primary, #1c1e20);
+}
+
+.kukui-seq__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm, 8px);
+}
+
+.kukui-seq__item {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: stretch;
+  gap: var(--spacing-sm, 8px);
+  background: var(--color-surface, #ffffff);
+  border: 2px solid var(--color-border, #dad2c6);
+  border-radius: var(--radius-md, 8px);
+  padding: var(--spacing-sm, 8px);
+  transition:
+    background-color 150ms ease,
+    border-color 150ms ease;
+}
+
+.kukui-seq__item.is-dragging {
+  opacity: 0.6;
+}
+
+.kukui-seq__item.is-correct {
+  border-color: var(--color-success, #2e6e41);
+  background: var(--color-success-soft);
+}
+
+.kukui-seq__item.is-incorrect {
+  border-color: var(--color-error, #c34132);
+  background: var(--color-error-soft);
+}
+
+.kukui-seq__index {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 32px;
+  min-height: 44px;
+  padding: 0 var(--spacing-sm, 8px);
+  font-weight: 700;
+  font-size: var(--font-size-prompt, 16px);
+  color: var(--color-text-primary);
+  background: var(--color-tip-bg, #f2f0e8);
+  border-radius: var(--radius-sm, 6px);
+}
+
+.kukui-seq__handle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-md, 12px);
+  width: 100%;
+  min-height: 44px;
+  padding: var(--spacing-sm, 8px) var(--spacing-md, 12px);
+  background: transparent;
+  /* Constant 2 px transparent border keeps the row layout-stable when focus
+     ring appears. Color toggles via the row's .is-correct / .is-incorrect. */
+  border: 2px solid transparent;
+  border-radius: var(--radius-md, 8px);
+  text-align: left;
+  font-size: var(--font-size-answer, 15px);
+  color: var(--color-text-primary);
+  cursor: grab;
+}
+
+.kukui-seq__handle:disabled {
+  cursor: default;
+}
+
+.kukui-seq__handle:hover:not(:disabled) {
+  border-color: var(--color-border-hover, #bbae9a);
+}
+
+.kukui-seq__handle:focus-visible {
+  outline: 2px solid var(--color-primary, #7b4324);
+  outline-offset: 2px;
+}
+
+.kukui-seq__text {
+  flex: 1 1 auto;
+  white-space: normal;
+  word-break: break-word;
+}
+
+.kukui-seq__badge {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs, 4px);
+  padding: var(--spacing-xs, 4px) var(--spacing-sm, 8px);
+  border-radius: var(--radius-sm, 6px);
+  font-size: var(--font-size-meta, 13px);
+  font-weight: 700;
+}
+
+.kukui-seq__badge.is-correct {
+  color: var(--color-success, #2e6e41);
+  background: var(--color-success-soft);
+}
+
+.kukui-seq__badge.is-incorrect {
+  color: var(--color-error, #c34132);
+  background: var(--color-error-soft);
+}
+
+.kukui-seq__badge-icon {
+  font-size: 16px;
+}
+
+.kukui-seq__nudge {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 2px;
+  align-self: center;
+}
+
+.kukui-seq__nudge-btn {
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0;
+  background: var(--color-surface, #ffffff);
+  border: 2px solid var(--color-border, #dad2c6);
+  border-radius: var(--radius-sm, 6px);
+  color: var(--color-text-primary);
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.kukui-seq__nudge-btn:hover:not(:disabled) {
+  border-color: var(--color-border-hover, #bbae9a);
+}
+
+.kukui-seq__nudge-btn:focus-visible {
+  outline: 2px solid var(--color-primary, #7b4324);
+  outline-offset: 2px;
+}
+
+.kukui-seq__nudge-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/*
+ * Pattern A feedback — constant min-height reservation; opacity 0/1 fade.
+ */
+.kukui-seq__feedback {
+  min-height: 28px;
+  margin-top: var(--spacing-lg, 16px);
+  padding: 0 var(--spacing-xs, 4px);
+  font-size: var(--font-size-meta, 13px);
+  color: var(--color-text-secondary, #606069);
+  opacity: 0;
+  transition: opacity 200ms ease;
+}
+
+.kukui-seq__feedback.is-visible {
+  opacity: 1;
+}
+
+.kukui-seq__actions {
+  margin-top: var(--spacing-xl, 20px);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--spacing-md, 12px);
+}
+
+.kukui-seq__primary,
+.kukui-seq__secondary {
+  min-height: 44px;
+  padding: 10px 20px;
+  border-radius: var(--radius-md, 8px);
+  font-size: var(--font-size-answer, 15px);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.kukui-seq__primary {
+  background: var(--color-primary, #7b4324);
+  color: #ffffff;
+  border: none;
+}
+
+.kukui-seq__primary:hover:not(:disabled) {
+  background: var(--color-primary-hover, #9b5830);
+}
+
+.kukui-seq__primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.kukui-seq__secondary {
+  background: transparent;
+  color: var(--color-primary, #7b4324);
+  border: 2px solid var(--color-primary, #7b4324);
+}
+
+.kukui-seq__secondary:hover:not(:disabled) {
+  background: var(--color-primary-soft);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kukui-seq__item,
+  .kukui-seq__handle,
+  .kukui-seq__feedback {
+    transition: none;
+  }
+}

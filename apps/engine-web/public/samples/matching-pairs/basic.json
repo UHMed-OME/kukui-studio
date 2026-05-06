@@ -1,0 +1,14 @@
+{
+  "_comment": "Demo fixture. Common drugs paired with their pharmacologic classes.",
+  "version": "1.0",
+  "title": "Match drugs to their classes",
+  "prompt": "<p>Pair each drug on the left with its <strong>pharmacologic class</strong> on the right.</p>",
+  "pairs": [
+    { "id": "atenolol", "left": { "text": "Atenolol" }, "right": { "text": "Beta blocker" } },
+    { "id": "lisinopril", "left": { "text": "Lisinopril" }, "right": { "text": "ACE inhibitor" } },
+    { "id": "metformin", "left": { "text": "Metformin" }, "right": { "text": "Biguanide" } },
+    { "id": "atorvastatin", "left": { "text": "Atorvastatin" }, "right": { "text": "HMG-CoA reductase inhibitor (statin)" } },
+    { "id": "amoxicillin", "left": { "text": "Amoxicillin" }, "right": { "text": "Aminopenicillin" } }
+  ],
+  "behaviour": { "enableRetry": true, "randomizeRight": true }
+}

@@ -27,6 +27,30 @@ const QuestionSet = lazy(() =>
 const Hotspot3D = lazy(() => import("@kukui/core").then((m) => ({ default: m.Hotspot3D })));
 const Hotspot2D = lazy(() => import("@kukui/core").then((m) => ({ default: m.Hotspot2D })));
 const VirtualTour = lazy(() => import("@kukui/core").then((m) => ({ default: m.VirtualTour })));
+const Categorization = lazy(() =>
+  import("@kukui/core").then((m) => ({ default: m.Categorization })),
+);
+const AnatomyLabeling = lazy(() =>
+  import("@kukui/core").then((m) => ({ default: m.AnatomyLabeling })),
+);
+const SequenceSteps = lazy(() =>
+  import("@kukui/core").then((m) => ({ default: m.SequenceSteps })),
+);
+const MatchingPairs = lazy(() =>
+  import("@kukui/core").then((m) => ({ default: m.MatchingPairs })),
+);
+const HighlightText = lazy(() =>
+  import("@kukui/core").then((m) => ({ default: m.HighlightText })),
+);
+const ImageComparisonSlider = lazy(() =>
+  import("@kukui/core").then((m) => ({ default: m.ImageComparisonSlider })),
+);
+const Flashcards = lazy(() =>
+  import("@kukui/core").then((m) => ({ default: m.Flashcards })),
+);
+const ReflectionPrompt = lazy(() =>
+  import("@kukui/core").then((m) => ({ default: m.ReflectionPrompt })),
+);
 const StubActivity = lazy(() =>
   import("@kukui/core").then((m) => ({ default: m.StubActivity })),
 );
@@ -113,6 +137,22 @@ function renderActivity(kind: ActivityKind, config: unknown, noop: () => void) {
       return <Hotspot2D config={c} onSubmit={noop} />;
     case "virtual-tour":
       return <VirtualTour config={c} onSubmit={noop} />;
+    case "categorization":
+      return <Categorization config={c} onSubmit={noop} />;
+    case "anatomy-labeling":
+      return <AnatomyLabeling config={c} onSubmit={noop} />;
+    case "sequence-steps":
+      return <SequenceSteps config={c} onSubmit={noop} />;
+    case "matching-pairs":
+      return <MatchingPairs config={c} onSubmit={noop} />;
+    case "highlight-text":
+      return <HighlightText config={c} onSubmit={noop} />;
+    case "image-comparison-slider":
+      return <ImageComparisonSlider config={c} onSubmit={noop} />;
+    case "flashcards":
+      return <Flashcards config={c} onSubmit={noop} />;
+    case "reflection-prompt":
+      return <ReflectionPrompt config={c} onSubmit={noop} />;
     default:
       return <StubActivity config={c} onSubmit={noop} />;
   }

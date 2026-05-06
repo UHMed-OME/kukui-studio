@@ -1,0 +1,212 @@
+/*
+ * Highlight Text Spans — inline tokens rendered inside a passage. Each token
+ * is a button so it's keyboard-reachable via Tab and toggleable via Space/
+ * Enter. Borders are constant 2 px across all states (layout-stable); only
+ * color and background change between selected / correct / incorrect /
+ * reveal. Tokens have a 44 px min-height to satisfy the 2.5.5 tap target
+ * rule on touch devices.
+ */
+
+.kukui-ht {
+  display: flex;
+  justify-content: center;
+  padding: var(--spacing-2xl, 24px);
+}
+
+.kukui-ht__card {
+  width: 100%;
+  max-width: 720px;
+  background: var(--color-surface, #ffffff);
+  border: 1px solid var(--color-border, #dad2c6);
+  border-radius: var(--radius-card, 12px);
+  padding: var(--spacing-3xl, 28px);
+}
+
+.kukui-ht__title {
+  margin: 0 0 var(--spacing-lg, 16px);
+  font-size: var(--font-size-title, 24px);
+  font-weight: 700;
+  color: var(--color-text-primary, #1c1e20);
+}
+
+.kukui-ht__prompt {
+  margin-bottom: var(--spacing-xl, 20px);
+  font-size: var(--font-size-prompt, 16px);
+  line-height: 1.5;
+  color: var(--color-text-primary, #1c1e20);
+}
+
+.kukui-ht__passage {
+  margin: 0 0 var(--spacing-xl, 20px);
+  font-size: var(--font-size-prompt, 16px);
+  line-height: 2;
+  color: var(--color-text-primary, #1c1e20);
+}
+
+.kukui-ht__slot {
+  /*
+   * Each token + its trailing separator are a single inline-flow unit so the
+   * separator never wraps onto its own line away from the token.
+   */
+  display: inline;
+  white-space: normal;
+}
+
+.kukui-ht__token {
+  /*
+   * Inline-flex so tokens flow with text and wrap naturally, but keep their
+   * 44 px tap target. min-height applies because of inline-flex.
+   */
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs, 4px);
+  min-height: 44px;
+  padding: var(--spacing-xs, 4px) var(--spacing-sm, 8px);
+  margin: 2px 0;
+  background: var(--color-surface, #ffffff);
+  border: 2px solid var(--color-border, #dad2c6);
+  border-radius: var(--radius-md, 8px);
+  font: inherit;
+  color: var(--color-text-primary, #1c1e20);
+  cursor: pointer;
+  transition:
+    background-color 150ms ease,
+    border-color 150ms ease;
+}
+
+.kukui-ht__token:hover:not(:disabled):not(.is-selected) {
+  border-color: var(--color-border-hover, #bbae9a);
+}
+
+.kukui-ht__token:focus-visible {
+  outline: 2px solid var(--color-primary, #7b4324);
+  outline-offset: 2px;
+}
+
+.kukui-ht__token:disabled {
+  cursor: default;
+}
+
+.kukui-ht__token.is-selected {
+  border-color: var(--color-primary, #7b4324);
+  background: var(--color-primary-soft);
+}
+
+.kukui-ht__token.is-correct {
+  border-color: var(--color-success, #2e6e41);
+  background: var(--color-success-soft);
+}
+
+.kukui-ht__token.is-incorrect {
+  border-color: var(--color-error, #c34132);
+  background: var(--color-error-soft);
+}
+
+.kukui-ht__token.is-reveal {
+  border-color: var(--color-success, #2e6e41);
+  border-style: dashed;
+  background: transparent;
+}
+
+.kukui-ht__token-text {
+  white-space: normal;
+}
+
+.kukui-ht__token-icon {
+  font-weight: 700;
+  font-size: 14px;
+  line-height: 1;
+}
+
+.kukui-ht__sep {
+  /* Separator characters between tokens — non-clickable plain text. */
+  white-space: pre;
+}
+
+.kukui-ht__feedback-row {
+  /*
+   * Pre-allocated min-height so the post-submit feedback line doesn't push
+   * the actions row downward when it appears.
+   */
+  min-height: 44px;
+  margin-bottom: var(--spacing-md, 12px);
+  display: flex;
+  align-items: center;
+}
+
+.kukui-ht__feedback {
+  margin: 0;
+  padding: var(--spacing-sm, 8px) var(--spacing-md, 12px);
+  border-radius: var(--radius-lg, 10px);
+  font-size: var(--font-size-meta, 13px);
+  color: var(--color-text-primary, #1c1e20);
+  border: 2px solid var(--color-border, #dad2c6);
+  width: 100%;
+}
+
+.kukui-ht__feedback-text.is-success {
+  color: var(--color-success, #2e6e41);
+  font-weight: 600;
+}
+
+.kukui-ht__feedback-text.is-error {
+  color: var(--color-text-primary, #1c1e20);
+}
+
+.kukui-ht__actions {
+  margin-top: var(--spacing-md, 12px);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--spacing-md, 12px);
+}
+
+.kukui-ht__primary {
+  min-height: 44px;
+  padding: 10px 20px;
+  background: var(--color-primary, #7b4324);
+  color: #ffffff;
+  border: none;
+  border-radius: var(--radius-md, 8px);
+  font-size: var(--font-size-answer, 15px);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.kukui-ht__primary:hover:not(:disabled) {
+  background: var(--color-primary-hover, #9b5830);
+}
+
+.kukui-ht__primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.kukui-ht__secondary {
+  min-height: 44px;
+  padding: 10px 20px;
+  background: transparent;
+  color: var(--color-primary, #7b4324);
+  border: 2px solid var(--color-primary, #7b4324);
+  border-radius: var(--radius-md, 8px);
+  font-size: var(--font-size-answer, 15px);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.kukui-ht__score {
+  font-size: var(--font-size-prompt, 16px);
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+.kukui-ht__band {
+  font-weight: 400;
+  color: var(--color-text-secondary);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kukui-ht__token {
+    transition: none;
+  }
+}

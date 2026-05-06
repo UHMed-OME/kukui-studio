@@ -42,25 +42,25 @@ export type BuiltActivityKind =
   | "question-set"
   | "hotspot-3d"
   | "hotspot-2d"
-  | "virtual-tour";
-
-export type PlannedKind =
+  | "virtual-tour"
   | "sequence-steps"
   | "matching-pairs"
   | "categorization"
-  | "concept-map"
-  | "image-annotation"
   | "image-comparison-slider"
   | "anatomy-labeling"
+  | "highlight-text"
+  | "flashcards"
+  | "reflection-prompt";
+
+export type PlannedKind =
+  | "concept-map"
+  | "image-annotation"
   | "branching-scenario"
   | "interactive-video"
   | "audio-recording"
-  | "highlight-text"
   | "lab-panel"
   | "ddx-tree"
-  | "osce"
-  | "flashcards"
-  | "reflection-prompt";
+  | "osce";
 
 export type ActivityKind = BuiltActivityKind | PlannedKind;
 
@@ -73,26 +73,26 @@ export const BUILT_ACTIVITY_KINDS: readonly BuiltActivityKind[] = [
   "hotspot-3d",
   "hotspot-2d",
   "virtual-tour",
+  "sequence-steps",
+  "matching-pairs",
+  "categorization",
+  "image-comparison-slider",
+  "anatomy-labeling",
+  "highlight-text",
+  "flashcards",
+  "reflection-prompt",
 ] as const;
 
 export const ACTIVITY_KINDS: readonly ActivityKind[] = [
   ...BUILT_ACTIVITY_KINDS,
-  "sequence-steps",
-  "matching-pairs",
-  "categorization",
   "concept-map",
   "image-annotation",
-  "image-comparison-slider",
-  "anatomy-labeling",
   "branching-scenario",
   "interactive-video",
   "audio-recording",
-  "highlight-text",
   "lab-panel",
   "ddx-tree",
   "osce",
-  "flashcards",
-  "reflection-prompt",
 ] as const;
 
 /** Score band for `overallFeedback` lookups. */

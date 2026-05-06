@@ -1,0 +1,20 @@
+{
+  "_comment": "Demo fixture. Sort organisms into the correct biological kingdom.",
+  "version": "1.0",
+  "title": "Sort organisms into kingdoms",
+  "prompt": "<p>Drag each organism into the kingdom it belongs to: <strong>Plantae</strong>, <strong>Animalia</strong>, or <strong>Fungi</strong>.</p>",
+  "items": [
+    { "id": "i-oak", "text": "Oak tree", "correctCategory": "c-plantae" },
+    { "id": "i-fern", "text": "Fern", "correctCategory": "c-plantae" },
+    { "id": "i-shark", "text": "Great white shark", "correctCategory": "c-animalia" },
+    { "id": "i-honeybee", "text": "Honeybee", "correctCategory": "c-animalia" },
+    { "id": "i-portobello", "text": "Portobello mushroom", "correctCategory": "c-fungi" },
+    { "id": "i-yeast", "text": "Baker's yeast", "correctCategory": "c-fungi" }
+  ],
+  "categories": [
+    { "id": "c-plantae", "label": "Plantae" },
+    { "id": "c-animalia", "label": "Animalia" },
+    { "id": "c-fungi", "label": "Fungi" }
+  ],
+  "behaviour": { "enableRetry": true, "randomizeItems": true }
+}

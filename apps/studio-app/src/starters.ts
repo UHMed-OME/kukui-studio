@@ -150,6 +150,101 @@ export const STARTERS: Record<ActivityKind, unknown> = {
     completion: { mode: "manual" },
     behaviour: { enableRetry: true, showOverlayMarkers: true },
   },
+  "sequence-steps": {
+    version: "1.0",
+    title: "Untitled sequence",
+    prompt: "<p>Order these into the correct sequence.</p>",
+    steps: [
+      { id: "s1", text: "First step" },
+      { id: "s2", text: "Second step" },
+      { id: "s3", text: "Third step" },
+    ],
+    behaviour: { enableRetry: true, randomize: true },
+  },
+  "matching-pairs": {
+    version: "1.0",
+    title: "Untitled matching",
+    prompt: "<p>Match each item on the left to its partner on the right.</p>",
+    pairs: [
+      { id: "p1", left: { text: "Left A" }, right: { text: "Right A" } },
+      { id: "p2", left: { text: "Left B" }, right: { text: "Right B" } },
+    ],
+    behaviour: { enableRetry: true, randomizeRight: true },
+  },
+  categorization: {
+    version: "1.0",
+    title: "Untitled categorization",
+    prompt: "<p>Sort each item into the correct category.</p>",
+    categories: [
+      { id: "c1", label: "Category A" },
+      { id: "c2", label: "Category B" },
+    ],
+    items: [
+      { id: "i1", text: "Item 1", correctCategory: "c1" },
+      { id: "i2", text: "Item 2", correctCategory: "c2" },
+    ],
+    behaviour: { enableRetry: true },
+  },
+  "anatomy-labeling": {
+    version: "1.0",
+    title: "Untitled labeling",
+    prompt: "<p>Drag each label onto the correct target.</p>",
+    image: {
+      src: "https://placehold.co/1024x640/eef0f6/4b5563?text=Diagram",
+      alt: "Diagram placeholder",
+    },
+    labels: [
+      { id: "l1", text: "Label A", correctTargetId: "t1" },
+      { id: "l2", text: "Label B", correctTargetId: "t2" },
+    ],
+    targets: [
+      { id: "t1", position: { x: 0.3, y: 0.4 } },
+      { id: "t2", position: { x: 0.7, y: 0.4 } },
+    ],
+    behaviour: { enableRetry: true },
+  },
+  "image-comparison-slider": {
+    version: "1.0",
+    title: "Untitled comparison",
+    prompt: "<p>Drag the slider to compare the two images.</p>",
+    before: {
+      src: "https://placehold.co/800x600/eef0f6/4b5563?text=Before",
+      alt: "Before",
+    },
+    after: {
+      src: "https://placehold.co/800x600/d4ecd9/2e6e41?text=After",
+      alt: "After",
+    },
+  },
+  "highlight-text": {
+    version: "1.0",
+    title: "Untitled highlight",
+    prompt: "<p>Highlight the verbs in this sentence.</p>",
+    tokens: [
+      { id: "t1", text: "The", correct: false },
+      { id: "t2", text: "cat", correct: false },
+      { id: "t3", text: "ran", correct: true },
+      { id: "t4", text: "quickly", correct: false },
+    ],
+    behaviour: { enableRetry: true },
+  },
+  flashcards: {
+    version: "1.0",
+    title: "Untitled flashcards",
+    prompt: "<p>Flip each card; rate yourself honestly.</p>",
+    cards: [
+      { id: "c1", front: "Front 1", back: "Back 1" },
+      { id: "c2", front: "Front 2", back: "Back 2" },
+    ],
+    behaviour: { shuffle: true, passThreshold: 80 },
+  },
+  "reflection-prompt": {
+    version: "1.0",
+    title: "Untitled reflection",
+    prompt: "<p>Reflect on what you learned today.</p>",
+    minWords: 30,
+    placeholder: "Type your reflection here…",
+  },
   ...PLANNED_STARTERS,
 } as Record<ActivityKind, unknown>;
 
@@ -162,5 +257,13 @@ export const ACTIVITY_LABELS: Record<ActivityKind, string> = {
   "hotspot-3d": "3D Hotspot Identification",
   "hotspot-2d": "Image Hotspot 2D",
   "virtual-tour": "Virtual Environment Tour",
+  "sequence-steps": "Sequence / Order Steps",
+  "matching-pairs": "Matching Pairs",
+  categorization: "Categorization",
+  "anatomy-labeling": "Anatomy Labeling",
+  "image-comparison-slider": "Image Comparison Slider",
+  "highlight-text": "Highlight Text Spans",
+  flashcards: "Flashcards / Recall Drill",
+  "reflection-prompt": "Reflection Prompt",
   ...PLANNED_LABELS,
 } as Record<ActivityKind, string>;

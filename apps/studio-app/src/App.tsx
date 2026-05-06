@@ -27,6 +27,14 @@ const STUDIO_AVAILABLE: readonly ActivityKind[] = [
   "hotspot-3d",
   "hotspot-2d",
   "virtual-tour",
+  "sequence-steps",
+  "matching-pairs",
+  "categorization",
+  "anatomy-labeling",
+  "image-comparison-slider",
+  "highlight-text",
+  "flashcards",
+  "reflection-prompt",
 ] as const;
 
 const STUDIO_PLANNED: readonly ActivityKind[] = PLANNED_ACTIVITY_KINDS;

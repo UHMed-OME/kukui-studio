@@ -1,0 +1,306 @@
+/*
+ * Flashcards / Recall Drill — front-then-back card flip with self-rated
+ * answers. Layout-stable: the card frame reserves height so the answer
+ * buttons appear in the same vertical slot whether front or back is showing.
+ * Borders are constant 2 px; only color and (when motion is allowed) the
+ * 3D rotation transform animate. Reduced-motion mode swaps faces without
+ * the rotateY transform.
+ */
+
+.kukui-fc {
+  display: flex;
+  justify-content: center;
+  padding: var(--spacing-2xl, 24px);
+}
+
+.kukui-fc__card-frame {
+  width: 100%;
+  max-width: 720px;
+  background: var(--color-surface, #ffffff);
+  border: 1px solid var(--color-border, #dad2c6);
+  border-radius: var(--radius-card, 12px);
+  padding: var(--spacing-3xl, 28px);
+}
+
+.kukui-fc__title {
+  margin: 0 0 var(--spacing-lg, 16px);
+  font-size: var(--font-size-title, 24px);
+  font-weight: 700;
+  color: var(--color-text-primary, #1c1e20);
+}
+
+.kukui-fc__prompt {
+  margin-bottom: var(--spacing-xl, 20px);
+  font-size: var(--font-size-prompt, 16px);
+  line-height: 1.5;
+  color: var(--color-text-primary, #1c1e20);
+}
+
+.kukui-fc__progress {
+  /* Reserve two lines so the indicator's height is constant whether the
+   * activity is in-progress or complete. */
+  min-height: 44px;
+  margin-bottom: var(--spacing-lg, 16px);
+  padding: var(--spacing-md, 12px);
+  background: var(--color-tip-bg, #f2f0e8);
+  border-radius: var(--radius-sm, 6px);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs, 4px);
+  font-size: var(--font-size-caption, 14px);
+  color: var(--color-text-primary, #1c1e20);
+}
+
+.kukui-fc__progress-line {
+  display: block;
+}
+
+.kukui-fc__progress-line--meta {
+  font-size: var(--font-size-meta, 13px);
+  color: var(--color-text-secondary, #606069);
+}
+
+/*
+ * The card itself is a 3D-flip container. We keep a fixed min-height so the
+ * actions row below never shifts as the front/back toggles. Both faces are
+ * absolutely positioned inside the container so they overlap perfectly.
+ */
+.kukui-fc__card {
+  position: relative;
+  min-height: 240px;
+  margin-bottom: var(--spacing-xl, 20px);
+  perspective: 1200px;
+  cursor: pointer;
+  outline: none;
+}
+
+.kukui-fc__card:focus-visible {
+  outline: 2px solid var(--color-primary, #7b4324);
+  outline-offset: 2px;
+  border-radius: var(--radius-card, 12px);
+}
+
+.kukui-fc__face {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: var(--spacing-md, 12px);
+  padding: var(--spacing-3xl, 28px);
+  background: var(--color-surface, #ffffff);
+  border: 2px solid var(--color-border, #dad2c6);
+  border-radius: var(--radius-card, 12px);
+  /* 3D flip plumbing — disabled in reduced-motion mode below. */
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  transition: transform 200ms ease;
+  transform-style: preserve-3d;
+}
+
+.kukui-fc__face--front {
+  transform: rotateY(0deg);
+}
+
+.kukui-fc__face--back {
+  transform: rotateY(180deg);
+  background: var(--color-tip-bg, #f2f0e8);
+}
+
+.kukui-fc__card.is-flipped .kukui-fc__face--front {
+  transform: rotateY(-180deg);
+}
+
+.kukui-fc__card.is-flipped .kukui-fc__face--back {
+  transform: rotateY(0deg);
+}
+
+.kukui-fc__card:hover .kukui-fc__face {
+  border-color: var(--color-border-hover, #bbae9a);
+}
+
+/*
+ * Reduced-motion mode: skip the rotation entirely. Show whichever face the
+ * is-flipped class indicates by toggling visibility/opacity, with both faces
+ * still occupying the same absolute box so layout never shifts.
+ */
+.kukui-fc__card.is-reduced-motion .kukui-fc__face {
+  transition: none;
+  transform: none;
+  /* When reduced-motion is active, only one face should be visible at a time.
+   * Default: front visible, back hidden. */
+  backface-visibility: visible;
+  -webkit-backface-visibility: visible;
+}
+
+.kukui-fc__card.is-reduced-motion .kukui-fc__face--back {
+  visibility: hidden;
+}
+
+.kukui-fc__card.is-reduced-motion.is-flipped .kukui-fc__face--front {
+  visibility: hidden;
+}
+
+.kukui-fc__card.is-reduced-motion.is-flipped .kukui-fc__face--back {
+  visibility: visible;
+}
+
+.kukui-fc__face-label {
+  font-size: var(--font-size-meta, 13px);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-text-secondary, #606069);
+}
+
+.kukui-fc__face-body {
+  flex: 1 1 auto;
+  font-size: var(--font-size-prompt, 16px);
+  line-height: 1.5;
+  color: var(--color-text-primary, #1c1e20);
+  word-break: break-word;
+}
+
+.kukui-fc__hint {
+  margin: 0;
+  padding: var(--spacing-sm, 8px) var(--spacing-md, 12px);
+  background: var(--color-surface, #ffffff);
+  border: 2px solid var(--color-border, #dad2c6);
+  border-radius: var(--radius-sm, 6px);
+  font-size: var(--font-size-meta, 13px);
+  font-style: italic;
+  color: var(--color-text-secondary, #606069);
+}
+
+.kukui-fc__hint-label {
+  font-weight: 700;
+  font-style: normal;
+  color: var(--color-text-primary, #1c1e20);
+}
+
+.kukui-fc__flip-cue {
+  font-size: var(--font-size-meta, 13px);
+  color: var(--color-text-secondary, #606069);
+  font-style: italic;
+}
+
+.kukui-fc__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--spacing-md, 12px);
+  /* Reserve enough vertical space for two answer buttons so the layout
+   * doesn't shift when the card flips between front (one button) and
+   * back (two buttons). */
+  min-height: 56px;
+}
+
+.kukui-fc__primary {
+  min-height: 44px;
+  padding: 10px 20px;
+  background: var(--color-primary, #7b4324);
+  color: #ffffff;
+  border: none;
+  border-radius: var(--radius-md, 8px);
+  font-size: var(--font-size-answer, 15px);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.kukui-fc__primary:hover:not(:disabled) {
+  background: var(--color-primary-hover, #9b5830);
+}
+
+.kukui-fc__primary:focus-visible {
+  outline: 2px solid var(--color-primary, #7b4324);
+  outline-offset: 2px;
+}
+
+.kukui-fc__answer {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-sm, 8px);
+  min-height: 44px;
+  padding: 10px 20px;
+  background: var(--color-surface, #ffffff);
+  border: 2px solid var(--color-border, #dad2c6);
+  border-radius: var(--radius-md, 8px);
+  font-size: var(--font-size-answer, 15px);
+  font-weight: 700;
+  color: var(--color-text-primary, #1c1e20);
+  cursor: pointer;
+  transition:
+    background-color 150ms ease,
+    border-color 150ms ease;
+}
+
+.kukui-fc__answer:hover {
+  border-color: var(--color-border-hover, #bbae9a);
+}
+
+.kukui-fc__answer:focus-visible {
+  outline: 2px solid var(--color-primary, #7b4324);
+  outline-offset: 2px;
+}
+
+.kukui-fc__answer--knew {
+  border-color: var(--color-success, #2e6e41);
+  color: var(--color-success, #2e6e41);
+}
+
+.kukui-fc__answer--knew:hover {
+  background: var(--color-success-soft);
+  border-color: var(--color-success, #2e6e41);
+}
+
+.kukui-fc__answer--didnt {
+  border-color: var(--color-error, #c34132);
+  color: var(--color-error, #c34132);
+}
+
+.kukui-fc__answer--didnt:hover {
+  background: var(--color-error-soft);
+  border-color: var(--color-error, #c34132);
+}
+
+.kukui-fc__answer-icon {
+  flex: 0 0 auto;
+  font-size: 18px;
+  line-height: 1;
+}
+
+.kukui-fc__answer-text {
+  flex: 1 1 auto;
+  white-space: nowrap;
+}
+
+.kukui-fc__summary {
+  margin-top: var(--spacing-lg, 16px);
+  padding: var(--spacing-lg, 16px);
+  border-radius: var(--radius-lg, 10px);
+  border: 2px solid var(--color-border, #dad2c6);
+}
+
+.kukui-fc__summary.is-success {
+  border-color: var(--color-success, #2e6e41);
+  background: var(--color-success-soft);
+}
+
+.kukui-fc__summary.is-review {
+  border-color: var(--color-error, #c34132);
+  background: var(--color-error-soft);
+}
+
+.kukui-fc__summary-headline {
+  margin: 0;
+  font-size: var(--font-size-prompt, 16px);
+  font-weight: 700;
+  color: var(--color-text-primary, #1c1e20);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kukui-fc__face,
+  .kukui-fc__answer {
+    transition: none;
+  }
+}

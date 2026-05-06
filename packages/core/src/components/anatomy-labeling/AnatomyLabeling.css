@@ -1,0 +1,302 @@
+/*
+ * Anatomy Labeling — image with absolutely-positioned point-targets (small
+ * numbered circles); below the image, a tray of label chips and a keyboard
+ * fallback row of <select>s. Layout-stable: target circles and chip borders
+ * are constant 2 px; state changes alter color only.
+ */
+
+.kukui-al {
+  display: flex;
+  justify-content: center;
+  padding: var(--spacing-2xl, 24px);
+}
+
+.kukui-al__card {
+  width: 100%;
+  max-width: 880px;
+  background: var(--color-surface, #ffffff);
+  border: 1px solid var(--color-border, #dad2c6);
+  border-radius: var(--radius-card, 12px);
+  padding: var(--spacing-3xl, 28px);
+}
+
+.kukui-al__title {
+  margin: 0 0 var(--spacing-sm, 8px);
+  font-size: var(--font-size-title, 24px);
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+.kukui-al__prompt {
+  margin: 0 0 var(--spacing-lg, 16px);
+  font-size: var(--font-size-prompt, 16px);
+  line-height: 1.5;
+  color: var(--color-text-primary);
+}
+
+.kukui-al__image-wrap {
+  position: relative;
+  width: 100%;
+  border: 2px solid var(--color-border, #dad2c6);
+  border-radius: var(--radius-md, 8px);
+  overflow: hidden;
+  background: var(--color-tip-bg, #f2f0e8);
+}
+
+.kukui-al__image {
+  display: block;
+  width: 100%;
+  height: auto;
+  user-select: none;
+}
+
+/* The target itself is positioned at (x, y) and visually centred via
+ * translate(-50%, -50%). 44 × 44 px outer touch area satisfies WCAG 2.5.5;
+ * the visible circle inside is 32 px to keep the diagram readable. */
+.kukui-al__target {
+  position: absolute;
+  width: 44px;
+  height: 44px;
+  margin: -22px 0 0 -22px; /* centre on (x, y) */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 0;
+  cursor: default;
+}
+
+.kukui-al__target-number {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--color-surface, #ffffff);
+  border: 2px solid var(--color-primary, #7b4324);
+  color: var(--color-primary, #7b4324);
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1;
+  pointer-events: none;
+  transition: background-color 140ms ease, border-color 140ms ease;
+}
+
+.kukui-al__target.is-over .kukui-al__target-number {
+  background: var(--color-primary-soft);
+}
+
+.kukui-al__target.is-occupied .kukui-al__target-number {
+  background: var(--color-primary, #7b4324);
+  color: #ffffff;
+}
+
+.kukui-al__target.is-correct .kukui-al__target-number {
+  background: var(--color-success, #2e6e41);
+  border-color: var(--color-success, #2e6e41);
+  color: #ffffff;
+}
+
+.kukui-al__target.is-incorrect .kukui-al__target-number {
+  background: var(--color-error, #c34132);
+  border-color: var(--color-error, #c34132);
+  color: #ffffff;
+}
+
+/* When a label is placed on a target, the label chip floats just above the
+ * circle so it doesn't cover the underlying anatomy. */
+.kukui-al__target .kukui-al__chip.is-placed {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  margin-bottom: 4px;
+  white-space: nowrap;
+}
+
+.kukui-al__tray {
+  margin-top: var(--spacing-lg, 16px);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-sm, 8px);
+  min-height: 64px;
+  padding: var(--spacing-md, 12px);
+  background: var(--color-tip-bg, #f2f0e8);
+  border: 2px dashed var(--color-border, #dad2c6);
+  border-radius: var(--radius-md, 8px);
+}
+
+.kukui-al__tray.is-over {
+  background: var(--color-primary-soft);
+}
+
+.kukui-al__tray-empty {
+  margin: 0;
+  font-size: var(--font-size-meta, 13px);
+  color: var(--color-text-secondary);
+}
+
+.kukui-al__chip {
+  min-height: 44px;
+  padding: 8px 14px;
+  background: var(--color-surface, #ffffff);
+  border: 2px solid var(--color-primary, #7b4324);
+  border-radius: var(--radius-md, 8px);
+  font-size: var(--font-size-answer, 15px);
+  color: var(--color-text-primary);
+  cursor: grab;
+  text-align: left;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs, 4px);
+}
+
+.kukui-al__chip:hover:not(:disabled) {
+  background: var(--color-primary-soft);
+}
+
+.kukui-al__chip.is-correct {
+  border-color: var(--color-success, #2e6e41);
+  background: var(--color-success-soft);
+}
+
+.kukui-al__chip.is-incorrect {
+  border-color: var(--color-error, #c34132);
+  background: var(--color-error-soft);
+}
+
+.kukui-al__chip.is-dragging {
+  opacity: 0.6;
+}
+
+.kukui-al__chip-icon {
+  font-weight: 700;
+  font-size: 16px;
+}
+
+.kukui-al__chip.is-correct .kukui-al__chip-icon {
+  color: var(--color-success, #2e6e41);
+}
+.kukui-al__chip.is-incorrect .kukui-al__chip-icon {
+  color: var(--color-error, #c34132);
+}
+
+.kukui-al__feedback {
+  min-height: 0;
+  margin-top: var(--spacing-lg, 16px);
+  font-size: var(--font-size-meta, 13px);
+  color: var(--color-text-secondary);
+  opacity: 0;
+  transition:
+    opacity 200ms ease,
+    min-height 200ms ease;
+}
+
+.kukui-al__feedback.is-visible {
+  opacity: 1;
+  min-height: 28px;
+}
+
+.kukui-al__actions {
+  margin-top: var(--spacing-xl, 20px);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-md, 12px);
+}
+
+.kukui-al__primary,
+.kukui-al__secondary {
+  min-height: 44px;
+  padding: 10px 20px;
+  border-radius: var(--radius-md, 8px);
+  font-size: var(--font-size-answer, 15px);
+  font-weight: 700;
+}
+
+.kukui-al__primary {
+  background: var(--color-primary, #7b4324);
+  color: #ffffff;
+  border: none;
+}
+
+.kukui-al__primary:hover:not(:disabled) {
+  background: var(--color-primary-hover);
+}
+
+.kukui-al__primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.kukui-al__secondary {
+  background: transparent;
+  color: var(--color-primary, #7b4324);
+  border: 2px solid var(--color-primary, #7b4324);
+}
+
+.kukui-al__fallback {
+  margin-top: var(--spacing-xl, 20px);
+  padding: var(--spacing-md, 12px) var(--spacing-lg, 16px);
+  border: 1px solid var(--color-border, #dad2c6);
+  border-radius: var(--radius-md, 8px);
+  background: var(--color-tip-bg, #f2f0e8);
+}
+
+.kukui-al__fallback-legend {
+  font-size: var(--font-size-meta, 13px);
+  font-weight: 700;
+  color: var(--color-text-secondary);
+  padding: 0 var(--spacing-xs, 4px);
+}
+
+.kukui-al__fallback-list {
+  list-style: none;
+  margin: var(--spacing-sm, 8px) 0 0;
+  padding: 0;
+  display: grid;
+  gap: var(--spacing-sm, 8px);
+}
+
+.kukui-al__fallback-row {
+  display: grid;
+  grid-template-columns: minmax(120px, 1fr) minmax(140px, 1fr);
+  gap: var(--spacing-md, 12px);
+  align-items: center;
+}
+
+.kukui-al__fallback-label {
+  font-size: var(--font-size-answer, 15px);
+}
+
+.kukui-al__fallback-select {
+  min-height: 44px;
+  padding: 4px 10px;
+  border: 2px solid var(--color-border, #dad2c6);
+  border-radius: var(--radius-md, 8px);
+  background: var(--color-surface, #ffffff);
+  font-size: var(--font-size-answer, 15px);
+}
+
+.kukui-al__fallback-select.is-correct {
+  border-color: var(--color-success, #2e6e41);
+  background: var(--color-success-soft);
+}
+
+.kukui-al__fallback-select.is-incorrect {
+  border-color: var(--color-error, #c34132);
+  background: var(--color-error-soft);
+}
+
+.kukui-al__fallback-correction {
+  grid-column: 1 / -1;
+  font-size: var(--font-size-meta, 13px);
+  color: var(--color-error, #c34132);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kukui-al__feedback,
+  .kukui-al__target-number {
+    transition: none;
+  }
+}

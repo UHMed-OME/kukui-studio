@@ -1,0 +1,157 @@
+/*
+ * Reflection Prompt — completion-only free-form writing.
+ * Layout-stable: textarea border stays 2 px across states (color changes only).
+ * Confirmation message uses opacity, never display, so it doesn't reflow.
+ */
+
+.kukui-rp {
+  display: flex;
+  justify-content: center;
+  padding: var(--spacing-2xl, 24px);
+}
+
+.kukui-rp__card {
+  width: 100%;
+  max-width: 720px;
+  background: var(--color-surface, #ffffff);
+  border: 1px solid var(--color-border, #dad2c6);
+  border-radius: var(--radius-card, 12px);
+  padding: var(--spacing-3xl, 28px);
+}
+
+.kukui-rp__title {
+  margin: 0 0 var(--spacing-lg, 16px);
+  font-size: var(--font-size-title, 24px);
+  font-weight: 700;
+  color: var(--color-text-primary, #1c1e20);
+}
+
+.kukui-rp__prompt {
+  margin: 0 0 var(--spacing-lg, 16px);
+  font-size: var(--font-size-prompt, 16px);
+  line-height: 1.5;
+  color: var(--color-text-primary, #1c1e20);
+}
+
+.kukui-rp__sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.kukui-rp__textarea {
+  display: block;
+  width: 100%;
+  min-height: 200px;
+  padding: var(--spacing-md, 12px);
+  background: var(--color-surface, #ffffff);
+  border: 2px solid var(--color-border, #dad2c6);
+  border-radius: var(--radius-md, 8px);
+  font-family: inherit;
+  font-size: var(--font-size-prompt, 16px);
+  line-height: 1.5;
+  color: var(--color-text-primary, #1c1e20);
+  resize: vertical;
+  box-sizing: border-box;
+  transition:
+    background-color 150ms ease,
+    border-color 150ms ease;
+}
+
+.kukui-rp__textarea:hover:not(:disabled) {
+  border-color: var(--color-border-hover, #bbae9a);
+}
+
+.kukui-rp__textarea:focus-visible {
+  outline: 2px solid var(--color-primary, #7b4324);
+  outline-offset: 2px;
+}
+
+.kukui-rp__textarea:disabled,
+.kukui-rp__textarea[readonly] {
+  background: var(--color-tip-bg, #f2f0e8);
+  color: var(--color-text-primary, #1c1e20);
+  cursor: not-allowed;
+}
+
+.kukui-rp__wordcount {
+  margin-top: var(--spacing-sm, 8px);
+  font-size: var(--font-size-meta, 13px);
+  color: var(--color-text-secondary, #606069);
+}
+
+.kukui-rp__wordcount-min {
+  color: var(--color-text-secondary, #606069);
+}
+
+/* Pre-allocate confirmation row so toggle doesn't reflow neighbors. */
+.kukui-rp__confirmation {
+  margin-top: var(--spacing-md, 12px);
+  min-height: 28px;
+  padding: 0 var(--spacing-md, 12px);
+  display: flex;
+  align-items: center;
+  font-size: var(--font-size-meta, 13px);
+  color: var(--color-success, #2e6e41);
+  background: var(--color-success-soft);
+  border-radius: var(--radius-md, 8px);
+  opacity: 0;
+  transition: opacity 200ms ease;
+}
+
+.kukui-rp__confirmation.is-visible {
+  opacity: 1;
+}
+
+.kukui-rp__confirmation.is-visible::before {
+  content: "✓ ";
+  font-weight: 700;
+  margin-right: var(--spacing-xs, 4px);
+}
+
+.kukui-rp__actions {
+  margin-top: var(--spacing-xl, 20px);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--spacing-md, 12px);
+}
+
+.kukui-rp__primary {
+  min-height: 44px;
+  padding: 10px 20px;
+  background: var(--color-primary, #7b4324);
+  color: #ffffff;
+  border: none;
+  border-radius: var(--radius-md, 8px);
+  font-size: var(--font-size-answer, 15px);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.kukui-rp__primary:hover:not(:disabled) {
+  background: var(--color-primary-hover, #9b5830);
+}
+
+.kukui-rp__primary:focus-visible {
+  outline: 2px solid var(--color-primary, #7b4324);
+  outline-offset: 2px;
+}
+
+.kukui-rp__primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kukui-rp__textarea,
+  .kukui-rp__confirmation {
+    transition: none;
+  }
+}

@@ -60,7 +60,16 @@ const PHASE_1_ACTIVITIES = [
   "course-presentation",
   "question-set",
   "hotspot-3d",
+  "hotspot-2d",
   "virtual-tour",
+  "sequence-steps",
+  "matching-pairs",
+  "categorization",
+  "anatomy-labeling",
+  "image-comparison-slider",
+  "highlight-text",
+  "flashcards",
+  "reflection-prompt",
 ];
 
 // Slugs become path components and zip names; reject anything outside

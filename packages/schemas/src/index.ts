@@ -16,6 +16,38 @@ export { QuestionSetConfigSchema, type QuestionSetConfig } from "./question-set.
 export { Hotspot3DConfigSchema, type Hotspot3DConfig } from "./hotspot-3d.js";
 export { Hotspot2DConfigSchema, type Hotspot2DConfig } from "./hotspot-2d.js";
 export { VirtualTourConfigSchema, type VirtualTourConfig } from "./virtual-tour.js";
+export {
+  CategorizationConfigSchema,
+  type CategorizationConfig,
+} from "./categorization.js";
+export {
+  SequenceStepsConfigSchema,
+  type SequenceStepsConfig,
+} from "./sequence-steps.js";
+export {
+  ReflectionPromptConfigSchema,
+  type ReflectionPromptConfig,
+} from "./reflection-prompt.js";
+export {
+  FlashcardsConfigSchema,
+  type FlashcardsConfig,
+} from "./flashcards.js";
+export {
+  ImageComparisonSliderConfigSchema,
+  type ImageComparisonSliderConfig,
+} from "./image-comparison-slider.js";
+export {
+  AnatomyLabelingConfigSchema,
+  type AnatomyLabelingConfig,
+} from "./anatomy-labeling.js";
+export {
+  MatchingPairsConfigSchema,
+  type MatchingPairsConfig,
+} from "./matching-pairs.js";
+export {
+  HighlightTextConfigSchema,
+  type HighlightTextConfig,
+} from "./highlight-text.js";
 export { StubConfigSchema, type StubConfig } from "./stub.js";
 
 import { MultipleChoiceConfigSchema } from "./multiple-choice.js";
@@ -26,6 +58,14 @@ import { QuestionSetConfigSchema } from "./question-set.js";
 import { Hotspot3DConfigSchema } from "./hotspot-3d.js";
 import { Hotspot2DConfigSchema } from "./hotspot-2d.js";
 import { VirtualTourConfigSchema } from "./virtual-tour.js";
+import { CategorizationConfigSchema } from "./categorization.js";
+import { SequenceStepsConfigSchema } from "./sequence-steps.js";
+import { ReflectionPromptConfigSchema } from "./reflection-prompt.js";
+import { FlashcardsConfigSchema } from "./flashcards.js";
+import { ImageComparisonSliderConfigSchema } from "./image-comparison-slider.js";
+import { AnatomyLabelingConfigSchema } from "./anatomy-labeling.js";
+import { MatchingPairsConfigSchema } from "./matching-pairs.js";
+import { HighlightTextConfigSchema } from "./highlight-text.js";
 import { StubConfigSchema } from "./stub.js";
 
 /**
@@ -45,23 +85,24 @@ export const SchemaRegistry = {
   "hotspot-3d": Hotspot3DConfigSchema,
   "hotspot-2d": Hotspot2DConfigSchema,
   "virtual-tour": VirtualTourConfigSchema,
-  // Planned (stubbed):
-  "sequence-steps": StubConfigSchema,
-  "matching-pairs": StubConfigSchema,
-  categorization: StubConfigSchema,
+  // Newly built (was stubbed):
+  "sequence-steps": SequenceStepsConfigSchema,
+  "matching-pairs": MatchingPairsConfigSchema,
+  categorization: CategorizationConfigSchema,
+  "image-comparison-slider": ImageComparisonSliderConfigSchema,
+  "anatomy-labeling": AnatomyLabelingConfigSchema,
+  "highlight-text": HighlightTextConfigSchema,
+  flashcards: FlashcardsConfigSchema,
+  "reflection-prompt": ReflectionPromptConfigSchema,
+  // Still stubbed (next wave):
   "concept-map": StubConfigSchema,
   "image-annotation": StubConfigSchema,
-  "image-comparison-slider": StubConfigSchema,
-  "anatomy-labeling": StubConfigSchema,
   "branching-scenario": StubConfigSchema,
   "interactive-video": StubConfigSchema,
   "audio-recording": StubConfigSchema,
-  "highlight-text": StubConfigSchema,
   "lab-panel": StubConfigSchema,
   "ddx-tree": StubConfigSchema,
   osce: StubConfigSchema,
-  flashcards: StubConfigSchema,
-  "reflection-prompt": StubConfigSchema,
 } as const;
 
 export type SchemaRegistryKey = keyof typeof SchemaRegistry;

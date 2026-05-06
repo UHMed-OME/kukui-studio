@@ -1,0 +1,21 @@
+{
+  "_comment": "Demo fixture: order the stages of mitosis. The array order below is the correct sequence; the component shuffles for display.",
+  "version": "1.0",
+  "title": "Stages of mitosis",
+  "prompt": "<p>Drag the stages of mitosis into the order they occur, from first to last.</p>",
+  "steps": [
+    { "id": "prophase", "text": "Prophase — chromatin condenses into chromosomes; nuclear envelope begins to break down." },
+    { "id": "metaphase", "text": "Metaphase — chromosomes align along the cell's equatorial plate." },
+    { "id": "anaphase", "text": "Anaphase — sister chromatids separate and move to opposite poles." },
+    { "id": "telophase", "text": "Telophase — nuclear envelopes re-form around the two new sets of chromosomes." }
+  ],
+  "behaviour": {
+    "enableRetry": true,
+    "randomize": true,
+    "singlePoint": false
+  },
+  "ui": {
+    "checkAnswerButton": "Check",
+    "tryAgainButton": "Try again"
+  }
+}
