@@ -1,8 +1,10 @@
 {
+  "_comment": "Demo fixture. Background image hot-linked to a public placeholder for dev. Replace with author-provided art for production.",
   "version": "1.0",
   "title": "Label the parts of a plant cell",
   "background": {
-    "src": "images/plant-cell.png"
+    "src": "https://placehold.co/1024x640/e8f5e9/2e6e41?text=Plant+cell+diagram+(placeholder)",
+    "alt": "Placeholder: a plant-cell cross-section diagram would go here"
   },
   "draggables": [
     { "id": "d-nucleus", "label": "Nucleus", "correctZones": ["z-nucleus"] },
@@ -11,11 +13,14 @@
   "dropZones": [
     {
       "id": "z-nucleus",
+      "label": "Nucleus zone",
       "rect": { "x": 0.4, "y": 0.4, "w": 0.2, "h": 0.2 }
     },
     {
       "id": "z-chloroplast",
+      "label": "Chloroplast zone",
       "rect": { "x": 0.65, "y": 0.55, "w": 0.15, "h": 0.15 }
     }
-  ]
+  ],
+  "behaviour": { "enableRetry": true }
 }

@@ -1,4 +1,5 @@
 {
+  "_comment": "Demo fixture. Slide images hot-linked to placehold.co for dev. Replace with author-provided diagrams for production.",
   "version": "1.0",
   "title": "Introduction to the Water Cycle",
   "slides": [
@@ -15,7 +16,7 @@
     },
     {
       "title": "Evaporation",
-      "background": { "src": "images/sky.png" },
+      "background": { "color": "#E0F2FF" },
       "elements": [
         {
           "type": "text",
@@ -24,7 +25,7 @@
         },
         {
           "type": "image",
-          "src": "images/evaporation-diagram.png",
+          "src": "https://placehold.co/600x400/0f4c81/ffffff?text=Evaporation+diagram",
           "alt": "Diagram showing water evaporating from a lake into the atmosphere",
           "rect": { "x": 0.55, "y": 0.1, "w": 0.4, "h": 0.5 }
         }

@@ -1,19 +1,58 @@
 {
+  "_comment": "Demo fixture using Khronos Group's public DamagedHelmet glTF sample as a stand-in scene. Replace scene.src with author-provided geometry for production.",
   "version": "1.0",
-  "title": "Tour of a Loʻi Kalo",
+  "title": "Tour of a sci-fi helmet",
   "scene": {
-    "src": "scenes/loi-kalo.glb"
+    "src": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/main/Models/DamagedHelmet/glTF-Binary/DamagedHelmet.glb",
+    "spawn": {
+      "position": { "x": 0, "y": 0, "z": 3 },
+      "yaw": 0
+    }
   },
   "overlays": [
     {
-      "id": "kalo-1",
-      "position": { "x": 1.5, "y": 1.2, "z": 2.0 },
+      "id": "visor",
+      "title": "Visor",
+      "position": { "x": 0.0, "y": 0.4, "z": 1.0 },
+      "trigger": "click",
       "content": [
         {
           "type": "text",
-          "html": "<h2>Kalo</h2><p>Kalo (taro) is the foundation of Hawaiian agriculture and identity.</p>"
+          "html": "<h2>Visor</h2><p>The transparent front surface protects the wearer's eyes from debris and UV radiation. The damage shown here is from micrometeoroid impact.</p>"
+        }
+      ]
+    },
+    {
+      "id": "shell",
+      "title": "Outer shell",
+      "position": { "x": -1.0, "y": 0.0, "z": 0.0 },
+      "trigger": "click",
+      "content": [
+        {
+          "type": "text",
+          "html": "<h2>Outer shell</h2><p>A composite of carbon-fibre plating over a Kevlar weave. Designed to absorb and redistribute kinetic energy from impacts.</p>"
+        }
+      ]
+    },
+    {
+      "id": "intake",
+      "title": "Air intake",
+      "position": { "x": 0.5, "y": -0.6, "z": 0.6 },
+      "trigger": "click",
+      "content": [
+        {
+          "type": "text",
+          "html": "<h2>Air intake</h2><p>Filters and cools incoming air before it reaches the breathing apparatus. Replaceable particulate filters slot in beneath the grille.</p>"
         }
       ]
     }
-  ]
+  ],
+  "completion": {
+    "mode": "visitAll",
+    "requiredOverlayIds": ["visor", "shell", "intake"]
+  },
+  "behaviour": {
+    "showOverlayMarkers": true,
+    "enableRetry": true
+  }
 }
