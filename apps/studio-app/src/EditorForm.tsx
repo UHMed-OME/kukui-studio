@@ -3,7 +3,7 @@ import Form from "@rjsf/core";
 import validator from "@rjsf/validator-ajv8";
 import type { IChangeEvent } from "@rjsf/core";
 import type { RJSFSchema } from "@rjsf/utils";
-import { zodToJsonSchema } from "zod-to-json-schema";
+import { z } from "zod";
 import { SchemaRegistry, type SchemaRegistryKey } from "@kukui/schemas";
 import type { ActivityKind } from "@kukui/core";
 
@@ -29,10 +29,9 @@ export function EditorForm({
 }) {
   const jsonSchema = useMemo<RJSFSchema>(() => {
     const zod = SchemaRegistry[kind as SchemaRegistryKey];
-    // zod-to-json-schema's exported types lag Zod 4's ZodObject shape;
-    // runtime conversion still works against either. Cast through unknown.
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return zodToJsonSchema(zod as any, { target: "jsonSchema7" }) as RJSFSchema;
+    // Zod 4 ships its own JSON-Schema export. RJSF + AJV speak draft-7,
+    // so target that explicitly (the default is draft-2020-12).
+    return z.toJSONSchema(zod, { target: "draft-7" }) as RJSFSchema;
   }, [kind]);
 
   const handleChange = (e: IChangeEvent) => {
