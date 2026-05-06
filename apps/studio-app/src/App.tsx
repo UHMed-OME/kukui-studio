@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { ACTIVITY_KINDS, type ActivityKind } from "@kukui/core";
+import { type ActivityKind } from "@kukui/core";
 import { SchemaRegistry, type SchemaRegistryKey } from "@kukui/schemas";
 import { EditorForm } from "./EditorForm.js";
 import { JsonEditor } from "./JsonEditor.js";
@@ -10,14 +10,36 @@ import { downloadScormZip } from "./scormDownload.js";
 
 type Tab = "form" | "json";
 
+/**
+ * Activities Kukui Studio is positioned to author.
+ *
+ * Quizzing (Multiple Choice, Fill in the Blanks, Question Set) overlaps
+ * heavily with D2L's native quiz tooling — authors should use the LMS for
+ * those. Studio focuses on activity surfaces D2L can't do natively or does
+ * poorly: spatial drag-and-drop, slide presentations with custom layout,
+ * 3D hotspots, and walkable scenes. Group / synchronous activities are
+ * the Phase 3 (Kukui Live) story.
+ *
+ * The schemas and components for the quiz activities still live in
+ * @kukui/core — they're built, tested, and ship in engine-web's SCORM
+ * zips for anyone who wants them — Studio just doesn't promote them as
+ * authoring targets.
+ */
+const STUDIO_ACTIVITIES: readonly ActivityKind[] = [
+  "drag-and-drop",
+  "course-presentation",
+  "hotspot-3d",
+  "virtual-tour",
+] as const;
+
 export function App() {
   const [kind, setKind] = useState<ActivityKind>(() => {
     const params = new URLSearchParams(window.location.search);
     const fromUrl = params.get("activity");
-    if (fromUrl && ACTIVITY_KINDS.includes(fromUrl as ActivityKind)) {
+    if (fromUrl && STUDIO_ACTIVITIES.includes(fromUrl as ActivityKind)) {
       return fromUrl as ActivityKind;
     }
-    return "multiple-choice";
+    return "drag-and-drop";
   });
   const [value, setValue] = useState<unknown>(() => loadDraft(kind) ?? STARTERS[kind]);
   const [tab, setTab] = useState<Tab>("form");
@@ -115,7 +137,8 @@ export function App() {
         <div>
           <h1 className="kukui-studio-title">Kukui Studio</h1>
           <p className="kukui-studio-subtitle">
-            Edit the form. Watch the preview. Download the JSON.
+            Author interactive activities Lamakū's native quizzing can't do — drag-and-drop,
+            slide presentations, 3D, and walkable scenes.
           </p>
         </div>
         <div className="kukui-studio-toolbar">
@@ -160,7 +183,7 @@ export function App() {
       <nav className="kukui-studio-sidebar" aria-label="Activity type">
         <h2 className="kukui-studio-sidebar__heading">Activity type</h2>
         <ul className="kukui-studio-sidebar__list">
-          {ACTIVITY_KINDS.map((k) => (
+          {STUDIO_ACTIVITIES.map((k) => (
             <li key={k}>
               <button
                 type="button"
@@ -178,6 +201,11 @@ export function App() {
             </li>
           ))}
         </ul>
+        <p className="kukui-studio-sidebar__note">
+          For multiple-choice / fill-in-the-blank quizzing, use Lamakū's built-in quiz tools —
+          Studio focuses on activities the LMS can't do natively. Group + synchronous
+          activities are coming in <strong>Kukui Live</strong> (Phase 3).
+        </p>
       </nav>
 
       <main className="kukui-studio-main">

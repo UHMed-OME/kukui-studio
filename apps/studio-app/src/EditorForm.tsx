@@ -11,6 +11,7 @@ import { ArrayFieldTemplate } from "./templates/ArrayFieldTemplate.js";
 import { ObjectFieldTemplate } from "./templates/ObjectFieldTemplate.js";
 import { FieldTemplate } from "./templates/FieldTemplate.js";
 import { HtmlWidget } from "./widgets/HtmlWidget.js";
+import { FileUploadWidget } from "./widgets/FileUploadWidget.js";
 
 /**
  * Auto-generated form per activity kind.
@@ -67,7 +68,7 @@ export function EditorForm({
           ObjectFieldTemplate,
           FieldTemplate,
         }}
-        widgets={{ html: HtmlWidget }}
+        widgets={{ html: HtmlWidget, file: FileUploadWidget }}
       />
     </div>
   );

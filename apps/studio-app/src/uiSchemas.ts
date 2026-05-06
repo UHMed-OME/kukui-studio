@@ -134,8 +134,9 @@ export const UI_SCHEMAS: Record<ActivityKind, Record<string, unknown>> = {
     background: {
       "ui:title": "Background image",
       "ui:help": "The image learners drop labels onto. Drop-zone rectangles are placed on top of it.",
-      src: f("Image URL", "Public URL or relative path inside the SCORM zip.", {
-        "ui:options": { inputType: "url" },
+      src: f("Image", "Paste a URL or upload a file. Files embed inline in the JSON.", {
+        "ui:widget": "file",
+        "ui:options": { accept: "image/*", maxSizeMb: 5, kind: "image" },
       }),
       alt: f(
         "Alt text",
@@ -285,9 +286,16 @@ export const UI_SCHEMAS: Record<ActivityKind, Record<string, unknown>> = {
     model: {
       "ui:title": "3D model",
       src: f(
-        "Model URL (.glb or .gltf)",
-        "Public URL or relative path inside the SCORM zip. Khronos sample assets work as placeholders.",
-        { "ui:options": { inputType: "url" } },
+        "Model file (.glb / .gltf)",
+        "Paste a URL or upload a file. Glb files >5 MB don't persist between sessions but still ship with the SCORM zip.",
+        {
+          "ui:widget": "file",
+          "ui:options": {
+            accept: ".glb,.gltf,model/gltf-binary,model/gltf+json",
+            maxSizeMb: 50,
+            kind: "model",
+          },
+        },
       ),
       scale: f("Uniform scale", "Multiplies model size by this factor. Default 1."),
       rotation: f("Initial rotation", "Optional XYZ rotation in radians."),
@@ -351,9 +359,16 @@ export const UI_SCHEMAS: Record<ActivityKind, Record<string, unknown>> = {
     scene: {
       "ui:title": "Scene",
       src: f(
-        "Scene URL (.glb or .gltf)",
-        "Public URL or relative path inside the SCORM zip.",
-        { "ui:options": { inputType: "url" } },
+        "Scene file (.glb / .gltf)",
+        "Paste a URL or upload a file. Glb files >5 MB don't persist between sessions but still ship with the SCORM zip.",
+        {
+          "ui:widget": "file",
+          "ui:options": {
+            accept: ".glb,.gltf,model/gltf-binary,model/gltf+json",
+            maxSizeMb: 50,
+            kind: "model",
+          },
+        },
       ),
       spawn: {
         "ui:title": "Where the learner starts",
