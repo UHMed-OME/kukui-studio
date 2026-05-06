@@ -733,3 +733,305 @@ button {
 .ks-json__msg--err {
   color: var(--color-error);
 }
+
+/* ---------- Field tooltip ---------- */
+
+.ks-field__label-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+
+.ks-field__label {
+  margin: 0;
+  font-size: var(--font-size-meta);
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+.ks-field__required {
+  color: var(--color-error);
+  margin-left: 2px;
+}
+
+.ks-field__desc {
+  margin: 0 0 6px;
+  font-size: var(--font-size-micro);
+  color: var(--color-text-secondary);
+}
+
+.ks-tooltip {
+  display: inline-block;
+  position: relative;
+  line-height: 0;
+}
+
+.ks-tooltip__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  border: 1px solid var(--color-border);
+  border-radius: 50%;
+  background: var(--color-surface);
+  color: var(--color-text-secondary);
+  font-size: 11px;
+  line-height: 1;
+  cursor: help;
+}
+
+.ks-tooltip__btn:hover,
+.ks-tooltip__btn:focus-visible {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  outline: none;
+}
+
+.ks-tooltip__bubble {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  width: max-content;
+  max-width: 280px;
+  padding: 8px 12px;
+  background: var(--color-text-primary);
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.4;
+  border-radius: 6px;
+  box-shadow: 0 6px 18px rgb(0 0 0 / 0.18);
+  z-index: 100;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 120ms ease;
+}
+
+.ks-tooltip__bubble::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-top-color: var(--color-text-primary);
+}
+
+.ks-tooltip__btn:hover + .ks-tooltip__bubble,
+.ks-tooltip__btn:focus-visible + .ks-tooltip__bubble {
+  opacity: 1;
+}
+
+/* ---------- HTML widget (WYSIWYG toolbar) ---------- */
+
+.ks-html {
+  display: flex;
+  flex-direction: column;
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: var(--color-surface);
+}
+
+.ks-html:focus-within {
+  border-color: var(--color-primary);
+}
+
+.ks-html__toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px;
+  padding: 6px;
+  background: var(--color-surface-alt);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.ks-html__btn {
+  min-width: 32px;
+  min-height: 32px;
+  padding: 4px 8px;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  color: var(--color-text-primary);
+  font-size: 13px;
+  font-family: inherit;
+}
+
+.ks-html__btn:hover {
+  background: var(--color-surface);
+  border-color: var(--color-border);
+}
+
+.ks-html__divider {
+  width: 1px;
+  background: var(--color-border);
+  margin: 4px 4px;
+}
+
+.ks-html__textarea {
+  border: none;
+  outline: none;
+  width: 100%;
+  min-height: 80px;
+  padding: 12px;
+  font-family: inherit;
+  font-size: var(--font-size-answer);
+  line-height: 1.5;
+  resize: vertical;
+  background: transparent;
+}
+
+.ks-html__textarea:focus {
+  outline: none;
+}
+
+/* ---------- Preview Edit/Live toggle ---------- */
+
+.ks-preview-mode {
+  display: inline-flex;
+  background: var(--color-tip-bg);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 2px;
+  gap: 2px;
+}
+
+.ks-preview-mode__btn {
+  min-height: 28px;
+  padding: 4px 12px;
+  background: transparent;
+  border: none;
+  border-radius: 4px;
+  font-size: var(--font-size-micro);
+  font-weight: 700;
+  color: var(--color-text-secondary);
+}
+
+.ks-preview-mode__btn.is-active {
+  background: var(--color-primary);
+  color: #ffffff;
+}
+
+.ks-preview-mode__btn:hover:not(.is-active) {
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+}
+
+/* ---------- DnD visual editor ---------- */
+
+.ks-edit-dnd {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  padding: var(--spacing-lg);
+}
+
+.ks-edit-dnd__hint {
+  margin: 0;
+  font-size: var(--font-size-meta);
+  color: var(--color-text-secondary);
+}
+
+.ks-edit-dnd__board {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  background-color: var(--color-tip-bg);
+  background-size: cover;
+  background-position: center;
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  cursor: crosshair;
+  user-select: none;
+}
+
+.ks-edit-dnd__zone {
+  position: absolute;
+  border: 2px dashed var(--color-primary);
+  background: var(--color-primary-soft);
+  border-radius: 6px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 4px 6px;
+  cursor: grab;
+  transition: background-color 100ms ease;
+}
+
+.ks-edit-dnd__zone:hover {
+  background: rgb(123 67 36 / 0.12);
+}
+
+.ks-edit-dnd__zone.is-selected {
+  border-style: solid;
+  box-shadow: 0 0 0 2px var(--color-primary);
+}
+
+.ks-edit-dnd__zone:active {
+  cursor: grabbing;
+}
+
+.ks-edit-dnd__zone-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--color-primary);
+  background: rgb(255 255 255 / 0.85);
+  padding: 1px 6px;
+  border-radius: 3px;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.ks-edit-dnd__handle {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  background: var(--color-primary);
+  border: 2px solid #ffffff;
+  border-radius: 50%;
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.3);
+}
+
+.ks-edit-dnd__handle--se {
+  bottom: -6px;
+  right: -6px;
+  cursor: nwse-resize;
+}
+
+.ks-edit-dnd__delete {
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--color-error);
+  color: #ffffff;
+  border: 2px solid #ffffff;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.3);
+  line-height: 1;
+}
+
+.ks-edit-dnd__draft {
+  position: absolute;
+  border: 2px dashed var(--color-primary);
+  background: var(--color-primary-soft);
+  border-radius: 6px;
+  pointer-events: none;
+}
+
+.ks-edit-empty {
+  padding: var(--spacing-2xl);
+  text-align: center;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-meta);
+}

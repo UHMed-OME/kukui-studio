@@ -9,6 +9,8 @@ import type { ActivityKind } from "@kukui/core";
 import { UI_SCHEMAS } from "./uiSchemas.js";
 import { ArrayFieldTemplate } from "./templates/ArrayFieldTemplate.js";
 import { ObjectFieldTemplate } from "./templates/ObjectFieldTemplate.js";
+import { FieldTemplate } from "./templates/FieldTemplate.js";
+import { HtmlWidget } from "./widgets/HtmlWidget.js";
 
 /**
  * Auto-generated form per activity kind.
@@ -63,7 +65,9 @@ export function EditorForm({
         templates={{
           ArrayFieldTemplate,
           ObjectFieldTemplate,
+          FieldTemplate,
         }}
+        widgets={{ html: HtmlWidget }}
       />
     </div>
   );
