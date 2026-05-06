@@ -242,7 +242,10 @@ export const UI_SCHEMAS: Record<ActivityKind, Record<string, unknown>> = {
       "ui:help":
         "An ordered series of questions. Each entry's `type` selects the activity shape (multiple choice or fill-in-the-blanks).",
       items: {
-        type: f("Question type", "Picks the activity shape used for the question."),
+        type: {
+          ...f("Question type", "Picks the activity shape used for the question."),
+          "ui:enumNames": ["Multiple choice", "Fill in the blanks"],
+        },
         config: f("Activity config", "The full config for the picked question type."),
         weight: f(
           "Weight",
@@ -292,7 +295,10 @@ export const UI_SCHEMAS: Record<ActivityKind, Record<string, unknown>> = {
     },
     camera: {
       "ui:title": "Camera setup",
-      mode: f("Camera mode", "Orbit lets the learner rotate around the model. Fixed locks the view."),
+      mode: {
+        ...f("Camera mode", "Orbit lets the learner rotate around the model. Fixed locks the view."),
+        "ui:enumNames": ["Orbit (rotate around model)", "Fixed view"],
+      },
       initialDistance: f("Starting distance", "How far the camera sits from the model on load."),
       minDistance: f("Closest zoom", "How close the orbit camera can get."),
       maxDistance: f("Farthest zoom", "How far the orbit camera can pull back."),
@@ -357,10 +363,13 @@ export const UI_SCHEMAS: Record<ActivityKind, Record<string, unknown>> = {
     },
     movement: {
       "ui:title": "Movement controls",
-      mode: f(
-        "Movement mode",
-        "First-person: WASD + click-to-look. Click-to-move: tap a point to teleport. Hybrid: both.",
-      ),
+      mode: {
+        ...f(
+          "Movement mode",
+          "First-person: WASD + click-to-look. Click-to-move: tap a point to teleport. Hybrid: both.",
+        ),
+        "ui:enumNames": ["First-person (WASD + look)", "Click to move", "Hybrid (both)"],
+      },
       speed: f("Movement speed", "Higher = faster walk. Try 2 for a slow tour, 5 for a brisk one."),
       navmeshConstrained: f(
         "Constrain to navmesh",
@@ -375,7 +384,10 @@ export const UI_SCHEMAS: Record<ActivityKind, Record<string, unknown>> = {
         id: f("Internal ID", "Unique identifier. Lowercase, no spaces."),
         title: f("Display title", "Shown above the overlay panel and on the marker chip."),
         position: f("World position (x, y, z)"),
-        trigger: f("Trigger", "Click: opens on tap. Proximity: opens automatically when nearby."),
+        trigger: {
+          ...f("Trigger", "How the overlay panel opens for the learner."),
+          "ui:enumNames": ["On click / tap", "When learner is nearby"],
+        },
         proximityRadius: f(
           "Proximity radius",
           "How close the learner must be (in scene units) to auto-trigger. Only used when trigger=proximity.",
@@ -389,10 +401,13 @@ export const UI_SCHEMAS: Record<ActivityKind, Record<string, unknown>> = {
     },
     completion: {
       "ui:title": "Completion mode",
-      mode: f(
-        "How the tour ends",
-        "Manual: learner clicks Done. Visit-all: auto-complete when every required overlay has been opened.",
-      ),
+      mode: {
+        ...f(
+          "How the tour ends",
+          "Manual: learner clicks Done. Visit-all: auto-complete when every required overlay has been opened.",
+        ),
+        "ui:enumNames": ["Visit all required points", "Manual ('Done' button)"],
+      },
       requiredOverlayIds: f(
         "Required overlay IDs",
         "List of overlay IDs the learner must visit. Required when mode = visit-all.",

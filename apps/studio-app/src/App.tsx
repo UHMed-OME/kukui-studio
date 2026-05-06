@@ -3,9 +3,10 @@ import { ACTIVITY_KINDS, type ActivityKind } from "@kukui/core";
 import { SchemaRegistry, type SchemaRegistryKey } from "@kukui/schemas";
 import { EditorForm } from "./EditorForm.js";
 import { JsonEditor } from "./JsonEditor.js";
-import { Preview } from "./Preview.js";
+import { Preview, type PreviewMode } from "./Preview.js";
 import { ACTIVITY_LABELS, STARTERS } from "./starters.js";
 import { clearDraft, debouncedSaver, loadDraft, saveDraft } from "./drafts.js";
+import { downloadScormZip } from "./scormDownload.js";
 
 type Tab = "form" | "json";
 
@@ -20,6 +21,7 @@ export function App() {
   });
   const [value, setValue] = useState<unknown>(() => loadDraft(kind) ?? STARTERS[kind]);
   const [tab, setTab] = useState<Tab>("form");
+  const [previewMode, setPreviewMode] = useState<PreviewMode>("live");
   const [toast, setToast] = useState<string | null>(null);
 
   // Keep ?activity= in sync so refreshes preserve choice.
@@ -92,6 +94,21 @@ export function App() {
     flash("Draft saved.");
   };
 
+  const downloadScorm = async () => {
+    if (!validation.success) {
+      flash("Fix the highlighted validation errors first.");
+      return;
+    }
+    try {
+      flash("Building SCORM zip…");
+      await downloadScormZip(kind, validation.data);
+      flash("SCORM zip downloaded.");
+    } catch (err) {
+      console.error(err);
+      flash(err instanceof Error ? `Download failed: ${err.message}` : "Download failed.");
+    }
+  };
+
   return (
     <div className="kukui-studio-shell">
       <header className="kukui-studio-header">
@@ -119,9 +136,16 @@ export function App() {
           <button
             type="button"
             onClick={downloadJson}
-            className="kukui-studio-btn kukui-studio-btn--primary"
+            className="kukui-studio-btn kukui-studio-btn--secondary"
           >
             Download JSON
+          </button>
+          <button
+            type="button"
+            onClick={downloadScorm}
+            className="kukui-studio-btn kukui-studio-btn--primary"
+          >
+            Download SCORM zip
           </button>
           <button
             type="button"
@@ -198,13 +222,44 @@ export function App() {
 
         <section className="kukui-studio-panel">
           <div className="kukui-studio-panel-header">
-            <strong>Live preview</strong>
+            <div className="ks-preview-mode" role="tablist" aria-label="Preview mode">
+              <button
+                type="button"
+                role="tab"
+                aria-selected={previewMode === "edit"}
+                className={[
+                  "ks-preview-mode__btn",
+                  previewMode === "edit" ? "is-active" : "",
+                ]
+                  .filter(Boolean)
+                  .join(" ")}
+                onClick={() => setPreviewMode("edit")}
+              >
+                ✎ Edit
+              </button>
+              <button
+                type="button"
+                role="tab"
+                aria-selected={previewMode === "live"}
+                className={[
+                  "ks-preview-mode__btn",
+                  previewMode === "live" ? "is-active" : "",
+                ]
+                  .filter(Boolean)
+                  .join(" ")}
+                onClick={() => setPreviewMode("live")}
+              >
+                ▶ Live
+              </button>
+            </div>
             <span className="kukui-studio-meta">
-              Real component, your draft as input
+              {previewMode === "edit"
+                ? "Drag elements directly. Form on the left updates live."
+                : "Renders the actual learner-facing component."}
             </span>
           </div>
           <div className="kukui-studio-panel-body kukui-studio-preview">
-            <Preview kind={kind} value={value} />
+            <Preview kind={kind} value={value} mode={previewMode} onChange={setValue} />
           </div>
         </section>
       </main>

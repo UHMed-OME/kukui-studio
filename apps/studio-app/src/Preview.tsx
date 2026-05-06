@@ -1,6 +1,9 @@
 import { lazy, Suspense, useMemo } from "react";
 import { SchemaRegistry, type SchemaRegistryKey } from "@kukui/schemas";
 import type { ActivityKind } from "@kukui/core";
+import { EditCanvas } from "./EditCanvas/index.js";
+
+export type PreviewMode = "live" | "edit";
 
 // Each activity component is its own lazy chunk. Switching activity kinds
 // only fetches the chunk for the kind being previewed; in particular, the
@@ -29,11 +32,28 @@ const VirtualTour = lazy(() => import("@kukui/core").then((m) => ({ default: m.V
  * schema, then renders the actual @kukui/core component if valid; on
  * failure shows the validation issues so the author can fix them inline.
  */
-export function Preview({ kind, value }: { kind: ActivityKind; value: unknown }) {
+export function Preview({
+  kind,
+  value,
+  mode,
+  onChange,
+}: {
+  kind: ActivityKind;
+  value: unknown;
+  mode: PreviewMode;
+  onChange: (next: unknown) => void;
+}) {
   const result = useMemo(
     () => SchemaRegistry[kind as SchemaRegistryKey].safeParse(value),
     [kind, value],
   );
+
+  if (mode === "edit") {
+    // Visual editor doesn't strictly require Zod-valid input; show the editor
+    // as long as the activity kind has one. The EditCanvas reads `value`
+    // forgivingly and emits validated edits via `onChange`.
+    return <EditCanvas kind={kind} value={value} onChange={onChange} />;
+  }
 
   if (!result.success) {
     return (
