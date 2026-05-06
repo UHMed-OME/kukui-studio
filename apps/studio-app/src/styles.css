@@ -3,8 +3,10 @@
 @theme {
   --color-bg: #fcf8f2;
   --color-surface: #ffffff;
+  --color-surface-alt: #faf6ee;
   --color-text-primary: #1c1e20;
   --color-text-secondary: #606069;
+  --color-text-muted: #8a8a92;
   --color-border: #dad2c6;
   --color-border-hover: #bbae9a;
   --color-primary: #7b4324;
@@ -41,6 +43,7 @@
 
   --font-family-sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Helvetica, Arial,
     sans-serif;
+  --font-family-mono: ui-monospace, "SF Mono", Menlo, "Cascadia Code", monospace;
 }
 
 html,
@@ -71,147 +74,76 @@ button {
   cursor: pointer;
 }
 
-/* RJSF tweaks — match design system. */
-.rjsf .form-group {
-  margin-bottom: var(--spacing-md, 12px);
-}
-
-.rjsf label {
-  display: block;
-  font-size: var(--font-size-meta, 13px);
-  font-weight: 700;
-  color: var(--color-text-secondary);
-  margin-bottom: var(--spacing-xs, 4px);
-}
-
-.rjsf input[type="text"],
-.rjsf input[type="number"],
-.rjsf input[type="url"],
-.rjsf select,
-.rjsf textarea {
-  width: 100%;
-  min-height: 36px;
-  padding: 6px 10px;
-  border: 2px solid var(--color-border);
-  border-radius: var(--radius-md, 8px);
-  background: var(--color-surface);
-  font-size: var(--font-size-answer, 15px);
-}
-
-.rjsf input[type="checkbox"] {
-  width: 18px;
-  height: 18px;
-  margin-right: var(--spacing-sm, 8px);
-}
-
-.rjsf .checkbox label {
-  display: inline-flex;
-  align-items: center;
-  font-weight: 400;
-  color: var(--color-text-primary);
-}
-
-.rjsf .array-item {
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md, 8px);
-  padding: var(--spacing-sm, 8px) var(--spacing-md, 12px);
-  margin-bottom: var(--spacing-sm, 8px);
-  background: var(--color-tip-bg);
-}
-
-.rjsf .btn {
-  min-height: 36px;
-  padding: 6px 14px;
-  border-radius: var(--radius-md, 8px);
-  font-size: var(--font-size-meta, 13px);
-  font-weight: 700;
-  border: 2px solid var(--color-primary);
-  background: transparent;
-  color: var(--color-primary);
-  margin-right: var(--spacing-xs, 4px);
-}
-
-.rjsf .btn-add::before {
-  content: "+ ";
-}
-
-.rjsf fieldset {
-  border: none;
-  padding: 0;
-  margin: 0;
-}
-
-.rjsf legend {
-  font-size: var(--font-size-meta, 13px);
-  font-weight: 700;
-  color: var(--color-text-secondary);
-}
-
-.rjsf .field-description {
-  font-size: var(--font-size-micro, 12px);
-  color: var(--color-text-secondary);
-  margin-top: 2px;
-}
-
-.rjsf .text-danger {
-  color: var(--color-error);
-  font-size: var(--font-size-meta, 13px);
-}
-
-/* ---- Studio shell ---- */
+/* ---------- Studio shell ---------- */
 
 .kukui-studio-shell {
   display: grid;
-  grid-template-rows: auto auto 1fr;
+  grid-template-columns: 220px 1fr;
+  grid-template-rows: auto 1fr;
+  grid-template-areas:
+    "header header"
+    "sidebar main";
   height: 100%;
   background: var(--color-bg);
 }
 
+@media (max-width: 760px) {
+  .kukui-studio-shell {
+    grid-template-columns: 1fr;
+    grid-template-areas: "header" "sidebar" "main";
+    grid-template-rows: auto auto 1fr;
+  }
+}
+
 .kukui-studio-header {
+  grid-area: header;
   display: flex;
   flex-wrap: wrap;
-  align-items: flex-end;
+  align-items: center;
   justify-content: space-between;
-  gap: var(--spacing-lg, 16px);
-  padding: var(--spacing-lg, 16px) var(--spacing-2xl, 24px);
+  gap: var(--spacing-lg);
+  padding: var(--spacing-lg) var(--spacing-2xl);
   border-bottom: 1px solid var(--color-border);
+  background: var(--color-surface);
 }
 
 .kukui-studio-title {
   margin: 0;
-  font-size: var(--font-size-display, 28px);
+  font-size: var(--font-size-title);
   font-weight: 700;
   color: var(--color-text-primary);
 }
 
 .kukui-studio-subtitle {
-  margin: var(--spacing-xs, 4px) 0 0;
-  font-size: var(--font-size-meta, 13px);
+  margin: 2px 0 0;
+  font-size: var(--font-size-meta);
   color: var(--color-text-secondary);
 }
 
 .kukui-studio-toolbar {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--spacing-sm, 8px);
+  gap: var(--spacing-sm);
 }
 
 .kukui-studio-btn {
-  min-height: 44px;
-  padding: 8px 16px;
-  border-radius: var(--radius-md, 8px);
-  font-size: var(--font-size-meta, 13px);
+  min-height: 40px;
+  padding: 6px 14px;
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-meta);
   font-weight: 700;
+  transition: background-color 120ms ease, border-color 120ms ease;
 }
 
 .kukui-studio-btn--primary {
   background: var(--color-primary);
   color: #ffffff;
-  border: none;
+  border: 2px solid var(--color-primary);
 }
 
 .kukui-studio-btn--primary:hover {
   background: var(--color-primary-hover);
+  border-color: var(--color-primary-hover);
 }
 
 .kukui-studio-btn--secondary {
@@ -220,49 +152,109 @@ button {
   border: 2px solid var(--color-primary);
 }
 
+.kukui-studio-btn--secondary:hover {
+  background: var(--color-primary-soft);
+}
+
 .kukui-studio-btn--ghost {
   background: transparent;
   color: var(--color-text-secondary);
   border: 2px solid var(--color-border);
 }
 
-.kukui-studio-picker {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--spacing-xs, 4px);
-  padding: var(--spacing-sm, 8px) var(--spacing-2xl, 24px);
-  border-bottom: 1px solid var(--color-border);
-  background: var(--color-tip-bg);
-  overflow-x: auto;
-}
-
-.kukui-studio-tab {
-  flex: 0 0 auto;
-  min-height: 44px;
-  padding: 8px 14px;
-  background: var(--color-surface);
-  border: 2px solid var(--color-border);
-  border-radius: 999px;
-  font-size: var(--font-size-meta, 13px);
+.kukui-studio-btn--ghost:hover {
+  border-color: var(--color-border-hover);
   color: var(--color-text-primary);
 }
 
-.kukui-studio-tab.is-active {
-  border-color: var(--color-primary);
-  background: var(--color-primary);
-  color: #ffffff;
+/* ---------- Sidebar (activity picker) ---------- */
+
+.kukui-studio-sidebar {
+  grid-area: sidebar;
+  border-right: 1px solid var(--color-border);
+  background: var(--color-tip-bg);
+  padding: var(--spacing-lg) var(--spacing-md);
+  overflow-y: auto;
 }
 
-.kukui-studio-grid {
+.kukui-studio-sidebar__heading {
+  font-size: var(--font-size-micro);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-text-muted);
+  margin: 0 0 var(--spacing-sm);
+  padding: 0 var(--spacing-sm);
+}
+
+.kukui-studio-sidebar__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.kukui-studio-sidebar__btn {
+  display: block;
+  width: 100%;
+  min-height: 44px;
+  padding: 10px 14px;
+  background: transparent;
+  border: 2px solid transparent;
+  border-radius: var(--radius-md);
+  text-align: left;
+  font-size: var(--font-size-answer);
+  color: var(--color-text-primary);
+  transition: background-color 120ms ease, border-color 120ms ease;
+}
+
+.kukui-studio-sidebar__btn:hover {
+  background: var(--color-surface);
+}
+
+.kukui-studio-sidebar__btn.is-active {
+  background: var(--color-surface);
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  font-weight: 700;
+}
+
+@media (max-width: 760px) {
+  .kukui-studio-sidebar {
+    border-right: none;
+    border-bottom: 1px solid var(--color-border);
+    padding: var(--spacing-sm) var(--spacing-md);
+  }
+  .kukui-studio-sidebar__list {
+    flex-direction: row;
+    gap: var(--spacing-xs);
+    overflow-x: auto;
+  }
+  .kukui-studio-sidebar__heading {
+    display: none;
+  }
+  .kukui-studio-sidebar__btn {
+    flex: 0 0 auto;
+    white-space: nowrap;
+  }
+}
+
+/* ---------- Main grid ---------- */
+
+.kukui-studio-main {
+  grid-area: main;
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  gap: var(--spacing-md, 12px);
-  padding: var(--spacing-md, 12px) var(--spacing-2xl, 24px);
+  gap: var(--spacing-md);
+  padding: var(--spacing-lg) var(--spacing-2xl);
   overflow: hidden;
+  min-height: 0;
 }
 
-@media (max-width: 960px) {
-  .kukui-studio-grid {
+@media (max-width: 1100px) {
+  .kukui-studio-main {
     grid-template-columns: 1fr;
     overflow: auto;
   }
@@ -274,7 +266,7 @@ button {
   min-height: 0;
   background: var(--color-surface);
   border: 1px solid var(--color-border);
-  border-radius: var(--radius-card, 12px);
+  border-radius: var(--radius-card);
   overflow: hidden;
 }
 
@@ -282,25 +274,25 @@ button {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: var(--spacing-sm, 8px);
-  padding: var(--spacing-sm, 8px) var(--spacing-md, 12px);
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm) var(--spacing-md);
   border-bottom: 1px solid var(--color-border);
-  background: var(--color-tip-bg);
+  background: var(--color-surface-alt);
 }
 
 .kukui-studio-tab-row {
   display: flex;
-  gap: var(--spacing-xs, 4px);
+  gap: var(--spacing-xs);
 }
 
 .kukui-studio-subtab {
   min-height: 36px;
-  padding: 4px 10px;
+  padding: 4px 12px;
   background: transparent;
   border: none;
   border-bottom: 2px solid transparent;
   color: var(--color-text-secondary);
-  font-size: var(--font-size-meta, 13px);
+  font-size: var(--font-size-meta);
   font-weight: 700;
 }
 
@@ -310,12 +302,12 @@ button {
 }
 
 .kukui-studio-meta {
-  font-size: var(--font-size-micro, 12px);
+  font-size: var(--font-size-micro);
   color: var(--color-text-secondary);
 }
 
 .kukui-studio-badge {
-  font-size: var(--font-size-micro, 12px);
+  font-size: var(--font-size-micro);
   font-weight: 700;
   padding: 4px 10px;
   border-radius: 999px;
@@ -334,19 +326,21 @@ button {
 .kukui-studio-panel-body {
   flex: 1;
   overflow: auto;
-  padding: var(--spacing-md, 12px);
+  padding: var(--spacing-lg);
 }
 
 .kukui-studio-preview {
   background: var(--color-bg);
+  padding: 0;
 }
 
 .kukui-studio-preview-error {
+  margin: var(--spacing-lg);
   background: var(--color-error-soft);
   border: 2px solid var(--color-error);
-  border-radius: var(--radius-md, 8px);
-  padding: var(--spacing-md, 12px) var(--spacing-lg, 16px);
-  font-size: var(--font-size-meta, 13px);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-md) var(--spacing-lg);
+  font-size: var(--font-size-meta);
   color: var(--color-text-primary);
 }
 
@@ -354,18 +348,388 @@ button {
   background: var(--color-tip-bg);
   padding: 1px 6px;
   border-radius: 4px;
+  font-family: var(--font-family-mono);
 }
 
 .kukui-studio-toast {
   position: fixed;
-  bottom: var(--spacing-2xl, 24px);
+  bottom: var(--spacing-2xl);
   left: 50%;
   transform: translateX(-50%);
   background: var(--color-text-primary);
   color: #ffffff;
-  padding: var(--spacing-sm, 8px) var(--spacing-lg, 16px);
-  border-radius: var(--radius-md, 8px);
-  font-size: var(--font-size-meta, 13px);
+  padding: var(--spacing-sm) var(--spacing-lg);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-meta);
   z-index: 1000;
   box-shadow: 0 4px 12px rgb(0 0 0 / 0.2);
+}
+
+/* ---------- Form (RJSF + custom templates: ks-* prefix) ---------- */
+
+.rjsf {
+  font-family: var(--font-family-sans);
+}
+
+.ks-object {
+  display: block;
+}
+
+.ks-object--root {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xl);
+}
+
+.ks-object--root > .ks-field > .ks-object {
+  background: var(--color-surface-alt);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-lg);
+}
+
+.ks-object__title {
+  margin: 0 0 4px;
+  font-size: var(--font-size-subtitle);
+  font-weight: 700;
+  color: var(--color-text-primary);
+  border-bottom: 2px solid var(--color-border);
+  padding-bottom: 6px;
+  margin-bottom: var(--spacing-md);
+}
+
+.ks-object__desc {
+  margin: 0 0 var(--spacing-md);
+  font-size: var(--font-size-meta);
+  color: var(--color-text-secondary);
+}
+
+.ks-object__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.ks-field {
+  display: block;
+}
+
+/* RJSF wraps each field in a .form-group. Style the resulting <label> + <input>. */
+.rjsf .form-group {
+  margin: 0;
+}
+
+.rjsf label {
+  display: block;
+  font-size: var(--font-size-meta);
+  font-weight: 700;
+  color: var(--color-text-primary);
+  margin-bottom: 6px;
+  letter-spacing: 0.01em;
+}
+
+/* Inline checkbox label override */
+.rjsf .checkbox label,
+.rjsf .form-check label {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  font-weight: 500;
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.rjsf input[type="text"],
+.rjsf input[type="number"],
+.rjsf input[type="url"],
+.rjsf input[type="email"],
+.rjsf select,
+.rjsf textarea {
+  width: 100%;
+  min-height: 44px;
+  padding: 10px 12px;
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+  font-size: var(--font-size-answer);
+  font-family: inherit;
+  transition: border-color 120ms ease, background-color 120ms ease;
+}
+
+.rjsf input:hover:not(:disabled),
+.rjsf select:hover:not(:disabled),
+.rjsf textarea:hover:not(:disabled) {
+  border-color: var(--color-border-hover);
+}
+
+.rjsf input:focus-visible,
+.rjsf select:focus-visible,
+.rjsf textarea:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+  border-color: var(--color-primary);
+}
+
+.rjsf textarea {
+  font-family: var(--font-family-sans);
+  resize: vertical;
+}
+
+.rjsf input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--color-primary);
+  margin: 0;
+}
+
+.rjsf .field-description {
+  font-size: var(--font-size-micro);
+  color: var(--color-text-secondary);
+  margin: 4px 0 0;
+}
+
+.rjsf .text-danger,
+.rjsf .errors {
+  color: var(--color-error);
+  font-size: var(--font-size-meta);
+  margin-top: 4px;
+}
+
+.rjsf fieldset {
+  border: none;
+  padding: 0;
+  margin: 0;
+}
+
+.rjsf legend {
+  display: none; /* ObjectFieldTemplate handles titles */
+}
+
+/* Hide RJSF's default object header (we render our own) */
+.rjsf .object-property-expand,
+.rjsf .panel-heading {
+  display: none;
+}
+
+/* ---------- Array editor ---------- */
+
+.ks-array {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.ks-array__title {
+  margin: 0;
+  font-size: var(--font-size-subtitle);
+  font-weight: 700;
+  color: var(--color-text-primary);
+  border-bottom: 2px solid var(--color-border);
+  padding-bottom: 6px;
+  margin-bottom: 4px;
+}
+
+.ks-array__desc {
+  margin: 0 0 var(--spacing-sm);
+  font-size: var(--font-size-meta);
+  color: var(--color-text-secondary);
+}
+
+.ks-array__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.ks-array-item {
+  display: flex;
+  flex-direction: column;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.ks-array-item__bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px var(--spacing-md);
+  background: var(--color-tip-bg);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.ks-array-item__index {
+  font-size: var(--font-size-micro);
+  font-weight: 700;
+  color: var(--color-text-secondary);
+  letter-spacing: 0.04em;
+}
+
+.ks-array-item__actions {
+  display: flex;
+  gap: 4px;
+}
+
+.ks-array-item__body {
+  padding: var(--spacing-md) var(--spacing-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.ks-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 32px;
+  min-height: 32px;
+  padding: 0;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  color: var(--color-text-secondary);
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.ks-icon-btn:hover {
+  background: var(--color-surface);
+  border-color: var(--color-border);
+  color: var(--color-text-primary);
+}
+
+.ks-icon-btn--danger:hover {
+  color: var(--color-error);
+  border-color: var(--color-error);
+}
+
+.ks-array__empty {
+  margin: 0;
+  padding: var(--spacing-md);
+  background: var(--color-tip-bg);
+  border: 2px dashed var(--color-border);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-meta);
+  color: var(--color-text-secondary);
+  text-align: center;
+}
+
+.ks-array__add {
+  align-self: stretch;
+  min-height: 44px;
+  padding: 8px 14px;
+  background: transparent;
+  color: var(--color-primary);
+  border: 2px dashed var(--color-primary);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-answer);
+  font-weight: 700;
+  margin-top: var(--spacing-xs);
+  transition: background-color 120ms ease;
+}
+
+.ks-array__add:hover {
+  background: var(--color-primary-soft);
+}
+
+/* ---------- oneOf / anyOf segmented control ---------- */
+
+.ks-oneof {
+  margin-bottom: var(--spacing-sm);
+}
+
+.ks-oneof__legend {
+  display: block;
+  font-size: var(--font-size-meta);
+  font-weight: 700;
+  color: var(--color-text-primary);
+  margin-bottom: 6px;
+}
+
+.ks-oneof__group {
+  display: inline-flex;
+  flex-wrap: wrap;
+  background: var(--color-tip-bg);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 2px;
+  gap: 2px;
+}
+
+.ks-oneof__btn {
+  min-height: 36px;
+  padding: 6px 14px;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-meta);
+  font-weight: 700;
+}
+
+.ks-oneof__btn.is-active {
+  background: var(--color-primary);
+  color: #ffffff;
+}
+
+.ks-oneof__btn:hover:not(.is-active) {
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+}
+
+/* ---------- Raw JSON editor ---------- */
+
+.ks-json {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  height: 100%;
+  min-height: 320px;
+}
+
+.ks-json__textarea {
+  flex: 1;
+  min-height: 320px;
+  padding: var(--spacing-md);
+  font-family: var(--font-family-mono);
+  font-size: 12.5px;
+  line-height: 1.55;
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: #fbfaf6;
+  color: var(--color-text-primary);
+  resize: vertical;
+  tab-size: 2;
+}
+
+.ks-json__bar {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.ks-json__apply {
+  min-height: 40px;
+  padding: 6px 14px;
+  background: var(--color-primary);
+  color: #ffffff;
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-meta);
+  font-weight: 700;
+}
+
+.ks-json__msg {
+  font-size: var(--font-size-meta);
+  color: var(--color-text-secondary);
+}
+
+.ks-json__msg--err {
+  color: var(--color-error);
 }

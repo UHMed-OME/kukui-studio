@@ -98,44 +98,65 @@ export function App() {
         <div>
           <h1 className="kukui-studio-title">Kukui Studio</h1>
           <p className="kukui-studio-subtitle">
-            Pick an activity, edit the form, watch the preview update, download the JSON.
+            Edit the form. Watch the preview. Download the JSON.
           </p>
         </div>
         <div className="kukui-studio-toolbar">
-          <button type="button" onClick={explicitSave} className="kukui-studio-btn kukui-studio-btn--secondary">
+          <button
+            type="button"
+            onClick={explicitSave}
+            className="kukui-studio-btn kukui-studio-btn--ghost"
+          >
             Save draft
           </button>
-          <button type="button" onClick={copyJson} className="kukui-studio-btn kukui-studio-btn--secondary">
+          <button
+            type="button"
+            onClick={copyJson}
+            className="kukui-studio-btn kukui-studio-btn--secondary"
+          >
             Copy JSON
           </button>
-          <button type="button" onClick={downloadJson} className="kukui-studio-btn kukui-studio-btn--primary">
+          <button
+            type="button"
+            onClick={downloadJson}
+            className="kukui-studio-btn kukui-studio-btn--primary"
+          >
             Download JSON
           </button>
-          <button type="button" onClick={reset} className="kukui-studio-btn kukui-studio-btn--ghost">
+          <button
+            type="button"
+            onClick={reset}
+            className="kukui-studio-btn kukui-studio-btn--ghost"
+          >
             Reset
           </button>
         </div>
       </header>
 
-      <nav className="kukui-studio-picker" aria-label="Activity type">
-        {ACTIVITY_KINDS.map((k) => (
-          <button
-            key={k}
-            type="button"
-            className={[
-              "kukui-studio-tab",
-              k === kind ? "is-active" : "",
-            ]
-              .filter(Boolean)
-              .join(" ")}
-            onClick={() => setKind(k)}
-          >
-            {ACTIVITY_LABELS[k]}
-          </button>
-        ))}
+      <nav className="kukui-studio-sidebar" aria-label="Activity type">
+        <h2 className="kukui-studio-sidebar__heading">Activity type</h2>
+        <ul className="kukui-studio-sidebar__list">
+          {ACTIVITY_KINDS.map((k) => (
+            <li key={k}>
+              <button
+                type="button"
+                className={[
+                  "kukui-studio-sidebar__btn",
+                  k === kind ? "is-active" : "",
+                ]
+                  .filter(Boolean)
+                  .join(" ")}
+                onClick={() => setKind(k)}
+                aria-current={k === kind ? "true" : undefined}
+              >
+                {ACTIVITY_LABELS[k]}
+              </button>
+            </li>
+          ))}
+        </ul>
       </nav>
 
-      <main className="kukui-studio-grid">
+      <main className="kukui-studio-main">
         <section className="kukui-studio-panel">
           <div className="kukui-studio-panel-header">
             <div className="kukui-studio-tab-row">
@@ -179,7 +200,7 @@ export function App() {
           <div className="kukui-studio-panel-header">
             <strong>Live preview</strong>
             <span className="kukui-studio-meta">
-              Renders the actual @kukui/core component with your draft as input.
+              Real component, your draft as input
             </span>
           </div>
           <div className="kukui-studio-panel-body kukui-studio-preview">

@@ -1,21 +1,33 @@
-import { useMemo } from "react";
-import {
-  MultipleChoice,
-  FillInTheBlanks,
-  DragAndDrop,
-  CoursePresentation,
-  QuestionSet,
-  Hotspot3D,
-  VirtualTour,
-} from "@kukui/core";
+import { lazy, Suspense, useMemo } from "react";
 import { SchemaRegistry, type SchemaRegistryKey } from "@kukui/schemas";
 import type { ActivityKind } from "@kukui/core";
 
+// Each activity component is its own lazy chunk. Switching activity kinds
+// only fetches the chunk for the kind being previewed; in particular, the
+// 2D activities (MC / FIB / DnD / CP / QS) never pay for three.js + r3f
+// unless the user opens the 3D Hotspot or Virtual Tour preview.
+const MultipleChoice = lazy(() =>
+  import("@kukui/core").then((m) => ({ default: m.MultipleChoice })),
+);
+const FillInTheBlanks = lazy(() =>
+  import("@kukui/core").then((m) => ({ default: m.FillInTheBlanks })),
+);
+const DragAndDrop = lazy(() =>
+  import("@kukui/core").then((m) => ({ default: m.DragAndDrop })),
+);
+const CoursePresentation = lazy(() =>
+  import("@kukui/core").then((m) => ({ default: m.CoursePresentation })),
+);
+const QuestionSet = lazy(() =>
+  import("@kukui/core").then((m) => ({ default: m.QuestionSet })),
+);
+const Hotspot3D = lazy(() => import("@kukui/core").then((m) => ({ default: m.Hotspot3D })));
+const VirtualTour = lazy(() => import("@kukui/core").then((m) => ({ default: m.VirtualTour })));
+
 /**
- * Live preview pane. Validates the current form value against the matching
- * Zod schema, then renders the actual @kukui/core activity component if
- * valid; otherwise shows the validation errors so the author can fix them
- * inline.
+ * Live preview pane. Validates the current draft against the matching Zod
+ * schema, then renders the actual @kukui/core component if valid; on
+ * failure shows the validation issues so the author can fix them inline.
  */
 export function Preview({ kind, value }: { kind: ActivityKind; value: unknown }) {
   const result = useMemo(
@@ -42,27 +54,51 @@ export function Preview({ kind, value }: { kind: ActivityKind; value: unknown })
   }
 
   // The runtime Zod parse above narrowed `config` to the right shape for
-  // `kind`. TypeScript can't track that through the dispatch table here any
-  // more than ActivityHost can, so each branch passes the same any-typed
-  // payload through.
+  // `kind`. TypeScript can't track that through the dispatch table.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const config = result.data as any;
   const noop = () => {};
 
+  return (
+    <Suspense fallback={<PreviewLoading />}>
+      {renderActivity(kind, config, noop)}
+    </Suspense>
+  );
+}
+
+function renderActivity(kind: ActivityKind, config: unknown, noop: () => void) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const c = config as any;
   switch (kind) {
     case "multiple-choice":
-      return <MultipleChoice config={config} onSubmit={noop} />;
+      return <MultipleChoice config={c} onSubmit={noop} />;
     case "fill-in-the-blanks":
-      return <FillInTheBlanks config={config} onSubmit={noop} />;
+      return <FillInTheBlanks config={c} onSubmit={noop} />;
     case "drag-and-drop":
-      return <DragAndDrop config={config} onSubmit={noop} />;
+      return <DragAndDrop config={c} onSubmit={noop} />;
     case "course-presentation":
-      return <CoursePresentation config={config} onSubmit={noop} />;
+      return <CoursePresentation config={c} onSubmit={noop} />;
     case "question-set":
-      return <QuestionSet config={config} onSubmit={noop} />;
+      return <QuestionSet config={c} onSubmit={noop} />;
     case "hotspot-3d":
-      return <Hotspot3D config={config} onSubmit={noop} />;
+      return <Hotspot3D config={c} onSubmit={noop} />;
     case "virtual-tour":
-      return <VirtualTour config={config} onSubmit={noop} />;
+      return <VirtualTour config={c} onSubmit={noop} />;
   }
+}
+
+function PreviewLoading() {
+  return (
+    <div
+      role="status"
+      aria-live="polite"
+      style={{
+        padding: 28,
+        color: "var(--color-text-secondary)",
+        fontSize: 13,
+      }}
+    >
+      Loading preview…
+    </div>
+  );
 }

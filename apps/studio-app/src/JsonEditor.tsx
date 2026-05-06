@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
 
 /**
- * Raw-JSON fallback editor. RJSF is the primary path; this catches
+ * Raw-JSON fallback editor. The form tab is the primary path; this catches
  * everything RJSF can't express (discriminated unions in Course
  * Presentation elements, etc.). The textarea always reflects the current
- * form state; saving runs JSON.parse and bubbles the result up.
+ * draft; clicking Apply runs JSON.parse and bubbles the result up.
  */
 export function JsonEditor({
   value,
@@ -32,45 +32,23 @@ export function JsonEditor({
   };
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
+    <div className="ks-json">
       <textarea
+        className="ks-json__textarea"
         value={text}
         onChange={(e) => setText(e.target.value)}
         spellCheck={false}
-        style={{
-          flex: 1,
-          minHeight: 320,
-          padding: 12,
-          fontFamily: "ui-monospace, SF Mono, Menlo, monospace",
-          fontSize: 12,
-          lineHeight: 1.5,
-          border: "2px solid var(--color-border)",
-          borderRadius: 8,
-          background: "var(--color-surface)",
-          resize: "vertical",
-        }}
+        aria-label="Raw JSON for the active activity"
       />
-      <div style={{ display: "flex", gap: 8, alignItems: "center", marginTop: 8 }}>
-        <button
-          type="button"
-          onClick={apply}
-          style={{
-            minHeight: 36,
-            padding: "6px 14px",
-            background: "var(--color-primary)",
-            color: "white",
-            border: "none",
-            borderRadius: 8,
-            fontWeight: 700,
-          }}
-        >
+      <div className="ks-json__bar">
+        <button type="button" onClick={apply} className="ks-json__apply">
           Apply JSON
         </button>
         {error ? (
-          <span style={{ color: "var(--color-error)", fontSize: 13 }}>{error}</span>
+          <span className="ks-json__msg ks-json__msg--err">{error}</span>
         ) : (
-          <span style={{ color: "var(--color-text-secondary)", fontSize: 13 }}>
-            Edits are not live — click Apply to feed them into the form + preview.
+          <span className="ks-json__msg">
+            Edits aren't live — click Apply to feed them into the form + preview.
           </span>
         )}
       </div>
