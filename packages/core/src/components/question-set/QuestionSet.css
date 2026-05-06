@@ -1,0 +1,100 @@
+.kukui-qs {
+  display: flex;
+  justify-content: center;
+  padding: var(--spacing-lg, 16px);
+}
+
+.kukui-qs__card {
+  width: 100%;
+  max-width: 760px;
+  background: var(--color-surface, #ffffff);
+  border: 1px solid var(--color-border, #dad2c6);
+  border-radius: var(--radius-card, 12px);
+}
+
+.kukui-qs__header {
+  padding: var(--spacing-lg, 16px) var(--spacing-3xl, 28px) 0;
+}
+
+.kukui-qs__title {
+  margin: 0;
+  font-size: var(--font-size-title, 24px);
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+.kukui-qs__progress {
+  margin: var(--spacing-xs, 4px) 0 0;
+  font-size: var(--font-size-meta, 13px);
+  color: var(--color-text-secondary);
+}
+
+.kukui-qs__body {
+  padding: 0;
+}
+
+.kukui-qs__nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-md, 12px);
+  padding: var(--spacing-lg, 16px) var(--spacing-3xl, 28px);
+}
+
+.kukui-qs__primary,
+.kukui-qs__secondary {
+  min-height: 44px;
+  padding: 10px 20px;
+  border-radius: var(--radius-md, 8px);
+  font-size: var(--font-size-answer, 15px);
+  font-weight: 700;
+}
+
+.kukui-qs__primary {
+  background: var(--color-primary);
+  color: #ffffff;
+  border: none;
+}
+
+.kukui-qs__primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.kukui-qs__secondary {
+  background: transparent;
+  color: var(--color-primary);
+  border: 2px solid var(--color-primary);
+}
+
+.kukui-qs__secondary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.kukui-qs__feedback {
+  min-height: 0;
+  padding: 0 var(--spacing-3xl, 28px) var(--spacing-lg, 16px);
+  margin: 0;
+  font-size: var(--font-size-meta, 13px);
+  color: var(--color-text-secondary);
+  opacity: 1;
+  transition: min-height 200ms ease;
+}
+
+.kukui-qs__feedback.is-visible {
+  min-height: 28px;
+}
+
+.kukui-qs__empty {
+  padding: var(--spacing-3xl, 28px);
+  background: var(--color-error-soft);
+  border: 2px solid var(--color-error);
+  border-radius: var(--radius-md, 8px);
+  color: var(--color-text-primary);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kukui-qs__feedback {
+    transition: none;
+  }
+}

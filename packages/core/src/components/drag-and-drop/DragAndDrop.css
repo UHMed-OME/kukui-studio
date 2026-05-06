@@ -1,0 +1,242 @@
+/*
+ * Drag and Drop — board with absolutely-positioned drop zones over a
+ * background image; tray of draggables to the side; keyboard fallback
+ * (select-driven) below. Layout-stable: zone borders are constant 2 px.
+ */
+
+.kukui-dnd {
+  display: flex;
+  justify-content: center;
+  padding: var(--spacing-2xl, 24px);
+}
+
+.kukui-dnd__card {
+  width: 100%;
+  max-width: 960px;
+  background: var(--color-surface, #ffffff);
+  border: 1px solid var(--color-border, #dad2c6);
+  border-radius: var(--radius-card, 12px);
+  padding: var(--spacing-3xl, 28px);
+}
+
+.kukui-dnd__title {
+  margin: 0 0 var(--spacing-lg, 16px);
+  font-size: var(--font-size-title, 24px);
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+.kukui-dnd__layout {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(180px, 1fr);
+  gap: var(--spacing-lg, 16px);
+}
+
+@media (max-width: 720px) {
+  .kukui-dnd__layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+.kukui-dnd__board {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  background-color: var(--color-tip-bg, #f2f0e8);
+  background-size: cover;
+  background-position: center;
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-md, 8px);
+  overflow: hidden;
+}
+
+.kukui-dnd__zone {
+  position: absolute;
+  border: 2px dashed var(--color-border-hover, #bbae9a);
+  border-radius: var(--radius-md, 8px);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-xs, 4px);
+  padding: var(--spacing-xs, 4px);
+  background: rgb(255 255 255 / 0.55);
+  transition: background-color 150ms ease;
+}
+
+.kukui-dnd__zone.is-over {
+  background: var(--color-primary-soft);
+}
+
+.kukui-dnd__tray {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm, 8px);
+  min-height: 200px;
+  padding: var(--spacing-md, 12px);
+  background: var(--color-tip-bg, #f2f0e8);
+  border: 2px dashed var(--color-border);
+  border-radius: var(--radius-md, 8px);
+}
+
+.kukui-dnd__tray.is-over {
+  background: var(--color-primary-soft);
+}
+
+.kukui-dnd__tray-empty {
+  margin: 0;
+  font-size: var(--font-size-meta, 13px);
+  color: var(--color-text-secondary);
+}
+
+.kukui-dnd__chip {
+  min-height: 44px;
+  padding: 8px 14px;
+  background: var(--color-surface, #ffffff);
+  border: 2px solid var(--color-primary, #7b4324);
+  border-radius: var(--radius-md, 8px);
+  font-size: var(--font-size-answer, 15px);
+  color: var(--color-text-primary);
+  cursor: grab;
+  text-align: left;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs, 4px);
+}
+
+.kukui-dnd__chip:hover:not(:disabled) {
+  background: var(--color-primary-soft);
+}
+
+.kukui-dnd__chip.is-placed {
+  margin: 2px;
+}
+
+.kukui-dnd__chip.is-correct {
+  border-color: var(--color-success, #2e6e41);
+  background: var(--color-success-soft);
+}
+
+.kukui-dnd__chip.is-incorrect {
+  border-color: var(--color-error, #c34132);
+  background: var(--color-error-soft);
+}
+
+.kukui-dnd__chip.is-dragging {
+  opacity: 0.6;
+}
+
+.kukui-dnd__chip-icon {
+  font-weight: 700;
+  font-size: 16px;
+}
+
+.kukui-dnd__chip.is-correct .kukui-dnd__chip-icon {
+  color: var(--color-success);
+}
+.kukui-dnd__chip.is-incorrect .kukui-dnd__chip-icon {
+  color: var(--color-error);
+}
+
+.kukui-dnd__feedback {
+  min-height: 0;
+  margin-top: var(--spacing-lg, 16px);
+  font-size: var(--font-size-meta, 13px);
+  color: var(--color-text-secondary);
+  opacity: 0;
+  transition:
+    opacity 200ms ease,
+    min-height 200ms ease;
+}
+
+.kukui-dnd__feedback.is-visible {
+  opacity: 1;
+  min-height: 28px;
+}
+
+.kukui-dnd__actions {
+  margin-top: var(--spacing-xl, 20px);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-md, 12px);
+}
+
+.kukui-dnd__primary,
+.kukui-dnd__secondary {
+  min-height: 44px;
+  padding: 10px 20px;
+  border-radius: var(--radius-md, 8px);
+  font-size: var(--font-size-answer, 15px);
+  font-weight: 700;
+}
+
+.kukui-dnd__primary {
+  background: var(--color-primary);
+  color: #ffffff;
+  border: none;
+}
+
+.kukui-dnd__primary:hover:not(:disabled) {
+  background: var(--color-primary-hover);
+}
+
+.kukui-dnd__primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.kukui-dnd__secondary {
+  background: transparent;
+  color: var(--color-primary);
+  border: 2px solid var(--color-primary);
+}
+
+.kukui-dnd__fallback {
+  margin-top: var(--spacing-xl, 20px);
+  padding: var(--spacing-md, 12px) var(--spacing-lg, 16px);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md, 8px);
+  background: var(--color-tip-bg, #f2f0e8);
+}
+
+.kukui-dnd__fallback-legend {
+  font-size: var(--font-size-meta, 13px);
+  font-weight: 700;
+  color: var(--color-text-secondary);
+  padding: 0 var(--spacing-xs, 4px);
+}
+
+.kukui-dnd__fallback-list {
+  list-style: none;
+  margin: var(--spacing-sm, 8px) 0 0;
+  padding: 0;
+  display: grid;
+  gap: var(--spacing-sm, 8px);
+}
+
+.kukui-dnd__fallback-row {
+  display: grid;
+  grid-template-columns: minmax(120px, 1fr) 2fr;
+  gap: var(--spacing-md, 12px);
+  align-items: center;
+}
+
+.kukui-dnd__fallback-label {
+  font-size: var(--font-size-answer, 15px);
+}
+
+.kukui-dnd__fallback-select {
+  min-height: 44px;
+  padding: 4px 10px;
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-md, 8px);
+  background: var(--color-surface);
+  font-size: var(--font-size-answer, 15px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kukui-dnd__feedback,
+  .kukui-dnd__zone {
+    transition: none;
+  }
+}

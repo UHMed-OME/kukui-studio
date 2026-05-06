@@ -1,0 +1,176 @@
+.kukui-vt {
+  display: flex;
+  justify-content: center;
+  padding: var(--spacing-lg, 16px);
+}
+
+.kukui-vt__card {
+  width: 100%;
+  max-width: 880px;
+  background: var(--color-surface, #ffffff);
+  border: 1px solid var(--color-border, #dad2c6);
+  border-radius: var(--radius-card, 12px);
+  padding: var(--spacing-3xl, 28px);
+}
+
+.kukui-vt__title {
+  margin: 0 0 var(--spacing-lg, 16px);
+  font-size: var(--font-size-title, 24px);
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+.kukui-vt__canvas-wrap {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-md, 8px);
+  background: #0b0b10;
+  overflow: hidden;
+}
+
+.kukui-vt__no-webgl {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  background: var(--color-tip-bg, #f2f0e8);
+  border: 2px dashed var(--color-border-hover);
+  border-radius: var(--radius-md, 8px);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-meta, 13px);
+  text-align: center;
+  padding: var(--spacing-lg, 16px);
+}
+
+.kukui-vt__fallback {
+  margin-top: var(--spacing-xl, 20px);
+  padding: var(--spacing-md, 12px) var(--spacing-lg, 16px);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md, 8px);
+  background: var(--color-tip-bg, #f2f0e8);
+}
+
+.kukui-vt__fallback-legend {
+  font-size: var(--font-size-meta, 13px);
+  font-weight: 700;
+  color: var(--color-text-secondary);
+}
+
+.kukui-vt__fallback-list {
+  list-style: none;
+  margin: var(--spacing-sm, 8px) 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm, 8px);
+}
+
+.kukui-vt__fallback-button {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 44px;
+  padding: var(--spacing-sm, 8px) var(--spacing-lg, 16px);
+  background: var(--color-surface);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-md, 8px);
+  text-align: left;
+  font-size: var(--font-size-answer, 15px);
+}
+
+.kukui-vt__fallback-button:hover:not(:disabled) {
+  border-color: var(--color-border-hover);
+}
+
+.kukui-vt__fallback-button.is-visited {
+  border-color: var(--color-success);
+  background: var(--color-success-soft);
+}
+
+.kukui-vt__fallback-icon {
+  font-weight: 700;
+  font-size: 16px;
+}
+
+.kukui-vt__overlay {
+  margin-top: var(--spacing-lg, 16px);
+  padding: var(--spacing-lg, 16px);
+  background: var(--color-surface);
+  border: 2px solid var(--color-primary);
+  border-radius: var(--radius-md, 8px);
+}
+
+.kukui-vt__overlay-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--spacing-md, 12px);
+}
+
+.kukui-vt__overlay-title {
+  margin: 0;
+  font-size: var(--font-size-subtitle, 18px);
+  color: var(--color-text-primary);
+}
+
+.kukui-vt__overlay-close {
+  min-height: 44px;
+  min-width: 44px;
+  border: 2px solid var(--color-border);
+  background: var(--color-surface);
+  border-radius: var(--radius-md, 8px);
+  font-size: 20px;
+  color: var(--color-text-secondary);
+}
+
+.kukui-vt__overlay-body {
+  margin-top: var(--spacing-md, 12px);
+  font-size: var(--font-size-prompt, 16px);
+  line-height: 1.5;
+}
+
+.kukui-vt__overlay-img {
+  max-width: 100%;
+  height: auto;
+  border-radius: var(--radius-md, 8px);
+}
+
+.kukui-vt__overlay-caption {
+  margin-top: var(--spacing-xs, 4px);
+  font-size: var(--font-size-meta, 13px);
+  color: var(--color-text-secondary);
+}
+
+.kukui-vt__progress {
+  margin-top: var(--spacing-lg, 16px);
+  font-size: var(--font-size-meta, 13px);
+  color: var(--color-text-secondary);
+}
+
+.kukui-vt__actions {
+  margin-top: var(--spacing-md, 12px);
+  display: flex;
+  gap: var(--spacing-md, 12px);
+}
+
+.kukui-vt__primary {
+  min-height: 44px;
+  padding: 10px 20px;
+  background: var(--color-primary);
+  color: #ffffff;
+  border: none;
+  border-radius: var(--radius-md, 8px);
+  font-size: var(--font-size-answer, 15px);
+  font-weight: 700;
+}
+
+.kukui-vt__done {
+  margin: 0;
+  font-size: var(--font-size-prompt, 16px);
+  color: var(--color-success);
+  font-weight: 700;
+}

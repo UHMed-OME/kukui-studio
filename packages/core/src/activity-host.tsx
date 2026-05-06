@@ -2,8 +2,14 @@ import { useEffect, useState, type CSSProperties } from "react";
 import { SchemaRegistry, type SchemaRegistryKey } from "@kukui/schemas";
 import { loadContent, ContentLoadError } from "./content.js";
 import { getScormDriver } from "./scorm.js";
-import type { ActivityKind, ScoreState } from "./types.js";
+import type { ActivityKind, ActivityProps, ScoreState } from "./types.js";
 import { MultipleChoice } from "./components/multiple-choice/index.js";
+import { FillInTheBlanks } from "./components/fill-in-the-blanks/index.js";
+import { DragAndDrop } from "./components/drag-and-drop/index.js";
+import { CoursePresentation } from "./components/course-presentation/index.js";
+import { QuestionSet } from "./components/question-set/index.js";
+import { Hotspot3D } from "./components/hotspot-3d/index.js";
+import { VirtualTour } from "./components/virtual-tour/index.js";
 
 export type { ActivityKind };
 
@@ -88,28 +94,32 @@ export function ActivityHost({ kind, configUrl, loader = loadContent }: Activity
     );
   }
 
+  // Each activity gets the validated config, the SCORM-wired callbacks, and
+  // any prior suspend data the LMS handed back. The shared ActivityProps
+  // contract keeps every component swap-in-able.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const sharedProps: ActivityProps<any> = {
+    config: state.config,
+    onSubmit: handleSubmit,
+    onPersist: handlePersist,
+    suspendData: scorm.loadSuspendData(),
+  };
+
   switch (kind) {
     case "multiple-choice":
-      return (
-        <MultipleChoice
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          config={state.config as any}
-          onSubmit={handleSubmit}
-          onPersist={handlePersist}
-          suspendData={scorm.loadSuspendData()}
-        />
-      );
+      return <MultipleChoice {...sharedProps} />;
     case "fill-in-the-blanks":
+      return <FillInTheBlanks {...sharedProps} />;
     case "drag-and-drop":
+      return <DragAndDrop {...sharedProps} />;
     case "course-presentation":
+      return <CoursePresentation {...sharedProps} />;
     case "question-set":
+      return <QuestionSet {...sharedProps} />;
     case "hotspot-3d":
+      return <Hotspot3D {...sharedProps} />;
     case "virtual-tour":
-      return (
-        <div role="status" style={pendingStyle}>
-          <strong>{kind}</strong> is not yet implemented. (Phase 1 / M5 work in progress.)
-        </div>
-      );
+      return <VirtualTour {...sharedProps} />;
   }
 }
 
@@ -128,4 +138,3 @@ const errorStyle: CSSProperties = {
   borderColor: "var(--color-error, #c34132)",
   background: "var(--color-error-soft)",
 };
-const pendingStyle: CSSProperties = { ...baseCard, color: "var(--color-text-secondary)" };

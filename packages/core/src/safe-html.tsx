@@ -1,4 +1,4 @@
-import type { ElementType, ReactNode } from "react";
+import { createElement, type ElementType, type ReactNode } from "react";
 import parse, { type DOMNode, type HTMLReactParserOptions } from "html-react-parser";
 import DOMPurify from "isomorphic-dompurify";
 
@@ -67,13 +67,17 @@ const parserOptions: HTMLReactParserOptions = {
  * every consumer is safe by default rather than trusting each surface to do
  * the right thing.
  */
-export function SafeHtml({ html, as: Tag = "div", className }: SafeHtmlProps) {
+export function SafeHtml({ html, as, className }: SafeHtmlProps) {
   const clean = DOMPurify.sanitize(html, {
     ALLOWED_TAGS,
     ALLOWED_ATTR: ALLOWED_ATTRS,
     ALLOW_DATA_ATTR: false,
   });
-  return <Tag className={className}>{parse(clean, parserOptions) as ReactNode}</Tag>;
+  return createElement(
+    as ?? "div",
+    { className },
+    parse(clean, parserOptions) as ReactNode,
+  );
 }
 
 export type SafeHtmlProps = {

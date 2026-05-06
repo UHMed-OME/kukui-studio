@@ -1,0 +1,101 @@
+.kukui-cp {
+  display: flex;
+  justify-content: center;
+  padding: var(--spacing-lg, 16px);
+}
+
+.kukui-cp__card {
+  width: 100%;
+  max-width: 960px;
+  background: var(--color-surface, #ffffff);
+  border: 1px solid var(--color-border, #dad2c6);
+  border-radius: var(--radius-card, 12px);
+}
+
+.kukui-cp__header {
+  padding: var(--spacing-lg, 16px) var(--spacing-3xl, 28px) 0;
+}
+
+.kukui-cp__title {
+  margin: 0;
+  font-size: var(--font-size-title, 24px);
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+.kukui-cp__progress {
+  margin: var(--spacing-xs, 4px) 0 0;
+  font-size: var(--font-size-meta, 13px);
+  color: var(--color-text-secondary);
+}
+
+.kukui-cp__canvas {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  margin: var(--spacing-lg, 16px) 0;
+  background-size: cover;
+  background-position: center;
+  border-top: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--color-border);
+  overflow: auto;
+}
+
+.kukui-cp__slide-title {
+  position: absolute;
+  top: var(--spacing-md, 12px);
+  left: var(--spacing-md, 12px);
+  margin: 0;
+  font-size: var(--font-size-subtitle, 18px);
+  color: var(--color-text-secondary);
+}
+
+.kukui-cp__el {
+  position: absolute;
+  overflow: auto;
+}
+
+.kukui-cp__el--image {
+  object-fit: contain;
+}
+
+.kukui-cp__el--invalid {
+  background: var(--color-error-soft);
+  border: 2px solid var(--color-error);
+  border-radius: var(--radius-md, 8px);
+  padding: var(--spacing-md, 12px);
+  font-size: var(--font-size-meta, 13px);
+}
+
+.kukui-cp__nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-md, 12px);
+  padding: var(--spacing-lg, 16px) var(--spacing-3xl, 28px);
+}
+
+.kukui-cp__primary,
+.kukui-cp__secondary {
+  min-height: 44px;
+  padding: 10px 20px;
+  border-radius: var(--radius-md, 8px);
+  font-size: var(--font-size-answer, 15px);
+  font-weight: 700;
+}
+
+.kukui-cp__primary {
+  background: var(--color-primary);
+  color: #ffffff;
+  border: none;
+}
+
+.kukui-cp__secondary {
+  background: transparent;
+  color: var(--color-primary);
+  border: 2px solid var(--color-primary);
+}
+
+.kukui-cp__secondary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
