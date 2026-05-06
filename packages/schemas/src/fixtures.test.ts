@@ -14,6 +14,7 @@ const ACTIVITIES: SchemaRegistryKey[] = [
   "course-presentation",
   "question-set",
   "hotspot-3d",
+  "hotspot-2d",
   "virtual-tour",
 ];
 

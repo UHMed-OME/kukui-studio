@@ -34,23 +34,65 @@ export type ActivityProps<TConfig> = {
   headingLevel?: 1 | 2 | 3;
 };
 
-export type ActivityKind =
+export type BuiltActivityKind =
   | "multiple-choice"
   | "fill-in-the-blanks"
   | "drag-and-drop"
   | "course-presentation"
   | "question-set"
   | "hotspot-3d"
+  | "hotspot-2d"
   | "virtual-tour";
 
-export const ACTIVITY_KINDS: readonly ActivityKind[] = [
+export type PlannedKind =
+  | "sequence-steps"
+  | "matching-pairs"
+  | "categorization"
+  | "concept-map"
+  | "image-annotation"
+  | "image-comparison-slider"
+  | "anatomy-labeling"
+  | "branching-scenario"
+  | "interactive-video"
+  | "audio-recording"
+  | "highlight-text"
+  | "lab-panel"
+  | "ddx-tree"
+  | "osce"
+  | "flashcards"
+  | "reflection-prompt";
+
+export type ActivityKind = BuiltActivityKind | PlannedKind;
+
+export const BUILT_ACTIVITY_KINDS: readonly BuiltActivityKind[] = [
   "multiple-choice",
   "fill-in-the-blanks",
   "drag-and-drop",
   "course-presentation",
   "question-set",
   "hotspot-3d",
+  "hotspot-2d",
   "virtual-tour",
+] as const;
+
+export const ACTIVITY_KINDS: readonly ActivityKind[] = [
+  ...BUILT_ACTIVITY_KINDS,
+  "sequence-steps",
+  "matching-pairs",
+  "categorization",
+  "concept-map",
+  "image-annotation",
+  "image-comparison-slider",
+  "anatomy-labeling",
+  "branching-scenario",
+  "interactive-video",
+  "audio-recording",
+  "highlight-text",
+  "lab-panel",
+  "ddx-tree",
+  "osce",
+  "flashcards",
+  "reflection-prompt",
 ] as const;
 
 /** Score band for `overallFeedback` lookups. */

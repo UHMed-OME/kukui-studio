@@ -13,7 +13,9 @@
     "./course-presentation": "./src/course-presentation.ts",
     "./question-set": "./src/question-set.ts",
     "./hotspot-3d": "./src/hotspot-3d.ts",
-    "./virtual-tour": "./src/virtual-tour.ts"
+    "./hotspot-2d": "./src/hotspot-2d.ts",
+    "./virtual-tour": "./src/virtual-tour.ts",
+    "./stub": "./src/stub.ts"
   },
   "dependencies": {
     "zod": "^4.0.0"

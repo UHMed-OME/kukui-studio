@@ -3,6 +3,18 @@
  * when an author creates a new activity (or hits Reset).
  */
 import type { ActivityKind } from "@kukui/core";
+import { PLANNED_LABELS, PLANNED_ACTIVITY_KINDS, PLANNED_DESCRIPTIONS } from "@kukui/core";
+
+const stubStarter = (label: string, description: string): unknown => ({
+  version: "1.0",
+  title: `Untitled ${label.toLowerCase()}`,
+  description,
+  notes: "",
+});
+
+const PLANNED_STARTERS = Object.fromEntries(
+  PLANNED_ACTIVITY_KINDS.map((k) => [k, stubStarter(PLANNED_LABELS[k], PLANNED_DESCRIPTIONS[k])]),
+) as Record<(typeof PLANNED_ACTIVITY_KINDS)[number], unknown>;
 
 export const STARTERS: Record<ActivityKind, unknown> = {
   "multiple-choice": {
@@ -94,6 +106,30 @@ export const STARTERS: Record<ActivityKind, unknown> = {
     ],
     behaviour: { enableRetry: true, showHotspotMarkers: true, allowOrbit: true },
   },
+  "hotspot-2d": {
+    version: "1.0",
+    title: "Untitled image hotspot",
+    prompt: "<p>Click the correct region.</p>",
+    image: {
+      src: "https://placehold.co/1024x640/eef0f6/4b5563?text=Image",
+      alt: "Replace with the image authors will mark up",
+    },
+    hotspots: [
+      {
+        id: "h1",
+        label: "Region A",
+        rect: { x: 0.2, y: 0.3, w: 0.2, h: 0.2 },
+        correct: true,
+      },
+      {
+        id: "h2",
+        label: "Region B",
+        rect: { x: 0.6, y: 0.3, w: 0.2, h: 0.2 },
+        correct: false,
+      },
+    ],
+    behaviour: { enableRetry: true, showHotspotMarkers: true },
+  },
   "virtual-tour": {
     version: "1.0",
     title: "Untitled tour",
@@ -114,7 +150,8 @@ export const STARTERS: Record<ActivityKind, unknown> = {
     completion: { mode: "manual" },
     behaviour: { enableRetry: true, showOverlayMarkers: true },
   },
-};
+  ...PLANNED_STARTERS,
+} as Record<ActivityKind, unknown>;
 
 export const ACTIVITY_LABELS: Record<ActivityKind, string> = {
   "multiple-choice": "Multiple Choice",
@@ -123,5 +160,7 @@ export const ACTIVITY_LABELS: Record<ActivityKind, string> = {
   "course-presentation": "Course Presentation",
   "question-set": "Question Set",
   "hotspot-3d": "3D Hotspot Identification",
+  "hotspot-2d": "Image Hotspot 2D",
   "virtual-tour": "Virtual Environment Tour",
-};
+  ...PLANNED_LABELS,
+} as Record<ActivityKind, string>;

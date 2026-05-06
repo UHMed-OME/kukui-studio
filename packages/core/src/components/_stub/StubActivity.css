@@ -1,0 +1,62 @@
+.kukui-stub {
+  max-width: 720px;
+  margin: 48px auto;
+  padding: var(--spacing-3xl, 28px);
+  background: var(--color-surface, #ffffff);
+  border: 1px solid var(--color-border, #dad2c6);
+  border-radius: var(--radius-card, 12px);
+}
+
+.kukui-stub__badge {
+  display: inline-block;
+  background: var(--color-tip-bg, #f2f0e8);
+  color: var(--color-text-secondary, #606069);
+  font-size: var(--font-size-micro, 12px);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 3px 10px;
+  border-radius: 999px;
+  margin-bottom: var(--spacing-md, 12px);
+}
+
+.kukui-stub__title {
+  margin: 0 0 var(--spacing-md, 12px);
+  font-size: var(--font-size-title, 24px);
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+.kukui-stub__desc {
+  margin: 0 0 var(--spacing-lg, 16px);
+  font-size: var(--font-size-prompt, 16px);
+  line-height: 1.5;
+  color: var(--color-text-primary);
+}
+
+.kukui-stub__notes {
+  margin: 0 0 var(--spacing-lg, 16px);
+  padding: var(--spacing-md, 12px);
+  background: var(--color-tip-bg);
+  border-radius: var(--radius-md, 8px);
+  font-size: var(--font-size-meta, 13px);
+  color: var(--color-text-secondary);
+}
+
+.kukui-stub__hint {
+  margin: 0 0 var(--spacing-xl, 20px);
+  font-size: var(--font-size-meta, 13px);
+  color: var(--color-text-secondary);
+  font-style: italic;
+}
+
+.kukui-stub__complete {
+  min-height: 44px;
+  padding: 10px 20px;
+  background: var(--color-primary);
+  color: #ffffff;
+  border: none;
+  border-radius: var(--radius-md, 8px);
+  font-size: var(--font-size-answer, 15px);
+  font-weight: 700;
+}

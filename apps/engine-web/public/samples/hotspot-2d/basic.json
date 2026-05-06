@@ -1,0 +1,34 @@
+{
+  "_comment": "Demo fixture using a placehold.co background. Replace image.src with author-provided art for production.",
+  "version": "1.0",
+  "title": "Identify the cell organelle",
+  "prompt": "<p>Click the <em>nucleus</em> in the diagram below.</p>",
+  "image": {
+    "src": "https://placehold.co/1024x640/eef0f6/4b5563?text=Cell+diagram+(placeholder)",
+    "alt": "Placeholder for a labeled cell diagram"
+  },
+  "hotspots": [
+    {
+      "id": "nucleus",
+      "label": "Nucleus",
+      "rect": { "x": 0.42, "y": 0.36, "w": 0.16, "h": 0.22 },
+      "correct": true,
+      "feedback": "Correct — the nucleus contains the cell's DNA."
+    },
+    {
+      "id": "mitochondrion",
+      "label": "Mitochondrion",
+      "rect": { "x": 0.7, "y": 0.5, "w": 0.18, "h": 0.16 },
+      "correct": false,
+      "feedback": "That's a mitochondrion. The nucleus is near the center."
+    },
+    {
+      "id": "membrane",
+      "label": "Cell membrane",
+      "rect": { "x": 0.05, "y": 0.05, "w": 0.9, "h": 0.05 },
+      "correct": false,
+      "feedback": "That's the cell membrane. Look for the labeled region near the centre."
+    }
+  ],
+  "behaviour": { "enableRetry": true, "showHotspotMarkers": true }
+}

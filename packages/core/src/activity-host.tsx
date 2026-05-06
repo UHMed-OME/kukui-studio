@@ -9,7 +9,10 @@ import { DragAndDrop } from "./components/drag-and-drop/index.js";
 import { CoursePresentation } from "./components/course-presentation/index.js";
 import { QuestionSet } from "./components/question-set/index.js";
 import { Hotspot3D } from "./components/hotspot-3d/index.js";
+import { Hotspot2D } from "./components/hotspot-2d/index.js";
 import { VirtualTour } from "./components/virtual-tour/index.js";
+import { StubActivity } from "./components/_stub/StubActivity.js";
+import { PLANNED_ACTIVITY_KINDS } from "./planned.js";
 
 export type { ActivityKind };
 
@@ -106,6 +109,10 @@ export function ActivityHost({ kind, configUrl, loader = loadContent }: Activity
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const cfg = state.config as any;
 
+  if ((PLANNED_ACTIVITY_KINDS as readonly string[]).includes(kind)) {
+    return <StubActivity config={cfg} kind={kind as never} {...callbacks} />;
+  }
+
   switch (kind) {
     case "multiple-choice":
       return <MultipleChoice config={cfg} {...callbacks} />;
@@ -119,8 +126,12 @@ export function ActivityHost({ kind, configUrl, loader = loadContent }: Activity
       return <QuestionSet config={cfg} {...callbacks} />;
     case "hotspot-3d":
       return <Hotspot3D config={cfg} {...callbacks} />;
+    case "hotspot-2d":
+      return <Hotspot2D config={cfg} {...callbacks} />;
     case "virtual-tour":
       return <VirtualTour config={cfg} {...callbacks} />;
+    default:
+      return <StubActivity config={cfg} {...callbacks} />;
   }
 }
 

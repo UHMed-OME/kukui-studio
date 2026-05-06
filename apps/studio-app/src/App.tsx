@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { type ActivityKind } from "@kukui/core";
+import { type ActivityKind, PLANNED_ACTIVITY_KINDS } from "@kukui/core";
 import { SchemaRegistry, type SchemaRegistryKey } from "@kukui/schemas";
 import { EditorForm } from "./EditorForm.js";
 import { JsonEditor } from "./JsonEditor.js";
@@ -11,32 +11,32 @@ import { downloadScormZip } from "./scormDownload.js";
 type Tab = "form" | "json";
 
 /**
- * Activities Kukui Studio is positioned to author.
+ * Studio promotes activities the LMS can't do natively. Quiz-style
+ * activities (Multiple Choice, Fill in the Blanks, Question Set) live in
+ * @kukui/core but aren't surfaced here — use Lamakū's native quiz tools
+ * for that.
  *
- * Quizzing (Multiple Choice, Fill in the Blanks, Question Set) overlaps
- * heavily with D2L's native quiz tooling — authors should use the LMS for
- * those. Studio focuses on activity surfaces D2L can't do natively or does
- * poorly: spatial drag-and-drop, slide presentations with custom layout,
- * 3D hotspots, and walkable scenes. Group / synchronous activities are
- * the Phase 3 (Kukui Live) story.
- *
- * The schemas and components for the quiz activities still live in
- * @kukui/core — they're built, tested, and ship in engine-web's SCORM
- * zips for anyone who wants them — Studio just doesn't promote them as
- * authoring targets.
+ * "Available" entries are fully implemented + ship a SCORM template.
+ * "Planned" entries are stubbed: visible in the sidebar so authors can
+ * draft against the catalog, but render the StubActivity placeholder
+ * until each one's real implementation ships.
  */
-const STUDIO_ACTIVITIES: readonly ActivityKind[] = [
+const STUDIO_AVAILABLE: readonly ActivityKind[] = [
   "drag-and-drop",
   "course-presentation",
   "hotspot-3d",
+  "hotspot-2d",
   "virtual-tour",
 ] as const;
+
+const STUDIO_PLANNED: readonly ActivityKind[] = PLANNED_ACTIVITY_KINDS;
+const STUDIO_ALL: readonly ActivityKind[] = [...STUDIO_AVAILABLE, ...STUDIO_PLANNED];
 
 export function App() {
   const [kind, setKind] = useState<ActivityKind>(() => {
     const params = new URLSearchParams(window.location.search);
     const fromUrl = params.get("activity");
-    if (fromUrl && STUDIO_ACTIVITIES.includes(fromUrl as ActivityKind)) {
+    if (fromUrl && STUDIO_ALL.includes(fromUrl as ActivityKind)) {
       return fromUrl as ActivityKind;
     }
     return "drag-and-drop";
@@ -116,7 +116,13 @@ export function App() {
     flash("Draft saved.");
   };
 
+  const isPlanned = (STUDIO_PLANNED as readonly string[]).includes(kind);
+
   const downloadScorm = async () => {
+    if (isPlanned) {
+      flash("This activity is in design — SCORM download will work once it ships.");
+      return;
+    }
     if (!validation.success) {
       flash("Fix the highlighted validation errors first.");
       return;
@@ -181,9 +187,9 @@ export function App() {
       </header>
 
       <nav className="kukui-studio-sidebar" aria-label="Activity type">
-        <h2 className="kukui-studio-sidebar__heading">Activity type</h2>
+        <h2 className="kukui-studio-sidebar__heading">Available now</h2>
         <ul className="kukui-studio-sidebar__list">
-          {STUDIO_ACTIVITIES.map((k) => (
+          {STUDIO_AVAILABLE.map((k) => (
             <li key={k}>
               <button
                 type="button"
@@ -201,10 +207,32 @@ export function App() {
             </li>
           ))}
         </ul>
+        <h2 className="kukui-studio-sidebar__heading kukui-studio-sidebar__heading--alt">
+          Coming soon
+        </h2>
+        <ul className="kukui-studio-sidebar__list">
+          {STUDIO_PLANNED.map((k) => (
+            <li key={k}>
+              <button
+                type="button"
+                className={[
+                  "kukui-studio-sidebar__btn kukui-studio-sidebar__btn--planned",
+                  k === kind ? "is-active" : "",
+                ]
+                  .filter(Boolean)
+                  .join(" ")}
+                onClick={() => setKind(k)}
+                aria-current={k === kind ? "true" : undefined}
+              >
+                {ACTIVITY_LABELS[k]}
+                <span className="kukui-studio-sidebar__hint">In design</span>
+              </button>
+            </li>
+          ))}
+        </ul>
         <p className="kukui-studio-sidebar__note">
-          For multiple-choice / fill-in-the-blank quizzing, use Lamakū's built-in quiz tools —
-          Studio focuses on activities the LMS can't do natively. Group + synchronous
-          activities are coming in <strong>Kukui Live</strong> (Phase 3).
+          Quiz-style activities live in Lamakū's native tools. Group + synchronous activities
+          are <strong>Kukui Live</strong> (Phase 3) — see the plan in <code>docs/superpowers/plans/</code>.
         </p>
       </nav>
 

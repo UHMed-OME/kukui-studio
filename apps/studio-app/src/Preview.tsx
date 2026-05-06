@@ -1,6 +1,6 @@
 import { lazy, Suspense, useMemo } from "react";
 import { SchemaRegistry, type SchemaRegistryKey } from "@kukui/schemas";
-import type { ActivityKind } from "@kukui/core";
+import { type ActivityKind, PLANNED_ACTIVITY_KINDS } from "@kukui/core";
 import { EditCanvas } from "./EditCanvas/index.js";
 
 export type PreviewMode = "live" | "edit";
@@ -25,7 +25,11 @@ const QuestionSet = lazy(() =>
   import("@kukui/core").then((m) => ({ default: m.QuestionSet })),
 );
 const Hotspot3D = lazy(() => import("@kukui/core").then((m) => ({ default: m.Hotspot3D })));
+const Hotspot2D = lazy(() => import("@kukui/core").then((m) => ({ default: m.Hotspot2D })));
 const VirtualTour = lazy(() => import("@kukui/core").then((m) => ({ default: m.VirtualTour })));
+const StubActivity = lazy(() =>
+  import("@kukui/core").then((m) => ({ default: m.StubActivity })),
+);
 
 /**
  * Live preview pane. Validates the current draft against the matching Zod
@@ -89,6 +93,9 @@ export function Preview({
 function renderActivity(kind: ActivityKind, config: unknown, noop: () => void) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const c = config as any;
+  if ((PLANNED_ACTIVITY_KINDS as readonly string[]).includes(kind)) {
+    return <StubActivity config={c} kind={kind as never} onSubmit={noop} />;
+  }
   switch (kind) {
     case "multiple-choice":
       return <MultipleChoice config={c} onSubmit={noop} />;
@@ -102,8 +109,12 @@ function renderActivity(kind: ActivityKind, config: unknown, noop: () => void) {
       return <QuestionSet config={c} onSubmit={noop} />;
     case "hotspot-3d":
       return <Hotspot3D config={c} onSubmit={noop} />;
+    case "hotspot-2d":
+      return <Hotspot2D config={c} onSubmit={noop} />;
     case "virtual-tour":
       return <VirtualTour config={c} onSubmit={noop} />;
+    default:
+      return <StubActivity config={c} onSubmit={noop} />;
   }
 }
 

@@ -7,7 +7,7 @@
  * present) renders inline below the label for fields that need format
  * guidance the author has to see at a glance.
  */
-import type { ActivityKind } from "@kukui/core";
+import { type ActivityKind, PLANNED_ACTIVITY_KINDS } from "@kukui/core";
 
 const HIDDEN = { "ui:widget": "hidden" } as const;
 
@@ -352,6 +352,62 @@ export const UI_SCHEMAS: Record<ActivityKind, Record<string, unknown>> = {
     },
   },
 
+  "hotspot-2d": {
+    ...COMMON,
+    "ui:order": ["title", "prompt", "image", "hotspots", "behaviour", "ui", "*"],
+    title: TITLE,
+    prompt: f(
+      "Prompt shown to the learner",
+      "Tells the learner what region to find. Use the toolbar to format text.",
+      { "ui:widget": "html", "ui:options": { rows: 3 } },
+    ),
+    image: {
+      "ui:title": "Image",
+      src: f("Image", "Paste a URL or upload a file. Files embed inline in the JSON.", {
+        "ui:widget": "file",
+        "ui:options": { accept: "image/*", maxSizeMb: 5, kind: "image" },
+      }),
+      alt: f(
+        "Alt text",
+        "Describes the image for screen-reader users. Empty if purely decorative.",
+      ),
+    },
+    hotspots: {
+      "ui:title": "Hotspots",
+      "ui:help":
+        "Rectangles overlaid on the image. Exactly one should be marked correct. Edit positions visually in the Edit-mode tab once that lands.",
+      items: {
+        id: f("Internal ID", "Unique identifier. Lowercase, no spaces."),
+        label: f("Label", "Shown on the marker chip and in the keyboard fallback list."),
+        rect: {
+          "ui:title": "Rectangle (normalized 0..1)",
+          x: f("X (left)"),
+          y: f("Y (top)"),
+          w: f("Width"),
+          h: f("Height"),
+        },
+        correct: f("Counts as correct", "Selecting this region is the right answer."),
+        feedback: f("Feedback after pick", "Shown after the learner submits if they picked this region.", {
+          "ui:widget": "textarea",
+          "ui:options": { rows: 2 },
+        }),
+      },
+    },
+    behaviour: {
+      "ui:title": "Activity behaviour",
+      enableRetry: BEHAVIOUR_RETRY,
+      showHotspotMarkers: f(
+        "Show hotspot markers",
+        "When on, learners see labeled rectangles indicating each region. When off, blind identification.",
+      ),
+      singlePoint: f("All-or-nothing scoring", "Hotspot is binary anyway — usually leave on."),
+    },
+    ui: {
+      "ui:title": "Button label overrides",
+      tryAgainButton: f("'Try Again' button text"),
+    },
+  },
+
   "virtual-tour": {
     ...COMMON,
     "ui:order": ["title", "scene", "movement", "overlays", "completion", "behaviour", "ui", "*"],
@@ -443,4 +499,24 @@ export const UI_SCHEMAS: Record<ActivityKind, Record<string, unknown>> = {
       closeOverlayButton: f("Close-overlay button label"),
     },
   },
-};
+
+  // Stubbed (planned) activity kinds get filled in below.
+} as unknown as Record<ActivityKind, Record<string, unknown>>;
+
+// Inject a minimal stub uiSchema for every planned kind. Each one backs to
+// StubConfigSchema and renders via StubActivity until a real
+// implementation lands.
+for (const kind of PLANNED_ACTIVITY_KINDS) {
+  UI_SCHEMAS[kind] = {
+    ...COMMON,
+    title: f("Activity title", "What learners and instructors see in the gradebook."),
+    description: f("Description", "Short summary of what the activity will do.", {
+      "ui:widget": "textarea",
+      "ui:options": { rows: 2 },
+    }),
+    notes: f("Author notes", "Use this space to draft requirements or design ideas.", {
+      "ui:widget": "textarea",
+      "ui:options": { rows: 6 },
+    }),
+  };
+}

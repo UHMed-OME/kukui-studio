@@ -1251,3 +1251,48 @@ button {
     display: none;
   }
 }
+
+.kukui-studio-sidebar__heading--alt {
+  margin-top: var(--spacing-xl, 20px);
+}
+
+.kukui-studio-sidebar__btn--planned {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-sm, 8px);
+  opacity: 0.78;
+}
+
+.kukui-studio-sidebar__btn--planned:hover {
+  opacity: 1;
+}
+
+.kukui-studio-sidebar__btn--planned.is-active {
+  opacity: 1;
+}
+
+.kukui-studio-sidebar__hint {
+  flex: 0 0 auto;
+  background: var(--color-tip-bg);
+  color: var(--color-text-secondary);
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 2px 6px;
+  border-radius: 999px;
+}
+
+.kukui-studio-sidebar__btn--planned.is-active .kukui-studio-sidebar__hint {
+  background: var(--color-primary-soft);
+  color: var(--color-primary);
+}
+
+.kukui-studio-sidebar__note code {
+  background: var(--color-tip-bg);
+  padding: 1px 4px;
+  border-radius: 3px;
+  font-family: var(--font-family-mono);
+  font-size: 11px;
+}

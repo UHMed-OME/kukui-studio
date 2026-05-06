@@ -18,6 +18,7 @@ export default defineConfig({
         "course-presentation": resolve(__dirname, "course-presentation.html"),
         "question-set": resolve(__dirname, "question-set.html"),
         "hotspot-3d": resolve(__dirname, "hotspot-3d.html"),
+        "hotspot-2d": resolve(__dirname, "hotspot-2d.html"),
         "virtual-tour": resolve(__dirname, "virtual-tour.html"),
       },
     },
