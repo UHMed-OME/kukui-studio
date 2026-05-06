@@ -1,6 +1,6 @@
 import { Suspense, useEffect, useId, useMemo, useState } from "react";
 import { Canvas } from "@react-three/fiber";
-import { Gltf, OrbitControls } from "@react-three/drei";
+import { Html, OrbitControls, useGLTF } from "@react-three/drei";
 import type { Hotspot3DConfig } from "@kukui/schemas";
 import type { ActivityProps } from "../../types.js";
 import { SafeHtml } from "../../safe-html.js";
@@ -206,38 +206,106 @@ function Hotspot3DScene({
 
   const showMarkers = config.behaviour?.showHotspotMarkers ?? true;
   const allowOrbit = config.behaviour?.allowOrbit ?? true;
-  const camera = config.camera ?? {};
+  const cameraCfg = config.camera ?? {};
 
   return (
     <div className="kukui-h3d__canvas-wrap">
-      <Canvas camera={{ position: [0, 0, camera.initialDistance ?? 3] }}>
-        <ambientLight intensity={0.7} />
-        <directionalLight position={[5, 5, 5]} intensity={0.9} />
+      <Canvas camera={{ position: [0, 0.05, cameraCfg.initialDistance ?? 0.6], fov: 35 }}>
+        <ambientLight intensity={0.6} />
+        <directionalLight position={[3, 5, 4]} intensity={1.0} />
+        <directionalLight position={[-3, 2, -2]} intensity={0.4} />
         <Suspense fallback={null}>
-          <Gltf src={config.model.src} scale={config.model.scale ?? 1} />
+          <Model src={config.model.src} scale={config.model.scale ?? 1} />
         </Suspense>
         {showMarkers
-          ? config.hotspots.map((h) => (
-              <mesh
+          ? config.hotspots.map((h, i) => (
+              <HotspotMarker
                 key={h.id}
-                position={[h.position.x, h.position.y, h.position.z]}
-                onClick={(ev) => {
-                  ev.stopPropagation();
-                  if (!disabled) onPick(h.id);
-                }}
-              >
-                <sphereGeometry args={[h.radius, 16, 16]} />
-                <meshStandardMaterial
-                  color={selectedHotspotId === h.id ? tokens.primary : tokens.primaryHover}
-                  transparent
-                  opacity={0.45}
-                />
-              </mesh>
+                index={i + 1}
+                hotspot={h}
+                isSelected={selectedHotspotId === h.id}
+                disabled={disabled}
+                onPick={onPick}
+              />
             ))
           : null}
-        {allowOrbit ? <OrbitControls enablePan={false} /> : null}
+        {allowOrbit ? (
+          <OrbitControls
+            enablePan={false}
+            target={[
+              cameraCfg.target?.x ?? 0,
+              cameraCfg.target?.y ?? 0,
+              cameraCfg.target?.z ?? 0,
+            ]}
+            minDistance={cameraCfg.minDistance}
+            maxDistance={cameraCfg.maxDistance}
+          />
+        ) : null}
       </Canvas>
     </div>
+  );
+}
+
+function Model({ src, scale }: { src: string; scale: number }) {
+  const { scene } = useGLTF(src);
+  return <primitive object={scene} scale={scale} />;
+}
+
+function HotspotMarker({
+  hotspot,
+  index,
+  isSelected,
+  disabled,
+  onPick,
+}: {
+  hotspot: Hotspot3DConfig["hotspots"][number];
+  index: number;
+  isSelected: boolean;
+  disabled: boolean;
+  onPick: (id: string) => void;
+}) {
+  return (
+    <group position={[hotspot.position.x, hotspot.position.y, hotspot.position.z]}>
+      <mesh
+        onClick={(ev) => {
+          ev.stopPropagation();
+          if (!disabled) onPick(hotspot.id);
+        }}
+      >
+        <sphereGeometry args={[hotspot.radius, 24, 24]} />
+        <meshStandardMaterial
+          color={isSelected ? tokens.primary : tokens.primaryHover}
+          transparent
+          opacity={isSelected ? 0.85 : 0.55}
+          emissive={isSelected ? tokens.primary : "#000000"}
+          emissiveIntensity={isSelected ? 0.4 : 0}
+        />
+      </mesh>
+      <Html
+        center
+        distanceFactor={8}
+        occlude={false}
+        style={{ pointerEvents: "none" }}
+      >
+        <div
+          aria-hidden="true"
+          style={{
+            background: isSelected ? tokens.primary : "rgba(28, 30, 32, 0.85)",
+            color: "#ffffff",
+            fontWeight: 700,
+            fontSize: 12,
+            lineHeight: 1,
+            padding: "4px 8px",
+            borderRadius: 999,
+            whiteSpace: "nowrap",
+            border: `2px solid ${isSelected ? "#ffffff" : tokens.primaryHover}`,
+            transform: "translateY(-150%)",
+          }}
+        >
+          {index}. {hotspot.label ?? hotspot.id}
+        </div>
+      </Html>
+    </group>
   );
 }
 

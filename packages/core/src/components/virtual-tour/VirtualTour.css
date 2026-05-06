@@ -28,6 +28,22 @@
   border-radius: var(--radius-md, 8px);
   background: var(--color-canvas-3d, #0b0b10);
   overflow: hidden;
+  isolation: isolate;
+}
+
+.kukui-vt__hint {
+  position: absolute;
+  top: var(--spacing-sm, 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1;
+  margin: 0;
+  padding: var(--spacing-xs, 4px) var(--spacing-md, 12px);
+  background: rgb(0 0 0 / 0.65);
+  color: #ffffff;
+  font-size: var(--font-size-meta, 13px);
+  border-radius: var(--radius-md, 8px);
+  pointer-events: none;
 }
 
 .kukui-vt__no-webgl {

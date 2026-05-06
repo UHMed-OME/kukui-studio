@@ -1,40 +1,48 @@
 {
-  "_comment": "Demo fixture using Khronos Group's public Avocado glTF sample. Replace model.src with author-provided geometry for production.",
+  "_comment": "Demo fixture using Khronos's BoomBox glTF sample. Replace model.src with author-provided geometry for production.",
   "version": "1.0",
-  "title": "Identify parts of an avocado",
-  "prompt": "<p>Click the <em>seed (pit)</em> at the centre of the fruit.</p>",
+  "title": "Identify parts of a portable boombox",
+  "prompt": "<p>Click the <em>tuning dial</em> on the front of the boombox.</p>",
   "model": {
-    "src": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/main/Models/Avocado/glTF-Binary/Avocado.glb",
-    "scale": 30
+    "src": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/main/Models/BoomBox/glTF-Binary/BoomBox.glb",
+    "scale": 50
   },
   "camera": {
     "mode": "orbit",
-    "initialDistance": 1.5
+    "initialDistance": 0.6
   },
   "hotspots": [
     {
-      "id": "skin",
-      "label": "Skin (exocarp)",
-      "position": { "x": 0.6, "y": 0.5, "z": 0.0 },
-      "radius": 0.3,
+      "id": "left-speaker",
+      "label": "Left speaker",
+      "position": { "x": -0.18, "y": 0.0, "z": 0.05 },
+      "radius": 0.04,
       "correct": false,
-      "feedback": "That is the skin (exocarp). The pit is at the centre."
+      "feedback": "That is the left speaker. The tuning dial is the smaller circular control near the centre."
     },
     {
-      "id": "flesh",
-      "label": "Flesh (mesocarp)",
-      "position": { "x": 0.3, "y": 0.5, "z": 0.0 },
-      "radius": 0.3,
+      "id": "right-speaker",
+      "label": "Right speaker",
+      "position": { "x": 0.18, "y": 0.0, "z": 0.05 },
+      "radius": 0.04,
       "correct": false,
-      "feedback": "That is the flesh (mesocarp). The pit is at the centre."
+      "feedback": "That is the right speaker. The tuning dial is the smaller circular control near the centre."
     },
     {
-      "id": "pit",
-      "label": "Seed / pit (endocarp + seed coat)",
-      "position": { "x": 0.0, "y": 0.5, "z": 0.0 },
-      "radius": 0.3,
+      "id": "tuning-dial",
+      "label": "Tuning dial",
+      "position": { "x": 0.0, "y": 0.05, "z": 0.07 },
+      "radius": 0.03,
       "correct": true,
-      "feedback": "Correct — the pit is the single large seed at the centre of the fruit."
+      "feedback": "Correct — the tuning dial selects which radio frequency the unit picks up."
+    },
+    {
+      "id": "handle",
+      "label": "Carry handle",
+      "position": { "x": 0.0, "y": 0.18, "z": 0.0 },
+      "radius": 0.04,
+      "correct": false,
+      "feedback": "That is the carry handle, used to lift the unit. The tuning dial is the small circle on the front face."
     }
   ],
   "behaviour": {

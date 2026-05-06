@@ -4,7 +4,28 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "echo 'Studio is Phase 2 — not yet implemented' && exit 0",
-    "build": "echo 'Studio is Phase 2 — not yet implemented' && exit 0"
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@kukui/core": "workspace:*",
+    "@kukui/schemas": "workspace:*",
+    "@rjsf/core": "^5.24.0",
+    "@rjsf/utils": "^5.24.0",
+    "@rjsf/validator-ajv8": "^5.24.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "zod": "^4.0.0",
+    "zod-to-json-schema": "^3.24.0"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.0.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "@vitejs/plugin-react": "^4.3.4",
+    "tailwindcss": "^4.0.0",
+    "typescript": "^5.7.2",
+    "vite": "^6.0.0"
   }
 }

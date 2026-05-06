@@ -35,6 +35,8 @@
   border-radius: var(--radius-md, 8px);
   background: var(--color-canvas-3d, #0b0b10);
   overflow: hidden;
+  /* Drei <Html> labels sit in this stacking context. */
+  isolation: isolate;
 }
 
 .kukui-h3d__no-webgl {

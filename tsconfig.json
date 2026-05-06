@@ -4,6 +4,7 @@
     { "path": "./packages/core" },
     { "path": "./packages/schemas" },
     { "path": "./packages/bridge" },
-    { "path": "./apps/engine-web" }
+    { "path": "./apps/engine-web" },
+    { "path": "./apps/studio-app" }
   ]
 }
