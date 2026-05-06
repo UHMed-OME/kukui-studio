@@ -32,29 +32,41 @@ const cfg: Hotspot3DConfig = {
   behaviour: { enableRetry: true },
 };
 
-describe("Hotspot3D — fallback list", () => {
-  it("renders title, prompt, and a button per hotspot", () => {
+describe("Hotspot3D — fallback list (select-then-confirm)", () => {
+  it("renders title, prompt, fallback buttons, and Check disabled until a pick", () => {
     render(<Hotspot3D config={cfg} onSubmit={vi.fn()} />);
     expect(screen.getByRole("heading", { level: 1, name: /identify the part/i })).toBeInTheDocument();
     expect(screen.getByText(/click the labeled part/i)).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /^iako$/i })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /^ama$/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /^iako/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /^ama/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /^check$/i })).toBeDisabled();
   });
 
-  it("selecting the correct hotspot scores 1/1 success and shows feedback", async () => {
+  it("clicking a fallback button selects without submitting (Check stays available)", async () => {
     const user = userEvent.setup();
     const onSubmit = vi.fn();
     render(<Hotspot3D config={cfg} onSubmit={onSubmit} />);
-    await user.click(screen.getByRole("button", { name: /^iako$/i }));
+    await user.click(screen.getByRole("button", { name: /^iako/i }));
+    expect(onSubmit).not.toHaveBeenCalled();
+    expect(screen.getByRole("button", { name: /^check$/i })).toBeEnabled();
+  });
+
+  it("Check on a correct selection scores 1/1 success and shows feedback", async () => {
+    const user = userEvent.setup();
+    const onSubmit = vi.fn();
+    render(<Hotspot3D config={cfg} onSubmit={onSubmit} />);
+    await user.click(screen.getByRole("button", { name: /^iako/i }));
+    await user.click(screen.getByRole("button", { name: /^check$/i }));
     expect(onSubmit.mock.calls[0]?.[0]).toMatchObject({ raw: 1, max: 1, success: true });
     expect(screen.getByText(/the cross-beam/i)).toBeInTheDocument();
   });
 
-  it("selecting wrong scores 0/1 and reveals the correct answer", async () => {
+  it("Check on a wrong selection scores 0/1 and reveals the correct answer", async () => {
     const user = userEvent.setup();
     const onSubmit = vi.fn();
     render(<Hotspot3D config={cfg} onSubmit={onSubmit} />);
-    await user.click(screen.getByRole("button", { name: /^ama$/i }));
+    await user.click(screen.getByRole("button", { name: /^ama/i }));
+    await user.click(screen.getByRole("button", { name: /^check$/i }));
     expect(onSubmit.mock.calls[0]?.[0]).toMatchObject({ raw: 0, max: 1, success: false });
     expect(screen.getByText(/correct answer was/i)).toBeInTheDocument();
   });
@@ -62,17 +74,17 @@ describe("Hotspot3D — fallback list", () => {
   it("Try again resets state when enableRetry=true", async () => {
     const user = userEvent.setup();
     render(<Hotspot3D config={cfg} onSubmit={vi.fn()} />);
-    await user.click(screen.getByRole("button", { name: /^ama$/i }));
+    await user.click(screen.getByRole("button", { name: /^ama/i }));
+    await user.click(screen.getByRole("button", { name: /^check$/i }));
     await user.click(screen.getByRole("button", { name: /try again/i }));
-    // Buttons re-enabled (fieldset no longer disabled)
-    expect(screen.getByRole("button", { name: /^iako$/i })).toBeEnabled();
+    expect(screen.getByRole("button", { name: /^check$/i })).toBeDisabled();
   });
 
   it("persists state via onPersist on each pick", async () => {
     const user = userEvent.setup();
     const onPersist = vi.fn();
     render(<Hotspot3D config={cfg} onSubmit={vi.fn()} onPersist={onPersist} />);
-    await user.click(screen.getByRole("button", { name: /^iako$/i }));
+    await user.click(screen.getByRole("button", { name: /^iako/i }));
     expect(onPersist).toHaveBeenCalled();
     const last = onPersist.mock.calls.at(-1)?.[0] as string;
     expect(last).toMatch(/"selectedHotspotId":"iako"/);

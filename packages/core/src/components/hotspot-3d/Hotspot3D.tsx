@@ -4,6 +4,7 @@ import { Gltf, OrbitControls } from "@react-three/drei";
 import type { Hotspot3DConfig } from "@kukui/schemas";
 import type { ActivityProps } from "../../types.js";
 import { SafeHtml } from "../../safe-html.js";
+import { tokens } from "../../tokens.js";
 import "./Hotspot3D.css";
 
 type Stage = "answering" | "submitted";
@@ -27,7 +28,9 @@ export function Hotspot3D({
   onSubmit,
   onPersist,
   suspendData,
+  headingLevel = 1,
 }: ActivityProps<Hotspot3DConfig>) {
+  const HeadingTag = `h${headingLevel}` as "h1" | "h2" | "h3";
   const headingId = useId();
   const [state, setState] = useState<State>(
     () => parseSuspend(suspendData) ?? { stage: "answering", selectedHotspotId: null, attempts: 0 },
@@ -45,14 +48,24 @@ export function Hotspot3D({
 
   const submitted = state.stage === "submitted";
 
-  const submitChoice = (hotspotId: string) => {
+  // Selection: clicking a hotspot (3D or fallback list) sets selection but
+  // does NOT finalize. Learner reviews the choice, then presses Check. This
+  // matches MultipleChoice's flow and prevents accidental Tab+Space submits.
+  const selectHotspot = (hotspotId: string) => {
     if (submitted) return;
     const hot = config.hotspots.find((h) => h.id === hotspotId);
+    if (!hot) return;
+    setState((s) => ({ ...s, selectedHotspotId: hotspotId }));
+  };
+
+  const submit = () => {
+    if (submitted || state.selectedHotspotId === null) return;
+    const hot = config.hotspots.find((h) => h.id === state.selectedHotspotId);
     if (!hot) return;
     const success = hot.correct === true;
     const next: State = {
       stage: "submitted",
-      selectedHotspotId: hotspotId,
+      selectedHotspotId: state.selectedHotspotId,
       attempts: state.attempts + 1,
     };
     setState(next);
@@ -69,6 +82,7 @@ export function Hotspot3D({
 
   const ui = config.ui ?? {};
   const tryAgainLabel = ui.tryAgainButton ?? "Try again";
+  const checkLabel = "Check";
 
   const selectedHotspot = state.selectedHotspotId
     ? config.hotspots.find((h) => h.id === state.selectedHotspotId)
@@ -77,16 +91,16 @@ export function Hotspot3D({
   return (
     <div className="kukui-h3d">
       <article className="kukui-h3d__card" aria-labelledby={headingId}>
-        <h1 className="kukui-h3d__title" id={headingId}>
+        <HeadingTag className="kukui-h3d__title" id={headingId}>
           {config.title}
-        </h1>
+        </HeadingTag>
         <SafeHtml className="kukui-h3d__prompt" html={config.prompt} />
 
         <Hotspot3DScene
           config={config}
           disabled={submitted}
           selectedHotspotId={state.selectedHotspotId}
-          onPick={submitChoice}
+          onPick={selectHotspot}
         />
 
         <fieldset className="kukui-h3d__fallback" disabled={submitted}>
@@ -103,6 +117,7 @@ export function Hotspot3D({
                 <li key={h.id}>
                   <button
                     type="button"
+                    aria-pressed={isSelected}
                     className={[
                       "kukui-h3d__fallback-button",
                       isSelected ? "is-selected" : "",
@@ -112,7 +127,7 @@ export function Hotspot3D({
                     ]
                       .filter(Boolean)
                       .join(" ")}
-                    onClick={() => submitChoice(h.id)}
+                    onClick={() => selectHotspot(h.id)}
                   >
                     <span>{h.label ?? h.id}</span>
                     <span className="kukui-h3d__fallback-icon" aria-hidden="true">
@@ -144,6 +159,16 @@ export function Hotspot3D({
         </div>
 
         <div className="kukui-h3d__actions">
+          {!submitted ? (
+            <button
+              type="button"
+              className="kukui-h3d__primary"
+              disabled={state.selectedHotspotId === null}
+              onClick={submit}
+            >
+              {checkLabel}
+            </button>
+          ) : null}
           {submitted && config.behaviour?.enableRetry ? (
             <button type="button" className="kukui-h3d__secondary" onClick={tryAgain}>
               {tryAgainLabel}
@@ -203,7 +228,7 @@ function Hotspot3DScene({
               >
                 <sphereGeometry args={[h.radius, 16, 16]} />
                 <meshStandardMaterial
-                  color={selectedHotspotId === h.id ? "#7b4324" : "#9b5830"}
+                  color={selectedHotspotId === h.id ? tokens.primary : tokens.primaryHover}
                   transparent
                   opacity={0.45}
                 />

@@ -2,7 +2,7 @@ import { useEffect, useState, type CSSProperties } from "react";
 import { SchemaRegistry, type SchemaRegistryKey } from "@kukui/schemas";
 import { loadContent, ContentLoadError } from "./content.js";
 import { getScormDriver } from "./scorm.js";
-import type { ActivityKind, ActivityProps, ScoreState } from "./types.js";
+import type { ActivityKind, ScoreState } from "./types.js";
 import { MultipleChoice } from "./components/multiple-choice/index.js";
 import { FillInTheBlanks } from "./components/fill-in-the-blanks/index.js";
 import { DragAndDrop } from "./components/drag-and-drop/index.js";
@@ -94,32 +94,33 @@ export function ActivityHost({ kind, configUrl, loader = loadContent }: Activity
     );
   }
 
-  // Each activity gets the validated config, the SCORM-wired callbacks, and
-  // any prior suspend data the LMS handed back. The shared ActivityProps
-  // contract keeps every component swap-in-able.
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const sharedProps: ActivityProps<any> = {
-    config: state.config,
+  // The runtime Zod parse above already narrowed `state.config` to the right
+  // TConfig for `kind`. TypeScript can't track that through the dispatch
+  // table, so each branch passes `state.config` through with the implicit
+  // contract that runtime validation matches the static type.
+  const callbacks = {
     onSubmit: handleSubmit,
     onPersist: handlePersist,
     suspendData: scorm.loadSuspendData(),
   };
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const cfg = state.config as any;
 
   switch (kind) {
     case "multiple-choice":
-      return <MultipleChoice {...sharedProps} />;
+      return <MultipleChoice config={cfg} {...callbacks} />;
     case "fill-in-the-blanks":
-      return <FillInTheBlanks {...sharedProps} />;
+      return <FillInTheBlanks config={cfg} {...callbacks} />;
     case "drag-and-drop":
-      return <DragAndDrop {...sharedProps} />;
+      return <DragAndDrop config={cfg} {...callbacks} />;
     case "course-presentation":
-      return <CoursePresentation {...sharedProps} />;
+      return <CoursePresentation config={cfg} {...callbacks} />;
     case "question-set":
-      return <QuestionSet {...sharedProps} />;
+      return <QuestionSet config={cfg} {...callbacks} />;
     case "hotspot-3d":
-      return <Hotspot3D {...sharedProps} />;
+      return <Hotspot3D config={cfg} {...callbacks} />;
     case "virtual-tour":
-      return <VirtualTour {...sharedProps} />;
+      return <VirtualTour config={cfg} {...callbacks} />;
   }
 }
 

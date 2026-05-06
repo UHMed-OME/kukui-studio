@@ -10,4 +10,5 @@ export { loadContent, ContentLoadError } from "./content.js";
 export { getScormDriver, __setScormDriverForTest, type ScormDriver } from "./scorm.js";
 export { ActivityHost } from "./activity-host.js";
 export { SafeHtml, htmlToText, type SafeHtmlProps } from "./safe-html.js";
+export { tokens, type ColorToken } from "./tokens.js";
 export { MultipleChoice } from "./components/multiple-choice/index.js";

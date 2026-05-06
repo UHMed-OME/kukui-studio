@@ -29,7 +29,9 @@ export function DragAndDrop({
   onSubmit,
   onPersist,
   suspendData,
+  headingLevel = 1,
 }: ActivityProps<DragAndDropConfig>) {
+  const HeadingTag = `h${headingLevel}` as "h1" | "h2" | "h3";
   const headingId = useId();
   const initial = useMemo<State>(
     () => ({
@@ -126,16 +128,20 @@ export function DragAndDrop({
   return (
     <div className="kukui-dnd">
       <article className="kukui-dnd__card" aria-labelledby={headingId}>
-        <h1 id={headingId} className="kukui-dnd__title">
+        <HeadingTag id={headingId} className="kukui-dnd__title">
           {config.title}
-        </h1>
+        </HeadingTag>
         <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
           <div className="kukui-dnd__layout">
             <div
               className="kukui-dnd__board"
               style={{ backgroundImage: `url(${config.background.src})` }}
               role="img"
-              aria-label={config.background.alt ?? config.title}
+              // Don't fall back to the activity title — that would just have
+              // assistive tech read the title twice. Empty alt here means
+              // sighted-keyboard users still see the visual; AT users rely on
+              // the fallback list below for the activity's full structure.
+              aria-label={config.background.alt ?? ""}
             >
               {config.dropZones.map((zone) => {
                 const occupants = zoneOccupants.get(zone.id) ?? [];

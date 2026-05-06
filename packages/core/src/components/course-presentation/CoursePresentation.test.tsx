@@ -52,7 +52,8 @@ describe("CoursePresentation", () => {
     expect(screen.queryByRole("button", { name: /finish/i })).not.toBeInTheDocument();
     await user.click(screen.getByRole("button", { name: /next/i }));
     expect(screen.getByText(/Slide 2 of 2/i)).toBeInTheDocument();
-    expect(screen.getByRole("heading", { level: 1, name: /^q$/i })).toBeInTheDocument();
+    // Embedded MC renders as h2 inside Course Presentation (heading hierarchy).
+    expect(screen.getByRole("heading", { level: 2, name: /^q$/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /finish/i })).toBeInTheDocument();
   });
 
@@ -61,7 +62,7 @@ describe("CoursePresentation", () => {
     const onSubmit = vi.fn();
     render(<CoursePresentation config={cfg} onSubmit={onSubmit} />);
     await user.click(screen.getByRole("button", { name: /next/i }));
-    await user.click(screen.getByRole("radio", { name: /^a/i }));
+    await user.click(screen.getByRole("button", { name: /^a,/i }));
     await user.click(screen.getByRole("button", { name: /^check$/i }));
     await user.click(screen.getByRole("button", { name: /finish/i }));
     expect(onSubmit).toHaveBeenCalledTimes(1);

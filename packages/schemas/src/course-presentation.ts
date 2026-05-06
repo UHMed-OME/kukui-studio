@@ -59,6 +59,7 @@ export const CoursePresentationConfigSchema = z
     version: z.string().regex(versionRe),
     title: z.string().min(1),
     slides: z.array(Slide).min(1),
+    passPercentage: z.number().min(0).max(100).optional(),
     behaviour: z
       .object({
         showProgressBar: z.boolean().optional(),

@@ -16,6 +16,7 @@
   --color-error: #c34132;
   --color-error-soft: rgb(195 65 50 / 0.08);
   --color-tip-bg: #f2f0e8;
+  --color-canvas-3d: #0b0b10;
 
   /* Spacing scale */
   --spacing-xs: 4px;

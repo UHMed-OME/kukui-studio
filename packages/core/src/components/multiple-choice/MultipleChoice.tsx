@@ -20,7 +20,9 @@ export function MultipleChoice({
   onSubmit,
   onPersist,
   suspendData,
+  headingLevel = 1,
 }: ActivityProps<MultipleChoiceConfig>) {
+  const HeadingTag = `h${headingLevel}` as "h1" | "h2" | "h3";
   const [state, setState] = useState<State>(() => parseSuspend(suspendData) ?? initialState);
   const headingId = useId();
 
@@ -86,11 +88,14 @@ export function MultipleChoice({
   return (
     <div className="kukui-mc">
       <article className="kukui-mc__card" aria-labelledby={headingId}>
-        <h1 id={headingId} className="kukui-mc__title">
+        <HeadingTag id={headingId} className="kukui-mc__title">
           {config.title}
-        </h1>
+        </HeadingTag>
         <SafeHtml className="kukui-mc__question" html={config.question} />
-        <ul role={isMulti ? "group" : "radiogroup"} className="kukui-mc__answers">
+        {/* Drop the radiogroup ARIA role — implementing it correctly requires
+            roving tabindex + arrow-key navigation, which we don't yet do.
+            A plain group with aria-pressed buttons gives accurate semantics. */}
+        <ul role="group" aria-label="Answer choices" className="kukui-mc__answers">
           {config.answers.map((a, i) => {
             const selected = state.selected.includes(i);
             const submitted = state.stage === "submitted";
@@ -112,8 +117,7 @@ export function MultipleChoice({
               <li key={i} className="kukui-mc__answer-row">
                 <button
                   type="button"
-                  role={isMulti ? "checkbox" : "radio"}
-                  aria-checked={selected}
+                  aria-pressed={selected}
                   aria-label={`${htmlToText(a.text)}, ${stateLabel}`}
                   disabled={submitted}
                   className={[

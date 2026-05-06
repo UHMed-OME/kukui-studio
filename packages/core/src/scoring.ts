@@ -1,12 +1,5 @@
 import type { ScoreBand, ScoreState } from "./types.js";
 
-/**
- * Multiple Choice / Multiple Select scoring.
- *
- * `singlePoint`: all-or-nothing. Awards 1 point iff the learner's selection set
- * exactly matches the correct set. Otherwise partial credit: +1 per correct
- * selection, -1 per incorrect selection, clamped to [0, totalCorrect].
- */
 export function scoreSelection(args: {
   selectedIndices: ReadonlySet<number>;
   correctIndices: ReadonlySet<number>;
@@ -33,10 +26,6 @@ export function scoreSelection(args: {
   return { raw: clamped, max: totalCorrect, success: clamped === totalCorrect };
 }
 
-/**
- * Aggregates child ScoreStates into a single ScoreState for composite
- * activities (Question Set). Pass threshold defaults to 50%.
- */
 export function aggregate(scores: readonly ScoreState[], passPercent = 50): ScoreState {
   const raw = scores.reduce((s, x) => s + x.raw, 0);
   const max = scores.reduce((s, x) => s + x.max, 0);

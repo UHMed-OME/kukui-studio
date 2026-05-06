@@ -30,7 +30,9 @@ export function QuestionSet({
   onSubmit,
   onPersist,
   suspendData,
+  headingLevel = 1,
 }: ActivityProps<QuestionSetConfig>) {
+  const HeadingTag = `h${headingLevel}` as "h1" | "h2" | "h3";
   const headingId = useId();
 
   // Validate every nested config once. Drop invalid entries with a warning.
@@ -59,10 +61,7 @@ export function QuestionSet({
     return out;
   }, [config.questions]);
 
-  const initial: State = useMemo(
-    () => ({ stage: "answering", scores: {}, current: 0, attempts: 0 }),
-    [],
-  );
+  const initial: State = { stage: "answering", scores: {}, current: 0, attempts: 0 };
   const [state, setState] = useState<State>(() => parseSuspend(suspendData) ?? initial);
 
   useEffect(() => {
@@ -132,9 +131,9 @@ export function QuestionSet({
     <div className="kukui-qs">
       <article className="kukui-qs__card" aria-labelledby={headingId}>
         <header className="kukui-qs__header">
-          <h1 id={headingId} className="kukui-qs__title">
+          <HeadingTag id={headingId} className="kukui-qs__title">
             {config.title}
-          </h1>
+          </HeadingTag>
           {showProgressBar ? (
             <p className="kukui-qs__progress" aria-live="polite">
               Question {state.current + 1} of {total}
@@ -148,11 +147,13 @@ export function QuestionSet({
               <MultipleChoice
                 config={current.config}
                 onSubmit={(s) => recordScore(current.index, s)}
+                headingLevel={2}
               />
             ) : (
               <FillInTheBlanks
                 config={current.config}
                 onSubmit={(s) => recordScore(current.index, s)}
+                headingLevel={2}
               />
             )}
           </div>

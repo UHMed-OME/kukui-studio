@@ -1,9 +1,10 @@
-import { Suspense, useEffect, useId, useMemo, useState } from "react";
+import { Suspense, useEffect, useId, useMemo, useRef, useState } from "react";
 import { Canvas } from "@react-three/fiber";
 import { Gltf, OrbitControls } from "@react-three/drei";
 import type { VirtualTourConfig } from "@kukui/schemas";
 import type { ActivityProps } from "../../types.js";
 import { SafeHtml } from "../../safe-html.js";
+import { tokens } from "../../tokens.js";
 import "./VirtualTour.css";
 
 type Stage = "exploring" | "submitted";
@@ -27,8 +28,11 @@ export function VirtualTour({
   onSubmit,
   onPersist,
   suspendData,
+  headingLevel = 1,
 }: ActivityProps<VirtualTourConfig>) {
+  const HeadingTag = `h${headingLevel}` as "h1" | "h2" | "h3";
   const headingId = useId();
+  const overlayCloseRef = useRef<HTMLButtonElement | null>(null);
   const [state, setState] = useState<State>(
     () => parseSuspend(suspendData) ?? { stage: "exploring", visited: [], openOverlayId: null },
   );
@@ -54,6 +58,18 @@ export function VirtualTour({
   };
 
   const closeOverlay = () => setState((s) => ({ ...s, openOverlayId: null }));
+
+  // Focus the close button on overlay open and wire Escape-to-close.
+  useEffect(() => {
+    if (state.openOverlayId === null) return;
+    overlayCloseRef.current?.focus();
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") closeOverlay();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state.openOverlayId]);
 
   const submit = () => {
     if (state.stage === "submitted") return;
@@ -86,9 +102,9 @@ export function VirtualTour({
   return (
     <div className="kukui-vt">
       <article className="kukui-vt__card" aria-labelledby={headingId}>
-        <h1 id={headingId} className="kukui-vt__title">
+        <HeadingTag id={headingId} className="kukui-vt__title">
           {config.title}
-        </h1>
+        </HeadingTag>
 
         <VirtualTourScene config={config} disabled={submitted} onVisit={visit} />
 
@@ -128,6 +144,7 @@ export function VirtualTour({
                 {openOverlay.title ?? openOverlay.id}
               </h2>
               <button
+                ref={overlayCloseRef}
                 type="button"
                 className="kukui-vt__overlay-close"
                 onClick={closeOverlay}
@@ -227,7 +244,11 @@ function VirtualTourScene({
             }}
           >
             <sphereGeometry args={[0.3, 16, 16]} />
-            <meshStandardMaterial color="#7b4324" emissive="#7b4324" emissiveIntensity={0.4} />
+            <meshStandardMaterial
+              color={tokens.primary}
+              emissive={tokens.primary}
+              emissiveIntensity={0.4}
+            />
           </mesh>
         ))}
         <OrbitControls enablePan={false} />

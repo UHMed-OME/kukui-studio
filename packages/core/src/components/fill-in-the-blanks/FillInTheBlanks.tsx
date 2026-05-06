@@ -65,7 +65,9 @@ export function FillInTheBlanks({
   onSubmit,
   onPersist,
   suspendData,
+  headingLevel = 1,
 }: ActivityProps<FillInTheBlanksConfig>) {
+  const HeadingTag = `h${headingLevel}` as "h1" | "h2" | "h3";
   const segments = useMemo<Segment[]>(() => parseClozeText(config.text), [config.text]);
   const blanks = useMemo(
     () => segments.filter((s): s is Extract<Segment, { kind: "blank" }> => s.kind === "blank"),
@@ -140,16 +142,15 @@ export function FillInTheBlanks({
   const submitted = state.stage === "submitted";
   const correctCount = correctness.filter(Boolean).length;
 
-  // Build a flat blank-counter so each input knows its 1-based index.
   let blankCounter = 0;
 
   return (
     <div className="kukui-fib">
       <article className="kukui-fib__card" aria-labelledby={headingId}>
-        <h1 id={headingId} className="kukui-fib__title">
+        <HeadingTag id={headingId} className="kukui-fib__title">
           {config.title}
-        </h1>
-        <p className="kukui-fib__text" aria-live="polite">
+        </HeadingTag>
+        <div className="kukui-fib__text" aria-live="polite">
           {segments.map((seg, i) => {
             if (seg.kind === "text") {
               return (
@@ -213,7 +214,7 @@ export function FillInTheBlanks({
               </span>
             );
           })}
-        </p>
+        </div>
 
         <div
           className={["kukui-fib__feedback", submitted ? "is-visible" : ""]

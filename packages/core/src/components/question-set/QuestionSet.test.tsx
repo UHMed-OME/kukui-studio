@@ -37,7 +37,8 @@ describe("QuestionSet", () => {
   it("renders the first question and a progress indicator", () => {
     render(<QuestionSet config={cfg} onSubmit={vi.fn()} />);
     expect(screen.getByText(/Question 1 of 2/i)).toBeInTheDocument();
-    expect(screen.getByRole("heading", { level: 1, name: /q1/i })).toBeInTheDocument();
+    // Embedded MC renders as h2 inside Question Set (heading hierarchy).
+    expect(screen.getByRole("heading", { level: 2, name: /q1/i })).toBeInTheDocument();
   });
 
   it("Submit set is disabled until both questions are answered", async () => {
@@ -46,7 +47,7 @@ describe("QuestionSet", () => {
     const submit = screen.getByRole("button", { name: /submit set/i });
     expect(submit).toBeDisabled();
 
-    await user.click(screen.getByRole("radio", { name: /jupiter/i }));
+    await user.click(screen.getByRole("button", { name: /jupiter/i }));
     await user.click(screen.getByRole("button", { name: /^check$/i }));
     expect(submit).toBeDisabled();
 
@@ -62,7 +63,7 @@ describe("QuestionSet", () => {
     const onSubmit = vi.fn();
     render(<QuestionSet config={cfg} onSubmit={onSubmit} />);
 
-    await user.click(screen.getByRole("radio", { name: /jupiter/i }));
+    await user.click(screen.getByRole("button", { name: /jupiter/i }));
     await user.click(screen.getByRole("button", { name: /^check$/i }));
     await user.click(screen.getByRole("button", { name: /next/i }));
     const fibInput = screen.getByRole("textbox");
@@ -79,7 +80,7 @@ describe("QuestionSet", () => {
   it("Try again resets state when enableRetry=true", async () => {
     const user = userEvent.setup();
     render(<QuestionSet config={cfg} onSubmit={vi.fn()} />);
-    await user.click(screen.getByRole("radio", { name: /earth/i }));
+    await user.click(screen.getByRole("button", { name: /earth/i }));
     await user.click(screen.getByRole("button", { name: /^check$/i }));
     await user.click(screen.getByRole("button", { name: /next/i }));
     await user.type(screen.getByRole("textbox"), "AU");

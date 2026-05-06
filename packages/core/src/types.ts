@@ -26,6 +26,12 @@ export type ActivityProps<TConfig> = {
   suspendData?: string;
   /** Called whenever the learner makes a meaningful interaction we should persist. */
   onPersist?: (suspendData: string) => void;
+  /**
+   * Heading level the component should use for its title. Defaults to 1
+   * (top-level activity); pass 2 when nesting inside Course Presentation /
+   * Question Set so the document outline doesn't end up with multiple h1s.
+   */
+  headingLevel?: 1 | 2 | 3;
 };
 
 export type ActivityKind =

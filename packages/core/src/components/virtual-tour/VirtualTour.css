@@ -26,7 +26,7 @@
   aspect-ratio: 16 / 10;
   border: 2px solid var(--color-border);
   border-radius: var(--radius-md, 8px);
-  background: #0b0b10;
+  background: var(--color-canvas-3d, #0b0b10);
   overflow: hidden;
 }
 

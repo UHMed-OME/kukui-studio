@@ -1,4 +1,4 @@
-import { useEffect, useId, useMemo, useState } from "react";
+import { useEffect, useId, useState } from "react";
 import {
   MultipleChoiceConfigSchema,
   FillInTheBlanksConfigSchema,
@@ -30,7 +30,9 @@ export function CoursePresentation({
   onSubmit,
   onPersist,
   suspendData,
+  headingLevel = 1,
 }: ActivityProps<CoursePresentationConfig>) {
+  const HeadingTag = `h${headingLevel}` as "h1" | "h2" | "h3";
   const headingId = useId();
 
   const [state, setState] = useState<State>(
@@ -68,7 +70,8 @@ export function CoursePresentation({
     }
     const next: State = { ...state, stage: "submitted" };
     setState(next);
-    const success = max === 0 ? true : (raw / max) * 100 >= 70;
+    const passPct = config.passPercentage ?? 70;
+    const success = max === 0 ? true : (raw / max) * 100 >= passPct;
     onSubmit({ raw, max, success, suspendData: JSON.stringify(next) });
   };
 
@@ -76,9 +79,9 @@ export function CoursePresentation({
     <div className="kukui-cp">
       <article className="kukui-cp__card" aria-labelledby={headingId}>
         <header className="kukui-cp__header">
-          <h1 id={headingId} className="kukui-cp__title">
+          <HeadingTag id={headingId} className="kukui-cp__title">
             {config.title}
-          </h1>
+          </HeadingTag>
           {showProgress ? (
             <p className="kukui-cp__progress" aria-live="polite">
               Slide {state.current + 1} of {total}
@@ -140,11 +143,13 @@ export function CoursePresentation({
                   <MultipleChoice
                     config={validated.config}
                     onSubmit={(s) => recordScore(key, s)}
+                    headingLevel={2}
                   />
                 ) : (
                   <FillInTheBlanks
                     config={validated.config}
                     onSubmit={(s) => recordScore(key, s)}
+                    headingLevel={2}
                   />
                 )}
               </div>

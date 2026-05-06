@@ -63,6 +63,11 @@ const PHASE_1_ACTIVITIES = [
   "virtual-tour",
 ];
 
+// Slugs become path components and zip names; reject anything outside
+// [a-z0-9-] starting with an alphanumeric to prevent ../ traversal or
+// shell-special filenames.
+const SLUG_PATTERN = /^[a-z0-9][a-z0-9-]*$/;
+
 const SUPPORTED_ENGINES = new Set(["react", "unity", "godot", "articulate", "raw"]);
 
 function titleize(slug) {
@@ -121,6 +126,12 @@ async function packActivity(opts) {
     identifier,
     engine,
   } = opts;
+
+  if (!SLUG_PATTERN.test(activity)) {
+    throw new Error(
+      `Invalid --activity slug "${activity}". Expected /^[a-z0-9][a-z0-9-]*$/`,
+    );
+  }
 
   if (engine !== "react") {
     console.warn(

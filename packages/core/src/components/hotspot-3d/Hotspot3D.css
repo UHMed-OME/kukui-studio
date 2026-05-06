@@ -33,7 +33,7 @@
   aspect-ratio: 16 / 10;
   border: 2px solid var(--color-border);
   border-radius: var(--radius-md, 8px);
-  background: #0b0b10;
+  background: var(--color-canvas-3d, #0b0b10);
   overflow: hidden;
 }
 
@@ -143,6 +143,22 @@
   margin-top: var(--spacing-xl, 20px);
   display: flex;
   gap: var(--spacing-md, 12px);
+}
+
+.kukui-h3d__primary {
+  min-height: 44px;
+  padding: 10px 20px;
+  background: var(--color-primary);
+  color: #ffffff;
+  border: none;
+  border-radius: var(--radius-md, 8px);
+  font-size: var(--font-size-answer, 15px);
+  font-weight: 700;
+}
+
+.kukui-h3d__primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .kukui-h3d__secondary {
