@@ -11,6 +11,14 @@ export { getScormDriver, __setScormDriverForTest, type ScormDriver } from "./sco
 export { ActivityHost } from "./activity-host.js";
 export { SafeHtml, htmlToText, type SafeHtmlProps } from "./safe-html.js";
 export { tokens, type ColorToken } from "./tokens.js";
+export {
+  applyTheme,
+  getInitialTheme,
+  persistTheme,
+  initTheme,
+  type Theme,
+} from "./theme.js";
+export { ThemeToggle } from "./ThemeToggle.js";
 export { MultipleChoice } from "./components/multiple-choice/index.js";
 export { FillInTheBlanks } from "./components/fill-in-the-blanks/index.js";
 export { DragAndDrop } from "./components/drag-and-drop/index.js";

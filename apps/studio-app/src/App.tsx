@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { type ActivityKind, PLANNED_ACTIVITY_KINDS } from "@kukui/core";
+import { type ActivityKind, PLANNED_ACTIVITY_KINDS, ThemeToggle } from "@kukui/core";
 import { SchemaRegistry, type SchemaRegistryKey } from "@kukui/schemas";
 import { EditorForm } from "./EditorForm.js";
 import { JsonEditor } from "./JsonEditor.js";
@@ -164,6 +164,7 @@ export function App() {
           </p>
         </div>
         <div className="kukui-studio-toolbar">
+          <ThemeToggle />
           <button
             type="button"
             onClick={explicitSave}

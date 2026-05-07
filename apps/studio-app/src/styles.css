@@ -1296,3 +1296,246 @@ button {
   font-family: var(--font-family-mono);
   font-size: 11px;
 }
+
+/* =================================================================== */
+/* THEME: glass (default) — translucent surfaces, soft layered shadows */
+/* =================================================================== */
+
+html[data-theme="glass"] body {
+  background:
+    radial-gradient(at 15% 12%, rgba(255, 224, 198, 0.55) 0%, transparent 45%),
+    radial-gradient(at 85% 8%, rgba(248, 214, 230, 0.4) 0%, transparent 50%),
+    radial-gradient(at 70% 92%, rgba(208, 224, 232, 0.4) 0%, transparent 55%),
+    linear-gradient(180deg, #fdf7ed 0%, #fbeee0 100%);
+  background-attachment: fixed;
+}
+
+html[data-theme="glass"] {
+  --color-surface-glass: rgba(255, 255, 255, 0.62);
+  --color-surface-glass-strong: rgba(255, 255, 255, 0.82);
+  --color-border-glass: rgba(255, 255, 255, 0.55);
+  --color-border-glass-deep: rgba(123, 67, 36, 0.10);
+  --shadow-glass-card: 0 12px 32px rgb(123 67 36 / 0.08), 0 2px 8px rgb(0 0 0 / 0.04);
+  --shadow-glass-pop: 0 18px 48px rgb(123 67 36 / 0.14), 0 4px 12px rgb(0 0 0 / 0.05);
+  --backdrop-glass: blur(22px) saturate(170%);
+}
+
+html[data-theme="glass"] .kukui-studio-header,
+html[data-theme="glass"] .kukui-studio-sidebar,
+html[data-theme="glass"] .kukui-studio-panel {
+  background: var(--color-surface-glass);
+  -webkit-backdrop-filter: var(--backdrop-glass);
+  backdrop-filter: var(--backdrop-glass);
+  border-color: var(--color-border-glass);
+  box-shadow: var(--shadow-glass-card);
+}
+
+html[data-theme="glass"] .kukui-studio-header {
+  border-bottom-color: var(--color-border-glass-deep);
+}
+
+html[data-theme="glass"] .kukui-studio-sidebar {
+  border-right-color: var(--color-border-glass-deep);
+}
+
+html[data-theme="glass"] .kukui-studio-panel {
+  border: 1px solid var(--color-border-glass);
+  /* Subtle inner rim-light for depth */
+  box-shadow:
+    var(--shadow-glass-card),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+
+html[data-theme="glass"] .kukui-studio-panel-header {
+  background: rgba(255, 255, 255, 0.45);
+  border-bottom-color: var(--color-border-glass-deep);
+}
+
+/* Sidebar buttons get a glass treatment that brightens on hover/active */
+html[data-theme="glass"] .kukui-studio-sidebar__btn {
+  background: rgba(255, 255, 255, 0.35);
+  border-color: transparent;
+  transition:
+    background-color 180ms ease,
+    border-color 180ms ease,
+    box-shadow 180ms ease,
+    transform 180ms ease;
+}
+
+html[data-theme="glass"] .kukui-studio-sidebar__btn:hover {
+  background: rgba(255, 255, 255, 0.78);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgb(123 67 36 / 0.10);
+}
+
+html[data-theme="glass"] .kukui-studio-sidebar__btn.is-active {
+  background: rgba(255, 255, 255, 0.95);
+  border-color: var(--color-primary);
+  box-shadow:
+    0 6px 18px rgb(123 67 36 / 0.16),
+    inset 0 1px 0 rgba(255, 255, 255, 0.7);
+}
+
+/* Toolbar buttons */
+html[data-theme="glass"] .kukui-studio-btn--primary {
+  background: linear-gradient(180deg, #8b5230 0%, #7b4324 100%);
+  box-shadow:
+    0 6px 16px rgb(123 67 36 / 0.32),
+    inset 0 1px 0 rgba(255, 255, 255, 0.18);
+}
+
+html[data-theme="glass"] .kukui-studio-btn--primary:hover {
+  background: linear-gradient(180deg, #9b5830 0%, #8a4a28 100%);
+  transform: translateY(-1px);
+}
+
+html[data-theme="glass"] .kukui-studio-btn--secondary {
+  background: rgba(255, 255, 255, 0.55);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+}
+
+html[data-theme="glass"] .kukui-studio-btn--secondary:hover {
+  background: rgba(255, 255, 255, 0.85);
+}
+
+html[data-theme="glass"] .kukui-studio-btn--ghost {
+  background: rgba(255, 255, 255, 0.35);
+}
+
+html[data-theme="glass"] .kukui-studio-btn--ghost:hover {
+  background: rgba(255, 255, 255, 0.7);
+}
+
+/* Form inputs in glass mode get a frosted backdrop */
+html[data-theme="glass"] .rjsf input[type="text"],
+html[data-theme="glass"] .rjsf input[type="number"],
+html[data-theme="glass"] .rjsf input[type="url"],
+html[data-theme="glass"] .rjsf input[type="email"],
+html[data-theme="glass"] .rjsf select,
+html[data-theme="glass"] .rjsf textarea,
+html[data-theme="glass"] .ks-html,
+html[data-theme="glass"] .ks-file,
+html[data-theme="glass"] .ks-json__textarea {
+  background: rgba(255, 255, 255, 0.78);
+  border-color: rgba(123, 67, 36, 0.18);
+}
+
+html[data-theme="glass"] .rjsf input:focus-visible,
+html[data-theme="glass"] .rjsf select:focus-visible,
+html[data-theme="glass"] .rjsf textarea:focus-visible {
+  background: rgba(255, 255, 255, 0.95);
+}
+
+/* Object subforms (behaviour, ui, etc.) get a soft tint */
+html[data-theme="glass"] .ks-object--root > .ks-field > .ks-object {
+  background: rgba(252, 247, 237, 0.6);
+  border-color: var(--color-border-glass-deep);
+}
+
+/* Array items in glass mode */
+html[data-theme="glass"] .ks-array-item {
+  background: rgba(255, 255, 255, 0.72);
+  border-color: var(--color-border-glass-deep);
+  box-shadow: 0 2px 8px rgb(0 0 0 / 0.04);
+}
+
+html[data-theme="glass"] .ks-array-item__bar {
+  background: rgba(252, 247, 237, 0.55);
+}
+
+html[data-theme="glass"] .kukui-studio-toast {
+  background: rgba(28, 30, 32, 0.92);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+}
+
+/* Validation badges */
+html[data-theme="glass"] .kukui-studio-badge--ok {
+  background: rgba(46, 110, 65, 0.16);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+}
+
+html[data-theme="glass"] .kukui-studio-badge--err {
+  background: rgba(195, 65, 50, 0.16);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+}
+
+/* Tab indicator gets a subtle gradient */
+html[data-theme="glass"] .kukui-studio-subtab.is-active::after {
+  content: "";
+  position: absolute;
+  inset: auto 0 -2px 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--color-primary) 0%, var(--color-primary-hover) 100%);
+}
+
+html[data-theme="glass"] .kukui-studio-subtab {
+  position: relative;
+}
+
+/* Reduce-transparency / high-contrast OS preferences fall back to flat
+   even if the user explicitly chose glass — accessibility wins */
+@media (prefers-reduced-transparency: reduce) {
+  html[data-theme="glass"] body {
+    background: var(--color-bg);
+  }
+  html[data-theme="glass"] .kukui-studio-header,
+  html[data-theme="glass"] .kukui-studio-sidebar,
+  html[data-theme="glass"] .kukui-studio-panel,
+  html[data-theme="glass"] .kukui-studio-panel-header,
+  html[data-theme="glass"] .kukui-studio-sidebar__btn,
+  html[data-theme="glass"] .rjsf input,
+  html[data-theme="glass"] .rjsf select,
+  html[data-theme="glass"] .rjsf textarea,
+  html[data-theme="glass"] .ks-html,
+  html[data-theme="glass"] .ks-file,
+  html[data-theme="glass"] .ks-array-item {
+    background: var(--color-surface);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+}
+
+/* =================================================================== */
+/* Theme toggle button (visible in any header)                         */
+/* =================================================================== */
+
+.kukui-theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 36px;
+  padding: 6px 14px;
+  background: rgba(255, 255, 255, 0.5);
+  border: 2px solid var(--color-border);
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  cursor: pointer;
+  transition:
+    background-color 160ms ease,
+    border-color 160ms ease,
+    transform 160ms ease;
+}
+
+.kukui-theme-toggle:hover {
+  background: var(--color-surface);
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  transform: translateY(-1px);
+}
+
+.kukui-theme-toggle__glyph {
+  font-size: 14px;
+  line-height: 1;
+}
+
+html[data-theme="glass"] .kukui-theme-toggle {
+  background: rgba(255, 255, 255, 0.55);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+}

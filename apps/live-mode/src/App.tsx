@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { joinLiveRoom, deriveRoomCode, getRoomState, type LiveRoomHandle } from "@kukui/live";
 import type { Presence } from "@kukui/live";
+import { ThemeToggle } from "@kukui/core";
 
 /**
  * Kukui Live — M0 lobby shell.
@@ -78,6 +79,9 @@ export function App() {
 
   return (
     <div className="live-shell">
+      <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 16 }}>
+        <ThemeToggle />
+      </div>
       <article className="live-card">
         <h1 className="live-title">Kukui Live</h1>
         <p className="live-subtitle">
