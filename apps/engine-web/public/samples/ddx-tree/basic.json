@@ -1,0 +1,120 @@
+{
+  "_comment": "Differential Diagnosis Tree — chest pain workup leading to inferior STEMI vs. PE.",
+  "version": "1.0",
+  "title": "Acute chest pain in a 52-year-old",
+  "caseHeader": "<p><strong>Chief complaint:</strong> 52-year-old male presents to the emergency department with sudden substernal chest pain that started 45 minutes ago, radiating to the left jaw.</p><p><strong>Vitals:</strong> BP 138/86, HR 102, RR 20, SpO2 96% on room air, T 37.0°C. Diaphoretic, mildly anxious.</p>",
+  "startNodeId": "n-initial",
+  "nodes": [
+    {
+      "id": "n-initial",
+      "presentation": "<p>You are the on-call resident. Which investigation do you order <em>first</em>?</p>",
+      "choices": [
+        {
+          "id": "c-ecg",
+          "text": "12-lead ECG",
+          "nextNodeId": "n-ecg-result",
+          "addsToCase": "ECG: 2 mm ST elevation in leads II, III, and aVF; reciprocal depression in I and aVL.",
+          "feedback": "Good call — ECG within 10 minutes is standard for any chest pain consistent with ACS."
+        },
+        {
+          "id": "c-ctpa",
+          "text": "CT pulmonary angiogram",
+          "nextNodeId": "n-ctpa-result",
+          "addsToCase": "CT-PA: no filling defects, normal lung parenchyma, incidental small pericardial effusion.",
+          "feedback": "Defensible if you suspect PE, but you're skipping the cheaper, faster first step."
+        },
+        {
+          "id": "c-dimer",
+          "text": "Bedside D-dimer alone",
+          "nextNodeId": "n-dimer-result",
+          "addsToCase": "D-dimer: 1.8 µg/mL (elevated).",
+          "feedback": "An elevated D-dimer is non-specific in this clinical setting and won't rule in or out MI."
+        }
+      ]
+    },
+    {
+      "id": "n-ecg-result",
+      "presentation": "<p>The ECG shows ST elevation in the inferior leads with reciprocal changes. Troponin is pending. What is your working diagnosis?</p>",
+      "choices": [
+        {
+          "id": "c-dx-stemi",
+          "text": "Inferior STEMI — activate the cath lab",
+          "nextNodeId": "n-dx-stemi"
+        },
+        {
+          "id": "c-dx-pericarditis",
+          "text": "Acute pericarditis — start NSAIDs and observe",
+          "nextNodeId": "n-dx-pericarditis"
+        },
+        {
+          "id": "c-dx-pe-after-ecg",
+          "text": "Pulmonary embolism — anticoagulate",
+          "nextNodeId": "n-dx-pe"
+        }
+      ]
+    },
+    {
+      "id": "n-ctpa-result",
+      "presentation": "<p>The CT-PA is negative for PE. The patient still has ongoing pain and an unexplained tachycardia. What do you order next?</p>",
+      "choices": [
+        {
+          "id": "c-ecg-late",
+          "text": "Now obtain a 12-lead ECG",
+          "nextNodeId": "n-ecg-result",
+          "addsToCase": "ECG (delayed by ~30 min): 2 mm ST elevation in II, III, aVF with reciprocal changes."
+        }
+      ]
+    },
+    {
+      "id": "n-dimer-result",
+      "presentation": "<p>The elevated D-dimer doesn't help discriminate. The patient's pain is worsening. What do you do?</p>",
+      "choices": [
+        {
+          "id": "c-ecg-after-dimer",
+          "text": "Obtain a 12-lead ECG",
+          "nextNodeId": "n-ecg-result",
+          "addsToCase": "ECG (after D-dimer): 2 mm ST elevation in II, III, aVF with reciprocal changes."
+        }
+      ]
+    },
+    {
+      "id": "n-dx-stemi",
+      "presentation": "<p>You activate the cath lab.</p>",
+      "choices": null,
+      "diagnosis": {
+        "name": "Inferior STEMI",
+        "correct": true,
+        "score": 1,
+        "explanation": "<p>Correct. ST elevation in II, III, and aVF with reciprocal changes is diagnostic of an inferior wall STEMI — most often a right coronary artery occlusion. Door-to-balloon time should be under 90 minutes.</p>"
+      }
+    },
+    {
+      "id": "n-dx-pericarditis",
+      "presentation": "<p>You commit to acute pericarditis.</p>",
+      "choices": null,
+      "diagnosis": {
+        "name": "Acute pericarditis",
+        "correct": false,
+        "score": 0,
+        "explanation": "<p>Incorrect. Pericarditis classically causes <em>diffuse</em> ST elevation with PR depression, not a focal inferior pattern with reciprocal changes. Treating this as pericarditis would delay reperfusion in an evolving STEMI.</p>"
+      }
+    },
+    {
+      "id": "n-dx-pe",
+      "presentation": "<p>You commit to pulmonary embolism.</p>",
+      "choices": null,
+      "diagnosis": {
+        "name": "Pulmonary embolism",
+        "correct": false,
+        "score": 0,
+        "explanation": "<p>Incorrect. PE can cause sinus tachycardia and right-heart strain on ECG (S1Q3T3), but it does not produce focal inferior ST elevation with reciprocal depression. Anticoagulation without revascularization would miss the STEMI.</p>"
+      }
+    }
+  ],
+  "behaviour": {
+    "enableRetry": true
+  },
+  "ui": {
+    "restartButton": "Restart case"
+  }
+}

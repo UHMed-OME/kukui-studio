@@ -48,6 +48,29 @@ export {
   HighlightTextConfigSchema,
   type HighlightTextConfig,
 } from "./highlight-text.js";
+export {
+  InteractiveVideoConfigSchema,
+  type InteractiveVideoConfig,
+} from "./interactive-video.js";
+export {
+  AudioRecordingConfigSchema,
+  type AudioRecordingConfig,
+} from "./audio-recording.js";
+export {
+  BranchingScenarioConfigSchema,
+  type BranchingScenarioConfig,
+} from "./branching-scenario.js";
+export {
+  ImageAnnotationConfigSchema,
+  type ImageAnnotationConfig,
+} from "./image-annotation.js";
+export {
+  ConceptMapConfigSchema,
+  type ConceptMapConfig,
+} from "./concept-map.js";
+export { LabPanelConfigSchema, type LabPanelConfig } from "./lab-panel.js";
+export { DDxTreeConfigSchema, type DDxTreeConfig } from "./ddx-tree.js";
+export { OSCEConfigSchema, type OSCEConfig } from "./osce.js";
 export { StubConfigSchema, type StubConfig } from "./stub.js";
 
 import { MultipleChoiceConfigSchema } from "./multiple-choice.js";
@@ -66,15 +89,20 @@ import { ImageComparisonSliderConfigSchema } from "./image-comparison-slider.js"
 import { AnatomyLabelingConfigSchema } from "./anatomy-labeling.js";
 import { MatchingPairsConfigSchema } from "./matching-pairs.js";
 import { HighlightTextConfigSchema } from "./highlight-text.js";
-import { StubConfigSchema } from "./stub.js";
+import { InteractiveVideoConfigSchema } from "./interactive-video.js";
+import { AudioRecordingConfigSchema } from "./audio-recording.js";
+import { BranchingScenarioConfigSchema } from "./branching-scenario.js";
+import { ImageAnnotationConfigSchema } from "./image-annotation.js";
+import { ConceptMapConfigSchema } from "./concept-map.js";
+import { LabPanelConfigSchema } from "./lab-panel.js";
+import { DDxTreeConfigSchema } from "./ddx-tree.js";
+import { OSCEConfigSchema } from "./osce.js";
 
 /**
- * Map of activity-kind → Zod schema. The keys match `ActivityKind` in
- * @kukui/core/types. Used by ActivityHost to validate JSON before handing
- * the config to the matching component.
- *
- * Activity kinds in `PlannedActivityKind` (at @kukui/core/planned) all map
- * to StubConfigSchema until each one ships its own real schema.
+ * Map of activity-kind → Zod schema. Keys match `ActivityKind` in
+ * @kukui/core/types. ActivityHost validates JSON against the matching
+ * schema before handing it to the activity component. All 24 first-pass
+ * activities now have real schemas.
  */
 export const SchemaRegistry = {
   "multiple-choice": MultipleChoiceConfigSchema,
@@ -85,7 +113,6 @@ export const SchemaRegistry = {
   "hotspot-3d": Hotspot3DConfigSchema,
   "hotspot-2d": Hotspot2DConfigSchema,
   "virtual-tour": VirtualTourConfigSchema,
-  // Newly built (was stubbed):
   "sequence-steps": SequenceStepsConfigSchema,
   "matching-pairs": MatchingPairsConfigSchema,
   categorization: CategorizationConfigSchema,
@@ -94,15 +121,14 @@ export const SchemaRegistry = {
   "highlight-text": HighlightTextConfigSchema,
   flashcards: FlashcardsConfigSchema,
   "reflection-prompt": ReflectionPromptConfigSchema,
-  // Still stubbed (next wave):
-  "concept-map": StubConfigSchema,
-  "image-annotation": StubConfigSchema,
-  "branching-scenario": StubConfigSchema,
-  "interactive-video": StubConfigSchema,
-  "audio-recording": StubConfigSchema,
-  "lab-panel": StubConfigSchema,
-  "ddx-tree": StubConfigSchema,
-  osce: StubConfigSchema,
+  "branching-scenario": BranchingScenarioConfigSchema,
+  "image-annotation": ImageAnnotationConfigSchema,
+  "concept-map": ConceptMapConfigSchema,
+  "interactive-video": InteractiveVideoConfigSchema,
+  "audio-recording": AudioRecordingConfigSchema,
+  "lab-panel": LabPanelConfigSchema,
+  "ddx-tree": DDxTreeConfigSchema,
+  osce: OSCEConfigSchema,
 } as const;
 
 export type SchemaRegistryKey = keyof typeof SchemaRegistry;

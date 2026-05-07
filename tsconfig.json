@@ -5,6 +5,8 @@
     { "path": "./packages/schemas" },
     { "path": "./packages/bridge" },
     { "path": "./apps/engine-web" },
-    { "path": "./apps/studio-app" }
+    { "path": "./apps/studio-app" },
+    { "path": "./apps/live-mode" },
+    { "path": "./packages/live" }
   ]
 }

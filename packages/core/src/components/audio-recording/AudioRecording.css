@@ -1,0 +1,237 @@
+/*
+ * Audio Recording — completion-only spoken-response activity.
+ * Layout-stable: button sizes, badge slots, and the level-meter row reserve
+ * their height across all states (idle / requesting / recording / reviewing).
+ * Borders stay 2 px throughout — color-only state changes.
+ */
+
+.kukui-ar {
+  display: flex;
+  justify-content: center;
+  padding: var(--spacing-2xl, 24px);
+}
+
+.kukui-ar__card {
+  width: 100%;
+  max-width: 720px;
+  background: var(--color-surface, #ffffff);
+  border: 1px solid var(--color-border, #dad2c6);
+  border-radius: var(--radius-card, 12px);
+  padding: var(--spacing-3xl, 28px);
+}
+
+.kukui-ar__title {
+  margin: 0 0 var(--spacing-lg, 16px);
+  font-size: var(--font-size-title, 24px);
+  font-weight: 700;
+  color: var(--color-text-primary, #1c1e20);
+}
+
+.kukui-ar__prompt {
+  margin: 0 0 var(--spacing-lg, 16px);
+  font-size: var(--font-size-prompt, 16px);
+  line-height: 1.5;
+  color: var(--color-text-primary, #1c1e20);
+}
+
+.kukui-ar__reference {
+  margin: 0 0 var(--spacing-lg, 16px);
+  padding: var(--spacing-md, 12px);
+  background: var(--color-tip-bg, #f2f0e8);
+  border-radius: var(--radius-md, 8px);
+}
+
+.kukui-ar__reference-label {
+  display: block;
+  margin-bottom: var(--spacing-sm, 8px);
+  font-size: var(--font-size-meta, 13px);
+  font-weight: 700;
+  color: var(--color-text-secondary, #606069);
+}
+
+.kukui-ar__reference-audio {
+  width: 100%;
+}
+
+.kukui-ar__reference-caption {
+  margin-top: var(--spacing-xs, 4px);
+  font-size: var(--font-size-meta, 13px);
+  color: var(--color-text-secondary, #606069);
+}
+
+/* Pre-allocate the status row so swapping in/out of recording doesn't shift. */
+.kukui-ar__status {
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm, 8px);
+  padding: var(--spacing-sm, 8px) var(--spacing-md, 12px);
+  margin-bottom: var(--spacing-md, 12px);
+  background: var(--color-tip-bg, #f2f0e8);
+  border-radius: var(--radius-md, 8px);
+  font-size: var(--font-size-meta, 13px);
+  color: var(--color-text-secondary, #606069);
+}
+
+.kukui-ar__rec-dot {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--color-error, #c34132);
+  flex-shrink: 0;
+}
+
+.kukui-ar__rec-dot.is-pulsing {
+  animation: kukui-ar-pulse 1s ease-in-out infinite;
+}
+
+@keyframes kukui-ar-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
+}
+
+.kukui-ar__rec-label {
+  font-weight: 700;
+  color: var(--color-error, #c34132);
+}
+
+.kukui-ar__timer {
+  margin-left: auto;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text-primary, #1c1e20);
+}
+
+.kukui-ar__error {
+  color: var(--color-error, #c34132);
+}
+
+.kukui-ar__error-icon {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  text-align: center;
+  font-weight: 700;
+}
+
+/* Pre-allocate playback row so it doesn't reflow when entering review. */
+.kukui-ar__playback {
+  min-height: 56px;
+  display: flex;
+  align-items: center;
+  margin-bottom: var(--spacing-md, 12px);
+}
+
+.kukui-ar__playback-audio {
+  width: 100%;
+}
+
+.kukui-ar__actions {
+  margin-top: var(--spacing-xl, 20px);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--spacing-md, 12px);
+}
+
+.kukui-ar__primary,
+.kukui-ar__secondary {
+  min-height: 44px;
+  min-width: 44px;
+  padding: 10px 20px;
+  border-radius: var(--radius-md, 8px);
+  font-size: var(--font-size-answer, 15px);
+  font-weight: 700;
+  cursor: pointer;
+  transition: background-color 150ms ease;
+}
+
+.kukui-ar__primary {
+  background: var(--color-primary, #7b4324);
+  color: #ffffff;
+  border: none;
+}
+
+.kukui-ar__primary:hover:not(:disabled) {
+  background: var(--color-primary-hover, #9b5830);
+}
+
+.kukui-ar__primary:focus-visible {
+  outline: 2px solid var(--color-primary, #7b4324);
+  outline-offset: 2px;
+}
+
+.kukui-ar__primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.kukui-ar__secondary {
+  background: transparent;
+  color: var(--color-primary, #7b4324);
+  border: 2px solid var(--color-primary, #7b4324);
+}
+
+.kukui-ar__secondary:hover:not(:disabled) {
+  background: var(--color-tip-bg, #f2f0e8);
+}
+
+.kukui-ar__secondary:focus-visible {
+  outline: 2px solid var(--color-primary, #7b4324);
+  outline-offset: 2px;
+}
+
+.kukui-ar__secondary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Stop button — destructive-looking red, paired with text + dot. */
+.kukui-ar__primary.is-stop {
+  background: var(--color-error, #c34132);
+}
+
+.kukui-ar__primary.is-stop:hover:not(:disabled) {
+  background: var(--color-error, #c34132);
+  filter: brightness(1.1);
+}
+
+.kukui-ar__confirmation {
+  margin-top: var(--spacing-md, 12px);
+  min-height: 28px;
+  padding: 0 var(--spacing-md, 12px);
+  display: flex;
+  align-items: center;
+  font-size: var(--font-size-meta, 13px);
+  color: var(--color-success, #2e6e41);
+  background: var(--color-success-soft);
+  border-radius: var(--radius-md, 8px);
+  opacity: 0;
+  transition: opacity 200ms ease;
+}
+
+.kukui-ar__confirmation.is-visible {
+  opacity: 1;
+}
+
+.kukui-ar__confirmation.is-visible::before {
+  content: "✓ ";
+  font-weight: 700;
+  margin-right: var(--spacing-xs, 4px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kukui-ar__rec-dot.is-pulsing {
+    animation: none;
+  }
+  .kukui-ar__primary,
+  .kukui-ar__secondary,
+  .kukui-ar__confirmation {
+    transition: none;
+  }
+}

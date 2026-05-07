@@ -23,6 +23,13 @@
     "./categorization": "./src/categorization.ts",
     "./sequence-steps": "./src/sequence-steps.ts",
     "./anatomy-labeling": "./src/anatomy-labeling.ts",
+    "./branching-scenario": "./src/branching-scenario.ts",
+    "./image-annotation": "./src/image-annotation.ts",
+    "./concept-map": "./src/concept-map.ts",
+    "./audio-recording": "./src/audio-recording.ts",
+    "./lab-panel": "./src/lab-panel.ts",
+    "./ddx-tree": "./src/ddx-tree.ts",
+    "./osce": "./src/osce.ts",
     "./stub": "./src/stub.ts"
   },
   "dependencies": {

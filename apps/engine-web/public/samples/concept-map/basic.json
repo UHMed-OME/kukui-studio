@@ -1,0 +1,41 @@
+{
+  "_comment": "Sample concept-map fixture: relationships between cell organelles. Seed nodes pre-place the central organelles; learners drag in the remaining concepts from the palette and connect them with edges.",
+  "version": "1.0",
+  "title": "Map relationships between cell organelles",
+  "prompt": "<p>Drag each organelle onto the canvas and connect related items with edges. Use the toolbar's <strong>+ Edge</strong> button, then click two nodes in succession to connect them.</p>",
+  "seedNodes": [
+    { "id": "nucleus", "label": "Nucleus", "position": { "x": 0.5, "y": 0.2 } },
+    { "id": "cell-membrane", "label": "Cell Membrane", "position": { "x": 0.5, "y": 0.85 } }
+  ],
+  "availableConcepts": [
+    { "id": "mitochondrion", "label": "Mitochondrion" },
+    { "id": "ribosome", "label": "Ribosome" },
+    { "id": "er", "label": "Endoplasmic Reticulum" },
+    { "id": "golgi", "label": "Golgi Apparatus" },
+    { "id": "lysosome", "label": "Lysosome" }
+  ],
+  "expected": {
+    "nodes": [
+      "nucleus",
+      "cell-membrane",
+      "mitochondrion",
+      "ribosome",
+      "er",
+      "golgi",
+      "lysosome"
+    ],
+    "edges": [
+      { "from": "nucleus", "to": "ribosome", "label": "produces" },
+      { "from": "ribosome", "to": "er", "label": "translates on" },
+      { "from": "er", "to": "golgi", "label": "ships to" },
+      { "from": "golgi", "to": "lysosome", "label": "buds" }
+    ]
+  },
+  "behaviour": {
+    "enableRetry": true,
+    "allowFreeText": false
+  },
+  "ui": {
+    "submitButtonLabel": "Submit map"
+  }
+}

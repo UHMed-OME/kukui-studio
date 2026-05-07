@@ -1,0 +1,417 @@
+/*
+ * Lab Panel Interpretation — table + interpretation MC. Layout-stable: 2 px
+ * borders, color-only state changes, ≥ 44 px tap targets on the row toggle
+ * and on each interpretation choice. Pattern A inline-below feedback under
+ * each picked interpretation choice (constant min-height — no reflow).
+ */
+
+.kukui-lp {
+  display: flex;
+  justify-content: center;
+  padding: var(--spacing-2xl, 24px);
+}
+
+.kukui-lp__card {
+  width: 100%;
+  max-width: 720px;
+  background: var(--color-surface, #ffffff);
+  border: 1px solid var(--color-border, #dad2c6);
+  border-radius: var(--radius-card, 12px);
+  padding: var(--spacing-3xl, 28px);
+}
+
+.kukui-lp__title {
+  margin: 0 0 var(--spacing-lg, 16px);
+  font-size: var(--font-size-title, 24px);
+  font-weight: 700;
+  color: var(--color-text-primary, #1c1e20);
+}
+
+.kukui-lp__prompt {
+  margin-bottom: var(--spacing-xl, 20px);
+  font-size: var(--font-size-prompt, 16px);
+  line-height: 1.5;
+  color: var(--color-text-primary, #1c1e20);
+}
+
+.kukui-lp__panel {
+  margin: 0 0 var(--spacing-xl, 20px);
+}
+
+.kukui-lp__panel-name {
+  margin: 0 0 var(--spacing-sm, 8px);
+  font-size: var(--font-size-subtitle, 18px);
+  font-weight: 700;
+  color: var(--color-text-primary, #1c1e20);
+}
+
+.kukui-lp__caption {
+  caption-side: top;
+  margin-bottom: var(--spacing-sm, 8px);
+  text-align: left;
+  font-size: var(--font-size-meta, 13px);
+  color: var(--color-text-secondary, #606069);
+}
+
+.kukui-lp__table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0 var(--spacing-xs, 4px);
+  /*
+   * Use border-collapse: separate + per-row 2px borders so each row reads
+   * as its own selectable card. Avoid border-collapse to keep state borders
+   * uniformly visible without merging neighbours.
+   */
+}
+
+.kukui-lp__table thead th {
+  text-align: left;
+  padding: var(--spacing-xs, 4px) var(--spacing-md, 12px);
+  font-size: var(--font-size-meta, 13px);
+  font-weight: 700;
+  color: var(--color-text-secondary, #606069);
+  border-bottom: 2px solid var(--color-border, #dad2c6);
+}
+
+.kukui-lp__row {
+  /* Row state changes color only; border width constant 2 px. */
+  background: var(--color-surface, #ffffff);
+  transition: background-color 150ms ease;
+}
+
+.kukui-lp__cell {
+  padding: 0;
+  margin: 0;
+  border-top: 2px solid var(--color-border, #dad2c6);
+  border-bottom: 2px solid var(--color-border, #dad2c6);
+  background: inherit;
+  font-size: var(--font-size-answer, 15px);
+  color: var(--color-text-primary, #1c1e20);
+  font-weight: 400;
+  vertical-align: middle;
+}
+
+.kukui-lp__cell--analyte {
+  border-left: 2px solid var(--color-border, #dad2c6);
+  border-top-left-radius: var(--radius-md, 8px);
+  border-bottom-left-radius: var(--radius-md, 8px);
+  text-align: left;
+}
+
+.kukui-lp__cell--reference {
+  border-right: 2px solid var(--color-border, #dad2c6);
+  border-top-right-radius: var(--radius-md, 8px);
+  border-bottom-right-radius: var(--radius-md, 8px);
+  padding-right: var(--spacing-md, 12px);
+  color: var(--color-text-secondary, #606069);
+  font-size: var(--font-size-meta, 13px);
+}
+
+.kukui-lp__cell--result,
+.kukui-lp__cell--units {
+  padding: var(--spacing-md, 12px);
+}
+
+.kukui-lp__cell--units {
+  color: var(--color-text-secondary, #606069);
+  font-size: var(--font-size-meta, 13px);
+}
+
+.kukui-lp__cell-btn {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm, 8px);
+  width: 100%;
+  min-height: 44px;
+  padding: var(--spacing-md, 12px);
+  background: transparent;
+  border: 0;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
+.kukui-lp__cell-btn:disabled {
+  cursor: default;
+}
+
+.kukui-lp__cell-btn:focus-visible {
+  outline: 2px solid var(--color-primary, #7b4324);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm, 6px);
+}
+
+.kukui-lp__row-icon {
+  display: inline-block;
+  flex: 0 0 auto;
+  width: 16px;
+  text-align: center;
+  font-weight: 700;
+  font-size: 14px;
+  color: inherit;
+}
+
+.kukui-lp__analyte-text {
+  font-weight: 600;
+}
+
+.kukui-lp__result-text {
+  font-weight: 600;
+}
+
+.kukui-lp__flag {
+  display: inline-block;
+  margin-left: var(--spacing-xs, 4px);
+  padding: 0 var(--spacing-xs, 4px);
+  border-radius: var(--radius-sm, 6px);
+  font-size: var(--font-size-meta, 13px);
+  font-weight: 700;
+}
+
+.kukui-lp__flag.is-high {
+  color: var(--color-error, #c34132);
+}
+
+.kukui-lp__flag.is-low {
+  color: var(--color-error, #c34132);
+}
+
+/* Row state — change cell border colors only; widths constant 2 px. */
+.kukui-lp__row.is-selected .kukui-lp__cell {
+  border-top-color: var(--color-primary, #7b4324);
+  border-bottom-color: var(--color-primary, #7b4324);
+  background: var(--color-primary-soft);
+}
+
+.kukui-lp__row.is-selected .kukui-lp__cell--analyte {
+  border-left-color: var(--color-primary, #7b4324);
+}
+
+.kukui-lp__row.is-selected .kukui-lp__cell--reference {
+  border-right-color: var(--color-primary, #7b4324);
+}
+
+.kukui-lp__row.is-correct .kukui-lp__cell {
+  border-top-color: var(--color-success, #2e6e41);
+  border-bottom-color: var(--color-success, #2e6e41);
+  background: var(--color-success-soft);
+}
+
+.kukui-lp__row.is-correct .kukui-lp__cell--analyte {
+  border-left-color: var(--color-success, #2e6e41);
+}
+
+.kukui-lp__row.is-correct .kukui-lp__cell--reference {
+  border-right-color: var(--color-success, #2e6e41);
+}
+
+.kukui-lp__row.is-incorrect .kukui-lp__cell {
+  border-top-color: var(--color-error, #c34132);
+  border-bottom-color: var(--color-error, #c34132);
+  background: var(--color-error-soft);
+}
+
+.kukui-lp__row.is-incorrect .kukui-lp__cell--analyte {
+  border-left-color: var(--color-error, #c34132);
+}
+
+.kukui-lp__row.is-incorrect .kukui-lp__cell--reference {
+  border-right-color: var(--color-error, #c34132);
+}
+
+.kukui-lp__row:hover:not(.is-selected) .kukui-lp__cell {
+  border-top-color: var(--color-border-hover, #bbae9a);
+  border-bottom-color: var(--color-border-hover, #bbae9a);
+}
+
+.kukui-lp__row:hover:not(.is-selected) .kukui-lp__cell--analyte {
+  border-left-color: var(--color-border-hover, #bbae9a);
+}
+
+.kukui-lp__row:hover:not(.is-selected) .kukui-lp__cell--reference {
+  border-right-color: var(--color-border-hover, #bbae9a);
+}
+
+/* Interpretation MC — mirrors the multiple-choice pattern. */
+.kukui-lp__interpretation {
+  margin: 0 0 var(--spacing-xl, 20px);
+  padding: 0;
+  border: 0;
+}
+
+.kukui-lp__legend {
+  padding: 0;
+  margin: 0 0 var(--spacing-sm, 8px);
+  font-size: var(--font-size-subtitle, 18px);
+  font-weight: 700;
+  color: var(--color-text-primary, #1c1e20);
+}
+
+.kukui-lp__question {
+  margin-bottom: var(--spacing-md, 12px);
+  font-size: var(--font-size-prompt, 16px);
+  line-height: 1.5;
+  color: var(--color-text-primary, #1c1e20);
+}
+
+.kukui-lp__choices {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm, 8px);
+}
+
+.kukui-lp__choice-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.kukui-lp__choice {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-md, 12px);
+  width: 100%;
+  min-height: 48px;
+  padding: var(--spacing-md, 12px) var(--spacing-lg, 16px);
+  background: var(--color-surface, #ffffff);
+  border: 2px solid var(--color-border, #dad2c6);
+  border-radius: var(--radius-md, 8px);
+  text-align: left;
+  font-size: var(--font-size-answer, 15px);
+  color: var(--color-text-primary, #1c1e20);
+  cursor: pointer;
+  transition:
+    background-color 150ms ease,
+    border-color 150ms ease;
+}
+
+.kukui-lp__choice:hover:not(:disabled):not(.is-selected) {
+  border-color: var(--color-border-hover, #bbae9a);
+}
+
+.kukui-lp__choice:focus-visible {
+  outline: 2px solid var(--color-primary, #7b4324);
+  outline-offset: 2px;
+}
+
+.kukui-lp__choice:disabled {
+  cursor: default;
+}
+
+.kukui-lp__choice.is-selected {
+  border-color: var(--color-primary, #7b4324);
+  background: var(--color-primary-soft);
+}
+
+.kukui-lp__choice.is-correct {
+  border-color: var(--color-success, #2e6e41);
+  background: var(--color-success-soft);
+}
+
+.kukui-lp__choice.is-incorrect {
+  border-color: var(--color-error, #c34132);
+  background: var(--color-error-soft);
+}
+
+.kukui-lp__choice.is-reveal {
+  border-color: var(--color-success, #2e6e41);
+  border-style: dashed;
+}
+
+.kukui-lp__choice-text {
+  flex: 1 1 auto;
+  white-space: normal;
+}
+
+.kukui-lp__choice-icon {
+  flex: 0 0 auto;
+  font-weight: 700;
+  font-size: 18px;
+  width: 24px;
+  text-align: center;
+  color: inherit;
+}
+
+/* Pattern A inline feedback — reserved space, opacity-only fade. */
+.kukui-lp__feedback {
+  min-height: 0;
+  opacity: 0;
+  font-size: var(--font-size-meta, 13px);
+  color: var(--color-text-secondary, #606069);
+  padding: 0 var(--spacing-lg, 16px);
+  transition:
+    opacity 200ms ease,
+    min-height 200ms ease;
+}
+
+.kukui-lp__feedback.is-visible {
+  opacity: 1;
+  min-height: 28px;
+  padding-top: var(--spacing-xs, 4px);
+  padding-bottom: var(--spacing-sm, 8px);
+}
+
+.kukui-lp__actions {
+  margin-top: var(--spacing-xl, 20px);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--spacing-md, 12px);
+}
+
+.kukui-lp__primary {
+  min-height: 44px;
+  padding: 10px 20px;
+  background: var(--color-primary, #7b4324);
+  color: #ffffff;
+  border: none;
+  border-radius: var(--radius-md, 8px);
+  font-size: var(--font-size-answer, 15px);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.kukui-lp__primary:hover:not(:disabled) {
+  background: var(--color-primary-hover, #9b5830);
+}
+
+.kukui-lp__primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.kukui-lp__secondary {
+  min-height: 44px;
+  padding: 10px 20px;
+  background: transparent;
+  color: var(--color-primary, #7b4324);
+  border: 2px solid var(--color-primary, #7b4324);
+  border-radius: var(--radius-md, 8px);
+  font-size: var(--font-size-answer, 15px);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.kukui-lp__score {
+  font-size: var(--font-size-prompt, 16px);
+  font-weight: 700;
+  color: var(--color-text-primary, #1c1e20);
+}
+
+.kukui-lp__band {
+  font-weight: 400;
+  color: var(--color-text-secondary, #606069);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kukui-lp__row,
+  .kukui-lp__choice,
+  .kukui-lp__feedback {
+    transition: none;
+  }
+}

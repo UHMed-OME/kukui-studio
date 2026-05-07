@@ -70,6 +70,14 @@ const PHASE_1_ACTIVITIES = [
   "highlight-text",
   "flashcards",
   "reflection-prompt",
+  "branching-scenario",
+  "image-annotation",
+  "concept-map",
+  "interactive-video",
+  "audio-recording",
+  "lab-panel",
+  "ddx-tree",
+  "osce",
 ];
 
 // Slugs become path components and zip names; reject anything outside

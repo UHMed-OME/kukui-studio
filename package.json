@@ -11,6 +11,7 @@
     "build": "pnpm -r --filter './apps/*' run build",
     "dev": "pnpm --filter @kukui/engine-web run dev",
     "dev:studio": "pnpm --filter @kukui/studio-app run dev",
+    "dev:live": "pnpm --filter @kukui/live-mode run dev",
     "test": "vitest run",
     "test:watch": "vitest",
     "typecheck": "tsc -b",

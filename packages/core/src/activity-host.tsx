@@ -19,6 +19,14 @@ import { HighlightText } from "./components/highlight-text/index.js";
 import { ImageComparisonSlider } from "./components/image-comparison-slider/index.js";
 import { Flashcards } from "./components/flashcards/index.js";
 import { ReflectionPrompt } from "./components/reflection-prompt/index.js";
+import { AudioRecording } from "./components/audio-recording/index.js";
+import { BranchingScenario } from "./components/branching-scenario/index.js";
+import { ImageAnnotation } from "./components/image-annotation/index.js";
+import { ConceptMap } from "./components/concept-map/index.js";
+import { InteractiveVideo } from "./components/interactive-video/index.js";
+import { LabPanel } from "./components/lab-panel/index.js";
+import { DDxTree } from "./components/ddx-tree/index.js";
+import { OSCE } from "./components/osce/index.js";
 import { StubActivity } from "./components/_stub/StubActivity.js";
 import { PLANNED_ACTIVITY_KINDS } from "./planned.js";
 
@@ -154,6 +162,22 @@ export function ActivityHost({ kind, configUrl, loader = loadContent }: Activity
       return <Flashcards config={cfg} {...callbacks} />;
     case "reflection-prompt":
       return <ReflectionPrompt config={cfg} {...callbacks} />;
+    case "audio-recording":
+      return <AudioRecording config={cfg} {...callbacks} />;
+    case "branching-scenario":
+      return <BranchingScenario config={cfg} {...callbacks} />;
+    case "image-annotation":
+      return <ImageAnnotation config={cfg} {...callbacks} />;
+    case "concept-map":
+      return <ConceptMap config={cfg} {...callbacks} />;
+    case "interactive-video":
+      return <InteractiveVideo config={cfg} {...callbacks} />;
+    case "lab-panel":
+      return <LabPanel config={cfg} {...callbacks} />;
+    case "ddx-tree":
+      return <DDxTree config={cfg} {...callbacks} />;
+    case "osce":
+      return <OSCE config={cfg} {...callbacks} />;
     default:
       return <StubActivity config={cfg} {...callbacks} />;
   }

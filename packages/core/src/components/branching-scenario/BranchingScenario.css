@@ -1,0 +1,161 @@
+/*
+ * Branching Scenario — decision-tree walker. Layout-stable: borders are a
+ * constant 2 px; only color/opacity change between states. Inline feedback
+ * uses pattern A (reserved space, opacity-only fade).
+ */
+
+.kukui-bs {
+  display: flex;
+  justify-content: center;
+  padding: var(--spacing-2xl, 24px);
+}
+
+.kukui-bs__card {
+  width: 100%;
+  max-width: 720px;
+  background: var(--color-surface, #ffffff);
+  border: 1px solid var(--color-border, #dad2c6);
+  border-radius: var(--radius-card, 12px);
+  padding: var(--spacing-3xl, 28px);
+}
+
+.kukui-bs__title {
+  margin: 0 0 var(--spacing-lg, 16px);
+  font-size: var(--font-size-title, 24px);
+  font-weight: 700;
+  color: var(--color-text-primary, #1c1e20);
+}
+
+.kukui-bs__prompt {
+  margin-bottom: var(--spacing-xl, 20px);
+  font-size: var(--font-size-prompt, 16px);
+  line-height: 1.5;
+  color: var(--color-text-primary, #1c1e20);
+}
+
+.kukui-bs__choices {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm, 8px);
+}
+
+.kukui-bs__choice-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.kukui-bs__choice {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: var(--spacing-md, 12px);
+  width: 100%;
+  min-height: 48px;
+  padding: var(--spacing-md, 12px) var(--spacing-lg, 16px);
+  background: var(--color-surface, #ffffff);
+  border: 2px solid var(--color-border, #dad2c6);
+  border-radius: var(--radius-md, 8px);
+  text-align: left;
+  font-size: var(--font-size-answer, 15px);
+  color: var(--color-text-primary, #1c1e20);
+  transition:
+    background-color 150ms ease,
+    border-color 150ms ease;
+}
+
+.kukui-bs__choice:hover:not(:disabled):not(.is-active) {
+  border-color: var(--color-border-hover, #bbae9a);
+}
+
+.kukui-bs__choice:focus-visible {
+  outline: 2px solid var(--color-primary, #7b4324);
+  outline-offset: 2px;
+}
+
+.kukui-bs__choice.is-active {
+  border-color: var(--color-primary, #7b4324);
+  background: var(--color-primary-soft);
+}
+
+.kukui-bs__choice-text {
+  flex: 1 1 auto;
+  white-space: normal;
+}
+
+/*
+ * Pattern A feedback row — always present at constant min-height so the
+ * reveal does not reflow neighbours. Default opacity 0; .is-visible fades to 1.
+ */
+.kukui-bs__feedback {
+  min-height: 28px;
+  margin-top: var(--spacing-md, 12px);
+  opacity: 0;
+  font-size: var(--font-size-meta, 13px);
+  color: var(--color-text-secondary, #606069);
+  padding: 0 var(--spacing-lg, 16px);
+  transition: opacity 200ms ease;
+}
+
+.kukui-bs__feedback.is-visible {
+  opacity: 1;
+}
+
+.kukui-bs__outcome {
+  margin-top: var(--spacing-xl, 20px);
+  padding: var(--spacing-lg, 16px);
+  border: 2px solid var(--color-border, #dad2c6);
+  border-radius: var(--radius-lg, 10px);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md, 12px);
+  align-items: flex-start;
+}
+
+.kukui-bs__outcome.is-success {
+  border-color: var(--color-success, #2e6e41);
+  background: var(--color-success-soft);
+}
+
+.kukui-bs__outcome.is-fail {
+  border-color: var(--color-error, #c34132);
+  background: var(--color-error-soft);
+}
+
+.kukui-bs__outcome-message {
+  margin: 0;
+  font-size: var(--font-size-prompt, 16px);
+  color: var(--color-text-primary, #1c1e20);
+}
+
+.kukui-bs__secondary {
+  min-height: 44px;
+  padding: 10px 20px;
+  background: transparent;
+  color: var(--color-primary, #7b4324);
+  border: 2px solid var(--color-primary, #7b4324);
+  border-radius: var(--radius-md, 8px);
+  font-size: var(--font-size-answer, 15px);
+  font-weight: 700;
+}
+
+.kukui-bs__secondary:focus-visible {
+  outline: 2px solid var(--color-primary, #7b4324);
+  outline-offset: 2px;
+}
+
+.kukui-bs__error {
+  margin: 0;
+  color: var(--color-error, #c34132);
+  font-size: var(--font-size-prompt, 16px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kukui-bs__choice,
+  .kukui-bs__feedback {
+    transition: none;
+  }
+}

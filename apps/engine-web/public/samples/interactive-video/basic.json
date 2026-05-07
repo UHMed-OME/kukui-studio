@@ -1,0 +1,46 @@
+{
+  "version": "1.0",
+  "title": "Big Buck Bunny — checkpoints",
+  "prompt": "<p>Watch the clip; questions will pop up at two timestamps.</p>",
+  "video": {
+    "src": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
+    "type": "html5",
+    "poster": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/images/BigBuckBunny.jpg"
+  },
+  "interactions": [
+    {
+      "id": "iv-q1",
+      "atSeconds": 5,
+      "required": true,
+      "kind": "multipleChoice",
+      "config": {
+        "version": "1.0",
+        "title": "Opening shot",
+        "question": "<p>What is the dominant color of the opening landscape?</p>",
+        "answers": [
+          { "text": "Green meadow", "correct": true, "feedback": "Yes — soft pastel green dominates." },
+          { "text": "Red desert", "correct": false, "feedback": "Look again — the palette is cooler." },
+          { "text": "Snowy peaks", "correct": false }
+        ]
+      }
+    },
+    {
+      "id": "iv-q2",
+      "atSeconds": 12,
+      "required": true,
+      "kind": "fillInTheBlanks",
+      "config": {
+        "version": "1.0",
+        "title": "Naming the character",
+        "text": "The protagonist of this short is a *rabbit/bunny*."
+      }
+    }
+  ],
+  "behaviour": {
+    "enableRetry": false,
+    "passPercentage": 50
+  },
+  "ui": {
+    "resumeButtonLabel": "Resume video"
+  }
+}

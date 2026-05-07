@@ -35,6 +35,14 @@ const STUDIO_AVAILABLE: readonly ActivityKind[] = [
   "highlight-text",
   "flashcards",
   "reflection-prompt",
+  "branching-scenario",
+  "image-annotation",
+  "concept-map",
+  "interactive-video",
+  "audio-recording",
+  "lab-panel",
+  "ddx-tree",
+  "osce",
 ] as const;
 
 const STUDIO_PLANNED: readonly ActivityKind[] = PLANNED_ACTIVITY_KINDS;

@@ -1,0 +1,70 @@
+{
+  "_comment": "Demo fixture: a small clinical-decision branching scenario. Two paths from the start node lead to different outcomes.",
+  "version": "1.0",
+  "title": "Triage: chest pain",
+  "startNodeId": "start",
+  "nodes": [
+    {
+      "id": "start",
+      "prompt": "<p>A 58-year-old patient walks into the clinic complaining of squeezing chest pain that started 30 minutes ago. What do you do <strong>first</strong>?</p>",
+      "choices": [
+        {
+          "id": "vitals",
+          "text": "Take vitals (BP, HR, SpO₂) and start a focused history.",
+          "nextNodeId": "vitals-taken",
+          "feedback": "Good call — establishing a baseline is the right first move."
+        },
+        {
+          "id": "send-home",
+          "text": "Reassure them it's likely indigestion and send them home.",
+          "nextNodeId": "outcome-bad",
+          "feedback": "Chest pain in this age group must be evaluated, not dismissed."
+        }
+      ]
+    },
+    {
+      "id": "vitals-taken",
+      "prompt": "<p>BP 152/96, HR 102, SpO₂ 96%. Patient is diaphoretic. What's the next step?</p>",
+      "choices": [
+        {
+          "id": "ekg",
+          "text": "Order a 12-lead EKG and trend troponin.",
+          "nextNodeId": "outcome-good",
+          "feedback": "Right — rule out ACS before anything else."
+        },
+        {
+          "id": "wait",
+          "text": "Wait 30 minutes and reassess without further workup.",
+          "nextNodeId": "outcome-bad",
+          "feedback": "Delay in diagnosing ACS narrows the treatment window."
+        }
+      ]
+    },
+    {
+      "id": "outcome-good",
+      "prompt": "<p>The EKG shows ST-elevation in the inferior leads. The team activates the cath lab.</p>",
+      "choices": null,
+      "outcome": {
+        "score": 1,
+        "success": true,
+        "message": "<p><strong>Excellent workup.</strong> The patient was diagnosed with an inferior STEMI and went to the cath lab within the 90-minute door-to-balloon window.</p>"
+      }
+    },
+    {
+      "id": "outcome-bad",
+      "prompt": "<p>The patient returns 90 minutes later by ambulance in cardiogenic shock.</p>",
+      "choices": null,
+      "outcome": {
+        "score": 0,
+        "success": false,
+        "message": "<p><strong>Adverse outcome.</strong> The treatment window was missed. Review the decision points and try again.</p>"
+      }
+    }
+  ],
+  "behaviour": {
+    "enableRetry": true
+  },
+  "ui": {
+    "restartButton": "Restart scenario"
+  }
+}

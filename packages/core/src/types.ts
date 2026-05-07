@@ -50,17 +50,18 @@ export type BuiltActivityKind =
   | "anatomy-labeling"
   | "highlight-text"
   | "flashcards"
-  | "reflection-prompt";
-
-export type PlannedKind =
-  | "concept-map"
-  | "image-annotation"
+  | "reflection-prompt"
   | "branching-scenario"
+  | "image-annotation"
+  | "concept-map"
   | "interactive-video"
   | "audio-recording"
   | "lab-panel"
   | "ddx-tree"
   | "osce";
+
+/** Reserved for future activity kinds that haven't been implemented yet. */
+export type PlannedKind = never;
 
 export type ActivityKind = BuiltActivityKind | PlannedKind;
 
@@ -81,18 +82,18 @@ export const BUILT_ACTIVITY_KINDS: readonly BuiltActivityKind[] = [
   "highlight-text",
   "flashcards",
   "reflection-prompt",
-] as const;
-
-export const ACTIVITY_KINDS: readonly ActivityKind[] = [
-  ...BUILT_ACTIVITY_KINDS,
-  "concept-map",
-  "image-annotation",
   "branching-scenario",
+  "image-annotation",
+  "concept-map",
   "interactive-video",
   "audio-recording",
   "lab-panel",
   "ddx-tree",
   "osce",
+] as const;
+
+export const ACTIVITY_KINDS: readonly ActivityKind[] = [
+  ...BUILT_ACTIVITY_KINDS,
 ] as const;
 
 /** Score band for `overallFeedback` lookups. */

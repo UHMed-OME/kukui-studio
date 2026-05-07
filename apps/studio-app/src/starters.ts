@@ -245,6 +245,147 @@ export const STARTERS: Record<ActivityKind, unknown> = {
     minWords: 30,
     placeholder: "Type your reflection here…",
   },
+  "branching-scenario": {
+    version: "1.0",
+    title: "Untitled branching scenario",
+    startNodeId: "n1",
+    nodes: [
+      {
+        id: "n1",
+        prompt: "<p>What's your first move?</p>",
+        choices: [
+          { id: "c1", text: "Option A", nextNodeId: "n2" },
+          { id: "c2", text: "Option B", nextNodeId: "n3" },
+        ],
+      },
+      {
+        id: "n2",
+        prompt: "<p>Outcome A.</p>",
+        choices: null,
+        outcome: { score: 1, success: true, message: "Good call." },
+      },
+      {
+        id: "n3",
+        prompt: "<p>Outcome B.</p>",
+        choices: null,
+        outcome: { score: 0, success: false, message: "Try again." },
+      },
+    ],
+    behaviour: { enableRetry: true },
+  },
+  "image-annotation": {
+    version: "1.0",
+    title: "Untitled image annotation",
+    prompt: "<p>Annotate the image.</p>",
+    image: {
+      src: "https://placehold.co/1024x768/eef0f6/4b5563?text=Image",
+      alt: "Image to annotate",
+    },
+    tools: { rectangle: true, circle: true, freehand: true },
+    behaviour: { enableRetry: true },
+  },
+  "concept-map": {
+    version: "1.0",
+    title: "Untitled concept map",
+    prompt: "<p>Build a concept map.</p>",
+    seedNodes: [
+      { id: "n1", label: "Concept A", position: { x: 0.3, y: 0.4 } },
+      { id: "n2", label: "Concept B", position: { x: 0.7, y: 0.4 } },
+    ],
+    behaviour: { enableRetry: true, allowFreeText: true },
+  },
+  "interactive-video": {
+    version: "1.0",
+    title: "Untitled interactive video",
+    video: {
+      src: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
+      type: "html5",
+    },
+    interactions: [],
+    behaviour: { enableRetry: true },
+  },
+  "audio-recording": {
+    version: "1.0",
+    title: "Untitled audio recording",
+    prompt: "<p>Record yourself reading the passage.</p>",
+    maxDurationSeconds: 60,
+    minDurationSeconds: 3,
+    behaviour: { allowReRecord: true },
+  },
+  "lab-panel": {
+    version: "1.0",
+    title: "Untitled lab panel",
+    prompt: "<p>Identify abnormal values and pick the best interpretation.</p>",
+    panel: {
+      name: "Sample panel",
+      values: [
+        { id: "v1", analyte: "Analyte A", result: "10", isAbnormal: false },
+        { id: "v2", analyte: "Analyte B", result: "100", isAbnormal: true },
+      ],
+    },
+    interpretation: {
+      question: "<p>What's the best interpretation?</p>",
+      choices: [
+        { id: "c1", text: "Option A", correct: true },
+        { id: "c2", text: "Option B", correct: false },
+      ],
+    },
+    behaviour: { enableRetry: true },
+  },
+  "ddx-tree": {
+    version: "1.0",
+    title: "Untitled DDx tree",
+    caseHeader: "<p>Patient presents with…</p>",
+    startNodeId: "n1",
+    nodes: [
+      {
+        id: "n1",
+        presentation: "<p>Choose your next step.</p>",
+        choices: [
+          { id: "c1", text: "Test A", nextNodeId: "n2" },
+          { id: "c2", text: "Test B", nextNodeId: "n3" },
+        ],
+      },
+      {
+        id: "n2",
+        presentation: "<p>Result A.</p>",
+        choices: null,
+        diagnosis: { name: "Diagnosis A", correct: true, score: 1 },
+      },
+      {
+        id: "n3",
+        presentation: "<p>Result B.</p>",
+        choices: null,
+        diagnosis: { name: "Diagnosis B", correct: false, score: 0 },
+      },
+    ],
+    behaviour: { enableRetry: true },
+  },
+  osce: {
+    version: "1.0",
+    title: "Untitled OSCE",
+    caseHeader: "<p>Patient presentation: …</p>",
+    phases: [
+      {
+        id: "history",
+        name: "History",
+        actions: [
+          { id: "a1", text: "Ask about chest pain", correct: true },
+          { id: "a2", text: "Ask about diet preferences", correct: false },
+        ],
+      },
+      {
+        id: "exam",
+        name: "Exam",
+        actions: [
+          { id: "a3", text: "Auscultate the heart", correct: true },
+          { id: "a4", text: "Palpate the calves", correct: true },
+        ],
+      },
+    ],
+    expectedOrder: ["history", "exam"],
+    behaviour: { enableRetry: true },
+  },
   ...PLANNED_STARTERS,
 } as Record<ActivityKind, unknown>;
 
@@ -265,5 +406,13 @@ export const ACTIVITY_LABELS: Record<ActivityKind, string> = {
   "highlight-text": "Highlight Text Spans",
   flashcards: "Flashcards / Recall Drill",
   "reflection-prompt": "Reflection Prompt",
+  "branching-scenario": "Branching Scenario",
+  "image-annotation": "Image Annotation / Draw",
+  "concept-map": "Concept Map",
+  "interactive-video": "Interactive Video",
+  "audio-recording": "Audio Recording / Pronunciation",
+  "lab-panel": "Lab Panel Interpretation",
+  "ddx-tree": "Differential Diagnosis Tree",
+  osce: "OSCE Clinical Encounter",
   ...PLANNED_LABELS,
 } as Record<ActivityKind, string>;

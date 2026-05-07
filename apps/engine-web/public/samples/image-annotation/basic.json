@@ -1,0 +1,25 @@
+{
+  "_comment": "Demo fixture using a placehold.co background. Replace image.src with author-provided art for production.",
+  "version": "1.0",
+  "title": "Mark the suspected lesion",
+  "prompt": "<p>Use the <strong>circle</strong> tool to ring any suspected lesion you see, and the <strong>arrow</strong> tool to point to additional findings. When you're done, click Submit.</p>",
+  "image": {
+    "src": "https://placehold.co/1024x768/1a1a1a/eaeaea?text=Chest+X-ray+(placeholder)",
+    "alt": "Placeholder for a frontal chest X-ray"
+  },
+  "tools": {
+    "rectangle": true,
+    "circle": true,
+    "arrow": true,
+    "freehand": true
+  },
+  "expectedAnnotations": [
+    {
+      "id": "rul-opacity",
+      "rect": { "x": 0.34, "y": 0.22, "w": 0.12, "h": 0.14 },
+      "label": "Right upper-lobe opacity"
+    }
+  ],
+  "behaviour": { "enableRetry": true, "allowEdit": true },
+  "ui": { "submitButtonLabel": "Submit annotations", "clearButton": "Clear all" }
+}

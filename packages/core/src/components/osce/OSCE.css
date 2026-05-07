@@ -1,0 +1,376 @@
+/*
+ * OSCE Clinical Encounter — sequenced phase walk with multi-select actions per
+ * phase, scored on what was done and the order it was done in. Layout-stable:
+ * borders are constant 2 px; only color and opacity change between states.
+ */
+
+.kukui-osce {
+  display: flex;
+  justify-content: center;
+  padding: var(--spacing-2xl, 24px);
+}
+
+.kukui-osce__card {
+  width: 100%;
+  max-width: 720px;
+  background: var(--color-surface, #ffffff);
+  border: 1px solid var(--color-border, #dad2c6);
+  border-radius: var(--radius-card, 12px);
+  padding: var(--spacing-3xl, 28px);
+}
+
+.kukui-osce__header {
+  margin-bottom: var(--spacing-xl, 20px);
+}
+
+.kukui-osce__title {
+  margin: 0 0 var(--spacing-md, 12px);
+  font-size: var(--font-size-title, 24px);
+  font-weight: 700;
+  color: var(--color-text-primary, #1c1e20);
+}
+
+.kukui-osce__case-header {
+  font-size: var(--font-size-prompt, 16px);
+  line-height: 1.5;
+  color: var(--color-text-primary, #1c1e20);
+  background: var(--color-tip-bg, #f2f0e8);
+  padding: var(--spacing-lg, 16px);
+  border-radius: var(--radius-lg, 10px);
+}
+
+/* Stepper ----------------------------------------------------------------- */
+
+.kukui-osce__stepper {
+  margin-bottom: var(--spacing-xl, 20px);
+}
+
+.kukui-osce__stepper-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-sm, 8px);
+}
+
+.kukui-osce__stepper-item {
+  flex: 0 1 auto;
+}
+
+.kukui-osce__stepper-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-sm, 8px);
+  min-height: 44px;
+  padding: var(--spacing-sm, 8px) var(--spacing-md, 12px);
+  background: var(--color-surface, #ffffff);
+  border: 2px solid var(--color-border, #dad2c6);
+  border-radius: var(--radius-md, 8px);
+  color: var(--color-text-primary, #1c1e20);
+  font-size: var(--font-size-answer, 15px);
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background-color 150ms ease,
+    border-color 150ms ease;
+}
+
+.kukui-osce__stepper-btn:hover:not(:disabled) {
+  border-color: var(--color-border-hover, #bbae9a);
+}
+
+.kukui-osce__stepper-btn:focus-visible {
+  outline: 2px solid var(--color-primary, #7b4324);
+  outline-offset: 2px;
+}
+
+.kukui-osce__stepper-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.kukui-osce__stepper-btn.is-current {
+  border-color: var(--color-primary, #7b4324);
+  background: var(--color-primary-soft);
+  color: var(--color-text-primary, #1c1e20);
+}
+
+.kukui-osce__stepper-btn.is-visited {
+  border-color: var(--color-primary, #7b4324);
+}
+
+.kukui-osce__stepper-index {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 24px;
+  min-height: 24px;
+  padding: 0 var(--spacing-xs, 4px);
+  font-size: var(--font-size-meta, 13px);
+  font-weight: 700;
+  color: var(--color-text-secondary, #606069);
+  background: var(--color-tip-bg, #f2f0e8);
+  border-radius: var(--radius-sm, 6px);
+}
+
+.kukui-osce__stepper-btn.is-current .kukui-osce__stepper-index {
+  color: #ffffff;
+  background: var(--color-primary, #7b4324);
+}
+
+.kukui-osce__stepper-name {
+  white-space: normal;
+}
+
+/* Phase ------------------------------------------------------------------- */
+
+.kukui-osce__phase {
+  margin-bottom: var(--spacing-xl, 20px);
+}
+
+.kukui-osce__phase-title {
+  margin: 0 0 var(--spacing-md, 12px);
+  font-size: var(--font-size-subtitle, 18px);
+  font-weight: 700;
+  color: var(--color-text-primary, #1c1e20);
+}
+
+.kukui-osce__phase-desc {
+  margin-bottom: var(--spacing-lg, 16px);
+  font-size: var(--font-size-prompt, 16px);
+  line-height: 1.5;
+  color: var(--color-text-primary, #1c1e20);
+}
+
+/* Actions ----------------------------------------------------------------- */
+
+.kukui-osce__actions {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm, 8px);
+}
+
+.kukui-osce__action-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.kukui-osce__action {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-md, 12px);
+  width: 100%;
+  min-height: 48px;
+  padding: var(--spacing-md, 12px) var(--spacing-lg, 16px);
+  background: var(--color-surface, #ffffff);
+  border: 2px solid var(--color-border, #dad2c6);
+  border-radius: var(--radius-md, 8px);
+  text-align: left;
+  font-size: var(--font-size-answer, 15px);
+  color: var(--color-text-primary, #1c1e20);
+  cursor: pointer;
+  transition:
+    background-color 150ms ease,
+    border-color 150ms ease;
+}
+
+.kukui-osce__action:hover:not(:disabled):not(.is-selected) {
+  border-color: var(--color-border-hover, #bbae9a);
+}
+
+.kukui-osce__action:focus-visible {
+  outline: 2px solid var(--color-primary, #7b4324);
+  outline-offset: 2px;
+}
+
+.kukui-osce__action:disabled {
+  cursor: default;
+}
+
+.kukui-osce__action.is-selected {
+  border-color: var(--color-primary, #7b4324);
+  background: var(--color-primary-soft);
+}
+
+.kukui-osce__action.is-correct {
+  border-color: var(--color-success, #2e6e41);
+  background: var(--color-success-soft);
+}
+
+.kukui-osce__action.is-incorrect {
+  border-color: var(--color-error, #c34132);
+  background: var(--color-error-soft);
+}
+
+.kukui-osce__action-text {
+  flex: 1 1 auto;
+  white-space: normal;
+}
+
+.kukui-osce__action-icon {
+  flex: 0 0 auto;
+  width: 24px;
+  text-align: center;
+  font-weight: 700;
+  font-size: 18px;
+}
+
+/* Pattern A inline-below feedback per action — constant min-height. */
+.kukui-osce__action-feedback {
+  min-height: 0;
+  opacity: 0;
+  font-size: var(--font-size-meta, 13px);
+  color: var(--color-text-secondary, #606069);
+  padding: 0 var(--spacing-lg, 16px);
+  transition:
+    opacity 200ms ease,
+    min-height 200ms ease;
+}
+
+.kukui-osce__action-feedback.is-visible {
+  opacity: 1;
+  min-height: 28px;
+  padding-top: var(--spacing-xs, 4px);
+  padding-bottom: var(--spacing-sm, 8px);
+}
+
+/* Phase summary ----------------------------------------------------------- */
+
+.kukui-osce__phase-summary {
+  margin-top: var(--spacing-lg, 16px);
+  padding: var(--spacing-md, 12px) var(--spacing-lg, 16px);
+  border: 2px solid var(--color-border, #dad2c6);
+  border-radius: var(--radius-lg, 10px);
+  background: var(--color-tip-bg, #f2f0e8);
+  font-size: var(--font-size-prompt, 16px);
+  color: var(--color-text-primary, #1c1e20);
+}
+
+.kukui-osce__phase-summary-label {
+  color: var(--color-text-secondary, #606069);
+}
+
+/* Overall feedback line --------------------------------------------------- */
+
+.kukui-osce__overall-feedback {
+  min-height: 28px;
+  margin-top: var(--spacing-lg, 16px);
+  padding: 0 var(--spacing-xs, 4px);
+  font-size: var(--font-size-prompt, 16px);
+  font-weight: 700;
+  color: var(--color-text-primary, #1c1e20);
+  opacity: 0;
+  transition: opacity 200ms ease;
+}
+
+.kukui-osce__overall-feedback.is-visible {
+  opacity: 1;
+}
+
+/* Nav --------------------------------------------------------------------- */
+
+.kukui-osce__nav {
+  margin-top: var(--spacing-xl, 20px);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--spacing-md, 12px);
+}
+
+.kukui-osce__primary,
+.kukui-osce__secondary {
+  min-height: 44px;
+  padding: 10px 20px;
+  border-radius: var(--radius-md, 8px);
+  font-size: var(--font-size-answer, 15px);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.kukui-osce__primary {
+  background: var(--color-primary, #7b4324);
+  color: #ffffff;
+  border: none;
+}
+
+.kukui-osce__primary:hover:not(:disabled) {
+  background: var(--color-primary-hover, #9b5830);
+}
+
+.kukui-osce__primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.kukui-osce__secondary {
+  background: transparent;
+  color: var(--color-primary, #7b4324);
+  border: 2px solid var(--color-primary, #7b4324);
+}
+
+.kukui-osce__secondary:hover:not(:disabled) {
+  background: var(--color-primary-soft);
+}
+
+/* Per-phase review summary card ------------------------------------------ */
+
+.kukui-osce__review {
+  margin-top: var(--spacing-xl, 20px);
+  padding: var(--spacing-lg, 16px);
+  border: 2px solid var(--color-border, #dad2c6);
+  border-radius: var(--radius-lg, 10px);
+  background: var(--color-bg, #fcf8f2);
+}
+
+.kukui-osce__review-title {
+  margin: 0 0 var(--spacing-md, 12px);
+  font-size: var(--font-size-subtitle, 18px);
+  font-weight: 700;
+  color: var(--color-text-primary, #1c1e20);
+}
+
+.kukui-osce__review-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm, 8px);
+}
+
+.kukui-osce__review-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--spacing-md, 12px);
+  padding: var(--spacing-sm, 8px) var(--spacing-md, 12px);
+  border: 2px solid var(--color-border, #dad2c6);
+  border-radius: var(--radius-md, 8px);
+  background: var(--color-surface, #ffffff);
+  font-size: var(--font-size-answer, 15px);
+}
+
+.kukui-osce__review-name {
+  color: var(--color-text-primary, #1c1e20);
+  font-weight: 600;
+}
+
+.kukui-osce__review-score {
+  color: var(--color-text-primary, #1c1e20);
+  font-weight: 700;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kukui-osce__action,
+  .kukui-osce__action-feedback,
+  .kukui-osce__overall-feedback,
+  .kukui-osce__stepper-btn {
+    transition: none;
+  }
+}

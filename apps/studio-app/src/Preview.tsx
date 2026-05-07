@@ -51,6 +51,24 @@ const Flashcards = lazy(() =>
 const ReflectionPrompt = lazy(() =>
   import("@kukui/core").then((m) => ({ default: m.ReflectionPrompt })),
 );
+const AudioRecording = lazy(() =>
+  import("@kukui/core").then((m) => ({ default: m.AudioRecording })),
+);
+const BranchingScenario = lazy(() =>
+  import("@kukui/core").then((m) => ({ default: m.BranchingScenario })),
+);
+const ImageAnnotation = lazy(() =>
+  import("@kukui/core").then((m) => ({ default: m.ImageAnnotation })),
+);
+const ConceptMap = lazy(() =>
+  import("@kukui/core").then((m) => ({ default: m.ConceptMap })),
+);
+const InteractiveVideo = lazy(() =>
+  import("@kukui/core").then((m) => ({ default: m.InteractiveVideo })),
+);
+const LabPanel = lazy(() => import("@kukui/core").then((m) => ({ default: m.LabPanel })));
+const DDxTree = lazy(() => import("@kukui/core").then((m) => ({ default: m.DDxTree })));
+const OSCE = lazy(() => import("@kukui/core").then((m) => ({ default: m.OSCE })));
 const StubActivity = lazy(() =>
   import("@kukui/core").then((m) => ({ default: m.StubActivity })),
 );
@@ -153,6 +171,22 @@ function renderActivity(kind: ActivityKind, config: unknown, noop: () => void) {
       return <Flashcards config={c} onSubmit={noop} />;
     case "reflection-prompt":
       return <ReflectionPrompt config={c} onSubmit={noop} />;
+    case "audio-recording":
+      return <AudioRecording config={c} onSubmit={noop} />;
+    case "branching-scenario":
+      return <BranchingScenario config={c} onSubmit={noop} />;
+    case "image-annotation":
+      return <ImageAnnotation config={c} onSubmit={noop} />;
+    case "concept-map":
+      return <ConceptMap config={c} onSubmit={noop} />;
+    case "interactive-video":
+      return <InteractiveVideo config={c} onSubmit={noop} />;
+    case "lab-panel":
+      return <LabPanel config={c} onSubmit={noop} />;
+    case "ddx-tree":
+      return <DDxTree config={c} onSubmit={noop} />;
+    case "osce":
+      return <OSCE config={c} onSubmit={noop} />;
     default:
       return <StubActivity config={c} onSubmit={noop} />;
   }

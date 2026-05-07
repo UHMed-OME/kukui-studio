@@ -500,14 +500,304 @@ export const UI_SCHEMAS: Record<ActivityKind, Record<string, unknown>> = {
     },
   },
 
+  "sequence-steps": {
+    ...COMMON,
+    "ui:order": ["title", "prompt", "steps", "behaviour", "ui", "*"],
+    title: TITLE,
+    prompt: f("Prompt", "What the learner is asked to put in order.", {
+      "ui:widget": "html",
+      "ui:options": { rows: 3 },
+    }),
+    steps: {
+      "ui:title": "Steps (in correct order)",
+      "ui:help":
+        "List the steps in the correct sequence. Learners see them shuffled (when randomize is on) and reorder via drag.",
+      items: {
+        id: f("Internal ID", "Unique identifier. Lowercase, no spaces."),
+        text: f("Step text", "What the learner sees on the row."),
+      },
+    },
+    behaviour: {
+      "ui:title": "Activity behaviour",
+      enableRetry: BEHAVIOUR_RETRY,
+      singlePoint: BEHAVIOUR_SINGLEPOINT,
+      randomize: f("Shuffle on load", "When on, present steps in a random initial order."),
+    },
+    ui: {
+      "ui:title": "Button label overrides",
+      checkAnswerButton: f("'Check' button text"),
+      tryAgainButton: f("'Try Again' button text"),
+    },
+  },
+
+  "matching-pairs": {
+    ...COMMON,
+    "ui:order": ["title", "prompt", "pairs", "behaviour", "ui", "*"],
+    title: TITLE,
+    prompt: f("Prompt", "Tells the learner what to match.", {
+      "ui:widget": "html",
+      "ui:options": { rows: 3 },
+    }),
+    pairs: {
+      "ui:title": "Pairs (left ↔ right)",
+      "ui:help":
+        "Each row defines a correct match between a left-column item and a right-column item.",
+      items: {
+        id: f("Internal ID", "Unique identifier."),
+        left: { "ui:title": "Left item", text: f("Text", "What the learner sees on the left side.") },
+        right: {
+          "ui:title": "Right item (correct partner)",
+          text: f("Text", "What the learner sees on the right side."),
+        },
+      },
+    },
+    behaviour: {
+      "ui:title": "Activity behaviour",
+      enableRetry: BEHAVIOUR_RETRY,
+      singlePoint: BEHAVIOUR_SINGLEPOINT,
+      randomizeRight: f(
+        "Shuffle the right column",
+        "Default on. The right side is shuffled so learners can't pair by position.",
+      ),
+    },
+    ui: {
+      "ui:title": "Button label overrides",
+      checkAnswerButton: f("'Check' button text"),
+      tryAgainButton: f("'Try Again' button text"),
+    },
+  },
+
+  categorization: {
+    ...COMMON,
+    "ui:order": ["title", "prompt", "categories", "items", "behaviour", "ui", "*"],
+    title: TITLE,
+    prompt: f("Prompt", "Tells the learner what to sort.", {
+      "ui:widget": "html",
+      "ui:options": { rows: 3 },
+    }),
+    categories: {
+      "ui:title": "Categories (bins)",
+      "ui:help": "The named bins items can be dropped into.",
+      items: {
+        id: f("Internal ID"),
+        label: f("Bin label", "Shown above the bin."),
+      },
+    },
+    items: {
+      "ui:title": "Items to sort",
+      "ui:help": "Each item declares which category id is its correct home.",
+      items: {
+        id: f("Internal ID"),
+        text: f("Item text", "What the learner sees on the chip."),
+        correctCategory: f(
+          "Correct category id",
+          "Must match one of the category ids declared above.",
+        ),
+      },
+    },
+    behaviour: {
+      "ui:title": "Activity behaviour",
+      enableRetry: BEHAVIOUR_RETRY,
+      singlePoint: BEHAVIOUR_SINGLEPOINT,
+      randomizeItems: f("Shuffle items on load", "When on, the tray order is randomized."),
+    },
+    ui: {
+      "ui:title": "Button label overrides",
+      checkAnswerButton: f("'Check' button text"),
+      tryAgainButton: f("'Try Again' button text"),
+    },
+  },
+
+  "anatomy-labeling": {
+    ...COMMON,
+    "ui:order": ["title", "prompt", "image", "labels", "targets", "behaviour", "ui", "*"],
+    title: TITLE,
+    prompt: f("Prompt", "Tells the learner what to label.", {
+      "ui:widget": "html",
+      "ui:options": { rows: 3 },
+    }),
+    image: {
+      "ui:title": "Image",
+      src: f("Image", "Paste a URL or upload a file. Files embed inline in the JSON.", {
+        "ui:widget": "file",
+        "ui:options": { accept: "image/*", maxSizeMb: 5, kind: "image" },
+      }),
+      alt: f("Alt text", "Description for screen-reader users. Empty if purely decorative."),
+    },
+    labels: {
+      "ui:title": "Labels",
+      "ui:help": "Each label declares which target id is its correct home.",
+      items: {
+        id: f("Internal ID"),
+        text: f("Label text"),
+        correctTargetId: f("Correct target id", "Must match one of the target ids declared below."),
+      },
+    },
+    targets: {
+      "ui:title": "Targets (numbered points)",
+      "ui:help": "Each target is a small numbered circle on the image.",
+      items: {
+        id: f("Internal ID"),
+        position: { "ui:title": "Position (0..1)", x: f("X (left)"), y: f("Y (top)") },
+      },
+    },
+    behaviour: {
+      "ui:title": "Activity behaviour",
+      enableRetry: BEHAVIOUR_RETRY,
+      singlePoint: BEHAVIOUR_SINGLEPOINT,
+      randomizeLabels: f("Shuffle labels", "Tray order randomized on load."),
+    },
+    ui: {
+      "ui:title": "Button label overrides",
+      checkAnswerButton: f("'Check' button text"),
+      tryAgainButton: f("'Try Again' button text"),
+    },
+  },
+
+  "image-comparison-slider": {
+    ...COMMON,
+    "ui:order": ["title", "prompt", "before", "after", "initialPosition", "behaviour", "ui", "*"],
+    title: TITLE,
+    prompt: f("Prompt", "Tells the learner what to look at.", {
+      "ui:widget": "html",
+      "ui:options": { rows: 3 },
+    }),
+    before: {
+      "ui:title": "Before image",
+      src: f("Image", "Paste URL or upload.", {
+        "ui:widget": "file",
+        "ui:options": { accept: "image/*", maxSizeMb: 5, kind: "image" },
+      }),
+      alt: f("Alt text"),
+      caption: f("Caption", "Optional. Shown beneath the image."),
+    },
+    after: {
+      "ui:title": "After image",
+      src: f("Image", "Paste URL or upload.", {
+        "ui:widget": "file",
+        "ui:options": { accept: "image/*", maxSizeMb: 5, kind: "image" },
+      }),
+      alt: f("Alt text"),
+      caption: f("Caption", "Optional."),
+    },
+    initialPosition: f(
+      "Initial seam position (0..1)",
+      "Where the seam starts. 0 = before fills the canvas; 1 = after fills the canvas. Default 0.5.",
+    ),
+    behaviour: {
+      "ui:title": "Activity behaviour",
+      autoSnap: f("Auto-snap to centre on release", "Seam returns to 0.5 when the learner lets go."),
+    },
+    ui: {
+      "ui:title": "Button label overrides",
+      doneButton: f("'Done' button text"),
+    },
+  },
+
+  "highlight-text": {
+    ...COMMON,
+    "ui:order": ["title", "prompt", "tokens", "behaviour", "ui", "*"],
+    title: TITLE,
+    prompt: f("Prompt", "Tells the learner what to highlight.", {
+      "ui:widget": "html",
+      "ui:options": { rows: 3 },
+    }),
+    tokens: {
+      "ui:title": "Tokens (each is clickable)",
+      "ui:help":
+        "Render order matters — tokens render with single spaces between unless a separator is set.",
+      items: {
+        id: f("Internal ID"),
+        text: f("Token text", "The word or phrase the learner sees."),
+        correct: f("Counts as correct", "Selecting this token contributes to the score."),
+        separator: f(
+          "Separator after token",
+          "Optional. Defaults to a single space. Set to an empty string for no space, or to ', ' / '. ' / etc.",
+        ),
+      },
+    },
+    behaviour: {
+      "ui:title": "Activity behaviour",
+      enableRetry: BEHAVIOUR_RETRY,
+      singlePoint: BEHAVIOUR_SINGLEPOINT,
+    },
+    ui: {
+      "ui:title": "Button label overrides",
+      checkAnswerButton: f("'Check' button text"),
+      tryAgainButton: f("'Try Again' button text"),
+    },
+  },
+
+  flashcards: {
+    ...COMMON,
+    "ui:order": ["title", "prompt", "cards", "behaviour", "ui", "*"],
+    title: TITLE,
+    prompt: f("Intro / instructions", "Optional intro shown above the deck.", {
+      "ui:widget": "html",
+      "ui:options": { rows: 2 },
+    }),
+    cards: {
+      "ui:title": "Cards",
+      "ui:help": "Each card has a front and a back. HTML allowed in both.",
+      items: {
+        id: f("Internal ID"),
+        front: f("Front (question side)", "What the learner sees first.", {
+          "ui:widget": "html",
+          "ui:options": { rows: 2 },
+        }),
+        back: f("Back (answer side)", "Revealed when the card flips.", {
+          "ui:widget": "html",
+          "ui:options": { rows: 2 },
+        }),
+        hint: f("Hint", "Optional hint shown alongside the front.", {
+          "ui:widget": "textarea",
+          "ui:options": { rows: 2 },
+        }),
+      },
+    },
+    behaviour: {
+      "ui:title": "Activity behaviour",
+      shuffle: f("Shuffle the deck", "Default on."),
+      passThreshold: f(
+        "Pass threshold (% knew)",
+        "Default 80. Score-as-percent of cards marked 'I knew it' must reach this for the activity to pass.",
+      ),
+    },
+    ui: {
+      "ui:title": "Button label overrides",
+      knewItButton: f("'I knew it' button text"),
+      didntKnowButton: f("'I didn't know it' button text"),
+      nextButton: f("'Next' button text"),
+    },
+  },
+
+  "reflection-prompt": {
+    ...COMMON,
+    "ui:order": ["title", "prompt", "minWords", "placeholder", "ui", "*"],
+    title: TITLE,
+    prompt: f("Prompt", "What the learner reflects on.", {
+      "ui:widget": "html",
+      "ui:options": { rows: 4 },
+    }),
+    minWords: f(
+      "Minimum word count",
+      "Optional. If set, Submit is disabled until the learner writes this many words.",
+    ),
+    placeholder: f("Placeholder text", "Greys-out hint inside the empty textarea."),
+    ui: {
+      "ui:title": "Button label overrides",
+      submitButtonLabel: f("'Submit' button text"),
+    },
+  },
+
   // Stubbed (planned) activity kinds get filled in below.
 } as unknown as Record<ActivityKind, Record<string, unknown>>;
 
-// Inject a minimal stub uiSchema for every planned kind. Each one backs to
-// StubConfigSchema and renders via StubActivity until a real
-// implementation lands.
+// Inject a minimal stub uiSchema for every planned kind. PLANNED_ACTIVITY_KINDS
+// is currently empty (every spec'd activity has shipped) — this loop is a
+// future hook for when the catalog grows again.
 for (const kind of PLANNED_ACTIVITY_KINDS) {
-  UI_SCHEMAS[kind] = {
+  (UI_SCHEMAS as Record<string, unknown>)[kind] = {
     ...COMMON,
     title: f("Activity title", "What learners and instructors see in the gradebook."),
     description: f("Description", "Short summary of what the activity will do.", {

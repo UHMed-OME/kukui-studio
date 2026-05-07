@@ -1,0 +1,111 @@
+{
+  "_comment": "Demo fixture: a short OSCE for an acute chest-pain encounter with three phases. expectedOrder defines the intended workflow.",
+  "version": "1.0",
+  "title": "Acute chest pain — OSCE encounter",
+  "caseHeader": "<p>A 55-year-old man presents to the emergency department with sudden-onset substernal chest pain radiating to the left arm, beginning 30 minutes ago while at rest. He describes it as a heavy, crushing pressure.</p><p><strong>Vitals:</strong> BP 145/92 mmHg, HR 102 bpm, RR 20, SpO<sub>2</sub> 96% on room air, T 37.0&deg;C.</p>",
+  "phases": [
+    {
+      "id": "history",
+      "name": "History",
+      "description": "<p>Take a focused history. Select the actions that contribute to your differential.</p>",
+      "actions": [
+        {
+          "id": "pain-socrates",
+          "text": "Characterize the pain (site, onset, character, radiation, associated symptoms, timing, exacerbating/relieving factors, severity)",
+          "correct": true,
+          "feedback": "Correct — full pain characterization narrows the differential between cardiac, pleuritic, and musculoskeletal causes."
+        },
+        {
+          "id": "cardiac-rf",
+          "text": "Ask about cardiac risk factors (hypertension, diabetes, smoking, family history, hyperlipidemia)",
+          "correct": true,
+          "feedback": "Correct — Framingham risk factors materially shift the pre-test probability of ACS."
+        },
+        {
+          "id": "associated-sx",
+          "text": "Ask about associated symptoms (shortness of breath, nausea, diaphoresis, syncope)",
+          "correct": true,
+          "feedback": "Correct — autonomic features support an ischemic etiology."
+        },
+        {
+          "id": "tropical-travel",
+          "text": "Ask about recent travel to a tropical island",
+          "correct": false,
+          "feedback": "Low yield in this presentation — not part of the standard ACS history."
+        }
+      ]
+    },
+    {
+      "id": "exam",
+      "name": "Physical exam",
+      "description": "<p>Examine the patient. Pick the steps that move the workup forward.</p>",
+      "actions": [
+        {
+          "id": "vitals-recheck",
+          "text": "Reassess vital signs and cardiovascular stability",
+          "correct": true,
+          "feedback": "Correct — hemodynamic instability changes management urgency."
+        },
+        {
+          "id": "auscultate",
+          "text": "Auscultate heart and lungs (murmurs, S3/S4, rales)",
+          "correct": true,
+          "feedback": "Correct — new murmur or rales would suggest mechanical complication or heart failure."
+        },
+        {
+          "id": "peripheral-pulses",
+          "text": "Assess peripheral pulses bilaterally",
+          "correct": true,
+          "feedback": "Correct — asymmetric pulses raise concern for aortic dissection."
+        },
+        {
+          "id": "abdo-mass",
+          "text": "Palpate the abdomen for masses",
+          "correct": false,
+          "feedback": "Not the priority for this presentation."
+        }
+      ]
+    },
+    {
+      "id": "investigations",
+      "name": "Investigations",
+      "description": "<p>Order the next-step investigations.</p>",
+      "actions": [
+        {
+          "id": "ecg",
+          "text": "12-lead ECG within 10 minutes of arrival",
+          "correct": true,
+          "feedback": "Correct — time-to-ECG is a quality metric for chest pain triage."
+        },
+        {
+          "id": "troponin",
+          "text": "High-sensitivity troponin (with serial repeat)",
+          "correct": true,
+          "feedback": "Correct — establishes the ACS diagnosis when paired with ECG and clinical picture."
+        },
+        {
+          "id": "cxr",
+          "text": "Portable chest X-ray",
+          "correct": true,
+          "feedback": "Correct — screens for alternative causes (pneumothorax, mediastinal widening, pulmonary edema)."
+        },
+        {
+          "id": "abdo-xray",
+          "text": "Plain abdominal X-ray",
+          "correct": false,
+          "feedback": "Not indicated for chest pain workup."
+        }
+      ]
+    }
+  ],
+  "expectedOrder": ["history", "exam", "investigations"],
+  "behaviour": {
+    "enableRetry": true,
+    "allowSkipPhase": false
+  },
+  "ui": {
+    "nextPhaseButton": "Next phase",
+    "submitButton": "Submit OSCE",
+    "tryAgainButton": "Try again"
+  }
+}

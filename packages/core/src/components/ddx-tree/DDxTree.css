@@ -1,0 +1,273 @@
+/*
+ * Differential Diagnosis Tree — visual implementation following the Kukui
+ * design system. Layout-stable: borders are constant 2 px; only color and
+ * opacity change between states. Pattern A inline-below feedback.
+ */
+
+.kukui-ddx {
+  display: flex;
+  justify-content: center;
+  padding: var(--spacing-2xl, 24px);
+}
+
+.kukui-ddx__card {
+  width: 100%;
+  max-width: 720px;
+  background: var(--color-surface, #ffffff);
+  border: 1px solid var(--color-border, #dad2c6);
+  border-radius: var(--radius-card, 12px);
+  padding: var(--spacing-3xl, 28px);
+}
+
+.kukui-ddx__title {
+  margin: 0 0 var(--spacing-lg, 16px);
+  font-size: var(--font-size-title, 24px);
+  font-weight: 700;
+  color: var(--color-text-primary, #1c1e20);
+}
+
+/* Persistent case header — always visible, set apart from the running case. */
+.kukui-ddx__case-header {
+  margin-bottom: var(--spacing-lg, 16px);
+  padding: var(--spacing-lg, 16px);
+  background: var(--color-tip-bg, #f2f0e8);
+  border: 2px solid var(--color-border, #dad2c6);
+  border-radius: var(--radius-lg, 10px);
+}
+
+.kukui-ddx__case-header-title {
+  margin: 0 0 var(--spacing-xs, 4px);
+  font-size: var(--font-size-caption, 14px);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-text-secondary, #606069);
+}
+
+.kukui-ddx__case-header-body {
+  font-size: var(--font-size-prompt, 16px);
+  line-height: 1.5;
+  color: var(--color-text-primary, #1c1e20);
+}
+
+.kukui-ddx__case-header-body :first-child {
+  margin-top: 0;
+}
+
+.kukui-ddx__case-header-body :last-child {
+  margin-bottom: 0;
+}
+
+/* "Case so far" panel — accumulating findings list. */
+.kukui-ddx__case-so-far {
+  margin-bottom: var(--spacing-xl, 20px);
+  padding: var(--spacing-lg, 16px);
+  background: var(--color-surface, #ffffff);
+  border: 2px solid var(--color-border, #dad2c6);
+  border-radius: var(--radius-lg, 10px);
+}
+
+.kukui-ddx__case-so-far-title {
+  margin: 0 0 var(--spacing-sm, 8px);
+  font-size: var(--font-size-caption, 14px);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-text-secondary, #606069);
+}
+
+.kukui-ddx__case-so-far-empty {
+  margin: 0;
+  font-size: var(--font-size-meta, 13px);
+  font-style: italic;
+  color: var(--color-text-secondary, #606069);
+}
+
+.kukui-ddx__case-so-far-list {
+  margin: 0;
+  padding-left: var(--spacing-xl, 20px);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs, 4px);
+}
+
+.kukui-ddx__case-so-far-item {
+  font-size: var(--font-size-answer, 15px);
+  line-height: 1.4;
+  color: var(--color-text-primary, #1c1e20);
+}
+
+.kukui-ddx__presentation {
+  margin-bottom: var(--spacing-xl, 20px);
+  font-size: var(--font-size-prompt, 16px);
+  line-height: 1.5;
+  color: var(--color-text-primary, #1c1e20);
+}
+
+.kukui-ddx__choices {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm, 8px);
+}
+
+.kukui-ddx__choice-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.kukui-ddx__choice {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md, 12px);
+  width: 100%;
+  min-height: 48px;
+  padding: var(--spacing-md, 12px) var(--spacing-lg, 16px);
+  background: var(--color-surface, #ffffff);
+  border: 2px solid var(--color-border, #dad2c6);
+  border-radius: var(--radius-md, 8px);
+  text-align: left;
+  font-size: var(--font-size-answer, 15px);
+  color: var(--color-text-primary, #1c1e20);
+  cursor: pointer;
+  transition:
+    background-color 150ms ease,
+    border-color 150ms ease;
+}
+
+.kukui-ddx__choice:hover:not(:disabled) {
+  border-color: var(--color-border-hover, #bbae9a);
+}
+
+.kukui-ddx__choice.is-active {
+  border-color: var(--color-primary, #7b4324);
+  background: var(--color-primary-soft);
+}
+
+.kukui-ddx__choice-text {
+  flex: 1 1 auto;
+  white-space: normal;
+}
+
+/* Pattern A feedback row: constant min-height, opacity-only fade. */
+.kukui-ddx__feedback {
+  min-height: 0;
+  opacity: 0;
+  margin-top: var(--spacing-sm, 8px);
+  font-size: var(--font-size-meta, 13px);
+  color: var(--color-text-secondary, #606069);
+  padding: 0 var(--spacing-lg, 16px);
+  transition:
+    opacity 200ms ease,
+    min-height 200ms ease;
+}
+
+.kukui-ddx__feedback.is-visible {
+  opacity: 1;
+  min-height: 28px;
+  padding-top: var(--spacing-xs, 4px);
+  padding-bottom: var(--spacing-sm, 8px);
+}
+
+/* Terminal diagnosis panel — uses a Success/Error border + soft fill, paired
+   with a text label and icon so color is never the sole signal. */
+.kukui-ddx__diagnosis {
+  margin-top: var(--spacing-xl, 20px);
+  padding: var(--spacing-lg, 16px);
+  border-radius: var(--radius-lg, 10px);
+  border: 2px solid var(--color-border, #dad2c6);
+  background: var(--color-surface, #ffffff);
+}
+
+.kukui-ddx__diagnosis.is-correct {
+  border-color: var(--color-success, #2e6e41);
+  background: var(--color-success-soft);
+}
+
+.kukui-ddx__diagnosis.is-incorrect {
+  border-color: var(--color-error, #c34132);
+  background: var(--color-error-soft);
+}
+
+.kukui-ddx__diagnosis-header {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-sm, 8px);
+}
+
+.kukui-ddx__diagnosis-icon {
+  flex: 0 0 auto;
+  font-weight: 700;
+  font-size: 20px;
+  line-height: 1.2;
+  width: 24px;
+  text-align: center;
+}
+
+.kukui-ddx__diagnosis.is-correct .kukui-ddx__diagnosis-icon {
+  color: var(--color-success, #2e6e41);
+}
+
+.kukui-ddx__diagnosis.is-incorrect .kukui-ddx__diagnosis-icon {
+  color: var(--color-error, #c34132);
+}
+
+.kukui-ddx__diagnosis-name {
+  margin: 0;
+  font-size: var(--font-size-prompt, 16px);
+  font-weight: 700;
+  color: var(--color-text-primary, #1c1e20);
+}
+
+.kukui-ddx__diagnosis-label {
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-size: var(--font-size-caption, 14px);
+}
+
+.kukui-ddx__diagnosis-explanation {
+  margin-top: var(--spacing-sm, 8px);
+  font-size: var(--font-size-answer, 15px);
+  line-height: 1.5;
+  color: var(--color-text-primary, #1c1e20);
+}
+
+.kukui-ddx__diagnosis-explanation :first-child {
+  margin-top: 0;
+}
+
+.kukui-ddx__diagnosis-explanation :last-child {
+  margin-bottom: 0;
+}
+
+.kukui-ddx__secondary {
+  margin-top: var(--spacing-md, 12px);
+  min-height: 44px;
+  padding: 10px 20px;
+  background: transparent;
+  color: var(--color-primary, #7b4324);
+  border: 2px solid var(--color-primary, #7b4324);
+  border-radius: var(--radius-md, 8px);
+  font-size: var(--font-size-answer, 15px);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.kukui-ddx__secondary:hover {
+  background: var(--color-primary-soft);
+}
+
+.kukui-ddx__error {
+  color: var(--color-error, #c34132);
+  font-weight: 700;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kukui-ddx__choice,
+  .kukui-ddx__feedback {
+    transition: none;
+  }
+}

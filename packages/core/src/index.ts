@@ -27,6 +27,14 @@ export { HighlightText } from "./components/highlight-text/index.js";
 export { ImageComparisonSlider } from "./components/image-comparison-slider/index.js";
 export { Flashcards } from "./components/flashcards/index.js";
 export { ReflectionPrompt } from "./components/reflection-prompt/index.js";
+export { AudioRecording } from "./components/audio-recording/index.js";
+export { BranchingScenario } from "./components/branching-scenario/index.js";
+export { ImageAnnotation } from "./components/image-annotation/index.js";
+export { ConceptMap } from "./components/concept-map/index.js";
+export { InteractiveVideo } from "./components/interactive-video/index.js";
+export { LabPanel } from "./components/lab-panel/index.js";
+export { DDxTree } from "./components/ddx-tree/index.js";
+export { OSCE } from "./components/osce/index.js";
 export { StubActivity } from "./components/_stub/StubActivity.js";
 export {
   PLANNED_ACTIVITY_KINDS,

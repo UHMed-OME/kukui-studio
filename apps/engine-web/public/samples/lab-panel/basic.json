@@ -1,0 +1,124 @@
+{
+  "version": "1.0",
+  "title": "Arterial Blood Gas — Pattern Recognition",
+  "prompt": "<p>A 24-year-old presents with deep, rapid breathing and altered mental status after several days of polyuria and thirst. The arterial blood gas below is drawn on room air. <strong>Mark every value that is outside its reference range</strong>, then choose the best interpretation of the overall pattern.</p>",
+  "panel": {
+    "name": "Arterial Blood Gas",
+    "values": [
+      {
+        "id": "ph",
+        "analyte": "pH",
+        "result": "7.18",
+        "reference": "7.35–7.45",
+        "flag": "low",
+        "isAbnormal": true
+      },
+      {
+        "id": "paco2",
+        "analyte": "PaCO₂",
+        "result": "22",
+        "units": "mmHg",
+        "reference": "35–45",
+        "flag": "low",
+        "isAbnormal": true
+      },
+      {
+        "id": "pao2",
+        "analyte": "PaO₂",
+        "result": "98",
+        "units": "mmHg",
+        "reference": "80–100",
+        "flag": "normal",
+        "isAbnormal": false
+      },
+      {
+        "id": "hco3",
+        "analyte": "HCO₃⁻",
+        "result": "8",
+        "units": "mEq/L",
+        "reference": "22–26",
+        "flag": "low",
+        "isAbnormal": true
+      },
+      {
+        "id": "na",
+        "analyte": "Na⁺",
+        "result": "138",
+        "units": "mEq/L",
+        "reference": "135–145",
+        "flag": "normal",
+        "isAbnormal": false
+      },
+      {
+        "id": "k",
+        "analyte": "K⁺",
+        "result": "4.2",
+        "units": "mEq/L",
+        "reference": "3.5–5.0",
+        "flag": "normal",
+        "isAbnormal": false
+      },
+      {
+        "id": "cl",
+        "analyte": "Cl⁻",
+        "result": "102",
+        "units": "mEq/L",
+        "reference": "98–106",
+        "flag": "normal",
+        "isAbnormal": false
+      },
+      {
+        "id": "anion-gap",
+        "analyte": "Anion gap",
+        "result": "28",
+        "units": "mEq/L",
+        "reference": "8–12",
+        "flag": "high",
+        "isAbnormal": true
+      }
+    ]
+  },
+  "interpretation": {
+    "question": "<p>Which interpretation best fits this pattern?</p>",
+    "choices": [
+      {
+        "id": "c0",
+        "text": "Respiratory alkalosis with metabolic compensation",
+        "correct": false,
+        "feedback": "The low pH (acidemia) rules out alkalosis as the primary disturbance."
+      },
+      {
+        "id": "c1",
+        "text": "High anion gap metabolic acidosis with respiratory compensation",
+        "correct": true,
+        "feedback": "Correct. Low pH + low HCO₃⁻ indicate metabolic acidosis; the elevated anion gap (28) and the low PaCO₂ (respiratory compensation, Winters' formula) fit. Clinical picture suggests diabetic ketoacidosis."
+      },
+      {
+        "id": "c2",
+        "text": "Non-anion-gap metabolic acidosis",
+        "correct": false,
+        "feedback": "The anion gap here is 28 — well above the 8–12 reference — so this is a high-gap, not normal-gap, acidosis."
+      },
+      {
+        "id": "c3",
+        "text": "Mixed respiratory and metabolic acidosis",
+        "correct": false,
+        "feedback": "PaCO₂ is decreased, not increased, so there is no respiratory acidosis. The hypocapnia represents respiratory compensation."
+      }
+    ]
+  },
+  "behaviour": {
+    "enableRetry": true,
+    "singlePoint": false
+  },
+  "ui": {
+    "checkAnswerButton": "Check",
+    "tryAgainButton": "Try again"
+  },
+  "overallFeedback": [
+    { "from": 0, "to": 49, "message": "Review acid–base diagnosis: start with pH, then HCO₃⁻ and PaCO₂, then the gap." },
+    { "from": 50, "to": 79, "message": "Close — re-check whether each value lies in its reference range." },
+    { "from": 80, "to": 99, "message": "Strong reading — one detail off." },
+    { "from": 100, "to": 100, "message": "All abnormalities flagged and pattern correctly identified." }
+  ]
+}
