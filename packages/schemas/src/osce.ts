@@ -51,6 +51,7 @@ export const OSCEConfigSchema = z
     _comment: z.string().optional(),
     version: z.string().regex(versionRe),
     title: z.string().min(1),
+    author: z.string().optional(),
     /**
      * HTML — patient presentation, vitals, and other case-level context.
      * Always visible above the phase area. Sanitized at render.

@@ -50,6 +50,7 @@ export const ConceptMapConfigSchema = z
     _comment: z.string().optional(),
     version: z.string().regex(versionRe),
     title: z.string().min(1),
+    author: z.string().optional(),
     /** HTML — author-controlled prompt. Sanitized at render. */
     prompt: z.string().min(1),
     seedNodes: z.array(SeedNode).optional(),

@@ -7,6 +7,7 @@ export const QuestionSetConfigSchema = z
     _comment: z.string().optional(),
     version: z.string().regex(versionRe),
     title: z.string().min(1),
+    author: z.string().optional(),
     questions: z
       .array(
         z

@@ -80,10 +80,28 @@ button {
   margin-bottom: var(--spacing-lg);
 }
 
+.live-brand {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-sm);
+}
+
+.live-logo {
+  width: 48px;
+  height: 48px;
+  flex-shrink: 0;
+  display: block;
+}
+
 .live-title {
-  margin: 0 0 var(--spacing-sm);
+  margin: 0;
   font-size: var(--font-size-display);
   font-weight: 700;
+}
+
+.live-brand + .live-subtitle {
+  margin-top: var(--spacing-sm);
 }
 
 .live-subtitle {

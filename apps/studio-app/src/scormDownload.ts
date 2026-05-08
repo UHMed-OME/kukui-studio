@@ -42,11 +42,15 @@ export async function downloadScormZip(kind: ActivityKind, config: unknown): Pro
   }
 
   const blob = await zip.generateAsync({ type: "blob", compression: "DEFLATE" });
+  // Filename mirrors what learners and instructors will see in Lamakū's
+  // upload picker. Use the human title verbatim (slugified to keep
+  // filesystems happy); plain `.zip` so D2L recognises it as a SCORM
+  // package without the `.scorm.zip` double-extension.
   const slug = slugify((config as { title?: string }).title) || kind;
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = `kukui-${slug}.scorm.zip`;
+  a.download = `${slug}.zip`;
   a.click();
   URL.revokeObjectURL(url);
 }

@@ -5,7 +5,7 @@ const versionRe = /^\d+\.\d+(\.\d+)?$/;
 const ImageSchema = z
   .object({
     src: z.string().min(1),
-    alt: z.string().optional(),
+    alt: z.string().min(1),
     caption: z.string().optional(),
   })
   .strict();
@@ -21,6 +21,7 @@ export const ImageComparisonSliderConfigSchema = z
     _comment: z.string().optional(),
     version: z.string().regex(versionRe),
     title: z.string().min(1),
+    author: z.string().optional(),
     /** HTML prompt rendered above the comparison surface. */
     prompt: z.string().min(1),
     before: ImageSchema,

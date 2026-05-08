@@ -99,7 +99,6 @@ export function Flashcards({
     () => Object.values(state.statuses).filter((s) => s === "knew").length,
     [state.statuses],
   );
-  const passThreshold = config.behaviour?.passThreshold ?? 80;
 
   // Position metadata — Card N of M counts each unique card the learner has
   // touched, not the per-flip queue size, so the indicator never goes
@@ -156,15 +155,13 @@ export function Flashcards({
       };
 
       if (completed) {
-        const finalKnew = Object.values(nextStatuses).filter((s) => s === "knew").length;
-        const pct = totalCount === 0 ? 0 : (finalKnew / totalCount) * 100;
-        const success = pct >= passThreshold;
-        // Submit synchronously inside the updater so the caller sees the final
-        // suspend payload — the same JSON we'll persist on the next effect tick.
+        // Flashcards are completion-only — self-rating is honor-system, so
+        // working through the deck once is what the gradebook records. The
+        // knew/didn't tally is shown to the learner but not used for scoring.
         onSubmit({
-          raw: finalKnew,
-          max: totalCount,
-          success,
+          raw: 1,
+          max: 1,
+          success: true,
           suspendData: JSON.stringify(nextState),
         });
       }
@@ -189,8 +186,12 @@ export function Flashcards({
   };
 
   const submitted = state.completed;
-  const passPct = totalCount === 0 ? 0 : Math.round((knewCount / totalCount) * 100);
-  const passed = passPct >= passThreshold;
+  const knewPct = totalCount === 0 ? 0 : Math.round((knewCount / totalCount) * 100);
+
+  const practiceAgain = () => {
+    // Reseed so a shuffled deck comes out in a different order each round.
+    setState(buildInitialState(config, Math.floor(Math.random() * 0x7fffffff)));
+  };
 
   return (
     <div className="kukui-fc">
@@ -210,7 +211,7 @@ export function Flashcards({
         >
           {submitted ? (
             <span>
-              Finished — knew {knewCount} of {totalCount} ({passPct}%).
+              Finished — knew {knewCount} of {totalCount} ({knewPct}%).
             </span>
           ) : (
             <>
@@ -218,7 +219,7 @@ export function Flashcards({
                 Card {Math.min(cardNumber, totalCount)} of {totalCount}
               </span>
               <span className="kukui-fc__progress-line kukui-fc__progress-line--meta">
-                Knew {knewCount} of {totalCount} so far
+                {knewCount}/{totalCount} mastered
               </span>
             </>
           )}
@@ -301,20 +302,21 @@ export function Flashcards({
         ) : null}
 
         {submitted ? (
-          <div
-            className={[
-              "kukui-fc__summary",
-              passed ? "is-success" : "is-review",
-            ]
-              .filter(Boolean)
-              .join(" ")}
-            role="status"
-          >
+          <div className="kukui-fc__summary is-success" role="status">
             <p className="kukui-fc__summary-headline">
-              {passed
-                ? `Recall threshold met — ${knewCount} of ${totalCount} known (${passPct}%).`
-                : `Below recall threshold — ${knewCount} of ${totalCount} known (${passPct}%). Threshold: ${passThreshold}%.`}
+              Run-through complete — you knew {knewCount} of {totalCount} (
+              {knewPct}%). Submitted for credit.
             </p>
+            <p className="kukui-fc__summary-sub">
+              Practice as many times as you like — your grade stays at 100%.
+            </p>
+            <button
+              type="button"
+              className="kukui-fc__primary"
+              onClick={practiceAgain}
+            >
+              Practice again
+            </button>
           </div>
         ) : null}
       </article>

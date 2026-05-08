@@ -13,6 +13,7 @@ export const MultipleChoiceConfigSchema = z
     _comment: z.string().optional(),
     version: z.string().regex(versionRe),
     title: z.string().min(1),
+    author: z.string().optional(),
     question: z.string().min(1),
     answers: z
       .array(

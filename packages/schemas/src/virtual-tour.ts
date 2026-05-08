@@ -12,7 +12,7 @@ const ImageContent = z
   .object({
     type: z.literal("image"),
     src: z.string().min(1),
-    alt: z.string().optional(),
+    alt: z.string().min(1),
     caption: z.string().optional(),
   })
   .strict();
@@ -34,6 +34,7 @@ export const VirtualTourConfigSchema = z
     _comment: z.string().optional(),
     version: z.string().regex(versionRe),
     title: z.string().min(1),
+    author: z.string().optional(),
     scene: z
       .object({
         src: z.string().min(1),

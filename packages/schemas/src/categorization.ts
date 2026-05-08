@@ -7,6 +7,7 @@ export const CategorizationConfigSchema = z
     _comment: z.string().optional(),
     version: z.string().regex(versionRe),
     title: z.string().min(1),
+    author: z.string().optional(),
     /** Author prompt rendered via SafeHtml. */
     prompt: z.string().min(1),
     items: z

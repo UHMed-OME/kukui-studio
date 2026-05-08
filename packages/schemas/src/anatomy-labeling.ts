@@ -19,12 +19,16 @@ export const AnatomyLabelingConfigSchema = z
     _comment: z.string().optional(),
     version: z.string().regex(versionRe),
     title: z.string().min(1),
+    author: z.string().optional(),
     /** Author prompt rendered via SafeHtml. */
     prompt: z.string().min(1),
     image: z
       .object({
         src: z.string().min(1),
-        alt: z.string().optional(),
+        // Required so screen-reader learners get a description of the diagram.
+        // Authors who genuinely have a decorative-only image (rare for this
+        // activity) can pass a brief explanation of what's being labeled.
+        alt: z.string().min(1),
       })
       .strict(),
     labels: z

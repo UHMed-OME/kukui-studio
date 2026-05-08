@@ -23,7 +23,7 @@ const ImageElement = z
   .object({
     type: z.literal("image"),
     src: z.string().min(1),
-    alt: z.string().optional(),
+    alt: z.string().min(1),
     rect: Rect,
   })
   .strict();
@@ -58,6 +58,7 @@ export const CoursePresentationConfigSchema = z
     _comment: z.string().optional(),
     version: z.string().regex(versionRe),
     title: z.string().min(1),
+    author: z.string().optional(),
     slides: z.array(Slide).min(1),
     passPercentage: z.number().min(0).max(100).optional(),
     behaviour: z

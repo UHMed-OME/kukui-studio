@@ -15,6 +15,7 @@ export const ReflectionPromptConfigSchema = z
     _comment: z.string().optional(),
     version: z.string().regex(versionRe),
     title: z.string().min(1),
+    author: z.string().optional(),
     prompt: z.string().min(1),
     minWords: z.number().int().nonnegative().optional(),
     placeholder: z.string().optional(),

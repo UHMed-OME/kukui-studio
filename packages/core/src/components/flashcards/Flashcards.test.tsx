@@ -23,7 +23,6 @@ const cfg: FlashcardsConfig = {
     { id: "c2", front: "<p>O</p>", back: "<p>Oxygen</p>" },
     { id: "c3", front: "<p>Na</p>", back: "<p>Sodium</p>" },
   ],
-  behaviour: { passThreshold: 80 },
 };
 
 const cfgSingle: FlashcardsConfig = {
@@ -73,7 +72,7 @@ describe("Flashcards", () => {
     const card = getCard();
     expect(card.getAttribute("aria-label")).toMatch(/card 2 of 3/i);
     expect(card.getAttribute("aria-label")).toMatch(/question side/i);
-    expect(screen.getByText(/knew 1 of 3 so far/i)).toBeInTheDocument();
+    expect(screen.getByText("1/3 mastered")).toBeInTheDocument();
   });
 
   it("'I didn't know it' re-queues the card to the back of the deck", async () => {
@@ -105,50 +104,67 @@ describe("Flashcards", () => {
     expect(currentFront()).toMatch(/^H/);
   });
 
-  it("calls onSubmit once when every card has been marked 'knew it'", async () => {
+  it("calls onSubmit once with completion credit when the deck is finished", async () => {
     const user = userEvent.setup();
     const onSubmit = vi.fn();
     render(<Flashcards config={cfg} onSubmit={onSubmit} />);
-    // Knew all three in a row → success threshold (80%) cleared at 100%.
     for (let i = 0; i < 3; i += 1) {
       await user.click(getCard());
       await user.click(screen.getByRole("button", { name: /^I knew it/i }));
     }
     expect(onSubmit).toHaveBeenCalledTimes(1);
+    // Flashcards are completion-only — gradebook gets 100% regardless of
+    // the self-rated knew/didn't tally.
     expect(onSubmit.mock.calls[0]?.[0]).toMatchObject({
-      raw: 3,
-      max: 3,
+      raw: 1,
+      max: 1,
       success: true,
     });
-    // Summary state should now be visible.
     expect(screen.getByText(/finished — knew 3 of 3/i)).toBeInTheDocument();
   });
 
-  it("reports success=false when the knew-it ratio is below passThreshold", async () => {
+  it("submits success even when the learner never marked any card 'knew it'", async () => {
     const user = userEvent.setup();
     const onSubmit = vi.fn();
-    // passThreshold = 80; if we knew 1 of 3 (~33%), success should be false.
-    // To force completion despite "didn't know it" re-queues, use a
-    // single-card deck so the retry cap (2) is hit cleanly.
-    const cfg1: FlashcardsConfig = {
-      ...cfgSingle,
-      behaviour: { passThreshold: 80 },
-    };
-    render(<Flashcards config={cfg1} onSubmit={onSubmit} />);
-    // First time: didn't know → re-queued (retry 1).
-    await user.click(getCard());
-    await user.click(screen.getByRole("button", { name: /^I didn't know it/i }));
-    // Second time: didn't know → re-queued (retry 2).
-    await user.click(getCard());
-    await user.click(screen.getByRole("button", { name: /^I didn't know it/i }));
-    // Third time: didn't know → cap reached, no further re-queue → completion.
-    await user.click(getCard());
-    await user.click(screen.getByRole("button", { name: /^I didn't know it/i }));
+    render(<Flashcards config={cfgSingle} onSubmit={onSubmit} />);
+    // Single-card deck, three "didn't know" answers — the retry cap (2)
+    // forces completion on the third pass without ever marking it known.
+    for (let i = 0; i < 3; i += 1) {
+      await user.click(getCard());
+      await user.click(screen.getByRole("button", { name: /^I didn't know it/i }));
+    }
     expect(onSubmit).toHaveBeenCalledTimes(1);
     expect(onSubmit.mock.calls[0]?.[0]).toMatchObject({
-      raw: 0,
+      raw: 1,
       max: 1,
-      success: false,
+      success: true,
+    });
+  });
+
+  it("'Practice again' resets the deck and lets the learner re-run for credit", async () => {
+    const user = userEvent.setup();
+    const onSubmit = vi.fn();
+    render(<Flashcards config={cfgSingle} onSubmit={onSubmit} />);
+    await user.click(getCard());
+    await user.click(screen.getByRole("button", { name: /^I knew it/i }));
+    expect(onSubmit).toHaveBeenCalledTimes(1);
+
+    // Summary visible with the Practice again CTA.
+    const again = screen.getByRole("button", { name: /practice again/i });
+    await user.click(again);
+
+    // Deck is back to the question side; summary is gone.
+    expect(screen.queryByRole("button", { name: /practice again/i })).not.toBeInTheDocument();
+    expect(getCard().getAttribute("aria-label")).toMatch(/question side/i);
+
+    // Running through again submits another completion — same 1/1 payload.
+    await user.click(getCard());
+    await user.click(screen.getByRole("button", { name: /^I knew it/i }));
+    expect(onSubmit).toHaveBeenCalledTimes(2);
+    expect(onSubmit.mock.calls[1]?.[0]).toMatchObject({
+      raw: 1,
+      max: 1,
+      success: true,
     });
   });
 
@@ -181,7 +197,7 @@ describe("Flashcards", () => {
     });
     render(<Flashcards config={cfg} onSubmit={vi.fn()} suspendData={suspend} />);
     // Card 2 of 3 should be the active card; knew count 1.
-    expect(screen.getByText(/knew 1 of 3 so far/i)).toBeInTheDocument();
+    expect(screen.getByText("1/3 mastered")).toBeInTheDocument();
     const front = document.querySelector(".kukui-fc__face--front .kukui-fc__face-body");
     expect(front?.textContent).toMatch(/^O/);
   });

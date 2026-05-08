@@ -1,0 +1,87 @@
+# Builds Kukui Studio and publishes it to GitHub Pages on every push to main.
+#
+# The studio is the only app that goes to Pages — engine-web is consumed via
+# the SCORM zips it gets bundled into, and live-mode is a dev-only Phase 3
+# preview. We compute KUKUI_BASE from $GITHUB_REPOSITORY so Vite emits asset
+# URLs prefixed with the repository name (Pages serves at
+# https://<user>.github.io/<repo>/).
+name: Deploy Studio to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.0.0
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: Test
+        run: pnpm test
+
+      - name: Build engine bundles (consumed by SCORM templates)
+        run: pnpm --filter @kukui/engine-web build
+
+      - name: Pack SCORM templates
+        run: node packaging/pack-scorm.js --all
+
+      - name: Stage SCORM templates into Studio public dir
+        # Studio fetches /scorm-templates/kukui-<kind>.scorm.zip at download
+        # time, so the templates need to live inside the deployed bundle.
+        run: |
+          mkdir -p apps/studio-app/public/scorm-templates
+          cp packaging/build/*.scorm.zip apps/studio-app/public/scorm-templates/
+
+      - name: Compute Pages base path
+        # GITHUB_REPOSITORY is "owner/name" — strip to "/name/" for Vite base.
+        # Using a shell-only computation avoids any expression-context
+        # interpolation into run: commands.
+        run: echo "KUKUI_BASE=/${GITHUB_REPOSITORY##*/}/" >> "$GITHUB_ENV"
+
+      - name: Build Studio
+        run: pnpm --filter @kukui/studio-app build
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: apps/studio-app/dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

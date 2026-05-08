@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { joinLiveRoom, deriveRoomCode, getRoomState, type LiveRoomHandle } from "@kukui/live";
 import type { Presence } from "@kukui/live";
-import { ThemeToggle } from "@kukui/core";
 
 /**
  * Kukui Live — M0 lobby shell.
@@ -79,11 +78,11 @@ export function App() {
 
   return (
     <div className="live-shell">
-      <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 16 }}>
-        <ThemeToggle />
-      </div>
       <article className="live-card">
-        <h1 className="live-title">Kukui Live</h1>
+        <div className="live-brand">
+          <img className="live-logo" src="/kukui-logo.svg" alt="" aria-hidden="true" />
+          <h1 className="live-title">Kukui Live</h1>
+        </div>
         <p className="live-subtitle">
           Real-time classroom activities — peer-to-peer, no UH-operated server. M0 transport
           + presence shell. Activity catalog lands in M2+.
@@ -177,7 +176,10 @@ function Lobby({
   return (
     <div className="live-shell">
       <article className="live-card">
-        <h1 className="live-title">Lobby</h1>
+        <div className="live-brand">
+          <img className="live-logo" src="/kukui-logo.svg" alt="" aria-hidden="true" />
+          <h1 className="live-title">Lobby</h1>
+        </div>
         <p className="live-subtitle">
           Connected to room <code>{room.code.slice(0, 8)}…</code> · phase: <strong>{phase}</strong>
         </p>

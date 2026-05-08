@@ -7,7 +7,7 @@ import { PLANNED_LABELS, PLANNED_ACTIVITY_KINDS, PLANNED_DESCRIPTIONS } from "@k
 
 const stubStarter = (label: string, description: string): unknown => ({
   version: "1.0",
-  title: `Untitled ${label.toLowerCase()}`,
+  title: label,
   description,
   notes: "",
 });
@@ -19,8 +19,8 @@ const PLANNED_STARTERS = Object.fromEntries(
 export const STARTERS: Record<ActivityKind, unknown> = {
   "multiple-choice": {
     version: "1.0",
-    title: "Untitled multiple choice",
-    question: "<p>Replace this with your question.</p>",
+    title: "Multiple Choice",
+    question: "Replace this with your question.",
     answers: [
       { text: "Option A", correct: true },
       { text: "Option B", correct: false },
@@ -29,15 +29,16 @@ export const STARTERS: Record<ActivityKind, unknown> = {
   },
   "fill-in-the-blanks": {
     version: "1.0",
-    title: "Untitled fill in the blanks",
+    title: "Fill in the Blanks",
     text: "Photosynthesis takes in *carbon dioxide* and releases *oxygen*.",
     behaviour: { enableRetry: true, caseSensitive: false },
   },
   "drag-and-drop": {
     version: "1.0",
-    title: "Untitled drag and drop",
+    title: "Drag and Drop",
     background: {
       src: "https://placehold.co/1024x640/e8f5e9/2e6e41?text=Background+image",
+      alt: "Replace this placeholder with a description of your background image",
     },
     draggables: [{ id: "d1", label: "Label A", correctZones: ["z1"] }],
     dropZones: [{ id: "z1", label: "Zone 1", rect: { x: 0.4, y: 0.4, w: 0.2, h: 0.2 } }],
@@ -45,7 +46,7 @@ export const STARTERS: Record<ActivityKind, unknown> = {
   },
   "course-presentation": {
     version: "1.0",
-    title: "Untitled presentation",
+    title: "Course Presentation",
     slides: [
       {
         elements: [
@@ -61,14 +62,14 @@ export const STARTERS: Record<ActivityKind, unknown> = {
   },
   "question-set": {
     version: "1.0",
-    title: "Untitled question set",
+    title: "Question Set",
     questions: [
       {
         type: "multipleChoice",
         config: {
           version: "1.0",
           title: "Question 1",
-          question: "<p>What's the answer?</p>",
+          question: "What's the answer?",
           answers: [
             { text: "A", correct: true },
             { text: "B", correct: false },
@@ -81,8 +82,8 @@ export const STARTERS: Record<ActivityKind, unknown> = {
   },
   "hotspot-3d": {
     version: "1.0",
-    title: "Untitled 3D hotspot",
-    prompt: "<p>Click the correct part.</p>",
+    title: "3D Hotspot",
+    prompt: "Click the correct part.",
     model: {
       src: "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/main/Models/BoomBox/glTF-Binary/BoomBox.glb",
       scale: 50,
@@ -108,8 +109,8 @@ export const STARTERS: Record<ActivityKind, unknown> = {
   },
   "hotspot-2d": {
     version: "1.0",
-    title: "Untitled image hotspot",
-    prompt: "<p>Click the correct region.</p>",
+    title: "Image Hotspot",
+    prompt: "Click the correct region.",
     image: {
       src: "https://placehold.co/1024x640/eef0f6/4b5563?text=Image",
       alt: "Replace with the image authors will mark up",
@@ -132,7 +133,7 @@ export const STARTERS: Record<ActivityKind, unknown> = {
   },
   "virtual-tour": {
     version: "1.0",
-    title: "Untitled tour",
+    title: "Virtual Tour",
     scene: {
       src: "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/main/Models/DamagedHelmet/glTF-Binary/DamagedHelmet.glb",
       spawn: { position: { x: 0, y: 0.5, z: 4 } },
@@ -144,7 +145,7 @@ export const STARTERS: Record<ActivityKind, unknown> = {
         title: "Point of interest",
         position: { x: 0, y: 0, z: 0 },
         trigger: "click",
-        content: [{ type: "text", html: "<p>Describe this point.</p>" }],
+        content: [{ type: "text", html: "Describe this point." }],
       },
     ],
     completion: { mode: "manual" },
@@ -152,8 +153,8 @@ export const STARTERS: Record<ActivityKind, unknown> = {
   },
   "sequence-steps": {
     version: "1.0",
-    title: "Untitled sequence",
-    prompt: "<p>Order these into the correct sequence.</p>",
+    title: "Sequence Steps",
+    prompt: "Order these into the correct sequence.",
     steps: [
       { id: "s1", text: "First step" },
       { id: "s2", text: "Second step" },
@@ -163,8 +164,8 @@ export const STARTERS: Record<ActivityKind, unknown> = {
   },
   "matching-pairs": {
     version: "1.0",
-    title: "Untitled matching",
-    prompt: "<p>Match each item on the left to its partner on the right.</p>",
+    title: "Matching Pairs",
+    prompt: "Match each item on the left to its partner on the right.",
     pairs: [
       { id: "p1", left: { text: "Left A" }, right: { text: "Right A" } },
       { id: "p2", left: { text: "Left B" }, right: { text: "Right B" } },
@@ -173,8 +174,8 @@ export const STARTERS: Record<ActivityKind, unknown> = {
   },
   categorization: {
     version: "1.0",
-    title: "Untitled categorization",
-    prompt: "<p>Sort each item into the correct category.</p>",
+    title: "Categorization",
+    prompt: "Sort each item into the correct category.",
     categories: [
       { id: "c1", label: "Category A" },
       { id: "c2", label: "Category B" },
@@ -187,8 +188,8 @@ export const STARTERS: Record<ActivityKind, unknown> = {
   },
   "anatomy-labeling": {
     version: "1.0",
-    title: "Untitled labeling",
-    prompt: "<p>Drag each label onto the correct target.</p>",
+    title: "Anatomy Labeling",
+    prompt: "Drag each label onto the correct target.",
     image: {
       src: "https://placehold.co/1024x640/eef0f6/4b5563?text=Diagram",
       alt: "Diagram placeholder",
@@ -205,8 +206,8 @@ export const STARTERS: Record<ActivityKind, unknown> = {
   },
   "image-comparison-slider": {
     version: "1.0",
-    title: "Untitled comparison",
-    prompt: "<p>Drag the slider to compare the two images.</p>",
+    title: "Image Comparison",
+    prompt: "Drag the slider to compare the two images.",
     before: {
       src: "https://placehold.co/800x600/eef0f6/4b5563?text=Before",
       alt: "Before",
@@ -218,8 +219,8 @@ export const STARTERS: Record<ActivityKind, unknown> = {
   },
   "highlight-text": {
     version: "1.0",
-    title: "Untitled highlight",
-    prompt: "<p>Highlight the verbs in this sentence.</p>",
+    title: "Highlight Text",
+    prompt: "Highlight the verbs in this sentence.",
     tokens: [
       { id: "t1", text: "The", correct: false },
       { id: "t2", text: "cat", correct: false },
@@ -230,29 +231,29 @@ export const STARTERS: Record<ActivityKind, unknown> = {
   },
   flashcards: {
     version: "1.0",
-    title: "Untitled flashcards",
-    prompt: "<p>Flip each card; rate yourself honestly.</p>",
+    title: "Flashcards",
+    prompt: "Flip each card; rate yourself honestly.",
     cards: [
       { id: "c1", front: "Front 1", back: "Back 1" },
       { id: "c2", front: "Front 2", back: "Back 2" },
     ],
-    behaviour: { shuffle: true, passThreshold: 80 },
+    behaviour: { shuffle: true },
   },
   "reflection-prompt": {
     version: "1.0",
-    title: "Untitled reflection",
-    prompt: "<p>Reflect on what you learned today.</p>",
+    title: "Reflection Prompt",
+    prompt: "Reflect on what you learned today.",
     minWords: 30,
     placeholder: "Type your reflection here…",
   },
   "branching-scenario": {
     version: "1.0",
-    title: "Untitled branching scenario",
+    title: "Branching Scenario",
     startNodeId: "n1",
     nodes: [
       {
         id: "n1",
-        prompt: "<p>What's your first move?</p>",
+        prompt: "What's your first move?",
         choices: [
           { id: "c1", text: "Option A", nextNodeId: "n2" },
           { id: "c2", text: "Option B", nextNodeId: "n3" },
@@ -260,13 +261,13 @@ export const STARTERS: Record<ActivityKind, unknown> = {
       },
       {
         id: "n2",
-        prompt: "<p>Outcome A.</p>",
+        prompt: "Outcome A.",
         choices: null,
         outcome: { score: 1, success: true, message: "Good call." },
       },
       {
         id: "n3",
-        prompt: "<p>Outcome B.</p>",
+        prompt: "Outcome B.",
         choices: null,
         outcome: { score: 0, success: false, message: "Try again." },
       },
@@ -275,8 +276,8 @@ export const STARTERS: Record<ActivityKind, unknown> = {
   },
   "image-annotation": {
     version: "1.0",
-    title: "Untitled image annotation",
-    prompt: "<p>Annotate the image.</p>",
+    title: "Image Annotation",
+    prompt: "Annotate the image.",
     image: {
       src: "https://placehold.co/1024x768/eef0f6/4b5563?text=Image",
       alt: "Image to annotate",
@@ -286,8 +287,8 @@ export const STARTERS: Record<ActivityKind, unknown> = {
   },
   "concept-map": {
     version: "1.0",
-    title: "Untitled concept map",
-    prompt: "<p>Build a concept map.</p>",
+    title: "Concept Map",
+    prompt: "Build a concept map.",
     seedNodes: [
       { id: "n1", label: "Concept A", position: { x: 0.3, y: 0.4 } },
       { id: "n2", label: "Concept B", position: { x: 0.7, y: 0.4 } },
@@ -296,7 +297,7 @@ export const STARTERS: Record<ActivityKind, unknown> = {
   },
   "interactive-video": {
     version: "1.0",
-    title: "Untitled interactive video",
+    title: "Interactive Video",
     video: {
       src: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
       type: "html5",
@@ -306,16 +307,16 @@ export const STARTERS: Record<ActivityKind, unknown> = {
   },
   "audio-recording": {
     version: "1.0",
-    title: "Untitled audio recording",
-    prompt: "<p>Record yourself reading the passage.</p>",
+    title: "Audio Recording",
+    prompt: "Record yourself reading the passage.",
     maxDurationSeconds: 60,
     minDurationSeconds: 3,
     behaviour: { allowReRecord: true },
   },
   "lab-panel": {
     version: "1.0",
-    title: "Untitled lab panel",
-    prompt: "<p>Identify abnormal values and pick the best interpretation.</p>",
+    title: "Lab Panel",
+    prompt: "Identify abnormal values and pick the best interpretation.",
     panel: {
       name: "Sample panel",
       values: [
@@ -324,7 +325,7 @@ export const STARTERS: Record<ActivityKind, unknown> = {
       ],
     },
     interpretation: {
-      question: "<p>What's the best interpretation?</p>",
+      question: "What's the best interpretation?",
       choices: [
         { id: "c1", text: "Option A", correct: true },
         { id: "c2", text: "Option B", correct: false },
@@ -334,13 +335,13 @@ export const STARTERS: Record<ActivityKind, unknown> = {
   },
   "ddx-tree": {
     version: "1.0",
-    title: "Untitled DDx tree",
-    caseHeader: "<p>Patient presents with…</p>",
+    title: "Differential Diagnosis",
+    caseHeader: "Patient presents with…",
     startNodeId: "n1",
     nodes: [
       {
         id: "n1",
-        presentation: "<p>Choose your next step.</p>",
+        presentation: "Choose your next step.",
         choices: [
           { id: "c1", text: "Test A", nextNodeId: "n2" },
           { id: "c2", text: "Test B", nextNodeId: "n3" },
@@ -348,13 +349,13 @@ export const STARTERS: Record<ActivityKind, unknown> = {
       },
       {
         id: "n2",
-        presentation: "<p>Result A.</p>",
+        presentation: "Result A.",
         choices: null,
         diagnosis: { name: "Diagnosis A", correct: true, score: 1 },
       },
       {
         id: "n3",
-        presentation: "<p>Result B.</p>",
+        presentation: "Result B.",
         choices: null,
         diagnosis: { name: "Diagnosis B", correct: false, score: 0 },
       },
@@ -363,8 +364,8 @@ export const STARTERS: Record<ActivityKind, unknown> = {
   },
   osce: {
     version: "1.0",
-    title: "Untitled OSCE",
-    caseHeader: "<p>Patient presentation: …</p>",
+    title: "OSCE Encounter",
+    caseHeader: "Patient presentation: …",
     phases: [
       {
         id: "history",

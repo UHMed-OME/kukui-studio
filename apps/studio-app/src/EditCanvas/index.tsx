@@ -1,9 +1,37 @@
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, type ComponentType } from "react";
 import type { ActivityKind } from "@kukui/core";
 
 const DnDEditor = lazy(() =>
   import("./DnDEditor.js").then((m) => ({ default: m.DnDEditor })),
 );
+const Hotspot2DEditor = lazy(() =>
+  import("./Hotspot2DEditor.js").then((m) => ({ default: m.Hotspot2DEditor })),
+);
+const AnatomyLabelingEditor = lazy(() =>
+  import("./AnatomyLabelingEditor.js").then((m) => ({ default: m.AnatomyLabelingEditor })),
+);
+const ImageAnnotationEditor = lazy(() =>
+  import("./ImageAnnotationEditor.js").then((m) => ({ default: m.ImageAnnotationEditor })),
+);
+const ConceptMapEditor = lazy(() =>
+  import("./ConceptMapEditor.js").then((m) => ({ default: m.ConceptMapEditor })),
+);
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type AnyEditor = ComponentType<{ config: any; onChange: (next: any) => void }>;
+
+const EDITORS: Partial<Record<ActivityKind, AnyEditor>> = {
+  "drag-and-drop": DnDEditor as AnyEditor,
+  "hotspot-2d": Hotspot2DEditor as AnyEditor,
+  "anatomy-labeling": AnatomyLabelingEditor as AnyEditor,
+  "image-annotation": ImageAnnotationEditor as AnyEditor,
+  "concept-map": ConceptMapEditor as AnyEditor,
+};
+
+/** Single source of truth for which activities have a visual editor. */
+export function hasEditor(kind: ActivityKind): boolean {
+  return Object.prototype.hasOwnProperty.call(EDITORS, kind);
+}
 
 /**
  * Edit-mode canvas. Replaces the live preview when the author wants to
@@ -22,15 +50,11 @@ export function EditCanvas({
   value: unknown;
   onChange: (next: unknown) => void;
 }) {
-  if (kind === "drag-and-drop") {
+  const Editor = EDITORS[kind];
+  if (Editor) {
     return (
       <Suspense fallback={<EditLoading />}>
-        <DnDEditor
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          config={value as any}
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          onChange={onChange as any}
-        />
+        <Editor config={value} onChange={onChange} />
       </Suspense>
     );
   }

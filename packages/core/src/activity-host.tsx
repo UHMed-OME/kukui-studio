@@ -125,67 +125,133 @@ export function ActivityHost({ kind, configUrl, loader = loadContent }: Activity
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const cfg = state.config as any;
 
+  const activityElement = renderActivity(kind, cfg, callbacks);
+  return (
+    <>
+      {activityElement}
+      <ActivityFooter author={cfg?.author} />
+    </>
+  );
+}
+
+function renderActivity(kind: ActivityKind, cfg: unknown, callbacks: unknown) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const c = cfg as any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const cb = callbacks as any;
   if ((PLANNED_ACTIVITY_KINDS as readonly string[]).includes(kind)) {
-    return <StubActivity config={cfg} kind={kind as never} {...callbacks} />;
+    return <StubActivity config={c} kind={kind as never} {...cb} />;
   }
 
   switch (kind) {
     case "multiple-choice":
-      return <MultipleChoice config={cfg} {...callbacks} />;
+      return <MultipleChoice config={c} {...cb} />;
     case "fill-in-the-blanks":
-      return <FillInTheBlanks config={cfg} {...callbacks} />;
+      return <FillInTheBlanks config={c} {...cb} />;
     case "drag-and-drop":
-      return <DragAndDrop config={cfg} {...callbacks} />;
+      return <DragAndDrop config={c} {...cb} />;
     case "course-presentation":
-      return <CoursePresentation config={cfg} {...callbacks} />;
+      return <CoursePresentation config={c} {...cb} />;
     case "question-set":
-      return <QuestionSet config={cfg} {...callbacks} />;
+      return <QuestionSet config={c} {...cb} />;
     case "hotspot-3d":
-      return <Hotspot3D config={cfg} {...callbacks} />;
+      return <Hotspot3D config={c} {...cb} />;
     case "hotspot-2d":
-      return <Hotspot2D config={cfg} {...callbacks} />;
+      return <Hotspot2D config={c} {...cb} />;
     case "virtual-tour":
-      return <VirtualTour config={cfg} {...callbacks} />;
+      return <VirtualTour config={c} {...cb} />;
     case "categorization":
-      return <Categorization config={cfg} {...callbacks} />;
+      return <Categorization config={c} {...cb} />;
     case "anatomy-labeling":
-      return <AnatomyLabeling config={cfg} {...callbacks} />;
+      return <AnatomyLabeling config={c} {...cb} />;
     case "sequence-steps":
-      return <SequenceSteps config={cfg} {...callbacks} />;
+      return <SequenceSteps config={c} {...cb} />;
     case "matching-pairs":
-      return <MatchingPairs config={cfg} {...callbacks} />;
+      return <MatchingPairs config={c} {...cb} />;
     case "highlight-text":
-      return <HighlightText config={cfg} {...callbacks} />;
+      return <HighlightText config={c} {...cb} />;
     case "image-comparison-slider":
-      return <ImageComparisonSlider config={cfg} {...callbacks} />;
+      return <ImageComparisonSlider config={c} {...cb} />;
     case "flashcards":
-      return <Flashcards config={cfg} {...callbacks} />;
+      return <Flashcards config={c} {...cb} />;
     case "reflection-prompt":
-      return <ReflectionPrompt config={cfg} {...callbacks} />;
+      return <ReflectionPrompt config={c} {...cb} />;
     case "audio-recording":
-      return <AudioRecording config={cfg} {...callbacks} />;
+      return <AudioRecording config={c} {...cb} />;
     case "branching-scenario":
-      return <BranchingScenario config={cfg} {...callbacks} />;
+      return <BranchingScenario config={c} {...cb} />;
     case "image-annotation":
-      return <ImageAnnotation config={cfg} {...callbacks} />;
+      return <ImageAnnotation config={c} {...cb} />;
     case "concept-map":
-      return <ConceptMap config={cfg} {...callbacks} />;
+      return <ConceptMap config={c} {...cb} />;
     case "interactive-video":
-      return <InteractiveVideo config={cfg} {...callbacks} />;
+      return <InteractiveVideo config={c} {...cb} />;
     case "lab-panel":
-      return <LabPanel config={cfg} {...callbacks} />;
+      return <LabPanel config={c} {...cb} />;
     case "ddx-tree":
-      return <DDxTree config={cfg} {...callbacks} />;
+      return <DDxTree config={c} {...cb} />;
     case "osce":
-      return <OSCE config={cfg} {...callbacks} />;
+      return <OSCE config={c} {...cb} />;
     default:
-      return <StubActivity config={cfg} {...callbacks} />;
+      return <StubActivity config={c} {...cb} />;
   }
 }
 
+/**
+ * Tiny credit line shown beneath every activity. Identifies the platform
+ * (links back to the open-source repo + license) and surfaces the author's
+ * name when the JSON sets one. Stays out of the way visually so it doesn't
+ * compete with the activity's own UI.
+ */
+function ActivityFooter({ author }: { author?: string }) {
+  return (
+    <footer
+      style={{
+        maxWidth: 720,
+        margin: "12px auto 16px",
+        padding: "0 28px",
+        fontSize: 12,
+        color: "var(--color-text-muted, #6e6e76)",
+        textAlign: "center",
+        lineHeight: 1.6,
+      }}
+    >
+      {author ? (
+        <>
+          Authored by <strong>{author}</strong>
+          {" · "}
+        </>
+      ) : null}
+      Made with{" "}
+      <a
+        href="https://github.com/anthropics/kukui"
+        target="_blank"
+        rel="noopener noreferrer"
+        style={{ color: "inherit", textDecoration: "underline" }}
+      >
+        Kukui Studio
+      </a>
+      {" · "}
+      <a
+        href="https://opensource.org/license/mit"
+        target="_blank"
+        rel="noopener noreferrer"
+        style={{ color: "inherit", textDecoration: "underline" }}
+      >
+        MIT
+      </a>
+    </footer>
+  );
+}
+
+// Smaller vertical margins than a standalone web page would use — most LMS
+// embeds (Brightspace's content-topic-renderer is 680 px tall by default)
+// give activities a fixed-height iframe, so 48 px of card margin pushed the
+// footer credit line below the fold. 16 px keeps the activity centered
+// without wasting that space.
 const baseCard: CSSProperties = {
   maxWidth: 720,
-  margin: "48px auto",
+  margin: "16px auto",
   padding: 28,
   background: "var(--color-surface, #ffffff)",
   border: "1px solid var(--color-border, #dad2c6)",

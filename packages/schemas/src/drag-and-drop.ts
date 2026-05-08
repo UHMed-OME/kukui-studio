@@ -16,10 +16,11 @@ export const DragAndDropConfigSchema = z
     _comment: z.string().optional(),
     version: z.string().regex(versionRe),
     title: z.string().min(1),
+    author: z.string().optional(),
     background: z
       .object({
         src: z.string().min(1),
-        alt: z.string().optional(),
+        alt: z.string().min(1),
       })
       .strict(),
     draggables: z
@@ -28,10 +29,13 @@ export const DragAndDropConfigSchema = z
           .object({
             id: z.string().min(1),
             label: z.string().min(1),
+            // Optional per-chip image. If src is provided, alt is required —
+            // the label can describe it, but a screen reader still needs an
+            // accessible name for the <img> itself.
             image: z
               .object({
-                src: z.string().optional(),
-                alt: z.string().optional(),
+                src: z.string().min(1),
+                alt: z.string().min(1),
               })
               .strict()
               .optional(),

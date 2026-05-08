@@ -10,8 +10,9 @@ import { UI_SCHEMAS } from "./uiSchemas.js";
 import { ArrayFieldTemplate } from "./templates/ArrayFieldTemplate.js";
 import { ObjectFieldTemplate } from "./templates/ObjectFieldTemplate.js";
 import { FieldTemplate } from "./templates/FieldTemplate.js";
-import { HtmlWidget } from "./widgets/HtmlWidget.js";
+import { RichTextWidget } from "./widgets/RichTextWidget.js";
 import { FileUploadWidget } from "./widgets/FileUploadWidget.js";
+import { NodeSelectWidget } from "./widgets/NodeSelectWidget.js";
 
 /**
  * Auto-generated form per activity kind.
@@ -38,7 +39,7 @@ export function EditorForm({
     // Zod 4 ships its own JSON-Schema export. RJSF + AJV speak draft-7,
     // so target that explicitly (the default is draft-2020-12).
     const raw = z.toJSONSchema(zod, { target: "draft-7" }) as RJSFSchema;
-    return enrichVariantTitles(raw);
+    return injectStepConstraints(enrichVariantTitles(raw));
   }, [kind]);
 
   const handleChange = (e: IChangeEvent) => {
@@ -48,6 +49,12 @@ export function EditorForm({
   const uiSchema = useMemo(
     () => ({
       "ui:submitButtonOptions": { norender: true },
+      // Schema-internal fields that should never appear in the form, even
+      // when an activity has no per-kind uiSchema entry yet. Per-kind
+      // entries can still override these.
+      _comment: { "ui:widget": "hidden" },
+      version: { "ui:widget": "hidden" },
+      $schema: { "ui:widget": "hidden" },
       ...UI_SCHEMAS[kind],
     }),
     [kind],
@@ -68,7 +75,12 @@ export function EditorForm({
           ObjectFieldTemplate,
           FieldTemplate,
         }}
-        widgets={{ html: HtmlWidget, file: FileUploadWidget }}
+        widgets={{
+          html: RichTextWidget,
+          file: FileUploadWidget,
+          nodeSelect: NodeSelectWidget,
+        }}
+        formContext={{ formData: value }}
       />
     </div>
   );
@@ -104,6 +116,36 @@ function enrichVariantTitles<T>(schema: T): T {
   }
   for (const key of Object.keys(obj)) {
     obj[key] = enrichVariantTitles(obj[key]);
+  }
+  return obj as T;
+}
+
+/**
+ * Walk the JSON Schema and add `multipleOf` to numeric fields whose
+ * min/max declare a typical authoring range. The HTML number input picks
+ * up `multipleOf` as `step`, which clamps manual entry to a sensible
+ * precision and limits how many decimal places appear after a drag.
+ *
+ *   - 0..1 normalized (coords, fractions) → step 0.01
+ *   - 0..100 percentages → step 1
+ */
+function injectStepConstraints<T>(schema: T): T {
+  if (!schema || typeof schema !== "object") return schema;
+  if (Array.isArray(schema)) {
+    return schema.map(injectStepConstraints) as unknown as T;
+  }
+  const obj = schema as Record<string, unknown>;
+  if (
+    obj.type === "number" &&
+    typeof obj.minimum === "number" &&
+    typeof obj.maximum === "number" &&
+    typeof obj.multipleOf !== "number"
+  ) {
+    if (obj.minimum === 0 && obj.maximum === 1) obj.multipleOf = 0.01;
+    else if (obj.minimum === 0 && obj.maximum === 100) obj.multipleOf = 1;
+  }
+  for (const key of Object.keys(obj)) {
+    obj[key] = injectStepConstraints(obj[key]);
   }
   return obj as T;
 }

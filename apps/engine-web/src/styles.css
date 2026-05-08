@@ -6,6 +6,7 @@
   --color-surface: #ffffff;
   --color-text-primary: #1c1e20;
   --color-text-secondary: #606069;
+  --color-text-muted: #6e6e76;
   --color-border: #dad2c6;
   --color-border-hover: #bbae9a;
   --color-primary: #7b4324;
@@ -48,11 +49,17 @@
     sans-serif;
 }
 
+/*
+ * Engine bundles ship inside SCORM zips and render inside the LMS's content
+ * iframe — the host page (Lamakū / D2L) provides the page surface. Keep our
+ * html/body/#root transparent so the activity inherits whatever background
+ * the LMS uses, rather than fighting it with our own cream tint.
+ */
 html,
 body,
 #root {
   height: 100%;
-  background: var(--color-bg);
+  background: transparent;
   color: var(--color-text-primary);
   font-family: var(--font-family-sans);
   font-size: var(--font-size-prompt);

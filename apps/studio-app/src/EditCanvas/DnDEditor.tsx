@@ -3,9 +3,20 @@ import {
   useRef,
   useState,
   type CSSProperties,
+  type MouseEvent,
   type PointerEvent,
 } from "react";
 import type { DragAndDropConfig } from "@kukui/schemas";
+import { ContextMenu, type ContextMenuPos } from "./ContextMenu.js";
+import { reorder, roundCoord, type ZOrderOp } from "./zorder.js";
+
+const roundRect = <T extends { x: number; y: number; w: number; h: number }>(r: T): T => ({
+  ...r,
+  x: roundCoord(r.x),
+  y: roundCoord(r.y),
+  w: roundCoord(r.w),
+  h: roundCoord(r.h),
+});
 
 type Rect = DragAndDropConfig["dropZones"][number]["rect"];
 
@@ -57,6 +68,7 @@ export function DnDEditor({
   const boardRef = useRef<HTMLDivElement>(null);
   const [drag, setDrag] = useState<DragState>({ kind: "idle" });
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [menu, setMenu] = useState<{ id: string; pos: ContextMenuPos } | null>(null);
 
   // Local override for the zone currently being dragged. Lets the visible
   // element track the cursor at the device's refresh rate without bouncing
@@ -162,13 +174,13 @@ export function DnDEditor({
           ...config,
           dropZones: [
             ...config.dropZones,
-            { id, label: `Zone ${config.dropZones.length + 1}`, rect: drag.rect },
+            { id, label: `Zone ${config.dropZones.length + 1}`, rect: roundRect(drag.rect) },
           ],
         });
         setSelectedId(id);
       }
     } else if (drag.kind === "move" || drag.kind === "resize") {
-      const next = drag.rect;
+      const next = roundRect(drag.rect);
       onChange({
         ...config,
         dropZones: config.dropZones.map((z) =>
@@ -202,14 +214,27 @@ export function DnDEditor({
     setSelectedId(null);
   };
 
+  const openContextMenu = (zoneId: string) => (e: MouseEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setSelectedId(zoneId);
+    setMenu({ id: zoneId, pos: { x: e.clientX, y: e.clientY } });
+  };
+
+  const applyZOrder = (zoneId: string, op: ZOrderOp) => {
+    const index = config.dropZones.findIndex((z) => z.id === zoneId);
+    if (index < 0) return;
+    onChange({ ...config, dropZones: reorder(config.dropZones, index, op) });
+  };
+
   const isDragging = drag.kind !== "idle";
 
   return (
     <div className="ks-edit-dnd">
       <p className="ks-edit-dnd__hint">
-        Drag on the background to draw a zone. Click a zone to select it; drag to move, corner
-        handle to resize, ✕ or <kbd>Delete</kbd> to remove. Form on the left updates when you let
-        go.
+        Drag on the background to draw a zone. Click a zone to select; drag to move, corner
+        handle to resize, ✕ or <kbd>Delete</kbd> to remove. Right-click a zone for stacking
+        options. Form on the left updates when you let go.
       </p>
       <div
         ref={boardRef}
@@ -249,6 +274,7 @@ export function DnDEditor({
                 .join(" ")}
               style={style}
               onPointerDown={startMoveZone(z.id)}
+              onContextMenu={openContextMenu(z.id)}
             >
               <span className="ks-edit-dnd__zone-label">{z.label ?? z.id}</span>
               {isSelected ? (
@@ -289,6 +315,16 @@ export function DnDEditor({
           />
         ) : null}
       </div>
+      {menu ? (
+        <ContextMenu
+          pos={menu.pos}
+          index={config.dropZones.findIndex((z) => z.id === menu.id)}
+          length={config.dropZones.length}
+          onAction={(op) => applyZOrder(menu.id, op)}
+          onDelete={() => deleteZone(menu.id)}
+          onClose={() => setMenu(null)}
+        />
+      ) : null}
     </div>
   );
 }

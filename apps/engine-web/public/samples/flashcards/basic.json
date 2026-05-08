@@ -35,8 +35,7 @@
     }
   ],
   "behaviour": {
-    "shuffle": false,
-    "passThreshold": 80
+    "shuffle": false
   },
   "ui": {
     "knewItButton": "I knew it",

@@ -26,7 +26,24 @@ function f(title: string, help?: string, extra: Record<string, unknown> = {}) {
   };
 }
 
+/**
+ * Numeric inputs sized to typical authoring needs:
+ *   - NORM01: 0..1 normalized coordinates / fractions (rect, position, etc.)
+ *   - PERCENT: integer percentages 0..100 (feedback bands)
+ *   - WHOLE: integer counts ≥0 (capacity, words)
+ * `step` shows up as the input's HTML step attribute, which both
+ * validates manual entry and drives the spinner increment.
+ */
+const NORM01 = { "ui:options": { step: 0.01, min: 0, max: 1 } } as const;
+const PERCENT = { "ui:options": { step: 1, min: 0, max: 100 } } as const;
+const WHOLE = { "ui:options": { step: 1, min: 0 } } as const;
+
 const TITLE = f("Activity title", "Shown at the top of the activity and as the SCORM activity name.");
+
+const AUTHOR = f(
+  "Author (optional)",
+  "Your name. Shown in the small credit line at the bottom of the activity.",
+);
 
 const BEHAVIOUR_RETRY = f("Allow retry", "Show a Try Again button after the learner submits.");
 const BEHAVIOUR_SHOW_SOLUTION = f(
@@ -43,6 +60,7 @@ export const UI_SCHEMAS: Record<ActivityKind, Record<string, unknown>> = {
     ...COMMON,
     "ui:order": ["title", "question", "answers", "behaviour", "ui", "overallFeedback", "*"],
     title: TITLE,
+    author: AUTHOR,
     question: f(
       "Question prompt",
       "What the learner is asked. Use the toolbar to format text or paste HTML.",
@@ -87,7 +105,7 @@ export const UI_SCHEMAS: Record<ActivityKind, Record<string, unknown>> = {
     },
     overallFeedback: {
       "ui:title": "Overall feedback bands",
-      "ui:help": "Per-score-range message. The band whose [from..to] contains the final score is shown.",
+      "ui:help": "Per-score-range message. The band whose range contains the learner's final score is shown.",
       items: {
         from: f("From (%)", "Lower bound of this band, inclusive."),
         to: f("To (%)", "Upper bound of this band, inclusive."),
@@ -100,9 +118,10 @@ export const UI_SCHEMAS: Record<ActivityKind, Record<string, unknown>> = {
     ...COMMON,
     "ui:order": ["title", "text", "behaviour", "ui", "*"],
     title: TITLE,
+    author: AUTHOR,
     text: f(
-      "Cloze text",
-      "Wrap each blank in asterisks: *answer*. Use / or | for alternates: *Honolulu/O'ahu*.",
+      "Question text with blanks",
+      "Wrap each blank in asterisks, like *answer*. Use / or | for alternate accepted answers, e.g. *Honolulu/O'ahu*.",
       { "ui:widget": "textarea", "ui:options": { rows: 6 } },
     ),
     behaviour: {
@@ -114,7 +133,7 @@ export const UI_SCHEMAS: Record<ActivityKind, Record<string, unknown>> = {
       ),
       acceptSpellingErrors: f(
         "Accept minor spelling errors",
-        "Allows answers within Levenshtein distance 1 (one missing/wrong/extra letter).",
+        "Allows answers off by one letter (a single typo, missing letter, or extra letter).",
       ),
       showSolutionsButton: BEHAVIOUR_SHOW_SOLUTION,
       singlePoint: BEHAVIOUR_SINGLEPOINT,
@@ -131,23 +150,24 @@ export const UI_SCHEMAS: Record<ActivityKind, Record<string, unknown>> = {
     ...COMMON,
     "ui:order": ["title", "background", "draggables", "dropZones", "behaviour", "ui", "*"],
     title: TITLE,
+    author: AUTHOR,
     background: {
       "ui:title": "Background image",
       "ui:help": "The image learners drop labels onto. Drop-zone rectangles are placed on top of it.",
-      src: f("Image", "Paste a URL or upload a file. Files embed inline in the JSON.", {
+      src: f("Image", "Paste a link or upload a file. Uploaded files are saved inside the activity.", {
         "ui:widget": "file",
         "ui:options": { accept: "image/*", maxSizeMb: 5, kind: "image" },
       }),
       alt: f(
-        "Alt text",
-        "Describes the image for screen-reader users. Empty if the image is purely decorative.",
+        "Alt text (required)",
+        "Describes the image for screen-reader users. Required for accessibility — describe what the image shows in one short sentence.",
       ),
     },
     draggables: {
       "ui:title": "Draggable labels",
       "ui:help": "The chips the learner picks up. Each one declares which zone(s) count as correct for it.",
       items: {
-        id: f("Internal ID", "Unique identifier — referenced by drop zones below. Lowercase, no spaces."),
+        id: HIDDEN,
         label: f("Label text", "What the learner sees on the chip."),
         correctZones: f(
           "Correct zone IDs",
@@ -164,7 +184,7 @@ export const UI_SCHEMAS: Record<ActivityKind, Record<string, unknown>> = {
       "ui:title": "Drop zones",
       "ui:help": "Rectangles overlaid on the background image where chips can be placed.",
       items: {
-        id: f("Internal ID", "Unique identifier — referenced by draggables above."),
+        id: HIDDEN,
         label: f("Zone label", "Optional — shown when the zone has its label visible."),
         rect: {
           "ui:title": "Rectangle (normalized 0..1)",
@@ -199,6 +219,7 @@ export const UI_SCHEMAS: Record<ActivityKind, Record<string, unknown>> = {
     ...COMMON,
     "ui:order": ["title", "slides", "passPercentage", "behaviour", "ui", "*"],
     title: TITLE,
+    author: AUTHOR,
     slides: {
       "ui:title": "Slides",
       "ui:help":
@@ -238,6 +259,7 @@ export const UI_SCHEMAS: Record<ActivityKind, Record<string, unknown>> = {
     ...COMMON,
     "ui:order": ["title", "questions", "passPercentage", "behaviour", "ui", "*"],
     title: TITLE,
+    author: AUTHOR,
     questions: {
       "ui:title": "Questions in this set",
       "ui:help":
@@ -278,6 +300,7 @@ export const UI_SCHEMAS: Record<ActivityKind, Record<string, unknown>> = {
     ...COMMON,
     "ui:order": ["title", "prompt", "model", "camera", "hotspots", "behaviour", "ui", "*"],
     title: TITLE,
+    author: AUTHOR,
     prompt: f(
       "Prompt shown to the learner",
       "Tells the learner what part to identify. Use the toolbar to format text.",
@@ -317,7 +340,7 @@ export const UI_SCHEMAS: Record<ActivityKind, Record<string, unknown>> = {
       "ui:help":
         "Each hotspot is a sphere placed in the model's local space. Exactly one should be marked correct.",
       items: {
-        id: f("Internal ID", "Unique identifier. Lowercase, no spaces."),
+        id: HIDDEN,
         label: f(
           "Label",
           "Shown in the keyboard fallback list and as a 3D marker chip when markers are visible.",
@@ -356,6 +379,7 @@ export const UI_SCHEMAS: Record<ActivityKind, Record<string, unknown>> = {
     ...COMMON,
     "ui:order": ["title", "prompt", "image", "hotspots", "behaviour", "ui", "*"],
     title: TITLE,
+    author: AUTHOR,
     prompt: f(
       "Prompt shown to the learner",
       "Tells the learner what region to find. Use the toolbar to format text.",
@@ -363,13 +387,13 @@ export const UI_SCHEMAS: Record<ActivityKind, Record<string, unknown>> = {
     ),
     image: {
       "ui:title": "Image",
-      src: f("Image", "Paste a URL or upload a file. Files embed inline in the JSON.", {
+      src: f("Image", "Paste a link or upload a file. Uploaded files are saved inside the activity.", {
         "ui:widget": "file",
         "ui:options": { accept: "image/*", maxSizeMb: 5, kind: "image" },
       }),
       alt: f(
-        "Alt text",
-        "Describes the image for screen-reader users. Empty if purely decorative.",
+        "Alt text (required)",
+        "Describes the image for screen-reader users. Required for accessibility — describe what the image shows in one short sentence.",
       ),
     },
     hotspots: {
@@ -377,7 +401,7 @@ export const UI_SCHEMAS: Record<ActivityKind, Record<string, unknown>> = {
       "ui:help":
         "Rectangles overlaid on the image. Exactly one should be marked correct. Edit positions visually in the Edit-mode tab once that lands.",
       items: {
-        id: f("Internal ID", "Unique identifier. Lowercase, no spaces."),
+        id: HIDDEN,
         label: f("Label", "Shown on the marker chip and in the keyboard fallback list."),
         rect: {
           "ui:title": "Rectangle (normalized 0..1)",
@@ -412,6 +436,7 @@ export const UI_SCHEMAS: Record<ActivityKind, Record<string, unknown>> = {
     ...COMMON,
     "ui:order": ["title", "scene", "movement", "overlays", "completion", "behaviour", "ui", "*"],
     title: TITLE,
+    author: AUTHOR,
     scene: {
       "ui:title": "Scene",
       src: f(
@@ -452,7 +477,7 @@ export const UI_SCHEMAS: Record<ActivityKind, Record<string, unknown>> = {
       "ui:help":
         "Clickable or proximity-triggered info panels. Each opens a modal with text, images, and audio.",
       items: {
-        id: f("Internal ID", "Unique identifier. Lowercase, no spaces."),
+        id: HIDDEN,
         title: f("Display title", "Shown above the overlay panel and on the marker chip."),
         position: f("World position (x, y, z)"),
         trigger: {
@@ -504,6 +529,7 @@ export const UI_SCHEMAS: Record<ActivityKind, Record<string, unknown>> = {
     ...COMMON,
     "ui:order": ["title", "prompt", "steps", "behaviour", "ui", "*"],
     title: TITLE,
+    author: AUTHOR,
     prompt: f("Prompt", "What the learner is asked to put in order.", {
       "ui:widget": "html",
       "ui:options": { rows: 3 },
@@ -513,7 +539,7 @@ export const UI_SCHEMAS: Record<ActivityKind, Record<string, unknown>> = {
       "ui:help":
         "List the steps in the correct sequence. Learners see them shuffled (when randomize is on) and reorder via drag.",
       items: {
-        id: f("Internal ID", "Unique identifier. Lowercase, no spaces."),
+        id: HIDDEN,
         text: f("Step text", "What the learner sees on the row."),
       },
     },
@@ -534,6 +560,7 @@ export const UI_SCHEMAS: Record<ActivityKind, Record<string, unknown>> = {
     ...COMMON,
     "ui:order": ["title", "prompt", "pairs", "behaviour", "ui", "*"],
     title: TITLE,
+    author: AUTHOR,
     prompt: f("Prompt", "Tells the learner what to match.", {
       "ui:widget": "html",
       "ui:options": { rows: 3 },
@@ -543,7 +570,7 @@ export const UI_SCHEMAS: Record<ActivityKind, Record<string, unknown>> = {
       "ui:help":
         "Each row defines a correct match between a left-column item and a right-column item.",
       items: {
-        id: f("Internal ID", "Unique identifier."),
+        id: HIDDEN,
         left: { "ui:title": "Left item", text: f("Text", "What the learner sees on the left side.") },
         right: {
           "ui:title": "Right item (correct partner)",
@@ -571,6 +598,7 @@ export const UI_SCHEMAS: Record<ActivityKind, Record<string, unknown>> = {
     ...COMMON,
     "ui:order": ["title", "prompt", "categories", "items", "behaviour", "ui", "*"],
     title: TITLE,
+    author: AUTHOR,
     prompt: f("Prompt", "Tells the learner what to sort.", {
       "ui:widget": "html",
       "ui:options": { rows: 3 },
@@ -579,7 +607,7 @@ export const UI_SCHEMAS: Record<ActivityKind, Record<string, unknown>> = {
       "ui:title": "Categories (bins)",
       "ui:help": "The named bins items can be dropped into.",
       items: {
-        id: f("Internal ID"),
+        id: HIDDEN,
         label: f("Bin label", "Shown above the bin."),
       },
     },
@@ -587,7 +615,7 @@ export const UI_SCHEMAS: Record<ActivityKind, Record<string, unknown>> = {
       "ui:title": "Items to sort",
       "ui:help": "Each item declares which category id is its correct home.",
       items: {
-        id: f("Internal ID"),
+        id: HIDDEN,
         text: f("Item text", "What the learner sees on the chip."),
         correctCategory: f(
           "Correct category id",
@@ -612,23 +640,27 @@ export const UI_SCHEMAS: Record<ActivityKind, Record<string, unknown>> = {
     ...COMMON,
     "ui:order": ["title", "prompt", "image", "labels", "targets", "behaviour", "ui", "*"],
     title: TITLE,
+    author: AUTHOR,
     prompt: f("Prompt", "Tells the learner what to label.", {
       "ui:widget": "html",
       "ui:options": { rows: 3 },
     }),
     image: {
       "ui:title": "Image",
-      src: f("Image", "Paste a URL or upload a file. Files embed inline in the JSON.", {
+      src: f("Image", "Paste a link or upload a file. Uploaded files are saved inside the activity.", {
         "ui:widget": "file",
         "ui:options": { accept: "image/*", maxSizeMb: 5, kind: "image" },
       }),
-      alt: f("Alt text", "Description for screen-reader users. Empty if purely decorative."),
+      alt: f(
+        "Alt text (required)",
+        "Description for screen-reader users. Required for accessibility — describe what the diagram shows in one short sentence.",
+      ),
     },
     labels: {
       "ui:title": "Labels",
       "ui:help": "Each label declares which target id is its correct home.",
       items: {
-        id: f("Internal ID"),
+        id: HIDDEN,
         text: f("Label text"),
         correctTargetId: f("Correct target id", "Must match one of the target ids declared below."),
       },
@@ -637,7 +669,7 @@ export const UI_SCHEMAS: Record<ActivityKind, Record<string, unknown>> = {
       "ui:title": "Targets (numbered points)",
       "ui:help": "Each target is a small numbered circle on the image.",
       items: {
-        id: f("Internal ID"),
+        id: HIDDEN,
         position: { "ui:title": "Position (0..1)", x: f("X (left)"), y: f("Y (top)") },
       },
     },
@@ -658,6 +690,7 @@ export const UI_SCHEMAS: Record<ActivityKind, Record<string, unknown>> = {
     ...COMMON,
     "ui:order": ["title", "prompt", "before", "after", "initialPosition", "behaviour", "ui", "*"],
     title: TITLE,
+    author: AUTHOR,
     prompt: f("Prompt", "Tells the learner what to look at.", {
       "ui:widget": "html",
       "ui:options": { rows: 3 },
@@ -668,7 +701,10 @@ export const UI_SCHEMAS: Record<ActivityKind, Record<string, unknown>> = {
         "ui:widget": "file",
         "ui:options": { accept: "image/*", maxSizeMb: 5, kind: "image" },
       }),
-      alt: f("Alt text"),
+      alt: f(
+        "Alt text (required)",
+        "Required for accessibility. Describe the 'before' state in one short sentence.",
+      ),
       caption: f("Caption", "Optional. Shown beneath the image."),
     },
     after: {
@@ -677,7 +713,10 @@ export const UI_SCHEMAS: Record<ActivityKind, Record<string, unknown>> = {
         "ui:widget": "file",
         "ui:options": { accept: "image/*", maxSizeMb: 5, kind: "image" },
       }),
-      alt: f("Alt text"),
+      alt: f(
+        "Alt text (required)",
+        "Required for accessibility. Describe the 'after' state in one short sentence.",
+      ),
       caption: f("Caption", "Optional."),
     },
     initialPosition: f(
@@ -696,8 +735,9 @@ export const UI_SCHEMAS: Record<ActivityKind, Record<string, unknown>> = {
 
   "highlight-text": {
     ...COMMON,
-    "ui:order": ["title", "prompt", "tokens", "behaviour", "ui", "*"],
+    "ui:order": ["title", "prompt", "tokens", "behaviour", "ui", "overallFeedback", "*"],
     title: TITLE,
+    author: AUTHOR,
     prompt: f("Prompt", "Tells the learner what to highlight.", {
       "ui:widget": "html",
       "ui:options": { rows: 3 },
@@ -707,7 +747,7 @@ export const UI_SCHEMAS: Record<ActivityKind, Record<string, unknown>> = {
       "ui:help":
         "Render order matters — tokens render with single spaces between unless a separator is set.",
       items: {
-        id: f("Internal ID"),
+        id: HIDDEN,
         text: f("Token text", "The word or phrase the learner sees."),
         correct: f("Counts as correct", "Selecting this token contributes to the score."),
         separator: f(
@@ -726,12 +766,22 @@ export const UI_SCHEMAS: Record<ActivityKind, Record<string, unknown>> = {
       checkAnswerButton: f("'Check' button text"),
       tryAgainButton: f("'Try Again' button text"),
     },
+    overallFeedback: {
+      "ui:title": "Overall feedback bands",
+      "ui:help": "Per-score-range message shown after submit.",
+      items: {
+        from: f("From (%)"),
+        to: f("To (%)"),
+        message: f("Message"),
+      },
+    },
   },
 
   flashcards: {
     ...COMMON,
     "ui:order": ["title", "prompt", "cards", "behaviour", "ui", "*"],
     title: TITLE,
+    author: AUTHOR,
     prompt: f("Intro / instructions", "Optional intro shown above the deck.", {
       "ui:widget": "html",
       "ui:options": { rows: 2 },
@@ -740,7 +790,7 @@ export const UI_SCHEMAS: Record<ActivityKind, Record<string, unknown>> = {
       "ui:title": "Cards",
       "ui:help": "Each card has a front and a back. HTML allowed in both.",
       items: {
-        id: f("Internal ID"),
+        id: HIDDEN,
         front: f("Front (question side)", "What the learner sees first.", {
           "ui:widget": "html",
           "ui:options": { rows: 2 },
@@ -758,10 +808,6 @@ export const UI_SCHEMAS: Record<ActivityKind, Record<string, unknown>> = {
     behaviour: {
       "ui:title": "Activity behaviour",
       shuffle: f("Shuffle the deck", "Default on."),
-      passThreshold: f(
-        "Pass threshold (% knew)",
-        "Default 80. Score-as-percent of cards marked 'I knew it' must reach this for the activity to pass.",
-      ),
     },
     ui: {
       "ui:title": "Button label overrides",
@@ -775,6 +821,7 @@ export const UI_SCHEMAS: Record<ActivityKind, Record<string, unknown>> = {
     ...COMMON,
     "ui:order": ["title", "prompt", "minWords", "placeholder", "ui", "*"],
     title: TITLE,
+    author: AUTHOR,
     prompt: f("Prompt", "What the learner reflects on.", {
       "ui:widget": "html",
       "ui:options": { rows: 4 },
@@ -784,6 +831,355 @@ export const UI_SCHEMAS: Record<ActivityKind, Record<string, unknown>> = {
       "Optional. If set, Submit is disabled until the learner writes this many words.",
     ),
     placeholder: f("Placeholder text", "Greys-out hint inside the empty textarea."),
+    ui: {
+      "ui:title": "Button label overrides",
+      submitButtonLabel: f("'Submit' button text"),
+    },
+  },
+
+  "image-annotation": {
+    ...COMMON,
+    "ui:order": [
+      "title",
+      "prompt",
+      "image",
+      "tools",
+      "expectedAnnotations",
+      "behaviour",
+      "ui",
+      "*",
+    ],
+    title: TITLE,
+    author: AUTHOR,
+    prompt: f("Prompt", "Tells the learner what to annotate.", {
+      "ui:widget": "html",
+      "ui:options": { rows: 3 },
+    }),
+    image: {
+      "ui:title": "Image",
+      src: f("Image", "Paste URL or upload.", {
+        "ui:widget": "file",
+        "ui:options": { accept: "image/*", maxSizeMb: 5, kind: "image" },
+      }),
+      alt: f(
+        "Alt text (required)",
+        "Required for accessibility — describe what the image shows in one short sentence.",
+      ),
+    },
+    tools: {
+      "ui:title": "Annotation tools available to the learner",
+      rectangle: f("Rectangle"),
+      circle: f("Circle"),
+      arrow: f("Arrow"),
+      freehand: f("Freehand"),
+      text: f("Text"),
+    },
+    expectedAnnotations: {
+      "ui:title": "Expected (ground-truth) marks",
+      "ui:help":
+        "Drawn in edit mode by clicking the canvas. The activity compares learner annotations against these.",
+      items: {
+        id: HIDDEN,
+        label: f("Label", "Optional. Shown on the mark for the author."),
+      },
+    },
+    behaviour: {
+      "ui:title": "Activity behaviour",
+      enableRetry: BEHAVIOUR_RETRY,
+      allowEdit: f("Let learner edit after submit", "Otherwise the canvas locks on submit."),
+      singlePoint: BEHAVIOUR_SINGLEPOINT,
+    },
+    ui: {
+      "ui:title": "Button label overrides",
+      submitButtonLabel: f("'Submit' button text"),
+      clearButton: f("'Clear' button text"),
+    },
+  },
+
+  "branching-scenario": {
+    ...COMMON,
+    "ui:order": ["title", "startNodeId", "nodes", "behaviour", "ui", "*"],
+    title: TITLE,
+    author: AUTHOR,
+    startNodeId: f("Starting step", "Which step the learner sees first.", {
+      "ui:widget": "nodeSelect",
+    }),
+    nodes: {
+      "ui:title": "Scenario steps",
+      "ui:help":
+        "Each step shows a prompt, then either a list of choices that lead elsewhere or a final outcome.",
+      items: {
+        id: HIDDEN,
+        prompt: f("Prompt", "Shown when the learner reaches this step.", {
+          "ui:widget": "html",
+        }),
+        choices: {
+          "ui:title": "Choices",
+          items: {
+            id: HIDDEN,
+            text: f("Choice text", "What the learner sees on the button."),
+            nextNodeId: f("Goes to step", "Which step this choice leads to.", {
+              "ui:widget": "nodeSelect",
+            }),
+            feedback: f("Feedback (optional)", "Shown when this choice is picked.", {
+              "ui:widget": "textarea",
+              "ui:options": { rows: 2 },
+            }),
+          },
+        },
+      },
+    },
+    behaviour: {
+      "ui:title": "Activity behaviour",
+      enableRetry: BEHAVIOUR_RETRY,
+    },
+    ui: {
+      "ui:title": "Button label overrides",
+      restartButton: f("'Restart' button text"),
+    },
+  },
+
+  "concept-map": {
+    ...COMMON,
+    "ui:order": [
+      "title",
+      "prompt",
+      "seedNodes",
+      "availableConcepts",
+      "expected",
+      "behaviour",
+      "ui",
+      "*",
+    ],
+    title: TITLE,
+    author: AUTHOR,
+    prompt: f("Prompt", "What the learner builds a concept map of.", {
+      "ui:widget": "html",
+      "ui:options": { rows: 3 },
+    }),
+    seedNodes: {
+      "ui:title": "Starter nodes",
+      "ui:help": "Optional. Nodes the learner sees pre-placed on the canvas.",
+      items: {
+        id: HIDDEN,
+        label: f("Label", "Visible node text."),
+      },
+    },
+    availableConcepts: {
+      "ui:title": "Concept palette",
+      "ui:help": "Optional. Concepts the learner can drag onto the canvas.",
+      items: {
+        id: HIDDEN,
+        label: f("Label", "Visible chip text."),
+      },
+    },
+    expected: {
+      "ui:title": "Expected (ground-truth) map",
+      nodes: f("Required node labels", "Optional. Labels the learner must include."),
+      edges: {
+        "ui:title": "Required edges",
+      },
+    },
+    behaviour: {
+      "ui:title": "Activity behaviour",
+      enableRetry: BEHAVIOUR_RETRY,
+      allowFreeText: f(
+        "Allow free-text nodes",
+        "When on, the learner can add nodes outside the seed set.",
+      ),
+    },
+    ui: {
+      "ui:title": "Button label overrides",
+      submitButton: f("'Submit' button text"),
+    },
+  },
+
+  "interactive-video": {
+    ...COMMON,
+    "ui:order": ["title", "prompt", "video", "interactions", "behaviour", "ui", "*"],
+    title: TITLE,
+    author: AUTHOR,
+    prompt: f("Prompt", "Optional. Shown above the player.", {
+      "ui:widget": "html",
+      "ui:options": { rows: 2 },
+    }),
+    video: {
+      "ui:title": "Video source",
+      src: f("Video URL", "MP4, YouTube, or Vimeo URL."),
+      type: f("Source type", "html5 for direct MP4; otherwise youtube / vimeo."),
+      poster: f("Poster image", "Optional. Shown before play."),
+    },
+    interactions: {
+      "ui:title": "Time-coded interactions",
+      "ui:help": "Each interaction pauses the video and renders a sub-activity.",
+      items: {
+        id: HIDDEN,
+        kind: f("Interaction kind", "Which sub-activity to render."),
+        required: f("Required", "Block playback resume until answered."),
+      },
+    },
+    behaviour: {
+      "ui:title": "Activity behaviour",
+      enableRetry: BEHAVIOUR_RETRY,
+    },
+    ui: {
+      "ui:title": "Button label overrides",
+      submitButtonLabel: f("'Submit' button text"),
+    },
+  },
+
+  "audio-recording": {
+    ...COMMON,
+    "ui:order": ["title", "prompt", "sample", "minSeconds", "maxSeconds", "behaviour", "ui", "*"],
+    title: TITLE,
+    author: AUTHOR,
+    prompt: f("Prompt", "What the learner records.", {
+      "ui:widget": "html",
+      "ui:options": { rows: 3 },
+    }),
+    sample: {
+      "ui:title": "Reference sample (optional)",
+      src: f("Audio URL", "Optional sample for the learner to compare against."),
+      caption: f("Caption"),
+    },
+    minSeconds: f("Minimum seconds", "Optional. Submit disabled until met."),
+    maxSeconds: f("Maximum seconds", "Optional. Recording auto-stops at this length."),
+    behaviour: {
+      "ui:title": "Activity behaviour",
+      enableRetry: BEHAVIOUR_RETRY,
+    },
+    ui: {
+      "ui:title": "Button label overrides",
+      submitButtonLabel: f("'Submit' button text"),
+    },
+  },
+
+  "lab-panel": {
+    ...COMMON,
+    "ui:order": ["title", "prompt", "panel", "interpretation", "behaviour", "ui", "overallFeedback", "*"],
+    title: TITLE,
+    author: AUTHOR,
+    prompt: f("Clinical context", "Brief vignette shown above the lab panel.", {
+      "ui:widget": "html",
+      "ui:options": { rows: 4 },
+    }),
+    panel: {
+      "ui:title": "Lab panel",
+      name: f("Panel name", "e.g. 'Basic Metabolic Panel'."),
+      values: {
+        "ui:title": "Panel values",
+        items: {
+          id: HIDDEN,
+          analyte: f("Analyte", "e.g. 'Sodium', 'WBC'."),
+          result: f("Result", "Numeric or qualitative value."),
+          units: f("Units"),
+          reference: f("Reference range"),
+          flag: f("Flag", "high / low / normal — colour-codes the row."),
+        },
+      },
+    },
+    interpretation: {
+      "ui:title": "Interpretation question",
+      question: f("Question", "What the learner is asked after reading the panel."),
+      choices: {
+        "ui:title": "Answer choices",
+        items: {
+          id: HIDDEN,
+          text: f("Answer text"),
+          correct: f("Correct"),
+          feedback: f("Feedback", "Optional. Shown when this choice is picked."),
+        },
+      },
+    },
+    behaviour: {
+      "ui:title": "Activity behaviour",
+      enableRetry: BEHAVIOUR_RETRY,
+      singlePoint: BEHAVIOUR_SINGLEPOINT,
+    },
+    ui: {
+      "ui:title": "Button label overrides",
+      checkAnswerButton: f("'Check' button text"),
+      tryAgainButton: f("'Try Again' button text"),
+    },
+    overallFeedback: {
+      "ui:title": "Overall feedback bands",
+      "ui:help": "Per-score-range message. The band whose range contains the learner's final score is shown.",
+      items: {
+        from: f("From (%)", "Lower bound of this band, inclusive."),
+        to: f("To (%)", "Upper bound of this band, inclusive."),
+        message: f("Message"),
+      },
+    },
+  },
+
+  "ddx-tree": {
+    ...COMMON,
+    "ui:order": ["title", "startNodeId", "nodes", "behaviour", "ui", "*"],
+    title: TITLE,
+    author: AUTHOR,
+    startNodeId: f("Starting step", "First presentation the learner sees.", {
+      "ui:widget": "nodeSelect",
+    }),
+    nodes: {
+      "ui:title": "Differential diagnosis steps",
+      "ui:help":
+        "Each step has a clinical presentation, then a list of choices that lead elsewhere or a final diagnosis.",
+      items: {
+        id: HIDDEN,
+        presentation: f(
+          "Presentation",
+          "Vignette / patient context shown at this step.",
+          { "ui:widget": "html" },
+        ),
+        choices: {
+          "ui:title": "Choices",
+          items: {
+            id: HIDDEN,
+            text: f("Choice text"),
+            nextNodeId: f("Goes to step", "Which step this choice leads to.", {
+              "ui:widget": "nodeSelect",
+            }),
+            feedback: f("Feedback (optional)", undefined, {
+              "ui:widget": "textarea",
+              "ui:options": { rows: 2 },
+            }),
+          },
+        },
+      },
+    },
+    behaviour: {
+      "ui:title": "Activity behaviour",
+      enableRetry: BEHAVIOUR_RETRY,
+    },
+    ui: {
+      "ui:title": "Button label overrides",
+      restartButton: f("'Restart' button text"),
+    },
+  },
+
+  osce: {
+    ...COMMON,
+    "ui:order": ["title", "phases", "expectedOrder", "behaviour", "ui", "*"],
+    title: TITLE,
+    author: AUTHOR,
+    phases: {
+      "ui:title": "Encounter phases",
+      "ui:help":
+        "Each phase has a name and a list of actions the learner can take. Author marks which actions are correct.",
+      items: {
+        id: HIDDEN,
+        name: f("Phase name", "e.g. 'History', 'Examination', 'Closure'."),
+        description: f("Description", "Optional. Shown when the phase opens."),
+      },
+    },
+    expectedOrder: f(
+      "Expected phase order",
+      "Optional. Phase ids in the order the learner should perform them.",
+    ),
+    behaviour: {
+      "ui:title": "Activity behaviour",
+      enableRetry: BEHAVIOUR_RETRY,
+    },
     ui: {
       "ui:title": "Button label overrides",
       submitButtonLabel: f("'Submit' button text"),

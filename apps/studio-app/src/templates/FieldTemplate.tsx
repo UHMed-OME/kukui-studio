@@ -24,6 +24,12 @@ export function FieldTemplate(props: FieldTemplateProps) {
     uiSchema,
   } = props;
 
+  // Hidden widget → render nothing. Without this guard, RJSF still wraps
+  // the (invisible) input in a label row, so authors see floating "id*"
+  // labels above empty space for fields that should be entirely silent.
+  const widget = (uiSchema as Record<string, unknown> | undefined)?.["ui:widget"];
+  if (widget === "hidden") return null;
+
   const helpText = readHelp(uiSchema);
 
   return (

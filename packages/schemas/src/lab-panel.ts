@@ -54,6 +54,7 @@ export const LabPanelConfigSchema = z
     _comment: z.string().optional(),
     version: z.string().regex(versionRe),
     title: z.string().min(1),
+    author: z.string().optional(),
     /** HTML — case description / scenario shown above the panel. */
     prompt: z.string().min(1),
     panel: z

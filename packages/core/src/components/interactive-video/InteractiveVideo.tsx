@@ -170,7 +170,20 @@ export function InteractiveVideo({
   };
 
   const handleEnded = () => {
-    if (state.stage === "watching") finish();
+    if (state.stage !== "watching") return;
+    // If the learner skipped past required interactions (or finished
+    // without seeing them), seek back to the earliest unresolved one
+    // rather than vacuously submitting. The TimeUpdate handler will
+    // then trigger the overlay as the video re-plays through it.
+    const unresolvedRequired = validated.find(
+      (v) => v.required && !state.resolvedInteractions[v.id],
+    );
+    if (unresolvedRequired && videoRef.current) {
+      videoRef.current.currentTime = Math.max(0, unresolvedRequired.atSeconds - 0.5);
+      videoRef.current.play().catch(() => {});
+      return;
+    }
+    finish();
   };
 
   const recordScore = (id: string, score: ScoreState) => {

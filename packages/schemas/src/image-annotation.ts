@@ -16,11 +16,12 @@ export const ImageAnnotationConfigSchema = z
     _comment: z.string().optional(),
     version: z.string().regex(versionRe),
     title: z.string().min(1),
+    author: z.string().optional(),
     prompt: z.string().min(1),
     image: z
       .object({
         src: z.string().min(1),
-        alt: z.string().optional(),
+        alt: z.string().min(1),
       })
       .strict(),
     tools: z

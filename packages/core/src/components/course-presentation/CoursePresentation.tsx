@@ -71,7 +71,10 @@ export function CoursePresentation({
     const next: State = { ...state, stage: "submitted" };
     setState(next);
     const passPct = config.passPercentage ?? 70;
-    const success = max === 0 ? true : (raw / max) * 100 >= passPct;
+    // Empty submission (no scored interactions answered) cannot count as
+    // success — Finish on slide 1 with nothing answered shouldn't pass the
+    // activity. Treat max === 0 as failure rather than vacuous success.
+    const success = max === 0 ? false : (raw / max) * 100 >= passPct;
     onSubmit({ raw, max, success, suspendData: JSON.stringify(next) });
   };
 

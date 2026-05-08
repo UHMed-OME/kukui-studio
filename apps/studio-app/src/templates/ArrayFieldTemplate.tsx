@@ -6,9 +6,17 @@ import type { ArrayFieldTemplateProps, ArrayFieldTemplateItemType } from "@rjsf/
  *   - The item form
  *   - Move-up / move-down arrows + a remove button in the corner
  * The Add button is a wide outlined affordance below the list.
+ *
+ * Title resolution: `props.title` arrives as the raw property name when the
+ * uiSchema only sets `ui:title` (RJSF passes the schema title or property
+ * name, ignoring `ui:title` for arrays in some paths). Read the uiSchema
+ * title explicitly so authors get a polished label without having to mirror
+ * it into the JSON Schema.
  */
 export function ArrayFieldTemplate(props: ArrayFieldTemplateProps) {
-  const { title, schema, items, canAdd, onAddClick } = props;
+  const { schema, items, canAdd, onAddClick, uiSchema } = props;
+  const uiTitle = (uiSchema as Record<string, unknown> | undefined)?.["ui:title"];
+  const title = typeof uiTitle === "string" ? uiTitle : props.title;
   const description = schema?.description;
 
   return (

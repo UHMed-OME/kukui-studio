@@ -25,6 +25,7 @@ export const InteractiveVideoConfigSchema = z
     _comment: z.string().optional(),
     version: z.string().regex(versionRe),
     title: z.string().min(1),
+    author: z.string().optional(),
     prompt: z.string().optional(),
     video: Video,
     interactions: z.array(Interaction),

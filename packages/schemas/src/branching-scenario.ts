@@ -49,6 +49,7 @@ export const BranchingScenarioConfigSchema = z
     _comment: z.string().optional(),
     version: z.string().regex(versionRe),
     title: z.string().min(1),
+    author: z.string().optional(),
     nodes: z
       .array(Node)
       .min(1)

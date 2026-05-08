@@ -7,14 +7,17 @@ const versionRe = /^\d+\.\d+(\.\d+)?$/;
  * each to reveal the back, then self-rates "knew it" / "didn't know it".
  * Cards rated "didn't know it" are re-queued at the end of the deck.
  *
- * `passThreshold` is the percentage of total cards that must be marked "knew
- * it" for the activity to report `success: true` to the LMS. Defaults to 80.
+ * Self-rating is honor-system, so flashcards are graded as completion-only:
+ * once the learner has worked through the deck the activity reports
+ * `success: true` to the LMS regardless of the knew/didn't tally. A "Practice
+ * again" affordance lets learners run the deck repeatedly.
  */
 export const FlashcardsConfigSchema = z
   .object({
     _comment: z.string().optional(),
     version: z.string().regex(versionRe),
     title: z.string().min(1),
+    author: z.string().optional(),
     prompt: z.string().optional(),
     cards: z
       .array(
@@ -34,7 +37,6 @@ export const FlashcardsConfigSchema = z
     behaviour: z
       .object({
         shuffle: z.boolean().optional(),
-        passThreshold: z.number().min(0).max(100).optional(),
       })
       .strict()
       .optional(),

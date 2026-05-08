@@ -16,11 +16,14 @@ export const Hotspot2DConfigSchema = z
     _comment: z.string().optional(),
     version: z.string().regex(versionRe),
     title: z.string().min(1),
+    author: z.string().optional(),
     prompt: z.string().min(1),
     image: z
       .object({
         src: z.string().min(1),
-        alt: z.string().optional(),
+        // Required for AT — the keyboard/region-list fallback also surfaces
+        // it as the image's accessible name.
+        alt: z.string().min(1),
       })
       .strict(),
     hotspots: z

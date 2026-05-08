@@ -59,6 +59,7 @@ export const DDxTreeConfigSchema = z
     _comment: z.string().optional(),
     version: z.string().regex(versionRe),
     title: z.string().min(1),
+    author: z.string().optional(),
     /** HTML — initial case presentation: chief complaint, vitals, etc. */
     caseHeader: z.string().min(1),
     nodes: z
