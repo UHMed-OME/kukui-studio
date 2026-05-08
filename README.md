@@ -33,7 +33,6 @@ A handful of incumbent interactive-content authoring platforms already exist for
 - **Open content + open code.** MIT-licensed code; activities are plain JSON the author owns. No vendor can revoke access, change pricing, or sunset a feature an institution depends on. The 24 activity types ship as components in the repo — extend or fork freely.
 - **Modern web stack, native to the browser.** React 19, TypeScript strict, Tailwind, Vite. No Flash, no Java applet, no proprietary runtime. WebGL/`react-three-fiber` powers the 3D activities; `MediaRecorder` powers audio capture; everything degrades gracefully when a feature isn't available.
 
-Kukui was designed for a medical school's specific needs (clinical reasoning, OSCE encounters, anatomy labeling, lab-panel interpretation), but the toolkit is general-purpose — any institution authoring interactive higher-ed content can use it.
 
 ## Use Kukui Studio (no install required)
 
