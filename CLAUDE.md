@@ -26,11 +26,10 @@ MIT. See `LICENSE`.
 
 ## Hard rules — apply to every artifact written in this repo
 
-1. **Follow the Kukui design system** (canonical at `~/OME Projects/docs/design-system.md`). Don't invent hex values, spacing, font sizes, or border widths that aren't in the documented tokens; add tokens to the doc *before* using new values.
-2. **Follow the Kukui design system** (canonical at `~/OME Projects/docs/design-system.md`, mirroring planned to `docs/design-system.md` in this repo once copied). Don't invent hex values, spacing, font sizes, or border widths that aren't in the documented tokens. Add tokens to the doc *before* using new values. WCAG 2.2 AA is non-negotiable for educational content.
-3. **Layout-stable interactions.** State changes (selected / correct / incorrect) must not reflow neighbors. Reserve space; change colors only. Border widths constant across states.
-4. **Tap targets ≥ 44 × 44 px** (WCAG 2.5.5).
-5. **Color is never the sole signal** — pair every color cue with text, icon, or position.
+1. **Follow the Kukui design system** (canonical at `~/OME Projects/docs/design-system.md`, mirroring planned to `docs/design-system.md` in this repo once copied). Don't invent hex values, spacing, font sizes, or border widths that aren't in the documented tokens. Add tokens to the doc *before* using new values. WCAG 2.2 AA is non-negotiable for educational content.
+2. **Layout-stable interactions.** State changes (selected / correct / incorrect) must not reflow neighbors. Reserve space; change colors only. Border widths constant across states.
+3. **Tap targets ≥ 44 × 44 px** (WCAG 2.5.5).
+4. **Color is never the sole signal** — pair every color cue with text, icon, or position.
 
 ## Reference (in the Unity repo)
 

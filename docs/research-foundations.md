@@ -43,7 +43,7 @@ A 2023 *MedEdPublish* paper synthesized 12 evidence-based tips for synchronous v
 
 ### 5. Accessibility is a recurring weak point in incumbent platforms
 
-Major incumbent interactive-content authoring platforms repeatedly flag accessibility limitations in higher-ed deployments. Screen-reader compatibility and keyboard navigation are commonly absent or incomplete.
+Major incumbent interactive-content and authoring platforms repeatedly flag accessibility limitations in higher-ed deployments. Screen-reader compatibility and keyboard navigation are commonly absent or incomplete.
 
 **Implication for Kukui:** WCAG 2.2 AA conformance from day 1 is not just compliance — it's a measurable differentiator backed by literature on what's missing in the current landscape. Easier to build in than retrofit.
 

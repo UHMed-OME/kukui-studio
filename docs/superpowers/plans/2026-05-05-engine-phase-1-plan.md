@@ -149,12 +149,11 @@ Each activity ships with: schema, component, fixture, Vitest unit tests, Vite en
 
 Per `kukui-web/CLAUDE.md` hard rules:
 
-1. **Design system is canonical** — every hex, spacing, font size, border width must trace to `docs/design-system.md`
-2. **Design system is canonical** — every hex, spacing, font size, border width must trace to `docs/design-system.md`. Add to the doc *before* using a new value.
-3. **Layout-stable interactions** — state changes never reflow neighbors. Reserve space; change colors only. 2 px constant borders.
-4. **Tap targets ≥ 44 × 44 px** (WCAG 2.5.5)
-5. **Color is never the sole signal** — pair every cue with text, icon, or position
-6. **WCAG 2.2 AA** — non-negotiable (Section 508 / state laws)
+1. **Design system is canonical** — every hex, spacing, font size, border width must trace to `docs/design-system.md`. Add to the doc *before* using a new value.
+2. **Layout-stable interactions** — state changes never reflow neighbors. Reserve space; change colors only. 2 px constant borders.
+3. **Tap targets ≥ 44 × 44 px** (WCAG 2.5.5)
+4. **Color is never the sole signal** — pair every cue with text, icon, or position
+5. **WCAG 2.2 AA** — non-negotiable (Section 508 / state laws)
 
 ## Risks and mitigations
 

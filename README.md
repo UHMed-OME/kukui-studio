@@ -1,10 +1,53 @@
-# Kukui
+<p align="center">
+  <img src="kukui-logo.svg" alt="Kukui" width="120" />
+</p>
 
-> JSON-driven interactive learning activities for the LMS. SCORM-packaged, browser-hosted, no backend.
+<h1 align="center">Kukui</h1>
+
+<p align="center"><em>JSON-driven interactive learning activities for the LMS. SCORM-packaged, browser-hosted, no backend.</em></p>
+
+<p align="center">
+  <a href="https://uhmed-ome.github.io/kukui-studio/"><strong>▶ Open Kukui Studio (live)</strong></a>
+  &nbsp;·&nbsp;
+  <a href="#uploading-a-kukui-activity-to-brightspace-lamakū">Upload to Brightspace</a>
+  &nbsp;·&nbsp;
+  <a href="#activity-catalog">Activity catalog</a>
+  &nbsp;·&nbsp;
+  <a href="#local-development">Local development</a>
+</p>
+
+---
 
 Kukui is an open-source toolkit for building, packaging, and shipping interactive learning activities to a Learning Management System. It started as a project for [University of Hawaiʻi John A. Burns School of Medicine](https://jabsom.hawaii.edu/)'s Brightspace instance ("Lamakū") and is released under the MIT license for any institution that wants to author their own.
 
 The project name comes from the **kukui** nut — the candlenut Hawaiians traditionally burned in *lamakū* torches. Lamakū hosts the activities; Kukui *is* the activities.
+
+## Why Kukui exists
+
+A handful of incumbent interactive-content authoring platforms already exist for education. Kukui was built because none of them, in the form available to JABSOM, satisfied all of the following at once:
+
+- **No backend, no login, no SaaS.** Studio runs entirely in the browser. Drafts auto-save to your local browser storage; nothing is sent to a server we operate. There's nothing to provision, no per-seat license, and no central database holding course content. An institution can fork the repo, push to its own GitHub, and host Studio for free on GitHub Pages.
+- **WCAG 2.2 AA from day 1, not retrofitted.** Every activity ships keyboard fallbacks for drag-and-drop interactions, ARIA-labeled controls, focus-trapped modals, and respects `prefers-reduced-motion` / `prefers-reduced-transparency`. Required `alt` text is enforced at the schema layer — authors can't ship an inaccessible image even by accident.
+- **Direct SCORM 1.2 packaging, no third-party hosting.** Click **Download** and you get a `<title>.zip` you upload to D2L Brightspace (or any SCORM 1.2 LMS) as a SCO module. Grades flow back through `cmi.core.score.*` and `cmi.core.lesson_status` automatically. No external content service to integrate, no LTI consumer key to provision, no risk of an outage on someone else's server breaking your gradebook.
+- **JSON-driven, version-controllable authoring.** Every activity is a Zod-validated JSON config. Authors can hand-edit the JSON, paste into Studio, diff it in git, copy a working activity and tweak it, or generate one from a script. The schemas are the contract — no proprietary binary formats, no editor-locked files.
+- **Open content + open code.** MIT-licensed code; activities are plain JSON the author owns. No vendor can revoke access, change pricing, or sunset a feature an institution depends on. The 24 activity types ship as components in the repo — extend or fork freely.
+- **Modern web stack, native to the browser.** React 19, TypeScript strict, Tailwind, Vite. No Flash, no Java applet, no proprietary runtime. WebGL/`react-three-fiber` powers the 3D activities; `MediaRecorder` powers audio capture; everything degrades gracefully when a feature isn't available.
+
+Kukui was designed for a medical school's specific needs (clinical reasoning, OSCE encounters, anatomy labeling, lab-panel interpretation), but the toolkit is general-purpose — any institution authoring interactive higher-ed content can use it.
+
+## Use Kukui Studio (no install required)
+
+> **▶ https://uhmed-ome.github.io/kukui-studio/**
+
+Studio runs entirely in the browser — no install, no login, no backend. Drafts auto-save to your browser's local storage; you can also **Export** an in-progress draft as a portable JSON file for another author to **Import**.
+
+**Workflow for an instructor / author:**
+
+1. Open the link above.
+2. Pick an activity type from the sidebar (organized by Bloom's taxonomy).
+3. Fill in the form, or paste your own JSON. Preview renders live alongside the form.
+4. Click **Download / SCORM 1.2 ZIP**. You get a `<your-title>.zip` that drops directly into D2L Brightspace (or any SCORM 1.2-compatible LMS).
+5. Upload the zip into your course (steps in the [Brightspace section](#uploading-a-kukui-activity-to-brightspace-lamakū) below). Grades flow back automatically via SCORM 1.2's `cmi.core.score.*` and `cmi.core.lesson_status` APIs.
 
 ## What's in the box
 
@@ -57,30 +100,7 @@ Activities are organized by Bloom's revised taxonomy — what kind of thinking t
 ### Quiz primitives (used inside other activities; not in Studio's catalog)
 **Multiple Choice**, **Fill in the Blanks**, and **Question Set** ship in `@kukui/core` and are usable for Brightspace's native quiz tools. Studio hides them because Lamakū already has good native quiz authoring; Kukui exists to do what Lamakū *can't*.
 
-## Quick start
-
-```bash
-git clone https://github.com/<your-org>/kukui-web
-cd kukui-web
-pnpm install
-pnpm dev:studio                         # Studio authoring tool (port 5174)
-pnpm dev                                # engine-web (per-activity preview, port 5173)
-pnpm dev:live                           # Kukui Live alpha (port 5175)
-pnpm test                               # ~230 tests across packages + apps
-pnpm typecheck                          # tsc -b workspace-wide
-pnpm build                              # production builds for every app
-node packaging/pack-scorm.js --all      # build all SCORM zips → packaging/build/
-```
-
-### Use Studio (no install required)
-
-Studio runs entirely in the browser and is hosted on GitHub Pages — no install, no login, no backend. Open the live site, pick an activity from the sidebar, fill in the form (or drop in JSON), preview it live, and click **Download** to get a SCORM 1.2 zip ready to upload into D2L (or any SCORM 1.2-compatible LMS). Grade passback is automatic via SCORM 1.2's `cmi.core.score.*` and `cmi.core.lesson_status` APIs.
-
-> Live URL: `https://<your-org>.github.io/<repo>/` (set when you fork or push to your own GitHub repo — the workflow in [`.github/workflows/pages.yml`](.github/workflows/pages.yml) handles the deploy).
-
-If you want to share an in-progress draft with another author, click **Export** to get a portable JSON file. Recipients click **Import** in their Studio to load it.
-
-### Uploading a Kukui activity to Brightspace (Lamakū)
+## Uploading a Kukui activity to Brightspace (Lamakū)
 
 1. In Studio, fill out the activity form and click **Download / SCORM 1.2 zip**. You'll get a `<your-title>.zip` file.
 2. In your Brightspace course, navigate to **Content > the unit/module** where the activity should live.
@@ -167,6 +187,25 @@ Push to `main` and the [Pages workflow](.github/workflows/pages.yml) builds + te
 
 The deployed Studio bundles the per-activity SCORM templates from `packaging/build/` so authors can click **Download** without rebuilding anything locally — the templates ship as static files inside `/scorm-templates/kukui-<kind>.scorm.zip`.
 
+## Local development
+
+For contributors and self-hosting institutions. Authors don't need any of this — they use the live Studio URL above.
+
+```bash
+git clone https://github.com/UHMed-OME/kukui-studio
+cd kukui-studio
+pnpm install
+pnpm dev:studio                         # Studio authoring tool (port 5174)
+pnpm dev                                # engine-web preview (port 5173)
+pnpm dev:live                           # Kukui Live alpha (port 5175)
+pnpm test                               # ~230 tests across packages + apps
+pnpm typecheck                          # tsc -b workspace-wide
+pnpm build                              # production builds for every app
+node packaging/pack-scorm.js --all      # build all SCORM zips → packaging/build/
+```
+
+Requires Node 20+ and pnpm 10. Tested on macOS and Linux.
+
 ## Accessibility & i18n
 
 Built to WCAG 2.2 AA: keyboard fallbacks for every drag/drop, ARIA-labeled icon buttons, focus-trapped modals, `prefers-reduced-motion` and `prefers-reduced-transparency` respected at the CSS layer. The glass theme auto-flattens on OS-level translucency-reduction preferences.
@@ -179,4 +218,4 @@ MIT — see [LICENSE](LICENSE). Use it, fork it, sell consulting on top of it. I
 
 ## Acknowledgements
 
-Built at UH JABSOM's Office of Medical Education. Designed from scratch as a React/SCORM toolkit aimed at clean schema-driven authoring and modern in-browser editing.
+Built at UH JABSOM's Office of Medical Education. Designed from scratch around a clean schema-driven authoring model and modern in-browser editing, with WCAG 2.2 AA conformance from day 1.
