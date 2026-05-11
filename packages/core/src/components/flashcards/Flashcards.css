@@ -11,6 +11,8 @@
   display: flex;
   justify-content: center;
   padding: var(--spacing-2xl, 24px);
+  min-height: min(720px, 100vh);
+  align-items: center;
 }
 
 .kukui-fc__card-frame {
@@ -39,25 +41,55 @@
 .kukui-fc__progress {
   /* Reserve two lines so the indicator's height is constant whether the
    * activity is in-progress or complete. */
-  min-height: 44px;
+  min-height: 58px;
   margin-bottom: var(--spacing-lg, 16px);
-  padding: var(--spacing-md, 12px);
-  background: var(--color-tip-bg, #f2f0e8);
+  padding: var(--spacing-md, 12px) var(--spacing-lg, 16px);
+  background: color-mix(in srgb, var(--color-tip-bg, #f2f0e8) 82%, #ffffff);
+  border: 1px solid var(--color-border, #dad2c6);
   border-radius: var(--radius-sm, 6px);
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-xs, 4px);
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: var(--spacing-xs, 4px) var(--spacing-lg, 16px);
   font-size: var(--font-size-caption, 14px);
   color: var(--color-text-primary, #1c1e20);
 }
 
 .kukui-fc__progress-line {
   display: block;
+  align-self: center;
 }
 
 .kukui-fc__progress-line--meta {
+  grid-column: 2;
+  grid-row: 1;
+  justify-self: end;
   font-size: var(--font-size-meta, 13px);
   color: var(--color-text-secondary, #606069);
+}
+
+.kukui-fc__meter {
+  grid-column: 1 / -1;
+  width: 100%;
+  height: 8px;
+  overflow: hidden;
+  border: 0;
+  border-radius: 999px;
+  background: var(--color-border, #dad2c6);
+}
+
+.kukui-fc__meter::-webkit-progress-bar {
+  background: var(--color-border, #dad2c6);
+  border-radius: 999px;
+}
+
+.kukui-fc__meter::-webkit-progress-value {
+  background: var(--color-primary, #7b4324);
+  border-radius: 999px;
+}
+
+.kukui-fc__meter::-moz-progress-bar {
+  background: var(--color-primary, #7b4324);
+  border-radius: 999px;
 }
 
 /*
@@ -67,11 +99,30 @@
  */
 .kukui-fc__card {
   position: relative;
-  min-height: 240px;
-  margin-bottom: var(--spacing-xl, 20px);
+  min-height: clamp(300px, 46vh, 420px);
+  margin: var(--spacing-xl, 20px) auto var(--spacing-xl, 20px);
+  max-width: 620px;
   perspective: 1200px;
   cursor: pointer;
   outline: none;
+}
+
+.kukui-fc__card::before,
+.kukui-fc__card::after {
+  content: "";
+  position: absolute;
+  inset: 12px 18px -12px;
+  z-index: 0;
+  border: 1px solid color-mix(in srgb, var(--color-border, #dad2c6) 80%, #ffffff);
+  border-radius: var(--radius-card, 12px);
+  background: color-mix(in srgb, var(--color-surface, #ffffff) 86%, var(--color-tip-bg, #f2f0e8));
+  box-shadow: 0 12px 24px rgb(28 30 32 / 0.08);
+  transform: rotate(-1.5deg);
+}
+
+.kukui-fc__card::after {
+  inset: 6px 10px -6px;
+  transform: rotate(1deg);
 }
 
 .kukui-fc__card:focus-visible {
@@ -85,17 +136,21 @@
   inset: 0;
   display: flex;
   flex-direction: column;
-  justify-content: flex-start;
-  gap: var(--spacing-md, 12px);
-  padding: var(--spacing-3xl, 28px);
+  justify-content: center;
+  gap: var(--spacing-lg, 16px);
+  padding: clamp(28px, 7vw, 56px);
   background: var(--color-surface, #ffffff);
   border: 2px solid var(--color-border, #dad2c6);
   border-radius: var(--radius-card, 12px);
+  box-shadow:
+    0 18px 40px rgb(28 30 32 / 0.14),
+    inset 0 1px 0 rgb(255 255 255 / 0.75);
   /* 3D flip plumbing — disabled in reduced-motion mode below. */
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
   transition: transform 200ms ease;
   transform-style: preserve-3d;
+  z-index: 2;
 }
 
 .kukui-fc__face--front {
@@ -104,7 +159,12 @@
 
 .kukui-fc__face--back {
   transform: rotateY(180deg);
-  background: var(--color-tip-bg, #f2f0e8);
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--color-tip-bg, #f2f0e8) 74%, #ffffff) 0%,
+      var(--color-surface, #ffffff) 100%
+    );
 }
 
 .kukui-fc__card.is-flipped .kukui-fc__face--front {
@@ -146,19 +206,38 @@
 }
 
 .kukui-fc__face-label {
+  position: absolute;
+  top: var(--spacing-lg, 16px);
+  left: var(--spacing-lg, 16px);
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  padding: 0 10px;
+  border: 1px solid var(--color-border, #dad2c6);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--color-surface, #ffffff) 82%, var(--color-tip-bg, #f2f0e8));
   font-size: var(--font-size-meta, 13px);
   font-weight: 700;
-  letter-spacing: 0.04em;
+  letter-spacing: 0;
   text-transform: uppercase;
   color: var(--color-text-secondary, #606069);
 }
 
 .kukui-fc__face-body {
   flex: 1 1 auto;
-  font-size: var(--font-size-prompt, 16px);
-  line-height: 1.5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  font-size: clamp(22px, 3vw, 34px);
+  line-height: 1.28;
+  text-align: center;
   color: var(--color-text-primary, #1c1e20);
   word-break: break-word;
+}
+
+.kukui-fc__face-body > * {
+  margin: 0;
 }
 
 .kukui-fc__hint {
@@ -179,6 +258,9 @@
 }
 
 .kukui-fc__flip-cue {
+  position: absolute;
+  right: var(--spacing-lg, 16px);
+  bottom: var(--spacing-lg, 16px);
   font-size: var(--font-size-meta, 13px);
   color: var(--color-text-secondary, #606069);
   font-style: italic;
@@ -186,9 +268,12 @@
 
 .kukui-fc__actions {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   align-items: center;
+  justify-content: center;
   gap: var(--spacing-md, 12px);
+  max-width: 620px;
+  margin: 0 auto;
   /* Reserve enough vertical space for two answer buttons so the layout
    * doesn't shift when the card flips between front (one button) and
    * back (two buttons). */
@@ -197,7 +282,8 @@
 
 .kukui-fc__primary {
   min-height: 44px;
-  padding: 10px 20px;
+  min-width: min(100%, 220px);
+  padding: 10px 24px;
   background: var(--color-primary, #7b4324);
   color: #ffffff;
   border: none;
@@ -219,7 +305,9 @@
 .kukui-fc__answer {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: var(--spacing-sm, 8px);
+  flex: 1 1 0;
   min-height: 44px;
   padding: 10px 20px;
   background: var(--color-surface, #ffffff);
@@ -296,6 +384,54 @@
   font-size: var(--font-size-prompt, 16px);
   font-weight: 700;
   color: var(--color-text-primary, #1c1e20);
+}
+
+.kukui-fc__summary-sub {
+  margin: var(--spacing-sm, 8px) 0 var(--spacing-md, 12px);
+  color: var(--color-text-secondary, #606069);
+}
+
+@media (max-width: 560px) {
+  .kukui-fc {
+    padding: var(--spacing-lg, 16px);
+    align-items: flex-start;
+  }
+
+  .kukui-fc__card-frame {
+    padding: var(--spacing-lg, 16px);
+  }
+
+  .kukui-fc__progress {
+    grid-template-columns: 1fr;
+  }
+
+  .kukui-fc__progress-line--meta {
+    grid-column: 1;
+    grid-row: auto;
+    justify-self: start;
+  }
+
+  .kukui-fc__card {
+    min-height: 330px;
+  }
+
+  .kukui-fc__face {
+    padding: 48px 22px 54px;
+  }
+
+  .kukui-fc__face-body {
+    font-size: 22px;
+  }
+
+  .kukui-fc__actions {
+    flex-direction: column;
+    flex-wrap: nowrap;
+  }
+
+  .kukui-fc__answer,
+  .kukui-fc__primary {
+    width: 100%;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

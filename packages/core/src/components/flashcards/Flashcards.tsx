@@ -231,6 +231,12 @@ export function Flashcards({
               <span className="kukui-fc__progress-line kukui-fc__progress-line--meta">
                 {knewCount}/{totalCount} mastered
               </span>
+              <progress
+                className="kukui-fc__meter"
+                value={seenIds.size}
+                max={totalCount}
+                aria-label={`${seenIds.size} of ${totalCount} cards attempted`}
+              />
             </>
           )}
         </div>
@@ -248,13 +254,13 @@ export function Flashcards({
             tabIndex={0}
             aria-pressed={state.flipped}
             aria-label={`Flashcard ${Math.min(cardNumber, totalCount)} of ${totalCount}, ${
-              state.flipped ? "answer side" : "question side"
+              state.flipped ? "back side" : "front side"
             }. Click or press Space to flip.`}
             onClick={flip}
             onKeyDown={onCardKey}
           >
             <div className="kukui-fc__face kukui-fc__face--front" aria-hidden={state.flipped}>
-              <span className="kukui-fc__face-label">Question</span>
+              <span className="kukui-fc__face-label">Front</span>
               <SafeHtml className="kukui-fc__face-body" html={currentCard.front} />
               {currentCard.hint ? (
                 <p className="kukui-fc__hint">
@@ -269,7 +275,7 @@ export function Flashcards({
               aria-hidden={!state.flipped}
               id={cardLiveId}
             >
-              <span className="kukui-fc__face-label">Answer</span>
+              <span className="kukui-fc__face-label">Back</span>
               <SafeHtml className="kukui-fc__face-body" html={currentCard.back} />
               <span className="kukui-fc__flip-cue">Click to flip back</span>
             </div>

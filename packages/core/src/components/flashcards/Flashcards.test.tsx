@@ -11,7 +11,7 @@ import { Flashcards } from "./Flashcards.js";
  *
  * The 3D flip CSS animation is a pure visual concern — jsdom can't compute
  * transforms, so we assert via the card's `aria-pressed` state and the
- * post-flip "answer side" / "question side" accessible name instead.
+ * post-flip "back side" / "front side" accessible name instead.
  */
 
 const cfg: FlashcardsConfig = {
@@ -36,14 +36,14 @@ function getCard() {
 }
 
 describe("Flashcards", () => {
-  it("renders the first card front (question side) by default", () => {
+  it("renders the first card front (front side) by default", () => {
     render(<Flashcards config={cfg} onSubmit={vi.fn()} />);
     expect(screen.getByRole("heading", { level: 1, name: /chemistry symbols/i })).toBeInTheDocument();
     expect(screen.getByText(/match each symbol/i)).toBeInTheDocument();
-    // Card 1 of 3, on the question side.
+    // Card 1 of 3, on the front side.
     const card = getCard();
     expect(card.getAttribute("aria-label")).toMatch(/card 1 of 3/i);
-    expect(card.getAttribute("aria-label")).toMatch(/question side/i);
+    expect(card.getAttribute("aria-label")).toMatch(/front side/i);
     expect(card.getAttribute("aria-pressed")).toBe("false");
     // Front-only "Reveal answer" CTA — back-side answer buttons not shown.
     expect(screen.getByRole("button", { name: /reveal answer/i })).toBeInTheDocument();
@@ -58,7 +58,7 @@ describe("Flashcards", () => {
     await user.click(getCard());
     const card = getCard();
     expect(card.getAttribute("aria-pressed")).toBe("true");
-    expect(card.getAttribute("aria-label")).toMatch(/answer side/i);
+    expect(card.getAttribute("aria-label")).toMatch(/back side/i);
     expect(screen.getByRole("button", { name: /^I knew it/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /^I didn't know it/i })).toBeInTheDocument();
   });
@@ -66,12 +66,12 @@ describe("Flashcards", () => {
   it("'I knew it' advances to the next card and updates the knew-count", async () => {
     const user = userEvent.setup();
     render(<Flashcards config={cfg} onSubmit={vi.fn()} />);
-    // Flip card 1, mark "knew it" → should advance to card 2 on the question side.
+    // Flip card 1, mark "knew it" → should advance to card 2 on the front side.
     await user.click(getCard());
     await user.click(screen.getByRole("button", { name: /^I knew it/i }));
     const card = getCard();
     expect(card.getAttribute("aria-label")).toMatch(/card 2 of 3/i);
-    expect(card.getAttribute("aria-label")).toMatch(/question side/i);
+    expect(card.getAttribute("aria-label")).toMatch(/front side/i);
     expect(screen.getByText("1/3 mastered")).toBeInTheDocument();
   });
 
@@ -153,9 +153,9 @@ describe("Flashcards", () => {
     const again = screen.getByRole("button", { name: /practice again/i });
     await user.click(again);
 
-    // Deck is back to the question side; summary is gone.
+    // Deck is back to the front side; summary is gone.
     expect(screen.queryByRole("button", { name: /practice again/i })).not.toBeInTheDocument();
-    expect(getCard().getAttribute("aria-label")).toMatch(/question side/i);
+    expect(getCard().getAttribute("aria-label")).toMatch(/front side/i);
 
     // Running through again submits another completion — same 1/1 payload.
     await user.click(getCard());
