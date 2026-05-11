@@ -6,7 +6,7 @@ import {
   ChatCompletionsError,
 } from "./ai/chat-completions.js";
 import { type AISettings, hasUsableSettings, loadSettings } from "./ai/settings.js";
-import { STARTERS } from "./starters.js";
+import { ACTIVITY_LABELS, STARTERS } from "./starters.js";
 import { GearIcon, SparkleIcon } from "./icons.js";
 
 type Mode = "generate" | "edit" | "explain";
@@ -86,6 +86,123 @@ const DESTRUCTIVE_THRESHOLD = 0.5;
 
 function isPlainObject(v: unknown): v is Record<string, unknown> {
   return typeof v === "object" && v !== null && !Array.isArray(v);
+}
+
+/**
+ * Per-kind example prompt strings. Surfaces in the textarea placeholder
+ * so a first-time author has a concrete starting point that matches the
+ * activity they actually picked. The `gen` example is what to type when
+ * authoring from scratch; `edit` is what to type when revising an
+ * existing draft. Missing kinds fall through to a generic placeholder.
+ *
+ * Keep these short and clinical/educational — JABSOM is the canonical
+ * audience and the system prompts already lean medical-ed.
+ */
+const PLACEHOLDER_EXAMPLES: Partial<
+  Record<SchemaRegistryKey, { gen: string; edit: string }>
+> = {
+  "multiple-choice": {
+    gen: "e.g. USMLE step-1 question on iron-deficiency anemia, 4 options, one correct",
+    edit: "e.g. Rewrite the distractors so each tests a specific misconception",
+  },
+  "fill-in-the-blanks": {
+    gen: "e.g. Three sentences on the cardiac cycle with two blanks each",
+    edit: "e.g. Make the blanks shorter and accept common misspellings",
+  },
+  "question-set": {
+    gen: "e.g. Six-question set covering acid-base balance, mix of MC and fill-in",
+    edit: "e.g. Add two more questions on metabolic acidosis",
+  },
+  flashcards: {
+    gen: "e.g. 12 cards on common ECG morphology — strip on front, name on back",
+    edit: "e.g. Add 3 more cards covering atrial fibrillation",
+  },
+  "matching-pairs": {
+    gen: "e.g. Antibiotic class on the left, mechanism of action on the right, 6 pairs",
+    edit: "e.g. Swap the left/right columns and add 2 more pairs",
+  },
+  "drag-and-drop": {
+    gen: "e.g. Chips labeled organelles, drop zones over a plant-cell diagram",
+    edit: "e.g. Rename the chips to use more clinical language",
+  },
+  "sequence-steps": {
+    gen: "e.g. The 7 steps of an arterial blood-gas draw, in order",
+    edit: "e.g. Add a step for waste disposal at the end",
+  },
+  categorization: {
+    gen: "e.g. Sort 10 lab values into 'normal', 'elevated', or 'low' bins",
+    edit: "e.g. Add three more items to the 'elevated' bin",
+  },
+  "anatomy-labeling": {
+    gen: "e.g. Labels for the six major branches of the abdominal aorta",
+    edit: "e.g. Replace the labels with arterial-supply territories",
+  },
+  "image-comparison-slider": {
+    gen: "e.g. Healthy vs fractured wrist X-ray with a draggable seam",
+    edit: "e.g. Update the captions to highlight the fracture line",
+  },
+  "image-annotation": {
+    gen: "e.g. Chest X-ray with three expected pathology regions marked",
+    edit: "e.g. Add a fourth expected region for the lung hilum",
+  },
+  "highlight-text": {
+    gen: "e.g. SOAP note paragraph; learner highlights all subjective findings",
+    edit: "e.g. Make the prompt more clinical and add a second sentence",
+  },
+  "reflection-prompt": {
+    gen: "e.g. End-of-rotation reflection on a memorable patient encounter, 150 word min",
+    edit: "e.g. Reword the prompt to focus on team dynamics instead",
+  },
+  "branching-scenario": {
+    gen: "e.g. Triage scenario — 5 nodes, 2 terminal outcomes, chest-pain patient",
+    edit: "e.g. Add a wrong-turn branch that ends in a missed STEMI",
+  },
+  "ddx-tree": {
+    gen: "e.g. Differential for new-onset dyspnea in an adult — 4 branches, 3 diagnoses",
+    edit: "e.g. Make the PE branch require an ABG before terminating",
+  },
+  osce: {
+    gen: "e.g. 3-phase OSCE encounter for acute abdominal pain — History → Exam → Plan",
+    edit: "e.g. Add an anti-guess penalty and tighten the expected-action list",
+  },
+  "lab-panel": {
+    gen: "e.g. Basic metabolic panel with hyponatremia, learner flags abnormals + picks interpretation",
+    edit: "e.g. Swap in hyperkalemia values and update the interpretation choices",
+  },
+  "concept-map": {
+    gen: "e.g. Concept map of the RAAS pathway — 6 nodes, 5 directed edges",
+    edit: "e.g. Add aldosterone as a node and connect it to sodium reabsorption",
+  },
+  "interactive-video": {
+    gen: "e.g. 2-min cardiac auscultation video with 3 timed multiple-choice interactions",
+    edit: "e.g. Move the second interaction earlier and make it a fill-in-the-blank",
+  },
+  "audio-recording": {
+    gen: "e.g. Spanish-language H&P intro practice, 30–60 second clip",
+    edit: "e.g. Replace the reference audio with a slower-paced version",
+  },
+  "hotspot-2d": {
+    gen: "e.g. Click the mitral valve on a labeled heart diagram",
+    edit: "e.g. Add a distractor region over the tricuspid valve",
+  },
+  "hotspot-3d": {
+    gen: "e.g. Pick the SA node on a 3D model of the cardiac conduction system",
+    edit: "e.g. Tighten the correct-region tolerance",
+  },
+  "virtual-tour": {
+    gen: "e.g. Virtual tour of an ICU bay with 4 clickable overlays — monitor, vent, IV pole, bed",
+    edit: "e.g. Add a fifth overlay over the crash cart",
+  },
+};
+
+function getPlaceholder(kind: SchemaRegistryKey, mode: Mode): string {
+  const hint = PLACEHOLDER_EXAMPLES[kind];
+  if (!hint) {
+    return mode === "generate"
+      ? "Describe what you want me to write."
+      : "Describe what should change.";
+  }
+  return mode === "generate" ? hint.gen : hint.edit;
 }
 
 // Two surface labels left for the single-input model. The internal Mode
@@ -395,56 +512,58 @@ export function AIEditor({
   }
 
   const isPending = response.kind === "pending";
+  const activityName = ACTIVITY_LABELS[kind] ?? "activity";
   const sendLabel =
-    inferredMode === "generate" ? "Create activity" : "Apply changes";
+    inferredMode === "generate" ? `Create ${activityName.toLowerCase()}` : "Apply changes";
   const sendHint =
     inferredMode === "generate"
-      ? "Describe an activity and I'll write it for you. Big rewrites ask to confirm first."
-      : "Describe a change and I'll revise your current activity. Big rewrites ask to confirm first.";
+      ? `Describe a ${activityName.toLowerCase()} and I'll write it for you. Big rewrites ask to confirm first.`
+      : `Describe a change to your ${activityName.toLowerCase()} and I'll revise it. Big rewrites ask to confirm first.`;
+  const fieldLabel =
+    inferredMode === "generate"
+      ? `Describe the ${activityName.toLowerCase()} you want`
+      : `What should change about this ${activityName.toLowerCase()}?`;
+  const placeholder = getPlaceholder(kind, inferredMode);
 
   return (
     <div className="kukui-studio-ai">
       <p className="kukui-studio-ai__meta">{sendHint}</p>
 
       <label className="kukui-studio-ai__field">
-        <span className="kukui-studio-ai__label">
-          Describe what you want
-        </span>
+        <span className="kukui-studio-ai__label">{fieldLabel}</span>
         <textarea
           className="kukui-studio-ai__textarea"
           value={prompt}
           onChange={(e) => setPrompt(e.target.value)}
-          placeholder={
-            inferredMode === "generate"
-              ? "e.g. Multiple choice on iron-deficiency anemia, 4 options, USMLE step-1"
-              : "e.g. Rewrite the distractors as specific misconceptions"
-          }
+          placeholder={placeholder}
         />
       </label>
 
       <div className="kukui-studio-ai__row">
-        <button
-          type="button"
-          className="kukui-studio-btn kukui-studio-btn--primary"
-          onClick={() => handleGenerate()}
-          disabled={isPending || prompt.trim().length === 0}
-        >
-          {isPending ? (
-            <span className="kukui-studio-ai__spinner" aria-hidden="true" />
-          ) : (
-            <SparkleIcon />
-          )}
-          <span>{isPending ? "Working…" : sendLabel}</span>
-        </button>
-        <button
-          type="button"
-          className="kukui-studio-ai__icon-btn"
-          onClick={onOpenSettings}
-          title="AI editor settings"
-          aria-label="AI editor settings"
-        >
-          <GearIcon />
-        </button>
+        <div className="kukui-studio-ai__primary-group">
+          <button
+            type="button"
+            className="kukui-studio-btn kukui-studio-btn--primary"
+            onClick={() => handleGenerate()}
+            disabled={isPending || prompt.trim().length === 0}
+          >
+            {isPending ? (
+              <span className="kukui-studio-ai__spinner" aria-hidden="true" />
+            ) : (
+              <SparkleIcon />
+            )}
+            <span>{isPending ? "Working…" : sendLabel}</span>
+          </button>
+          <button
+            type="button"
+            className="kukui-studio-ai__icon-btn"
+            onClick={onOpenSettings}
+            title="AI editor settings"
+            aria-label="AI editor settings"
+          >
+            <GearIcon />
+          </button>
+        </div>
         <div className="kukui-studio-ai__meta">
           <span>{settings.model}</span>
           <span className="kukui-studio-ai__meta-sep">·</span>

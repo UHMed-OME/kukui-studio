@@ -2929,6 +2929,14 @@ html[data-theme="glass"] .kukui-studio-footer {
   color: var(--color-text-muted);
 }
 
+/* Primary group: Create button + gear icon tied tight together on the
+   left of the row. The model/token meta floats to the far right. */
+.kukui-studio-ai__primary-group {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
 /* Icon-only button (Settings gear next to the primary CTA). 44 px tap
    target per the design system; ghost styling so it doesn't compete
    with the primary action. */
