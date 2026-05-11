@@ -92,6 +92,19 @@ export class ChatCompletionsError extends Error {
   }
 }
 
+/**
+ * Redact obvious secret shapes from a string before we surface it to UI or
+ * console. Provider error bodies sometimes echo the inbound request — if a
+ * misconfigured proxy or a verbose 400 response returns the Authorization
+ * header or an `sk-…` key fragment, we must not display it.
+ */
+export function redactSecrets(s: string): string {
+  return s
+    .replace(/Bearer\s+\S+/gi, "Bearer [redacted]")
+    .replace(/sk-[A-Za-z0-9_-]{10,}/g, "sk-[redacted]")
+    .replace(/key=[A-Za-z0-9_-]{10,}/g, "key=[redacted]");
+}
+
 /** Detect parsing of `Retry-After` header for 429 handling. */
 function parseRetryAfter(h: string | null): number | undefined {
   if (!h) return undefined;
@@ -271,16 +284,20 @@ async function attempt(
     );
   }
   if (res.status === 400 || res.status === 422) {
-    // Schema rejected — surface as a downgrade-trigger.
+    // Schema rejected — surface as a downgrade-trigger. Redact common
+    // secret shapes (Bearer tokens, OpenAI-style `sk-...` keys, `key=...`
+    // query params) before slicing so we never echo an API key into UI
+    // or console output.
     let detail = "";
     try {
       detail = await res.text();
     } catch {
       /* noop */
     }
+    const redacted = redactSecrets(detail);
     throw new ChatCompletionsError(
       "schema-rejected",
-      `Provider rejected ${mode} output (${res.status}): ${detail.slice(0, 200)}`,
+      `Provider rejected ${mode} output (${res.status}): ${redacted.slice(0, 200)}`,
       { status: res.status },
     );
   }
