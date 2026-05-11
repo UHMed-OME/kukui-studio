@@ -742,8 +742,12 @@ export function App() {
 
       <footer className="kukui-studio-footer">
         <p className="kukui-studio-footer__about">
-          <strong>Kukui Studio</strong> — open-source interactive learning activities for the
-          LMS. Built at{" "}
+          <strong>Kukui</strong>{" "}
+          <span className="kukui-studio-footer__pronunciation" aria-label="pronounced koo-KOO-ee">
+            /koo-KOO-ee/
+          </span>{" "}
+          <strong>Studio</strong> — open-source interactive learning activities for the LMS.
+          Built at{" "}
           <a
             href="https://jabsom.hawaii.edu/"
             target="_blank"
