@@ -2,9 +2,8 @@
 #
 # The studio is the only app that goes to Pages — engine-web is consumed via
 # the SCORM zips it gets bundled into, and live-mode is a dev-only Phase 3
-# preview. We compute KUKUI_BASE from $GITHUB_REPOSITORY so Vite emits asset
-# URLs prefixed with the repository name (Pages serves at
-# https://<user>.github.io/<repo>/).
+# preview. Pages is served at the apex of the custom domain kukuistudio.com,
+# so KUKUI_BASE is "/" and Vite emits root-relative asset URLs.
 name: Deploy Studio to GitHub Pages
 
 on:
@@ -62,10 +61,9 @@ jobs:
           cp packaging/build/*.scorm.zip apps/studio-app/public/scorm-templates/
 
       - name: Compute Pages base path
-        # GITHUB_REPOSITORY is "owner/name" — strip to "/name/" for Vite base.
-        # Using a shell-only computation avoids any expression-context
-        # interpolation into run: commands.
-        run: echo "KUKUI_BASE=/${GITHUB_REPOSITORY##*/}/" >> "$GITHUB_ENV"
+        # Pages serves the studio at the apex of the custom domain
+        # kukuistudio.com, so Vite's base must be "/" (not "/<repo>/").
+        run: echo "KUKUI_BASE=/" >> "$GITHUB_ENV"
 
       - name: Build Studio
         run: pnpm --filter @kukui/studio-app build
