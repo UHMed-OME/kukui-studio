@@ -223,6 +223,39 @@ button {
   text-transform: uppercase;
 }
 
+/*
+ * Decorative candlenut overlay for the SCORM Download CTA. Positioned
+ * absolute against the button so it sits behind the icon + text, scaled
+ * larger than the button and pushed off the right edge so only a
+ * partial silhouette shows — a quiet brand signal without competing
+ * with the affordance. Low opacity + white fill ensures it reads as a
+ * subtle pattern on the burgundy primary.
+ */
+.kukui-studio-btn--nut-bg {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.kukui-studio-btn__nut {
+  position: absolute;
+  right: -16px;
+  top: 50%;
+  transform: translateY(-50%) rotate(-12deg);
+  width: 64px;
+  height: 64px;
+  color: #ffffff;
+  opacity: 0.14;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Keep the DownloadIcon + label above the decorative nut layer. */
+.kukui-studio-btn--nut-bg > :not(.kukui-studio-btn__nut) {
+  position: relative;
+  z-index: 1;
+}
+
 .kukui-studio-btn--primary:hover {
   background: var(--color-primary-hover);
   border-color: var(--color-primary-hover);
@@ -1494,7 +1527,11 @@ button {
 .kukui-tooltip__bubble::after {
   content: "";
   position: absolute;
-  left: 50%;
+  /* `--kukui-tooltip-arrow-x` is set by the React positioner; it's the
+     amount we slid the bubble horizontally to keep it on-screen, so the
+     arrow needs to slide back the opposite way to stay anchored under
+     the trigger. Defaults to 0 (perfectly centred) for the common case. */
+  left: calc(50% + var(--kukui-tooltip-arrow-x, 0px));
   transform: translateX(-50%);
   border: 5px solid transparent;
 }
