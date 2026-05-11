@@ -88,12 +88,11 @@ function isPlainObject(v: unknown): v is Record<string, unknown> {
   return typeof v === "object" && v !== null && !Array.isArray(v);
 }
 
-const MODE_LABELS: Record<Mode, string> = {
-  generate: "Generate",
-  edit: "Edit existing",
-  explain: "Explain",
-};
-
+// Two surface labels left for the single-input model. The internal Mode
+// is still tracked so the prompt-builder knows whether to include the
+// current activity JSON (edit) or treat the prompt as a from-scratch
+// description (generate). Inferred from value-vs-starter; the user
+// doesn't see modes.
 const MODE_HINTS: Record<Mode, string> = {
   generate:
     "Generate a new activity from a short description. Replaces your current draft. (Undo available right after.)",
@@ -114,10 +113,19 @@ export function AIEditor({
   onOpenSettings: () => void;
 }) {
   const [settings, setSettings] = useState<AISettings>(() => loadSettings());
-  const [mode, setMode] = useState<Mode>(() =>
-    JSON.stringify(value) === JSON.stringify(STARTERS[kind]) ? "generate" : "edit",
-  );
   const [prompt, setPrompt] = useState("");
+  // The internal mode for the next request is inferred from whether the
+  // form value differs from the starter. Authors don't see modes — the
+  // input is "describe what you want" and Send figures out whether that
+  // means "generate new" or "revise current." Explain is a separate
+  // button that bypasses this and forces read-only.
+  const inferredMode: Mode = useMemo(
+    () =>
+      JSON.stringify(value) === JSON.stringify(STARTERS[kind])
+        ? "generate"
+        : "edit",
+    [value, kind],
+  );
   const [response, setResponse] = useState<ResponseState>({ kind: "none" });
   const [showDetails, setShowDetails] = useState(false);
   // Latest "applied" banner needs to know whether to render full vs.
@@ -148,8 +156,8 @@ export function AIEditor({
 
   const tokenEstimate = useMemo(
     () =>
-      Math.max(1, Math.ceil((prompt.length + (mode !== "generate" ? JSON.stringify(value).length : 0)) / 4)),
-    [prompt, mode, value],
+      Math.max(1, Math.ceil((prompt.length + (inferredMode !== "generate" ? JSON.stringify(value).length : 0)) / 4)),
+    [prompt, inferredMode, value],
   );
 
   /**
@@ -159,13 +167,14 @@ export function AIEditor({
    * just noise).
    */
   const finalizeProposal = (
+    activeMode: Mode,
     baseline: unknown,
     proposed: unknown,
     raw: string,
   ) => {
     const summary = summariseChanges(baseline, proposed);
     const ratio = changeRatio(baseline, proposed);
-    if (mode === "edit" && ratio >= DESTRUCTIVE_THRESHOLD) {
+    if (activeMode === "edit" && ratio >= DESTRUCTIVE_THRESHOLD) {
       setResponse({
         kind: "confirming",
         proposed,
@@ -222,16 +231,17 @@ export function AIEditor({
     return () => window.clearTimeout(id);
   }, [response.kind, "appliedAt" in response ? response.appliedAt : 0]);
 
-  const handleGenerate = async () => {
+  const handleGenerate = async (modeOverride?: Mode) => {
     if (!usable) {
       onOpenSettings();
       return;
     }
     if (!prompt.trim()) return;
+    const activeMode: Mode = modeOverride ?? inferredMode;
     setResponse({ kind: "pending" });
 
     try {
-      if (mode === "explain") {
+      if (activeMode === "explain") {
         const text = await callFreeText({
           kind,
           settings,
@@ -242,7 +252,7 @@ export function AIEditor({
         return;
       }
 
-      const includeCurrent = mode === "edit";
+      const includeCurrent = activeMode === "edit";
       const result = await callStructured({
         kind,
         settings,
@@ -270,6 +280,7 @@ export function AIEditor({
             setSettings(retry.nextSettings);
             const baseline = includeCurrent ? value : STARTERS[kind];
             finalizeProposal(
+              activeMode,
               baseline,
               retryValid.data,
               JSON.stringify(retry.json, null, 2),
@@ -297,6 +308,7 @@ export function AIEditor({
 
       const baseline = includeCurrent ? value : STARTERS[kind];
       finalizeProposal(
+        activeMode,
         baseline,
         validation.data,
         JSON.stringify(result.json, null, 2),
@@ -341,7 +353,9 @@ export function AIEditor({
         });
         return;
       }
-      finalizeProposal(baseline, validation.data, JSON.stringify(result.json, null, 2));
+      // Refine always runs against the current activity (we apply first,
+      // then iterate), so it's an edit by definition.
+      finalizeProposal("edit", baseline, validation.data, JSON.stringify(result.json, null, 2));
     } catch (err) {
       setResponse({
         kind: "error",
@@ -380,48 +394,30 @@ export function AIEditor({
     );
   }
 
+  const isPending = response.kind === "pending";
+  const sendLabel =
+    inferredMode === "generate" ? "Generate activity" : "Apply changes";
+  const sendHint =
+    inferredMode === "generate"
+      ? "Send writes a new activity from your description."
+      : "Send revises your current activity. Big rewrites ask to confirm first.";
+
   return (
     <div className="kukui-studio-ai">
-      <div className="kukui-studio-ai__modes" role="radiogroup" aria-label="Mode">
-        {(Object.keys(MODE_LABELS) as Mode[]).map((m) => (
-          <button
-            key={m}
-            type="button"
-            role="radio"
-            aria-checked={mode === m}
-            className={[
-              "kukui-studio-ai__mode-btn",
-              mode === m ? "is-active" : "",
-            ]
-              .filter(Boolean)
-              .join(" ")}
-            onClick={() => setMode(m)}
-          >
-            {MODE_LABELS[m]}
-          </button>
-        ))}
-      </div>
-
-      <p className="kukui-studio-ai__meta">{MODE_HINTS[mode]}</p>
+      <p className="kukui-studio-ai__meta">{sendHint} You can also ask the AI to just explain what's there without changing anything.</p>
 
       <label className="kukui-studio-ai__field">
         <span className="kukui-studio-ai__label">
-          {mode === "explain"
-            ? "What do you want explained?"
-            : mode === "edit"
-              ? "What should change?"
-              : "Describe the activity you want."}
+          Describe what you want
         </span>
         <textarea
           className="kukui-studio-ai__textarea"
           value={prompt}
           onChange={(e) => setPrompt(e.target.value)}
           placeholder={
-            mode === "generate"
+            inferredMode === "generate"
               ? "e.g. Multiple choice on iron-deficiency anemia, 4 options, USMLE step-1"
-              : mode === "edit"
-                ? "e.g. Rewrite distractors as specific misconceptions"
-                : "e.g. What learning objective is this activity testing?"
+              : "e.g. Rewrite the distractors as specific misconceptions"
           }
         />
       </label>
@@ -430,20 +426,24 @@ export function AIEditor({
         <button
           type="button"
           className="kukui-studio-btn kukui-studio-btn--primary"
-          onClick={handleGenerate}
-          disabled={
-            response.kind === "pending" || prompt.trim().length === 0
-          }
+          onClick={() => handleGenerate()}
+          disabled={isPending || prompt.trim().length === 0}
         >
-          {response.kind === "pending" ? (
-            <span
-              className="kukui-studio-ai__spinner"
-              aria-hidden="true"
-            />
+          {isPending ? (
+            <span className="kukui-studio-ai__spinner" aria-hidden="true" />
           ) : (
             <SparkleIcon />
           )}
-          <span>{response.kind === "pending" ? "Generating…" : mode === "explain" ? "Explain" : "Generate"}</span>
+          <span>{isPending ? "Generating…" : sendLabel}</span>
+        </button>
+        <button
+          type="button"
+          className="kukui-studio-btn kukui-studio-btn--ghost kukui-studio-btn--sm"
+          onClick={() => handleGenerate("explain")}
+          disabled={isPending || prompt.trim().length === 0}
+          title="Read-only: returns a plain-English explanation. Doesn't change your activity."
+        >
+          Just explain
         </button>
         <button
           type="button"
