@@ -112,8 +112,8 @@ const PLACEHOLDER_EXAMPLES: Partial<
     edit: "e.g. Add two more questions on metabolic acidosis",
   },
   flashcards: {
-    gen: "e.g. 12 cards on common ECG morphology — strip on front, name on back",
-    edit: "e.g. Add 3 more cards covering atrial fibrillation",
+    gen: "e.g. 12 Q/A flashcards on common ECG findings — prompt on front, answer on back",
+    edit: "e.g. Add 3 more Q/A cards covering atrial fibrillation",
   },
   "matching-pairs": {
     gen: "e.g. Antibiotic class on the left, mechanism of action on the right, 6 pairs",
