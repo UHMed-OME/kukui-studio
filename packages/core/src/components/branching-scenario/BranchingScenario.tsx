@@ -42,6 +42,16 @@ export function BranchingScenario({
     () => parseSuspend(suspendData, config) ?? initialState,
   );
 
+  // Reset local state when `config` changes externally (Studio Preview edit,
+  // AI Accept, draft load, etc.). Reference equality on the `config` prop —
+  // engine context loads JSON once and never mutates the ref, so this only
+  // fires in Studio Preview. Replaces the now-removed JSON.stringify(value)
+  // remount key.
+  useEffect(() => {
+    setState(parseSuspend(suspendData, config) ?? initialState);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [config]);
+
   // Index for O(1) lookup of nodes by id.
   const nodesById = useMemo(() => {
     const m = new Map<string, BranchingScenarioConfig["nodes"][number]>();

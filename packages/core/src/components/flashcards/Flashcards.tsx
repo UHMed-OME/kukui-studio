@@ -88,6 +88,16 @@ export function Flashcards({
     () => parseSuspend(suspendData, config) ?? initial,
   );
 
+  // Reset local state when `config` changes externally (Studio Preview edit,
+  // AI Accept, draft load, etc.). Reference equality on the `config` prop —
+  // engine context loads JSON once and never mutates the ref, so this only
+  // fires in Studio Preview. Replaces the now-removed JSON.stringify(value)
+  // remount key.
+  useEffect(() => {
+    setState(parseSuspend(suspendData, config) ?? initial);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [config]);
+
   // Persist on every meaningful state change (flip / answer / completion).
   useEffect(() => {
     if (!onPersist) return;

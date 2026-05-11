@@ -36,6 +36,18 @@ export function Hotspot3D({
     () => parseSuspend(suspendData) ?? { stage: "answering", selectedHotspotId: null, attempts: 0 },
   );
 
+  // Reset local state when `config` changes externally (Studio Preview edit,
+  // AI Accept, draft load, etc.). Reference equality on the `config` prop —
+  // engine context loads JSON once and never mutates the ref, so this only
+  // fires in Studio Preview. Replaces the now-removed JSON.stringify(value)
+  // remount key.
+  useEffect(() => {
+    setState(
+      parseSuspend(suspendData) ?? { stage: "answering", selectedHotspotId: null, attempts: 0 },
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [config]);
+
   useEffect(() => {
     if (!onPersist) return;
     onPersist(JSON.stringify(state));

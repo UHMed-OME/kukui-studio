@@ -64,6 +64,23 @@ export function QuestionSet({
   const initial: State = { stage: "answering", scores: {}, current: 0, attempts: 0 };
   const [state, setState] = useState<State>(() => parseSuspend(suspendData) ?? initial);
 
+  // Reset local state when `config` changes externally (Studio Preview edit,
+  // AI Accept, draft load, etc.). Reference equality on the `config` prop —
+  // engine context loads JSON once and never mutates the ref, so this only
+  // fires in Studio Preview. Replaces the now-removed JSON.stringify(value)
+  // remount key.
+  useEffect(() => {
+    setState(
+      parseSuspend(suspendData) ?? {
+        stage: "answering",
+        scores: {},
+        current: 0,
+        attempts: 0,
+      },
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [config]);
+
   useEffect(() => {
     if (!onPersist) return;
     onPersist(JSON.stringify(state));
