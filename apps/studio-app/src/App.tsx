@@ -630,7 +630,7 @@ export function App() {
                   .join(" ")}
                 onClick={() => setTab("ai")}
               >
-                AI assistant
+                AI Assist
               </button>
             </div>
             <div className="kukui-studio-panel-actions">
@@ -791,8 +791,8 @@ export function App() {
             type="button"
             className="kukui-studio-footer__icon-btn"
             onClick={() => setShowAISettings(true)}
-            aria-label="AI assistant settings"
-            title="AI assistant settings"
+            aria-label="AI Assist settings"
+            title="AI Assist settings"
           >
             <GearIcon />
           </button>
@@ -825,7 +825,7 @@ export function App() {
       <ConfirmDialog
         open={showPrivacy}
         title="Privacy & data"
-        message="Kukui Studio runs entirely in your browser. Drafts auto-save to your local browser storage (localStorage) and never leave your device. We don't operate any backend, don't set analytics cookies, and don't transmit form data anywhere. When you click Download, the SCORM zip is generated client-side; what happens after upload is between you and your LMS. SCORM activities packaged by Studio post grades only to the LMS that hosts them (D2L Brightspace, Canvas, Moodle, etc.) — same channel any LMS-hosted activity uses. If you enable the AI assistant, requests go directly from your browser to whatever LLM endpoint you configured (OpenAI, Groq, your institution's internal proxy, etc.). Kukui Studio never sees or proxies the request. Your API key and base URL are stored in your browser only (localStorage or sessionStorage — your choice in the settings dialog). The activity JSON you're working on, plus your prompt, are sent to the endpoint you picked; the response comes back to your browser only. Your provider's data-handling policies apply to that traffic — pick a provider whose policies match your institution's rules."
+        message="Kukui Studio runs entirely in your browser. Drafts auto-save to your local browser storage (localStorage) and never leave your device. We don't operate any backend, don't set analytics cookies, and don't transmit form data anywhere. When you click Download, the SCORM zip is generated client-side; what happens after upload is between you and your LMS. SCORM activities packaged by Studio post grades only to the LMS that hosts them (D2L Brightspace, Canvas, Moodle, etc.) — same channel any LMS-hosted activity uses. If you enable AI Assist, requests go directly from your browser to whatever LLM endpoint you configured (OpenAI, Groq, your institution's internal proxy, etc.). Kukui Studio never sees or proxies the request. Your API key and base URL are stored in your browser only (localStorage or sessionStorage — your choice in the settings dialog). The activity JSON you're working on, plus your prompt, are sent to the endpoint you picked; the response comes back to your browser only. Your provider's data-handling policies apply to that traffic — pick a provider whose policies match your institution's rules."
         confirmLabel="OK"
         hideCancel
         onConfirm={() => setShowPrivacy(false)}

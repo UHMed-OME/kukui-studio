@@ -26,7 +26,12 @@ export function ArrayFieldTemplate(props: ArrayFieldTemplateProps) {
       {items && items.length > 0 ? (
         <ul className="ks-array__list">
           {items.map((item, idx) => (
-            <ArrayItem key={item.key} item={item} index={idx + 1} />
+            <ArrayItem
+              key={item.key}
+              item={item}
+              index={idx + 1}
+              itemLabel={titleCase(singular(title))}
+            />
           ))}
         </ul>
       ) : (
@@ -51,16 +56,18 @@ export function ArrayFieldTemplate(props: ArrayFieldTemplateProps) {
 function ArrayItem({
   item,
   index,
+  itemLabel,
 }: {
   item: ArrayFieldTemplateItemType;
   index: number;
+  itemLabel: string;
 }) {
   const { children, hasMoveDown, hasMoveUp, hasRemove, onDropIndexClick, onReorderClick } =
     item;
   return (
     <li className="ks-array-item">
       <div className="ks-array-item__bar">
-        <span className="ks-array-item__index">#{index}</span>
+        <span className="ks-array-item__index">{itemLabel} {index}</span>
         <div className="ks-array-item__actions">
           {hasMoveUp ? (
             <button
@@ -116,4 +123,10 @@ function singular(title: string | undefined): string {
   // Crude: trim trailing "s" if there is one.
   if (title.toLowerCase().endsWith("s")) return title.slice(0, -1).toLowerCase();
   return title.toLowerCase();
+}
+
+/** First-letter uppercase so item-badges render "Card 1", not "card 1". */
+function titleCase(s: string): string {
+  if (s.length === 0) return s;
+  return s.charAt(0).toUpperCase() + s.slice(1);
 }
