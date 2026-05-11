@@ -110,6 +110,9 @@ export function App() {
   );
   const [toast, setToast] = useState<string | null>(null);
   const [confirmReset, setConfirmReset] = useState(false);
+  // On narrow viewports the editor + preview panels can't both fit, so we
+  // hide one or the other. Desktop CSS ignores this — both panels show.
+  const [mobilePanel, setMobilePanel] = useState<"edit" | "preview">("edit");
 
   // Reset preview mode whenever the picked activity changes — kinds with
   // an editor default to "edit", everything else to "live". Keeps the
@@ -304,6 +307,48 @@ export function App() {
         </div>
       </header>
 
+      {/* Narrow-viewport activity picker — a native <select> avoids the
+          stacked-scroller mess of 6 horizontal pill rows on mobile. CSS
+          hides this on desktop where the full sidebar renders below. */}
+      <div className="kukui-studio-mobile-picker">
+        <label className="kukui-studio-mobile-picker__label" htmlFor="kukui-mobile-kind-select">
+          Activity type
+        </label>
+        <select
+          id="kukui-mobile-kind-select"
+          className="kukui-studio-mobile-picker__select"
+          value={kind}
+          onChange={(e) => setKind(e.target.value as ActivityKind)}
+        >
+          {BLOOM_ORDER.map((level) => {
+            const kindsAtLevel = STUDIO_AVAILABLE.filter(
+              (k) => BLOOM_BY_KIND[k] === level,
+            )
+              .slice()
+              .sort((a, b) => ACTIVITY_LABELS[a].localeCompare(ACTIVITY_LABELS[b]));
+            if (kindsAtLevel.length === 0) return null;
+            return (
+              <optgroup key={level} label={BLOOM_LABELS[level]}>
+                {kindsAtLevel.map((k) => (
+                  <option key={k} value={k}>
+                    {ACTIVITY_LABELS[k]}
+                  </option>
+                ))}
+              </optgroup>
+            );
+          })}
+          {STUDIO_PLANNED.length > 0 ? (
+            <optgroup label="In design">
+              {STUDIO_PLANNED.map((k) => (
+                <option key={k} value={k}>
+                  {ACTIVITY_LABELS[k]} (in design)
+                </option>
+              ))}
+            </optgroup>
+          ) : null}
+        </select>
+      </div>
+
       <nav className="kukui-studio-sidebar" aria-label="Activity type">
         {BLOOM_ORDER.map((level) => {
           const kindsAtLevel = STUDIO_AVAILABLE.filter((k) => BLOOM_BY_KIND[k] === level)
@@ -365,8 +410,40 @@ export function App() {
         ) : null}
       </nav>
 
-      <main className="kukui-studio-main">
-        <section className="kukui-studio-panel">
+      {/* Narrow-viewport switch between editor and preview panels — on
+          desktop CSS hides this and both panels render side-by-side. */}
+      <div className="kukui-studio-mobile-switch" role="tablist" aria-label="Show">
+        <button
+          type="button"
+          role="tab"
+          aria-selected={mobilePanel === "edit"}
+          className={["kukui-studio-mobile-switch__btn", mobilePanel === "edit" ? "is-active" : ""]
+            .filter(Boolean)
+            .join(" ")}
+          onClick={() => setMobilePanel("edit")}
+        >
+          Editor
+        </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={mobilePanel === "preview"}
+          className={["kukui-studio-mobile-switch__btn", mobilePanel === "preview" ? "is-active" : ""]
+            .filter(Boolean)
+            .join(" ")}
+          onClick={() => setMobilePanel("preview")}
+        >
+          Preview
+        </button>
+      </div>
+
+      <main
+        className={[
+          "kukui-studio-main",
+          `kukui-studio-main--show-${mobilePanel}`,
+        ].join(" ")}
+      >
+        <section className="kukui-studio-panel kukui-studio-panel--edit">
           <div className="kukui-studio-panel-header">
             <div className="kukui-studio-tab-row">
               <button
@@ -432,7 +509,7 @@ export function App() {
           </div>
         </section>
 
-        <section className="kukui-studio-panel">
+        <section className="kukui-studio-panel kukui-studio-panel--preview">
           <div className="kukui-studio-panel-header">
             {hasEditor(kind) ? (
               <div className="ks-preview-mode" role="tablist" aria-label="Preview mode">

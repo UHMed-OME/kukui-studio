@@ -87,12 +87,11 @@ button {
   background: var(--color-bg);
 }
 
-@media (max-width: 760px) {
-  .kukui-studio-shell {
-    grid-template-columns: 1fr;
-    grid-template-areas: "header" "sidebar" "main";
-    grid-template-rows: auto auto 1fr;
-  }
+/* Mobile-only elements: hidden on desktop, claim their own grid rows on
+   narrow viewports (see the @media block at the bottom of this file). */
+.kukui-studio-mobile-picker,
+.kukui-studio-mobile-switch {
+  display: none;
 }
 
 .kukui-studio-header {
@@ -462,25 +461,9 @@ button {
   transform: translateX(2px);
 }
 
-@media (max-width: 760px) {
-  .kukui-studio-sidebar {
-    border-right: none;
-    border-bottom: 1px solid var(--color-border);
-    padding: var(--spacing-sm) var(--spacing-md);
-  }
-  .kukui-studio-sidebar__list {
-    flex-direction: row;
-    gap: var(--spacing-xs);
-    overflow-x: auto;
-  }
-  .kukui-studio-sidebar__heading {
-    display: none;
-  }
-  .kukui-studio-sidebar__btn {
-    flex: 0 0 auto;
-    white-space: nowrap;
-  }
-}
+/* (Sidebar mobile styling is handled by the dedicated mobile-picker
+   element + the consolidated mobile @media block at the bottom of this
+   file. The sidebar is hidden entirely on narrow viewports.) */
 
 /* ---------- Main grid ---------- */
 
@@ -2223,4 +2206,184 @@ html[data-theme="glass"] .kukui-theme-toggle {
   background: rgba(255, 255, 255, 0.55);
   -webkit-backdrop-filter: blur(8px);
   backdrop-filter: blur(8px);
+}
+
+/* ---------- Narrow-viewport (mobile / small tablet) overrides ----------
+ *
+ * Studio's desktop layout is a fixed-220px sidebar + side-by-side editor &
+ * preview, which doesn't fit on phones. At ≤ 760 px we:
+ *   - swap the per-Bloom-group sidebar for a native <select> dropdown
+ *     (one row, touch-friendly, native group labels via <optgroup>),
+ *   - show only one panel at a time, controlled by a top-of-main
+ *     Editor / Preview segmented switch,
+ *   - tighten the header (drop subtitle and SCORM-zip subtext) so the
+ *     toolbar fits on one row,
+ *   - simplify the panel actions so they don't wrap awkwardly.
+ */
+
+@media (max-width: 760px) {
+  .kukui-studio-shell {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto auto 1fr;
+    grid-template-areas:
+      "header"
+      "picker"
+      "switch"
+      "main";
+  }
+
+  /* Hide the full sidebar on mobile — the dropdown takes its place. */
+  .kukui-studio-sidebar {
+    display: none;
+  }
+
+  /* Activity picker dropdown. */
+  .kukui-studio-mobile-picker {
+    grid-area: picker;
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-sm) var(--spacing-md);
+    border-bottom: 1px solid var(--color-border);
+    background: var(--color-tip-bg);
+  }
+  .kukui-studio-mobile-picker__label {
+    flex-shrink: 0;
+    font-size: var(--font-size-meta);
+    font-weight: 700;
+    color: var(--color-primary);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  .kukui-studio-mobile-picker__select {
+    flex: 1 1 auto;
+    min-height: 44px;
+    padding: 8px 12px;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    font-size: var(--font-size-answer);
+    color: var(--color-text-primary);
+    -webkit-appearance: menulist;
+    appearance: menulist;
+  }
+  .kukui-studio-mobile-picker__select:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+  }
+
+  /* Editor / Preview segmented switch above the main panels. */
+  .kukui-studio-mobile-switch {
+    grid-area: switch;
+    display: flex;
+    gap: 0;
+    padding: var(--spacing-sm) var(--spacing-md) 0;
+    background: var(--color-bg);
+  }
+  .kukui-studio-mobile-switch__btn {
+    flex: 1 1 0;
+    min-height: 44px;
+    padding: 8px 12px;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    color: var(--color-text-secondary);
+    font-size: var(--font-size-answer);
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .kukui-studio-mobile-switch__btn:first-child {
+    border-top-left-radius: var(--radius-md);
+    border-bottom-left-radius: var(--radius-md);
+  }
+  .kukui-studio-mobile-switch__btn:last-child {
+    border-top-right-radius: var(--radius-md);
+    border-bottom-right-radius: var(--radius-md);
+    border-left: none;
+  }
+  .kukui-studio-mobile-switch__btn.is-active {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+    color: #ffffff;
+  }
+  .kukui-studio-mobile-switch__btn:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+  }
+
+  /* Main becomes a single column at this breakpoint already (see the
+     1100 px breakpoint above); the show-edit / show-preview class hides
+     the panel the user isn't looking at. */
+  .kukui-studio-main {
+    padding: var(--spacing-sm);
+    gap: var(--spacing-sm);
+  }
+  .kukui-studio-main--show-edit .kukui-studio-panel--preview {
+    display: none;
+  }
+  .kukui-studio-main--show-preview .kukui-studio-panel--edit {
+    display: none;
+  }
+
+  /* Header tightening — hide the subtitle and the SCORM-zip subtext so
+     the brand + toolbar fit on one row when possible. */
+  .kukui-studio-header {
+    padding: var(--spacing-sm) var(--spacing-md);
+    gap: var(--spacing-sm);
+  }
+  .kukui-studio-brand {
+    flex-basis: auto;
+  }
+  .kukui-studio-brand .kukui-studio-subtitle {
+    display: none;
+  }
+  .kukui-studio-title {
+    font-size: var(--font-size-subtitle);
+  }
+  .kukui-studio-logo {
+    width: 32px;
+    height: 32px;
+  }
+  .kukui-studio-btn--with-subtext {
+    min-height: 40px;
+    padding: 4px 12px;
+  }
+  .kukui-studio-btn--with-subtext .kukui-studio-btn__sub {
+    display: none;
+  }
+
+  /* Panel header: stack actions onto a second row instead of fighting
+     for space with the tabs / preview-mode toggle. */
+  .kukui-studio-panel-header {
+    flex-wrap: wrap;
+    row-gap: var(--spacing-xs);
+  }
+  .kukui-studio-panel-actions {
+    flex-basis: 100%;
+    justify-content: flex-end;
+  }
+  .kukui-studio-meta {
+    display: none;
+  }
+
+  /* Panel body — drop the generous desktop padding. */
+  .kukui-studio-panel-body {
+    padding: var(--spacing-md);
+  }
+}
+
+@media (max-width: 480px) {
+  /* Phone-sized tweaks: shrink the "Editor / Preview" segmented control
+     vertically, drop the picker's "ACTIVITY TYPE" label so the dropdown
+     can take the full row width. */
+  .kukui-studio-mobile-picker__label {
+    display: none;
+  }
+  .kukui-studio-toolbar {
+    width: 100%;
+    justify-content: stretch;
+  }
+  .kukui-studio-toolbar .kukui-studio-btn {
+    flex: 1 1 0;
+    min-width: 0;
+  }
 }
