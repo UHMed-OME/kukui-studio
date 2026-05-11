@@ -1,32 +1,9 @@
-import { useEffect, useState, type CSSProperties } from "react";
+import { Suspense, useEffect, useState, type CSSProperties } from "react";
 import { SchemaRegistry, type SchemaRegistryKey } from "@kukui/schemas";
 import { loadContent, ContentLoadError } from "./content.js";
 import { getScormDriver } from "./scorm.js";
-import type { ActivityKind, ScoreState } from "./types.js";
-import { MultipleChoice } from "./components/multiple-choice/index.js";
-import { FillInTheBlanks } from "./components/fill-in-the-blanks/index.js";
-import { DragAndDrop } from "./components/drag-and-drop/index.js";
-import { QuestionSet } from "./components/question-set/index.js";
-import { Hotspot3D } from "./components/hotspot-3d/index.js";
-import { Hotspot2D } from "./components/hotspot-2d/index.js";
-import { VirtualTour } from "./components/virtual-tour/index.js";
-import { Categorization } from "./components/categorization/index.js";
-import { AnatomyLabeling } from "./components/anatomy-labeling/index.js";
-import { SequenceSteps } from "./components/sequence-steps/index.js";
-import { MatchingPairs } from "./components/matching-pairs/index.js";
-import { HighlightText } from "./components/highlight-text/index.js";
-import { ImageComparisonSlider } from "./components/image-comparison-slider/index.js";
-import { Flashcards } from "./components/flashcards/index.js";
-import { ReflectionPrompt } from "./components/reflection-prompt/index.js";
-import { AudioRecording } from "./components/audio-recording/index.js";
-import { BranchingScenario } from "./components/branching-scenario/index.js";
-import { ImageAnnotation } from "./components/image-annotation/index.js";
-import { ConceptMap } from "./components/concept-map/index.js";
-import { InteractiveVideo } from "./components/interactive-video/index.js";
-import { LabPanel } from "./components/lab-panel/index.js";
-import { DDxTree } from "./components/ddx-tree/index.js";
-import { OSCE } from "./components/osce/index.js";
-import { StubActivity } from "./components/_stub/StubActivity.js";
+import type { ActivityKind, BuiltActivityKind, ScoreState } from "./types.js";
+import { ACTIVITY_REGISTRY, StubActivityLazy } from "./components/registry.js";
 import { PLANNED_ACTIVITY_KINDS } from "./planned.js";
 
 export type { ActivityKind };
@@ -114,84 +91,37 @@ export function ActivityHost({ kind, configUrl, loader = loadContent }: Activity
 
   // The runtime Zod parse above already narrowed `state.config` to the right
   // TConfig for `kind`. TypeScript can't track that through the dispatch
-  // table, so each branch passes `state.config` through with the implicit
+  // registry, so each entry receives `state.config` with the implicit
   // contract that runtime validation matches the static type.
-  const callbacks = {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const cfg = state.config as any;
+
+  const callbackProps = {
     onSubmit: handleSubmit,
     onPersist: handlePersist,
     suspendData: scorm.loadSuspendData(),
   };
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const cfg = state.config as any;
 
-  const activityElement = renderActivity(kind, cfg, callbacks);
+  const isPlanned = (PLANNED_ACTIVITY_KINDS as readonly string[]).includes(kind);
+  // Stub takes an extra `kind` prop that the regular ActivityProps doesn't
+  // model; cast to `any` to widen at the call site. Runtime contract is
+  // identical to the old switch statement that fell through to StubActivity.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const Stub = StubActivityLazy as any;
+  const Component = ACTIVITY_REGISTRY[kind as BuiltActivityKind];
+
   return (
     <>
-      {activityElement}
+      <Suspense fallback={<div style={loadingStyle}>Loading activity…</div>}>
+        {isPlanned || !Component ? (
+          <Stub config={cfg} kind={kind as never} {...callbackProps} />
+        ) : (
+          <Component config={cfg} {...callbackProps} />
+        )}
+      </Suspense>
       <ActivityFooter author={cfg?.author} />
     </>
   );
-}
-
-function renderActivity(kind: ActivityKind, cfg: unknown, callbacks: unknown) {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const c = cfg as any;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const cb = callbacks as any;
-  if ((PLANNED_ACTIVITY_KINDS as readonly string[]).includes(kind)) {
-    return <StubActivity config={c} kind={kind as never} {...cb} />;
-  }
-
-  switch (kind) {
-    case "multiple-choice":
-      return <MultipleChoice config={c} {...cb} />;
-    case "fill-in-the-blanks":
-      return <FillInTheBlanks config={c} {...cb} />;
-    case "drag-and-drop":
-      return <DragAndDrop config={c} {...cb} />;
-    case "question-set":
-      return <QuestionSet config={c} {...cb} />;
-    case "hotspot-3d":
-      return <Hotspot3D config={c} {...cb} />;
-    case "hotspot-2d":
-      return <Hotspot2D config={c} {...cb} />;
-    case "virtual-tour":
-      return <VirtualTour config={c} {...cb} />;
-    case "categorization":
-      return <Categorization config={c} {...cb} />;
-    case "anatomy-labeling":
-      return <AnatomyLabeling config={c} {...cb} />;
-    case "sequence-steps":
-      return <SequenceSteps config={c} {...cb} />;
-    case "matching-pairs":
-      return <MatchingPairs config={c} {...cb} />;
-    case "highlight-text":
-      return <HighlightText config={c} {...cb} />;
-    case "image-comparison-slider":
-      return <ImageComparisonSlider config={c} {...cb} />;
-    case "flashcards":
-      return <Flashcards config={c} {...cb} />;
-    case "reflection-prompt":
-      return <ReflectionPrompt config={c} {...cb} />;
-    case "audio-recording":
-      return <AudioRecording config={c} {...cb} />;
-    case "branching-scenario":
-      return <BranchingScenario config={c} {...cb} />;
-    case "image-annotation":
-      return <ImageAnnotation config={c} {...cb} />;
-    case "concept-map":
-      return <ConceptMap config={c} {...cb} />;
-    case "interactive-video":
-      return <InteractiveVideo config={c} {...cb} />;
-    case "lab-panel":
-      return <LabPanel config={c} {...cb} />;
-    case "ddx-tree":
-      return <DDxTree config={c} {...cb} />;
-    case "osce":
-      return <OSCE config={c} {...cb} />;
-    default:
-      return <StubActivity config={c} {...cb} />;
-  }
 }
 
 /**
