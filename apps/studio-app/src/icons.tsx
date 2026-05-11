@@ -194,6 +194,32 @@ export function GearIcon(props: SVGProps<SVGSVGElement>) {
   );
 }
 
+/**
+ * Silhouette-only version of the Kukui logo (the candlenut). Inherits
+ * `currentColor` so it picks up white on the primary button, the brand
+ * burgundy on ghost surfaces, etc. Used inline in the SCORM Download
+ * button as a brand-aware substitute for the generic download arrow —
+ * authors are "downloading the kukui nut."
+ */
+export function KukuiGlyphIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg
+      viewBox="-5 -5 74 74"
+      xmlns="http://www.w3.org/2000/svg"
+      fill="currentColor"
+      stroke="none"
+      width={18}
+      height={18}
+      aria-hidden="true"
+      {...props}
+    >
+      <g transform="rotate(35 32 32)">
+        <path d="M24 6 C 16 7, 8 15, 6 26 C 4 39, 12 57, 32 60 C 52 57, 60 39, 58 26 C 56 15, 48 7, 40 6 C 37 8, 35 13, 32 14 C 29 13, 27 8, 24 6 Z" />
+      </g>
+    </svg>
+  );
+}
+
 export function SparkleIcon(props: SVGProps<SVGSVGElement>) {
   return (
     <svg {...baseProps} {...props}>

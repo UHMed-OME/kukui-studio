@@ -34,21 +34,27 @@ async function importJson(file: File): Promise<ImportResult> {
   return detectKind(parsed);
 }
 
+// Zip-bomb guards. The outer total is a coarse pre-filter based on the
+// attacker-declared sizes in the zip's central directory; it's cheap but
+// trusts the input. The inner per-config-entry limit measures the actual
+// decompressed bytes and is the authoritative check.
+const MAX_TOTAL_UNCOMPRESSED = 50 * 1024 * 1024; // 50 MB across all entries
+const MAX_CONFIG_BYTES = 1 * 1024 * 1024; // 1 MB for the matched config file
+
 async function importZip(file: File): Promise<ImportResult> {
   const buffer = await file.arrayBuffer();
   const zip = await JSZip.loadAsync(buffer);
 
-  // Zip-bomb guard: sum decompressed sizes before extracting. A 1 KB zip
-  // can decompress to gigabytes; if we just call .async("string") on the
-  // contents we crash the tab. 50 MB total is plenty for a SCORM
-  // activity payload.
-  const MAX_TOTAL_UNCOMPRESSED = 50 * 1024 * 1024;
-  let total = 0;
+  // Coarse outer guard: sum *declared* uncompressed sizes from the central
+  // directory. Attacker-controlled, so it's not load-bearing — just rejects
+  // obviously huge claims before we touch any entry. The authoritative
+  // check is the measured decompression of the matched config below.
+  let totalDeclared = 0;
   for (const entry of Object.values(zip.files)) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const size = (entry as any)._data?.uncompressedSize ?? 0;
-    total += typeof size === "number" ? size : 0;
-    if (total > MAX_TOTAL_UNCOMPRESSED) {
+    totalDeclared += typeof size === "number" ? size : 0;
+    if (totalDeclared > MAX_TOTAL_UNCOMPRESSED) {
       return {
         ok: false,
         error: "This zip is unexpectedly large when uncompressed. It may be corrupt.",
@@ -62,7 +68,30 @@ async function importZip(file: File): Promise<ImportResult> {
   if (!configPath) {
     return { ok: false, error: "This zip doesn't contain a Kukui activity config." };
   }
-  const text = await zip.file(configPath)!.async("string");
+
+  const entry = zip.file(configPath)!;
+  // Cheap pre-filter: if the declared uncompressed size is already over the
+  // limit, don't bother decompressing. Authoritative check follows.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const declaredSize = (entry as any)._data?.uncompressedSize;
+  if (typeof declaredSize === "number" && declaredSize > MAX_CONFIG_BYTES) {
+    return {
+      ok: false,
+      error: "This activity config is unexpectedly large. SCORM configs should be well under 1 MB.",
+    };
+  }
+
+  // Authoritative check: measure actual decompressed bytes. We only ever
+  // call .async() on this single matched entry; never on any other file
+  // in the zip (no media, no SCORM scaffolding).
+  const bytes = await entry.async("uint8array");
+  if (bytes.byteLength > MAX_CONFIG_BYTES) {
+    return {
+      ok: false,
+      error: "This activity config is unexpectedly large. SCORM configs should be well under 1 MB.",
+    };
+  }
+  const text = new TextDecoder("utf-8").decode(bytes);
   const parsed = JSON.parse(text);
   return detectKind(parsed);
 }

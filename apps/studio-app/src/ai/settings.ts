@@ -101,7 +101,13 @@ export function saveSettings(next: AISettings): void {
     other.removeItem(KEY);
     target.setItem(KEY, JSON.stringify(next));
   } catch (err) {
-    console.warn("[kukui:studio:ai] failed to save settings:", err);
+    // Log only name + message — never the raw error object. Some browsers
+    // attach the full Request/Response (including Authorization headers)
+    // to cause/stack on the original error, and we never want a console
+    // viewer to leak the user's key.
+    const name = err instanceof Error ? err.name : "Error";
+    const message = err instanceof Error ? err.message : String(err);
+    console.warn(`[kukui:studio:ai] failed to save settings: ${name}: ${message}`);
   }
 }
 

@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { SAFE_MEDIA_URL } from "./url.js";
 
 const versionRe = /^\d+\.\d+(\.\d+)?$/;
 
@@ -19,7 +20,7 @@ export const DragAndDropConfigSchema = z
     author: z.string().optional(),
     background: z
       .object({
-        src: z.string().min(1),
+        src: SAFE_MEDIA_URL,
         alt: z.string().min(1),
       })
       .strict(),
@@ -34,7 +35,7 @@ export const DragAndDropConfigSchema = z
             // accessible name for the <img> itself.
             image: z
               .object({
-                src: z.string().min(1),
+                src: SAFE_MEDIA_URL,
                 alt: z.string().min(1),
               })
               .strict()

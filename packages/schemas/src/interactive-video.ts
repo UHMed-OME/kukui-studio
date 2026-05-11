@@ -1,12 +1,13 @@
 import { z } from "zod";
+import { SAFE_MEDIA_URL } from "./url.js";
 
 const versionRe = /^\d+\.\d+(\.\d+)?$/;
 
 const Video = z
   .object({
-    src: z.string().min(1),
+    src: SAFE_MEDIA_URL,
     type: z.enum(["html5", "youtube", "vimeo"]).optional(),
-    poster: z.string().optional(),
+    poster: SAFE_MEDIA_URL.optional(),
   })
   .strict();
 

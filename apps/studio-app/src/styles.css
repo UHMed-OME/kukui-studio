@@ -2665,6 +2665,14 @@ html[data-theme="glass"] .kukui-theme-toggle {
   color: var(--color-text-primary);
 }
 
+/* Phonetic guide inline with the brand line — quiet italic so it reads
+   as parenthetical (cf. how a dictionary sets pronunciations). */
+.kukui-studio-footer__pronunciation {
+  font-style: italic;
+  font-size: 0.95em;
+  color: var(--color-text-muted);
+}
+
 .kukui-studio-footer__nav {
   display: flex;
   align-items: center;

@@ -21,6 +21,7 @@ import { Tooltip } from "./Tooltip.js";
 import {
   DownloadIcon,
   GearIcon,
+  KukuiGlyphIcon,
   PencilIcon,
   PlayIcon,
   SaveIcon,
@@ -378,7 +379,7 @@ export function App() {
           <div className="kukui-studio-brand-text">
             <h1 className="kukui-studio-title">Kukui Studio</h1>
             <p className="kukui-studio-subtitle">
-              Interactive learning activities for Lamakū and other LMS.
+              Interactive learning activities for Lamakū.
             </p>
           </div>
         </div>
@@ -405,7 +406,7 @@ export function App() {
             className="kukui-studio-btn kukui-studio-btn--primary kukui-studio-btn--with-subtext"
             title="Download a SCORM 1.2 zip ready to upload into Lamakū or any SCORM 1.2 compatible LMS"
           >
-            <DownloadIcon />
+            <KukuiGlyphIcon className="kukui-studio-btn__glyph" />
             <span className="kukui-studio-btn__stack">
               <span className="kukui-studio-btn__main">Download</span>
               <span className="kukui-studio-btn__sub">SCORM 1.2 zip</span>
@@ -630,7 +631,7 @@ export function App() {
                   .join(" ")}
                 onClick={() => setTab("ai")}
               >
-                AI assistant
+                AI Assist
               </button>
             </div>
             <div className="kukui-studio-panel-actions">
@@ -742,8 +743,12 @@ export function App() {
 
       <footer className="kukui-studio-footer">
         <p className="kukui-studio-footer__about">
-          <strong>Kukui Studio</strong> — open-source interactive learning activities for the
-          LMS. Built at{" "}
+          <strong>Kukui</strong>{" "}
+          <span className="kukui-studio-footer__pronunciation" aria-label="pronounced koo-KOO-ee">
+            /koo-KOO-ee/
+          </span>{" "}
+          <strong>Studio</strong> — open-source interactive learning activities for the LMS.
+          Built at{" "}
           <a
             href="https://jabsom.hawaii.edu/"
             target="_blank"
@@ -791,8 +796,8 @@ export function App() {
             type="button"
             className="kukui-studio-footer__icon-btn"
             onClick={() => setShowAISettings(true)}
-            aria-label="AI assistant settings"
-            title="AI assistant settings"
+            aria-label="AI Assist settings"
+            title="AI Assist settings"
           >
             <GearIcon />
           </button>
@@ -825,7 +830,7 @@ export function App() {
       <ConfirmDialog
         open={showPrivacy}
         title="Privacy & data"
-        message="Kukui Studio runs entirely in your browser. Drafts auto-save to your local browser storage (localStorage) and never leave your device. We don't operate any backend, don't set analytics cookies, and don't transmit form data anywhere. When you click Download, the SCORM zip is generated client-side; what happens after upload is between you and your LMS. SCORM activities packaged by Studio post grades only to the LMS that hosts them (D2L Brightspace, Canvas, Moodle, etc.) — same channel any LMS-hosted activity uses. If you enable the AI assistant, requests go directly from your browser to whatever LLM endpoint you configured (OpenAI, Groq, your institution's internal proxy, etc.). Kukui Studio never sees or proxies the request. Your API key and base URL are stored in your browser only (localStorage or sessionStorage — your choice in the settings dialog). The activity JSON you're working on, plus your prompt, are sent to the endpoint you picked; the response comes back to your browser only. Your provider's data-handling policies apply to that traffic — pick a provider whose policies match your institution's rules."
+        message="Kukui Studio runs entirely in your browser. Drafts auto-save to your local browser storage (localStorage) and never leave your device. We don't operate any backend, don't set analytics cookies, and don't transmit form data anywhere. When you click Download, the SCORM zip is generated client-side; what happens after upload is between you and your LMS. SCORM activities packaged by Studio post grades only to the LMS that hosts them (D2L Brightspace, Canvas, Moodle, etc.) — same channel any LMS-hosted activity uses. If you enable AI Assist, requests go directly from your browser to whatever LLM endpoint you configured (OpenAI, Groq, your institution's internal proxy, etc.). Kukui Studio never sees or proxies the request. Your API key and base URL are stored in your browser only (localStorage or sessionStorage — your choice in the settings dialog). The activity JSON you're working on, plus your prompt, are sent to the endpoint you picked; the response comes back to your browser only. Your provider's data-handling policies apply to that traffic — pick a provider whose policies match your institution's rules."
         confirmLabel="OK"
         hideCancel
         onConfirm={() => setShowPrivacy(false)}
