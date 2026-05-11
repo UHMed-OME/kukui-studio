@@ -1,6 +1,14 @@
-import { useEffect, useMemo, useRef, useState, type ChangeEvent } from "react";
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ChangeEvent,
+} from "react";
 import { type ActivityKind, PLANNED_ACTIVITY_KINDS } from "@kukui/core";
 import { SchemaRegistry, type SchemaRegistryKey } from "@kukui/schemas";
+import type { ErrorSchema } from "@rjsf/utils";
+import type { ZodError } from "zod";
 import { EditorForm } from "./EditorForm.js";
 import { JsonEditor } from "./JsonEditor.js";
 import { Preview, type PreviewMode } from "./Preview.js";
@@ -107,6 +115,17 @@ export function App() {
     hasEditor(kind) ? "edit" : "live",
   );
   const [toast, setToast] = useState<string | null>(null);
+  /**
+   * Sticky status strip in the panel header. Drives long-running async ops
+   * (SCORM build, import) that need a visible state until they finish —
+   * the transient `toast` auto-dismisses too fast for those. Success
+   * states auto-clear after ~3s; error states require explicit dismissal.
+   */
+  const [asyncStatus, setAsyncStatus] = useState<{
+    kind: "building" | "importing" | "error" | "success";
+    message: string;
+    dismissable: boolean;
+  } | null>(null);
   const [confirmReset, setConfirmReset] = useState(false);
   const [showPrivacy, setShowPrivacy] = useState(false);
   // On narrow viewports the editor + preview panels can't both fit, so we
@@ -143,10 +162,28 @@ export function App() {
     [kind, value],
   );
 
+  // Convert Zod issues into RJSF's ErrorSchema so each issue surfaces on
+  // its originating field through the `extraErrors` prop. RJSF's built-in
+  // AJV pass still runs (liveValidate=true) to catch things like missing
+  // required fields synchronously while the author types; Zod is the
+  // canonical source of truth so its issues are the ones the badge counts
+  // and the popover lists.
+  const extraErrors = useMemo<ErrorSchema | undefined>(
+    () => (validation.success ? undefined : zodErrorsToExtraErrors(validation.error)),
+    [validation],
+  );
+
   const flash = (msg: string) => {
     setToast(msg);
     setTimeout(() => setToast(null), 1800);
   };
+
+  // Auto-clear success-strip after ~3s. Errors stay until the user dismisses.
+  useEffect(() => {
+    if (!asyncStatus || asyncStatus.kind !== "success") return;
+    const t = setTimeout(() => setAsyncStatus(null), 3000);
+    return () => clearTimeout(t);
+  }, [asyncStatus]);
 
   const downloadJson = () => {
     if (!validation.success) {
@@ -225,15 +262,27 @@ export function App() {
     const file = e.target.files?.[0];
     e.target.value = ""; // allow re-selecting the same file later
     if (!file) return;
-    flash("Importing…");
+    setAsyncStatus({
+      kind: "importing",
+      message: `Importing ${file.name}…`,
+      dismissable: false,
+    });
     const result = await importFromFile(file);
     if (!result.ok) {
-      flash(result.error);
+      setAsyncStatus({
+        kind: "error",
+        message: `Import failed: ${result.error}`,
+        dismissable: true,
+      });
       return;
     }
     setKind(result.kind);
     setValue(result.config);
-    flash(`Imported ${ACTIVITY_LABELS[result.kind] ?? result.kind}.`);
+    setAsyncStatus({
+      kind: "success",
+      message: `Imported ${ACTIVITY_LABELS[result.kind] ?? result.kind}.`,
+      dismissable: true,
+    });
   };
 
   const isPlanned = (STUDIO_PLANNED as readonly string[]).includes(kind);
@@ -247,13 +296,28 @@ export function App() {
       flash("Fix the highlighted validation errors first.");
       return;
     }
+    setAsyncStatus({
+      kind: "building",
+      message: "Building SCORM zip…",
+      dismissable: false,
+    });
     try {
-      flash("Building SCORM zip…");
       await downloadScormZip(kind, validation.data);
-      flash("SCORM zip downloaded.");
+      setAsyncStatus({
+        kind: "success",
+        message: "SCORM zip downloaded.",
+        dismissable: true,
+      });
     } catch (err) {
       console.error(err);
-      flash(err instanceof Error ? `Download failed: ${err.message}` : "Download failed.");
+      setAsyncStatus({
+        kind: "error",
+        message:
+          err instanceof Error
+            ? `Download failed: ${err.message}`
+            : "Download failed.",
+        dismissable: true,
+      });
     }
   };
 
@@ -471,7 +535,11 @@ export function App() {
               </button>
             </div>
             <div className="kukui-studio-panel-actions">
-              <ValidationBadge result={validation} />
+              <ValidationBadge result={validation} disabled={tab === "json"} />
+              <AsyncStatusStrip
+                status={asyncStatus}
+                onDismiss={() => setAsyncStatus(null)}
+              />
               <button
                 type="button"
                 onClick={triggerImport}
@@ -501,7 +569,12 @@ export function App() {
           </div>
           <div className="kukui-studio-panel-body">
             {tab === "form" ? (
-              <EditorForm kind={kind} value={value} onChange={setValue} />
+              <EditorForm
+                kind={kind}
+                value={value}
+                onChange={setValue}
+                extraErrors={extraErrors}
+              />
             ) : (
               <JsonEditor value={value} onChange={setValue} />
             )}
@@ -650,11 +723,140 @@ function filenameSlug(s: unknown): string {
     .slice(0, 60);
 }
 
+/**
+ * Sticky status strip beside the validation badge. Renders nothing when
+ * `status` is null. Visible until either auto-cleared (success kind, by
+ * the parent) or dismissed (error/build kinds, by clicking the X).
+ *
+ * `role="status"` + `aria-live="polite"` so screen readers announce
+ * state transitions without interrupting the current focus.
+ */
+function AsyncStatusStrip({
+  status,
+  onDismiss,
+}: {
+  status: {
+    kind: "building" | "importing" | "error" | "success";
+    message: string;
+    dismissable: boolean;
+  } | null;
+  onDismiss: () => void;
+}) {
+  if (!status) return null;
+  const inProgress = status.kind === "building" || status.kind === "importing";
+  return (
+    <div
+      className={`kukui-studio-async kukui-studio-async--${status.kind}`}
+      role="status"
+      aria-live="polite"
+    >
+      {inProgress ? (
+        <span
+          className="kukui-studio-async__spinner"
+          aria-hidden="true"
+        />
+      ) : (
+        <span
+          className="kukui-studio-async__dot"
+          aria-hidden="true"
+        />
+      )}
+      <span className="kukui-studio-async__msg">{status.message}</span>
+      {status.dismissable ? (
+        <button
+          type="button"
+          className="kukui-studio-async__close"
+          onClick={onDismiss}
+          aria-label="Dismiss"
+        >
+          ×
+        </button>
+      ) : null}
+    </div>
+  );
+}
+
+/**
+ * Walk a `ZodError` and build an RJSF `ErrorSchema` so the per-field
+ * inline error renders next to its input. Zod's issue path is
+ * (string | number)[]; RJSF nests by key all the way down, with the
+ * terminal `__errors` array holding the human-readable messages.
+ *
+ * Form-wide issues (issue.path is empty) get hoisted onto the root.
+ */
+function zodErrorsToExtraErrors(err: ZodError): ErrorSchema {
+  const root: ErrorSchema = {};
+  for (const issue of err.issues) {
+    const path = issue.path;
+    if (path.length === 0) {
+      const list = (root.__errors ??= []);
+      list.push(issue.message);
+      continue;
+    }
+    // ErrorSchema is recursive: each path segment becomes a nested key.
+    // Use `unknown` to sidestep the recursive index-signature; the
+    // runtime shape matches the type exactly.
+    let node: Record<string, unknown> = root as Record<string, unknown>;
+    for (let i = 0; i < path.length; i++) {
+      const seg = String(path[i]);
+      const existing = node[seg];
+      if (!existing || typeof existing !== "object") {
+        node[seg] = {};
+      }
+      node = node[seg] as Record<string, unknown>;
+    }
+    const list = (node.__errors as string[] | undefined) ?? [];
+    list.push(issue.message);
+    node.__errors = list;
+  }
+  return root;
+}
+
+/**
+ * Validation summary in the panel header. When the form is clean, renders
+ * a neutral "Valid" pill. When issues exist, the pill becomes a button
+ * that opens a popover listing every Zod issue; clicking an issue scrolls
+ * the offending field into view and focuses it.
+ */
 function ValidationBadge({
   result,
+  disabled,
 }: {
   result: ReturnType<(typeof SchemaRegistry)[SchemaRegistryKey]["safeParse"]>;
+  /**
+   * Form view exposes per-field errors, so the popover is most useful
+   * there. In Raw JSON view the popover would still scroll, but the field
+   * IDs don't exist — show the count but suppress the popover.
+   */
+  disabled?: boolean;
 }) {
+  const [open, setOpen] = useState(false);
+  const rootRef = useRef<HTMLDivElement>(null);
+
+  // Click-outside / Escape to dismiss.
+  useEffect(() => {
+    if (!open) return;
+    const onDocClick = (e: MouseEvent) => {
+      if (!rootRef.current) return;
+      if (e.target instanceof Node && rootRef.current.contains(e.target)) return;
+      setOpen(false);
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setOpen(false);
+    };
+    document.addEventListener("mousedown", onDocClick);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onDocClick);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [open]);
+
+  // Auto-close when issues disappear (form went valid while popover open).
+  useEffect(() => {
+    if (result.success && open) setOpen(false);
+  }, [result.success, open]);
+
   if (result.success) {
     return (
       <span className="kukui-studio-badge kukui-studio-badge--ok" role="status">
@@ -662,10 +864,100 @@ function ValidationBadge({
       </span>
     );
   }
+
+  const issues = result.error.issues;
+  const count = issues.length;
+  const label = `${count} validation issue${count === 1 ? "" : "s"}`;
+
+  const focusIssue = (path: ReadonlyArray<PropertyKey>) => {
+    // RJSF wraps every field id as `root_<dot-path>` with `.` → `_`.
+    // Form-wide issues (empty path) just target the form root.
+    const id =
+      path.length === 0
+        ? "root"
+        : `root_${path.map((p) => String(p)).join("_")}`;
+    // Defer to next frame so the popover closing doesn't steal focus
+    // from the field we're about to scroll into view.
+    setOpen(false);
+    requestAnimationFrame(() => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.scrollIntoView({ behavior: "smooth", block: "center" });
+      if (typeof (el as HTMLElement).focus === "function") {
+        (el as HTMLElement).focus({ preventScroll: true });
+      }
+    });
+  };
+
+  if (disabled) {
+    return (
+      <span
+        className="kukui-studio-badge kukui-studio-badge--err"
+        role="status"
+        title="Switch to the Form editor to jump to a specific field."
+      >
+        {label}
+      </span>
+    );
+  }
+
   return (
-    <span className="kukui-studio-badge kukui-studio-badge--err" role="status">
-      {result.error.issues.length} validation issue
-      {result.error.issues.length === 1 ? "" : "s"}
-    </span>
+    <div className="kukui-studio-validation" ref={rootRef}>
+      <button
+        type="button"
+        className="kukui-studio-badge kukui-studio-badge--err kukui-studio-badge--button"
+        aria-haspopup="dialog"
+        aria-expanded={open}
+        onClick={() => setOpen((v) => !v)}
+        title="Show validation issues"
+      >
+        {label}
+      </button>
+      {open ? (
+        <div
+          className="kukui-studio-validation__popover"
+          role="dialog"
+          aria-label="Validation issues"
+        >
+          <div className="kukui-studio-validation__header">
+            <span className="kukui-studio-validation__title">
+              {label}
+            </span>
+            <button
+              type="button"
+              className="kukui-studio-validation__close"
+              onClick={() => setOpen(false)}
+              aria-label="Close"
+            >
+              ×
+            </button>
+          </div>
+          <ul className="kukui-studio-validation__list">
+            {issues.map((issue, i) => {
+              const pathStr = issue.path.length
+                ? issue.path.map((p) => String(p)).join(".")
+                : "(form)";
+              return (
+                <li key={i} className="kukui-studio-validation__item">
+                  <button
+                    type="button"
+                    className="kukui-studio-validation__btn"
+                    onClick={() => focusIssue(issue.path)}
+                  >
+                    <span className="kukui-studio-validation__path">
+                      {pathStr}
+                    </span>
+                    <span className="kukui-studio-validation__sep">:</span>{" "}
+                    <span className="kukui-studio-validation__msg">
+                      {issue.message}
+                    </span>
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      ) : null}
+    </div>
   );
 }

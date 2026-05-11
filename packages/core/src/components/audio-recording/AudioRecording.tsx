@@ -25,6 +25,61 @@ type State = {
 const DEFAULT_MAX_SECONDS = 60;
 const DEFAULT_MIN_SECONDS = 1;
 
+/**
+ * Restore state from persisted suspend data so reload picks up where the
+ * learner left off. Submit writes a full payload with `audioDataUrl` (see
+ * `submit` below); the in-progress hint persisted on every stage change is
+ * just `{ stage }`. Both shapes resolve to a reasonable resume state.
+ */
+function parseSuspend(
+  s: string | undefined,
+  _config: AudioRecordingConfig,
+): State | null {
+  if (!s) return null;
+  try {
+    const parsed = JSON.parse(s) as {
+      stage?: unknown;
+      audioDataUrl?: unknown;
+      durationSeconds?: unknown;
+    };
+    if (!parsed || typeof parsed !== "object") return null;
+
+    const dataUrl =
+      typeof parsed.audioDataUrl === "string" && parsed.audioDataUrl.startsWith("data:")
+        ? parsed.audioDataUrl
+        : null;
+    const duration =
+      typeof parsed.durationSeconds === "number" && parsed.durationSeconds >= 0
+        ? Math.round(parsed.durationSeconds)
+        : 0;
+
+    // Submitted-with-audio shape: full restore including playback.
+    if (dataUrl) {
+      return {
+        stage: "submitted",
+        blobUrl: dataUrl,
+        durationSeconds: duration,
+        errorMessage: "",
+      };
+    }
+
+    // Stage-only shape: the only resumable stage is "submitted" (the
+    // learner already finished). Other stages refer to ephemeral browser
+    // resources (MediaStream, blob URL) that don't survive a reload.
+    if (parsed.stage === "submitted") {
+      return {
+        stage: "submitted",
+        blobUrl: null,
+        durationSeconds: duration,
+        errorMessage: "",
+      };
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
 function formatTime(totalSeconds: number): string {
   const m = Math.floor(totalSeconds / 60);
   const s = Math.floor(totalSeconds % 60);
@@ -50,6 +105,7 @@ export function AudioRecording({
   config,
   onSubmit,
   onPersist,
+  suspendData,
   headingLevel = 1,
 }: ActivityProps<AudioRecordingConfig>) {
   const HeadingTag = `h${headingLevel}` as "h1" | "h2" | "h3";
@@ -66,12 +122,15 @@ export function AudioRecording({
   const reRecordLabel = config.ui?.reRecordButton ?? "Re-record";
   const submitLabel = config.ui?.submitButton ?? "Submit";
 
-  const [state, setState] = useState<State>({
-    stage: "idle",
-    blobUrl: null,
-    durationSeconds: 0,
-    errorMessage: "",
-  });
+  const [state, setState] = useState<State>(
+    () =>
+      parseSuspend(suspendData, config) ?? {
+        stage: "idle",
+        blobUrl: null,
+        durationSeconds: 0,
+        errorMessage: "",
+      },
+  );
 
   // Prefer mutable refs over state for the recorder + stream so we don't
   // re-render on every level-meter tick or chunk arrival.

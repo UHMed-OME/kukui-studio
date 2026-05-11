@@ -577,6 +577,258 @@ button {
   box-shadow: 0 0 0 3px rgb(195 65 50 / 0.18);
 }
 
+/* Button variant of the badge — same pill, but interactive (used when
+   issues exist and clicking opens the issues popover). */
+.kukui-studio-badge--button {
+  border: none;
+  cursor: pointer;
+  font: inherit;
+}
+
+.kukui-studio-badge--button:hover {
+  filter: brightness(0.96);
+}
+
+.kukui-studio-badge--button:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* Validation issues popover — anchored beneath the badge, lists each
+   Zod issue. Clicking one scrolls + focuses the offending field. */
+.kukui-studio-validation {
+  position: relative;
+  display: inline-flex;
+}
+
+.kukui-studio-validation__popover {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: 50;
+  width: min(420px, 90vw);
+  max-height: min(60vh, 480px);
+  display: flex;
+  flex-direction: column;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  box-shadow: 0 12px 28px rgb(0 0 0 / 0.18), 0 2px 6px rgb(0 0 0 / 0.08);
+  overflow: hidden;
+}
+
+.kukui-studio-validation__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-surface-alt);
+}
+
+.kukui-studio-validation__title {
+  font-size: var(--font-size-meta);
+  font-weight: 700;
+  color: var(--color-error);
+}
+
+.kukui-studio-validation__close {
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-secondary);
+  font-size: 18px;
+  line-height: 1;
+}
+
+.kukui-studio-validation__close:hover {
+  border-color: var(--color-border);
+  color: var(--color-text-primary);
+}
+
+.kukui-studio-validation__close:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.kukui-studio-validation__list {
+  list-style: none;
+  margin: 0;
+  padding: 4px 0;
+  overflow-y: auto;
+}
+
+.kukui-studio-validation__item {
+  margin: 0;
+}
+
+.kukui-studio-validation__btn {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: var(--spacing-sm) var(--spacing-md);
+  background: transparent;
+  border: none;
+  border-left: 3px solid transparent;
+  color: var(--color-text-primary);
+  font-size: var(--font-size-meta);
+  line-height: 1.4;
+}
+
+.kukui-studio-validation__btn:hover,
+.kukui-studio-validation__btn:focus-visible {
+  background: var(--color-primary-soft);
+  border-left-color: var(--color-error);
+  outline: none;
+}
+
+.kukui-studio-validation__path {
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-micro);
+  font-weight: 700;
+  color: var(--color-error);
+}
+
+.kukui-studio-validation__sep {
+  color: var(--color-text-secondary);
+}
+
+.kukui-studio-validation__msg {
+  color: var(--color-text-primary);
+}
+
+/* Inline per-field error list, rendered by FieldTemplate beneath each
+   offending input. Pairs with `aria-invalid` on the field wrapper. */
+.kukui-studio-field-error {
+  list-style: none;
+  margin: 6px 0 0;
+  padding: 0;
+  font-size: var(--font-size-micro);
+  color: var(--color-error);
+  font-weight: 600;
+}
+
+.kukui-studio-field-error li {
+  padding: 2px 0;
+}
+
+/* Sticky async-status strip in the panel header — drives long-running
+   import/build ops. Distinct from the transient `.kukui-studio-toast`
+   which auto-dismisses too fast for these. */
+.kukui-studio-async {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 10px 4px 10px;
+  border-radius: 999px;
+  font-size: var(--font-size-micro);
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  border: 1px solid transparent;
+  background: var(--color-surface-alt);
+  color: var(--color-text-primary);
+  max-width: 320px;
+}
+
+.kukui-studio-async__msg {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.kukui-studio-async--building,
+.kukui-studio-async--importing {
+  background: var(--color-primary-soft);
+  color: var(--color-primary);
+  border-color: var(--color-border-hover);
+}
+
+.kukui-studio-async--success {
+  background: var(--color-success-soft);
+  color: var(--color-success);
+  border-color: rgb(46 110 65 / 0.28);
+}
+
+.kukui-studio-async--error {
+  background: var(--color-error-soft);
+  color: var(--color-error);
+  border-color: rgb(195 65 50 / 0.28);
+}
+
+.kukui-studio-async__spinner {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 2px solid currentColor;
+  border-top-color: transparent;
+  animation: kukui-studio-async-spin 700ms linear infinite;
+  flex-shrink: 0;
+}
+
+.kukui-studio-async__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: currentColor;
+  flex-shrink: 0;
+  opacity: 0.85;
+}
+
+.kukui-studio-async__close {
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  width: 22px;
+  height: 22px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: inherit;
+  font-size: 16px;
+  line-height: 1;
+  margin-left: 2px;
+}
+
+.kukui-studio-async__close:hover {
+  border-color: currentColor;
+}
+
+.kukui-studio-async__close:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 1px;
+}
+
+@keyframes kukui-studio-async-spin {
+  to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kukui-studio-async__spinner {
+    animation: none;
+  }
+}
+
+/* Visually flag the offending control too: subtle left rule + error-tinted
+   border on the actual input/select/textarea inside the field wrapper. */
+.ks-field--has-error > .ks-field__label-row .ks-field__label {
+  color: var(--color-error);
+}
+
+.ks-field--has-error input[type="text"],
+.ks-field--has-error input[type="number"],
+.ks-field--has-error input[type="url"],
+.ks-field--has-error input[type="email"],
+.ks-field--has-error select,
+.ks-field--has-error textarea {
+  border-color: var(--color-error);
+}
+
 .kukui-studio-panel-body {
   flex: 1;
   overflow: auto;
