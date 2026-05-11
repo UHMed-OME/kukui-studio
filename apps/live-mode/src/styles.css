@@ -200,6 +200,57 @@ button {
   color: var(--color-text-secondary);
 }
 
+/* Instructor console sections — used by InstructorConsole.tsx for the
+   activity / phase / participants groupings. Static spacing + headings,
+   no dynamic computation, so they live in CSS not inline style. */
+.live-section {
+  margin-top: var(--spacing-2xl);
+  padding-top: var(--spacing-lg);
+  border-top: 1px solid var(--color-border);
+}
+
+.live-section__heading {
+  margin: 0 0 var(--spacing-md);
+  font-size: var(--font-size-prompt);
+  font-weight: 700;
+}
+
+/* Phase track: the lobby → question → reveal → discussion → ended chip
+   row. Mirrors the presence-chip pattern so theming overrides apply
+   uniformly. */
+.live-phase-track {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-sm);
+}
+
+.live-phase-chip {
+  padding: 6px 14px;
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  background: var(--color-surface);
+  font-size: var(--font-size-meta);
+  color: var(--color-text-secondary);
+}
+
+.live-phase-chip--current {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  /* Use the surface token so glass-theme overrides can adjust against the
+     primary background without the hard-coded white we had inline. */
+  color: var(--color-surface);
+  font-weight: 700;
+}
+
+.live-phase-chip--past {
+  background: var(--color-primary-soft);
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
 /* Glass theme for Live */
 html[data-theme="glass"] body {
   background:
