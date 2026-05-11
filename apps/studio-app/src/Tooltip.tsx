@@ -26,7 +26,13 @@ export function Tooltip({
   const id = useId();
   const btnRef = useRef<HTMLButtonElement>(null);
   const [open, setOpen] = useState(false);
-  const [position, setPosition] = useState<{ top: number; left: number; placement: "top" | "bottom" } | null>(null);
+  const bubbleRef = useRef<HTMLSpanElement>(null);
+  const [position, setPosition] = useState<{
+    top: number;
+    left: number;
+    placement: "top" | "bottom";
+    offsetX: number;
+  } | null>(null);
 
   useEffect(() => {
     if (!open) return;
@@ -34,19 +40,42 @@ export function Tooltip({
       const btn = btnRef.current;
       if (!btn) return;
       const r = btn.getBoundingClientRect();
-      // Default: bubble sits above the trigger (placement = "top"). If
-      // there's not enough room above, flip below.
+      // Default: bubble sits above the trigger; flip below if too near
+      // the top of the viewport.
       const placement = r.top < 56 ? "bottom" : "top";
+      // Centre on the trigger horizontally...
+      let left = r.left + r.width / 2;
+      let offsetX = 0;
+      // ...then clamp to the viewport with an 8 px margin so a bubble
+      // anchored near the right or left edge of the screen doesn't
+      // overflow. The arrow stays under the trigger via `offsetX`
+      // (negative if we slid the bubble left, positive if right).
+      const bubble = bubbleRef.current;
+      if (bubble) {
+        const bw = bubble.offsetWidth;
+        const halfBw = bw / 2;
+        const min = 8 + halfBw;
+        const max = window.innerWidth - 8 - halfBw;
+        const clamped = Math.max(min, Math.min(max, left));
+        offsetX = clamped - left;
+        left = clamped;
+      }
       setPosition({
         top: placement === "top" ? r.top - 8 : r.bottom + 8,
-        left: r.left + r.width / 2,
+        left,
         placement,
+        offsetX,
       });
     };
+    // First paint of the bubble has no measured width; reposition once
+    // to centre, then once more on the next frame after the bubble has
+    // mounted so we can read its width and clamp.
     reposition();
+    const raf = requestAnimationFrame(reposition);
     window.addEventListener("scroll", reposition, true);
     window.addEventListener("resize", reposition);
     return () => {
+      cancelAnimationFrame(raf);
       window.removeEventListener("scroll", reposition, true);
       window.removeEventListener("resize", reposition);
     };
@@ -79,19 +108,36 @@ export function Tooltip({
       >
         ⓘ
       </button>
-      {open && position
+      {open
         ? createPortal(
             <span
+              ref={bubbleRef}
               id={id}
               role="tooltip"
               className={[
                 "kukui-tooltip__bubble",
-                `kukui-tooltip__bubble--${position.placement}`,
+                position
+                  ? `kukui-tooltip__bubble--${position.placement}`
+                  : "kukui-tooltip__bubble--measuring",
               ].join(" ")}
-              style={{
-                top: position.top,
-                left: position.left,
-              }}
+              style={
+                position
+                  ? {
+                      top: position.top,
+                      left: position.left,
+                      // CSS uses this to nudge the ::after arrow back
+                      // under the trigger when we slid the bubble.
+                      ["--kukui-tooltip-arrow-x" as unknown as string]:
+                        `${-position.offsetX}px`,
+                    }
+                  : {
+                      // First frame before width measurement — keep
+                      // off-screen so the user doesn't see the un-
+                      // clamped centre flash.
+                      top: -9999,
+                      left: -9999,
+                    }
+              }
             >
               {text}
             </span>,

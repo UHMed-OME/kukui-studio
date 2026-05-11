@@ -425,10 +425,14 @@ export function App() {
           <button
             type="button"
             onClick={downloadScorm}
-            className="kukui-studio-btn kukui-studio-btn--primary kukui-studio-btn--with-subtext"
+            className="kukui-studio-btn kukui-studio-btn--primary kukui-studio-btn--with-subtext kukui-studio-btn--nut-bg"
             title="Download a SCORM 1.2 zip ready to upload into Lamakū or any SCORM 1.2 compatible LMS"
           >
-            <KukuiGlyphIcon className="kukui-studio-btn__glyph" />
+            {/* Decorative candlenut bleeds off the right edge of the
+                button — sets the brand without competing with the
+                download affordance. aria-hidden so AT skips it. */}
+            <KukuiGlyphIcon className="kukui-studio-btn__nut" aria-hidden="true" />
+            <DownloadIcon />
             <span className="kukui-studio-btn__stack">
               <span className="kukui-studio-btn__main">Download</span>
               <span className="kukui-studio-btn__sub">SCORM 1.2 zip</span>
@@ -766,12 +770,8 @@ export function App() {
 
       <footer className="kukui-studio-footer">
         <p className="kukui-studio-footer__about">
-          <strong>Kukui</strong>{" "}
-          <span className="kukui-studio-footer__pronunciation" aria-label="pronounced koo-KOO-ee">
-            /koo-KOO-ee/
-          </span>{" "}
-          <strong>Studio</strong> — open-source interactive learning activities for the LMS.
-          Built at{" "}
+          <strong>Kukui Studio</strong> — open-source interactive learning activities for the
+          LMS. Built at{" "}
           <a
             href="https://jabsom.hawaii.edu/"
             target="_blank"
@@ -780,7 +780,13 @@ export function App() {
           >
             UH JABSOM
           </a>{" "}
-          Office of Medical Education.
+          Office of Medical Education.{" "}
+          <span
+            className="kukui-studio-footer__pronunciation"
+            aria-label="Kukui is pronounced koo-KOO-ee"
+          >
+            (Kukui · /koo-KOO-ee/)
+          </span>
         </p>
         <nav className="kukui-studio-footer__nav" aria-label="Project links">
           <a
