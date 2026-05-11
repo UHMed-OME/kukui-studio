@@ -2,7 +2,7 @@ import { lazy, Suspense, useMemo } from "react";
 import Form from "@rjsf/core";
 import validator from "@rjsf/validator-ajv8";
 import type { IChangeEvent } from "@rjsf/core";
-import type { ErrorSchema, RJSFSchema } from "@rjsf/utils";
+import type { ErrorSchema, RJSFSchema, WidgetProps } from "@rjsf/utils";
 import { z } from "zod";
 import { SchemaRegistry, type SchemaRegistryKey } from "@kukui/schemas";
 import type { ActivityKind } from "@kukui/core";
@@ -18,9 +18,13 @@ import { NodeSelectWidget } from "./widgets/NodeSelectWidget.js";
 // field. Wrapping the whole RJSF <Form> in Suspense keeps the form
 // render-once and lets RJSF mount the widget normally; React resolves
 // the lazy chunk lazily the first time it's needed.
-const RichTextWidget = lazy(() =>
+const LazyRichTextWidget = lazy(() =>
   import("./widgets/RichTextWidget.js").then((m) => ({ default: m.RichTextWidget })),
 );
+
+function RichTextWidget(props: WidgetProps) {
+  return <LazyRichTextWidget {...props} />;
+}
 
 /**
  * Auto-generated form per activity kind.
