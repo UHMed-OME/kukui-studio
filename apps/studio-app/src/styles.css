@@ -2832,6 +2832,41 @@ html[data-theme="glass"] .kukui-studio-footer {
   color: var(--color-text-muted);
 }
 
+/* Icon-only button (Settings gear next to the primary CTA). 44 px tap
+   target per the design system; ghost styling so it doesn't compete
+   with the primary action. */
+.kukui-studio-ai__icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  background: transparent;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background-color 120ms ease, border-color 120ms ease, color 120ms ease;
+}
+
+.kukui-studio-ai__icon-btn:hover {
+  background: var(--color-primary-soft);
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.kukui-studio-ai__icon-btn:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.kukui-studio-ai__icon-btn svg {
+  width: 18px;
+  height: 18px;
+}
+
 .kukui-studio-ai__spinner {
   display: inline-block;
   width: 14px;

@@ -7,7 +7,7 @@ import {
 } from "./ai/chat-completions.js";
 import { type AISettings, hasUsableSettings, loadSettings } from "./ai/settings.js";
 import { STARTERS } from "./starters.js";
-import { SparkleIcon } from "./icons.js";
+import { GearIcon, SparkleIcon } from "./icons.js";
 
 type Mode = "generate" | "edit" | "explain";
 
@@ -396,15 +396,15 @@ export function AIEditor({
 
   const isPending = response.kind === "pending";
   const sendLabel =
-    inferredMode === "generate" ? "Generate activity" : "Apply changes";
+    inferredMode === "generate" ? "Create activity" : "Apply changes";
   const sendHint =
     inferredMode === "generate"
-      ? "Send writes a new activity from your description."
-      : "Send revises your current activity. Big rewrites ask to confirm first.";
+      ? "Describe an activity and I'll write it for you. Big rewrites ask to confirm first."
+      : "Describe a change and I'll revise your current activity. Big rewrites ask to confirm first.";
 
   return (
     <div className="kukui-studio-ai">
-      <p className="kukui-studio-ai__meta">{sendHint} You can also ask the AI to just explain what's there without changing anything.</p>
+      <p className="kukui-studio-ai__meta">{sendHint}</p>
 
       <label className="kukui-studio-ai__field">
         <span className="kukui-studio-ai__label">
@@ -434,24 +434,16 @@ export function AIEditor({
           ) : (
             <SparkleIcon />
           )}
-          <span>{isPending ? "Generating…" : sendLabel}</span>
+          <span>{isPending ? "Working…" : sendLabel}</span>
         </button>
         <button
           type="button"
-          className="kukui-studio-btn kukui-studio-btn--ghost kukui-studio-btn--sm"
-          onClick={() => handleGenerate("explain")}
-          disabled={isPending || prompt.trim().length === 0}
-          title="Read-only: returns a plain-English explanation. Doesn't change your activity."
-        >
-          Just explain
-        </button>
-        <button
-          type="button"
-          className="kukui-studio-btn kukui-studio-btn--ghost kukui-studio-btn--sm"
+          className="kukui-studio-ai__icon-btn"
           onClick={onOpenSettings}
           title="AI editor settings"
+          aria-label="AI editor settings"
         >
-          Settings
+          <GearIcon />
         </button>
         <div className="kukui-studio-ai__meta">
           <span>{settings.model}</span>
