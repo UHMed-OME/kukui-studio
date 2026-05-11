@@ -7,9 +7,9 @@
 <p align="center"><em>JSON-driven interactive learning activities for the LMS. SCORM-packaged, browser-hosted, no backend.</em></p>
 
 <p align="center">
-  <a href="https://uhmed-ome.github.io/kukui-studio/"><strong>▶ Open Kukui Studio (live)</strong></a>
+  <a href="https://kukuistudio.com"><strong>▶ Open Kukui Studio (live)</strong></a>
   &nbsp;·&nbsp;
-  <a href="#uploading-a-kukui-activity-to-brightspace-lamakū">Upload to Brightspace</a>
+  <a href="#uploading-a-kukui-activity-to-lamakū-or-any-other-lms">Upload to Lamakū</a>
   &nbsp;·&nbsp;
   <a href="#activity-catalog">Activity catalog</a>
   &nbsp;·&nbsp;
@@ -18,7 +18,7 @@
 
 ---
 
-Kukui is an open-source toolkit for building, packaging, and shipping interactive learning activities to a Learning Management System. It started as a project for [University of Hawaiʻi John A. Burns School of Medicine](https://jabsom.hawaii.edu/)'s Brightspace instance ("Lamakū") and is released under the MIT license for any institution that wants to author their own.
+Kukui is an open-source toolkit for building, packaging, and shipping interactive learning activities to a Learning Management System. It started as a project for [University of Hawaiʻi John A. Burns School of Medicine](https://jabsom.hawaii.edu/)'s LMS instance ("Lamakū") and is released under the MIT license for any institution that wants to author their own.
 
 The project name comes from the **kukui** nut — the candlenut Hawaiians traditionally burned in *lamakū* torches. Lamakū hosts the activities; Kukui *is* the activities.
 
@@ -28,7 +28,7 @@ A handful of incumbent interactive-content authoring platforms already exist for
 
 - **No backend, no login, no SaaS.** Studio runs entirely in the browser. Drafts auto-save to your local browser storage; nothing is sent to a server we operate. There's nothing to provision, no per-seat license, and no central database holding course content. An institution can fork the repo, push to its own GitHub, and host Studio for free on GitHub Pages.
 - **WCAG 2.2 AA from day 1, not retrofitted.** Every activity ships keyboard fallbacks for drag-and-drop interactions, ARIA-labeled controls, focus-trapped modals, and respects `prefers-reduced-motion` / `prefers-reduced-transparency`. Required `alt` text is enforced at the schema layer — authors can't ship an inaccessible image even by accident.
-- **Direct SCORM 1.2 packaging, no third-party hosting.** Click **Download** and you get a `<title>.zip` you upload to D2L Brightspace (or any SCORM 1.2 LMS) as a SCO module. Grades flow back through `cmi.core.score.*` and `cmi.core.lesson_status` automatically. No external content service to integrate, no LTI consumer key to provision, no risk of an outage on someone else's server breaking your gradebook.
+- **Direct SCORM 1.2 packaging, no third-party hosting.** Click **Download** and you get a `<title>.zip` you upload to Lamakū (or any SCORM 1.2 LMS) as a SCO module. Grades flow back through `cmi.core.score.*` and `cmi.core.lesson_status` automatically. No external content service to integrate, no LTI consumer key to provision, no risk of an outage on someone else's server breaking your gradebook.
 - **JSON-driven, version-controllable authoring.** Every activity is a Zod-validated JSON config. Authors can hand-edit the JSON, paste into Studio, diff it in git, copy a working activity and tweak it, or generate one from a script. The schemas are the contract — no proprietary binary formats, no editor-locked files.
 - **Open content + open code.** MIT-licensed code; activities are plain JSON the author owns. No vendor can revoke access, change pricing, or sunset a feature an institution depends on. The 24 activity types ship as components in the repo — extend or fork freely.
 - **Modern web stack, native to the browser.** React 19, TypeScript strict, Tailwind, Vite. No Flash, no Java applet, no proprietary runtime. WebGL/`react-three-fiber` powers the 3D activities; `MediaRecorder` powers audio capture; everything degrades gracefully when a feature isn't available.
@@ -36,7 +36,7 @@ A handful of incumbent interactive-content authoring platforms already exist for
 
 ## Use Kukui Studio (no install required)
 
-> **▶ https://uhmed-ome.github.io/kukui-studio/**
+> **▶ https://kukuistudio.com**
 
 Studio runs entirely in the browser — no install, no login, no backend. Drafts auto-save to your browser's local storage; you can also **Export** an in-progress draft as a portable JSON file for another author to **Import**.
 
@@ -45,8 +45,8 @@ Studio runs entirely in the browser — no install, no login, no backend. Drafts
 1. Open the link above.
 2. Pick an activity type from the sidebar (organized by Bloom's taxonomy).
 3. Fill in the form, or paste your own JSON. Preview renders live alongside the form.
-4. Click **Download / SCORM 1.2 ZIP**. You get a `<your-title>.zip` that drops directly into D2L Brightspace (or any SCORM 1.2-compatible LMS).
-5. Upload the zip into your course (steps in the [Brightspace section](#uploading-a-kukui-activity-to-brightspace-lamakū) below). Grades flow back automatically via SCORM 1.2's `cmi.core.score.*` and `cmi.core.lesson_status` APIs.
+4. Click **Download / SCORM 1.2 ZIP**. You get a `<your-title>.zip` that drops directly into Lamakū (or any SCORM 1.2-compatible LMS).
+5. Upload the zip into your course (steps in the [Upload section](#uploading-a-kukui-activity-to-lamakū-or-any-other-lms) below). Grades flow back automatically via SCORM 1.2's `cmi.core.score.*` and `cmi.core.lesson_status` APIs.
 
 ## What's in the box
 
@@ -54,7 +54,7 @@ Three apps, one shared core:
 
 | App | What it does |
 |---|---|
-| **Kukui Studio** | Browser-based authoring tool. Pick an activity type, fill in the form (or drop in JSON), preview live, download a SCORM 1.2 zip ready for D2L. No login, no backend — drafts auto-save to your browser. |
+| **Kukui Studio** | Browser-based authoring tool. Pick an activity type, fill in the form (or drop in JSON), preview live, download a SCORM 1.2 zip ready for Lamakū or any other SCORM 1.2 LMS. No login, no backend — drafts auto-save to your browser. |
 | **Kukui Engine** | The runtime that actually ships inside each SCORM zip. One self-contained bundle per activity type; loads its config JSON, renders the React component, reports the score back to the LMS via SCORM. |
 | **Kukui Live** *(alpha)* | Real-time classroom mode using peer-to-peer WebRTC. Students join an instructor's session with a 6-digit code and synchronized state flows through a CRDT (Y.js). |
 
@@ -69,16 +69,16 @@ Activities are organized by Bloom's revised taxonomy — what kind of thinking t
 - **Matching Pairs** — Click an item on the left, then its match on the right. Right column shuffles on load (configurable). On submit, wrong rows show "Correct match: X" so the learner sees the pairing.
 
 ### Understand — identify, explain, classify
-- **Image Hotspot 2D** — Pick the correct region of an image. Single-correct (use Hotspot 3D's variant for spatial work). Includes a keyboard fallback list of named regions for AT users.
+- **Image Hotspots** — Pick the correct region of an image. Single-correct (use 3D Hotspots for spatial work). Includes a keyboard fallback list of named regions for AT users.
 - **Anatomy Labeling** — Drag named labels to anchor points on a diagram. Each target accepts exactly one label; placing a different label displaces the previous one back to the tray. Per-label correctness shown on submit.
 - **Highlight Text Spans** — Click words/phrases in a sentence; correct selections gain points, wrong ones lose them. After submit, dashed outlines appear on tokens the learner missed.
 
 ### Apply — use procedures in new contexts
 - **Drag and Drop** — Drop labeled chips onto rectangles overlaid on a background image. Supports many-to-one (multiple chips on one zone) via per-chip `correctZones[]`. Visual editor in Studio + dnd-kit drag with a `<select>` keyboard fallback.
-- **Sequence / Order Steps** — Arrange shuffled items in the correct order. Shuffle algorithm guarantees the start order isn't already correct. Partial credit per item-in-correct-position; reorder via mouse drag or keyboard arrows.
+- **Sequence Steps** — Arrange shuffled items in the correct order. Shuffle algorithm guarantees the start order isn't already correct. Partial credit per item-in-correct-position; reorder via mouse drag or keyboard arrows.
 - **Categorization** — Sort items into named bins. No capacity limit per bin (vs. Drag and Drop). Items snap into bins; the keyboard fallback offers a `<select>` per item.
-- **3D Hotspot Identification** — Same as 2D but on a 3D model (glTF/glb), rendered with react-three-fiber. Single-correct; falls back to a button list when WebGL is unavailable.
-- **Virtual Environment Tour** — A 3D scene with clickable info overlays. Two completion modes: `manual` (Submit when ready) or `visitAll` (auto-completes when every required overlay has been visited).
+- **3D Hotspots** — Same as Image Hotspots but on a 3D model (glTF/glb), rendered with react-three-fiber. Single-correct; falls back to a button list when WebGL is unavailable.
+- **Virtual Tour** — A 3D scene with clickable info overlays. Two completion modes: `manual` (Submit when ready) or `visitAll` (auto-completes when every required overlay has been visited).
 - **Interactive Video** — A video player that pauses at author-chosen timestamps and overlays a sub-activity (multiple-choice or fill-in-the-blanks). Required interactions block completion until answered; if the learner skips past one, the player seeks back. HTML5 sources only in this release (YouTube/Vimeo planned).
 
 ### Analyze — break apart, compare, infer relationships
@@ -94,19 +94,19 @@ Activities are organized by Bloom's revised taxonomy — what kind of thinking t
 - **OSCE Encounter** — A multi-phase clinical encounter (e.g. History → Examination → Closure). Each phase exposes actions the learner can perform; correct actions add points (configurable +/− anti-guess penalty). `expectedOrder` rewards performing phases in the right order.
 
 ### Create — produce original work
-- **Audio Recording / Pronunciation** — Records mic audio in-browser via MediaRecorder. Optional reference audio plays alongside; `minSeconds`/`maxSeconds` enforce duration. Re-record allowed by default. *Pure completion scoring* — the audio itself isn't auto-evaluated.
+- **Audio Recording** — Records mic audio in-browser via MediaRecorder. Optional reference audio plays alongside; `minSeconds`/`maxSeconds` enforce duration. Re-record allowed by default. *Pure completion scoring* — the audio itself isn't auto-evaluated.
 
 ### Quiz primitives (used inside other activities; not in Studio's catalog)
-**Multiple Choice**, **Fill in the Blanks**, and **Question Set** ship in `@kukui/core` and are usable for Brightspace's native quiz tools. Studio hides them because Lamakū already has good native quiz authoring; Kukui exists to do what Lamakū *can't*.
+**Multiple Choice**, **Fill in the Blanks**, and **Question Set** ship in `@kukui/core` and are usable for an LMS's native quiz tools. Studio hides them because Lamakū already has good native quiz authoring; Kukui exists to do what Lamakū *can't*.
 
-## Uploading a Kukui activity to Brightspace (Lamakū)
+## Uploading a Kukui activity to Lamakū (or any other LMS)
 
 1. In Studio, fill out the activity form and click **Download / SCORM 1.2 zip**. You'll get a `<your-title>.zip` file.
-2. In your Brightspace course, navigate to **Content > the unit/module** where the activity should live.
-3. Click **Upload / Create > SCORM Object**, then choose the zip you just downloaded. Brightspace unpacks the package and adds it as a new topic.
+2. In your LMS course (Lamakū shown here), navigate to **Content > the unit/module** where the activity should live.
+3. Click **Upload / Create > SCORM Object**, then choose the zip you just downloaded. The LMS unpacks the package and adds it as a new topic.
 4. To make grades flow into the gradebook, open the new topic, click the **gear icon > Edit Properties In-place**, and link it to a numeric grade item. Pass-percentage and points-out-of are configured on the grade item, not on the activity itself.
 
-The Kukui activity reports `raw / max` (scaled to 0–100) and `passed` / `failed` to Brightspace. Completion-only activities (Reflection Prompt, Audio Recording, Image Comparison Slider, and Flashcards) always submit `100% / passed` so the gradebook records full credit on completion — they're not assessment items.
+The Kukui activity reports `raw / max` (scaled to 0–100) and `passed` / `failed` to the LMS. Completion-only activities (Reflection Prompt, Audio Recording, Image Comparison Slider, and Flashcards) always submit `100% / passed` so the gradebook records full credit on completion — they're not assessment items.
 
 ## Architecture (one diagram)
 
@@ -121,10 +121,10 @@ The Kukui activity reports `raw / max` (scaled to 0–100) and `passed` / `faile
                 │  inside each     │  (~400 KB gzipped per activity)
                 │  SCORM zip       │
                 └────────┬─────────┘
-                         │ uploaded to D2L Brightspace as a SCO module
+                         │ uploaded to Lamakū or another LMS as a SCO module
                          ▼
                 ┌──────────────────┐
-                │  Lamakū / D2L    │  posts cmi.core.score.* via pipwerks
+                │  Lamakū / LMS    │  posts cmi.core.score.* via pipwerks
                 └──────────────────┘
 ```
 
@@ -169,7 +169,7 @@ Per-activity score math lives in [`packages/core/src/scoring.ts`](packages/core/
 
 | Component output | SCORM field | Notes |
 |---|---|---|
-| `raw / max` | `cmi.core.score.raw` (scaled to 0–100) | Bridge converts the ratio to a 0–100 percentage so D2L always sees a comparable scale. `cmi.core.score.min` / `score.max` are written as `"0"` / `"100"`. |
+| `raw / max` | `cmi.core.score.raw` (scaled to 0–100) | Bridge converts the ratio to a 0–100 percentage so the LMS always sees a comparable scale. `cmi.core.score.min` / `score.max` are written as `"0"` / `"100"`. |
 | `success` | `cmi.core.lesson_status` | `true` → `"passed"`; `false` → `"failed"`. |
 | `suspendData` | `cmi.suspend_data` (≤ 4 KB) | JSON blob, used for resume. SCORM 1.2 caps this at 4096 chars; the bridge truncates and warns on overflow. |
 

@@ -4,6 +4,7 @@ import {
   useRef,
   useState,
   type ChangeEvent,
+  type KeyboardEvent as ReactKeyboardEvent,
 } from "react";
 import { type ActivityKind, PLANNED_ACTIVITY_KINDS } from "@kukui/core";
 import { SchemaRegistry, type SchemaRegistryKey } from "@kukui/schemas";
@@ -23,7 +24,9 @@ import {
   PlayIcon,
   SaveIcon,
   UploadIcon,
+  XIcon,
 } from "./icons.js";
+import { ActivityIcon } from "./activityIcons.js";
 import { ACTIVITY_LABELS, STARTERS } from "./starters.js";
 import { clearDraft, debouncedSaver, loadDraft, saveDraft } from "./drafts.js";
 import { downloadScormZip } from "./scormDownload.js";
@@ -141,6 +144,7 @@ export function App() {
   // On narrow viewports the editor + preview panels can't both fit, so we
   // hide one or the other. Desktop CSS ignores this — both panels show.
   const [mobilePanel, setMobilePanel] = useState<"edit" | "preview">("edit");
+  const [search, setSearch] = useState("");
 
   // Reset preview mode whenever the picked activity changes — kinds with
   // an editor default to "edit", everything else to "live". Keeps the
@@ -182,6 +186,34 @@ export function App() {
     () => (validation.success ? undefined : zodErrorsToExtraErrors(validation.error)),
     [validation],
   );
+
+  // Sidebar search: case-insensitive substring match against the activity
+  // label. We do not change `kind` when the active selection drops out of
+  // the filter — that would surprise the user mid-edit.
+  const normalizedSearch = search.trim().toLowerCase();
+  const matchesSearch = (k: ActivityKind) =>
+    normalizedSearch === "" ||
+    ACTIVITY_LABELS[k].toLowerCase().includes(normalizedSearch);
+  const visibleAvailable = STUDIO_AVAILABLE.filter(matchesSearch);
+  const visiblePlanned = STUDIO_PLANNED.filter(matchesSearch);
+  const noVisibleActivities = visibleAvailable.length + visiblePlanned.length === 0;
+
+  const handleSearchKeydown = (e: ReactKeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Escape") {
+      if (search) {
+        setSearch("");
+      } else {
+        e.currentTarget.blur();
+      }
+    } else if (e.key === "Enter") {
+      if (visibleAvailable.length + visiblePlanned.length === 1) {
+        const only = visibleAvailable[0] ?? visiblePlanned[0];
+        if (only && only !== kind) {
+          setKind(only);
+        }
+      }
+    }
+  };
 
   const flash = (msg: string) => {
     setToast(msg);
@@ -245,7 +277,7 @@ export function App() {
   };
 
   // Export = download a portable JSON snapshot of the activity. Distinct
-  // from Save (in-session) and Download (SCORM zip for D2L).
+  // from Save (in-session) and Download (SCORM zip for the LMS).
   const exportJson = () => {
     if (!validation.success) {
       flash("Fix the highlighted validation errors first.");
@@ -345,7 +377,7 @@ export function App() {
             <h1 className="kukui-studio-title">Kukui Studio</h1>
           </div>
           <p className="kukui-studio-subtitle">
-            Interactive learning activities for Lamakū.
+            Interactive learning activities for Lamakū and other LMS.
           </p>
         </div>
         <div className="kukui-studio-toolbar">
@@ -369,7 +401,7 @@ export function App() {
             type="button"
             onClick={downloadScorm}
             className="kukui-studio-btn kukui-studio-btn--primary kukui-studio-btn--with-subtext"
-            title="Download a SCORM 1.2 zip ready to upload into D2L Brightspace (or any SCORM 1.2 compatible LMS)"
+            title="Download a SCORM 1.2 zip ready to upload into Lamakū or any SCORM 1.2 compatible LMS"
           >
             <DownloadIcon />
             <span className="kukui-studio-btn__stack">
@@ -423,8 +455,30 @@ export function App() {
       </div>
 
       <nav className="kukui-studio-sidebar" aria-label="Activity type">
+        <div className="kukui-studio-sidebar__search">
+          <input
+            type="search"
+            className="kukui-studio-sidebar__search-input"
+            placeholder="Search activities"
+            aria-label="Search activities"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            onKeyDown={handleSearchKeydown}
+          />
+          {search ? (
+            <button
+              type="button"
+              className="kukui-studio-sidebar__search-clear"
+              aria-label="Clear search"
+              onClick={() => setSearch("")}
+            >
+              <XIcon />
+            </button>
+          ) : null}
+        </div>
         {BLOOM_ORDER.map((level) => {
-          const kindsAtLevel = STUDIO_AVAILABLE.filter((k) => BLOOM_BY_KIND[k] === level)
+          const kindsAtLevel = visibleAvailable
+            .filter((k) => BLOOM_BY_KIND[k] === level)
             .slice()
             .sort((a, b) => ACTIVITY_LABELS[a].localeCompare(ACTIVITY_LABELS[b]));
           if (kindsAtLevel.length === 0) return null;
@@ -446,7 +500,13 @@ export function App() {
                       onClick={() => setKind(k)}
                       aria-current={k === kind ? "true" : undefined}
                     >
-                      {ACTIVITY_LABELS[k]}
+                      <ActivityIcon
+                        kind={k}
+                        className="kukui-studio-sidebar__btn-icon"
+                      />
+                      <span className="kukui-studio-sidebar__btn-label">
+                        {ACTIVITY_LABELS[k]}
+                      </span>
                     </button>
                   </li>
                 ))}
@@ -454,13 +514,13 @@ export function App() {
             </div>
           );
         })}
-        {STUDIO_PLANNED.length > 0 ? (
+        {visiblePlanned.length > 0 ? (
           <div className="kukui-studio-sidebar__group">
             <h2 className="kukui-studio-sidebar__heading kukui-studio-sidebar__heading--alt">
               In design
             </h2>
             <ul className="kukui-studio-sidebar__list">
-              {STUDIO_PLANNED.map((k) => (
+              {visiblePlanned.map((k) => (
                 <li key={k}>
                   <button
                     type="button"
@@ -473,13 +533,24 @@ export function App() {
                     onClick={() => setKind(k)}
                     aria-current={k === kind ? "true" : undefined}
                   >
-                    {ACTIVITY_LABELS[k]}
+                    <ActivityIcon
+                      kind={k}
+                      className="kukui-studio-sidebar__btn-icon"
+                    />
+                    <span className="kukui-studio-sidebar__btn-label">
+                      {ACTIVITY_LABELS[k]}
+                    </span>
                     <span className="kukui-studio-sidebar__hint">In design</span>
                   </button>
                 </li>
               ))}
             </ul>
           </div>
+        ) : null}
+        {normalizedSearch && noVisibleActivities ? (
+          <p className="kukui-studio-sidebar__empty" role="status">
+            No activities match "{search.trim()}".
+          </p>
         ) : null}
       </nav>
 
