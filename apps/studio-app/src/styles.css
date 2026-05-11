@@ -2894,6 +2894,128 @@ html[data-theme="glass"] .kukui-studio-footer {
   color: var(--color-text-secondary);
 }
 
+/* "About to apply this big change?" inline confirm — replaces the old
+   developer-style Proposed-changes card for destructive edits only. */
+.kukui-studio-ai__confirm {
+  margin-top: var(--spacing-sm);
+  padding: var(--spacing-lg);
+  background: var(--color-error-soft);
+  border: 1px solid var(--color-error);
+  border-radius: var(--radius-card);
+}
+
+.kukui-studio-ai__confirm-title {
+  margin: 0 0 var(--spacing-sm);
+  font-size: var(--font-size-subtitle);
+  color: var(--color-text-primary);
+}
+
+.kukui-studio-ai__confirm-body {
+  margin: 0 0 var(--spacing-md);
+  font-size: var(--font-size-meta);
+  color: var(--color-text-secondary);
+  line-height: 1.5;
+}
+
+/* Applied banner — non-modal, replaces the Proposed-changes card. */
+.kukui-studio-ai__banner {
+  margin-top: var(--spacing-sm);
+  padding: var(--spacing-md) var(--spacing-lg);
+  background: var(--color-success-soft);
+  border: 1px solid var(--color-success);
+  border-radius: var(--radius-card);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.kukui-studio-ai__banner-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.kukui-studio-ai__banner-text strong {
+  font-size: var(--font-size-meta);
+  color: var(--color-text-primary);
+}
+
+.kukui-studio-ai__banner-summary {
+  font-size: var(--font-size-micro);
+  color: var(--color-text-secondary);
+}
+
+.kukui-studio-ai__banner-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-xs);
+}
+
+/* Collapsed pill — auto-shrinks after 30 s so it stops eating panel space
+   but Undo is still one click away. */
+.kukui-studio-ai__banner--collapsed {
+  padding: 0;
+  background: transparent;
+  border: none;
+}
+
+.kukui-studio-ai__banner-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  padding: 4px 10px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  color: var(--color-primary);
+  font-size: var(--font-size-micro);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.kukui-studio-ai__banner-pill:hover {
+  background: var(--color-primary-soft);
+  border-color: var(--color-primary);
+}
+
+.kukui-studio-ai__banner-pill:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* Show technical details expander on the applied banner — kept tiny so
+   it doesn't pull non-technical authors into reading raw JSON. */
+.kukui-studio-ai__details {
+  font-size: var(--font-size-micro);
+  color: var(--color-text-secondary);
+}
+
+.kukui-studio-ai__details summary {
+  cursor: pointer;
+  padding: var(--spacing-xs) 0;
+  user-select: none;
+}
+
+.kukui-studio-ai__details summary:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.kukui-studio-ai__details-body {
+  margin: var(--spacing-sm) 0 0;
+  padding: var(--spacing-sm);
+  background: var(--color-surface-alt);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  font-family: var(--font-family-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+  font-size: 11px;
+  line-height: 1.4;
+  max-height: 320px;
+  overflow: auto;
+  white-space: pre-wrap;
+}
+
 .kukui-studio-ai__card {
   background: var(--color-surface-alt);
   border: 1px solid var(--color-border);

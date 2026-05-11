@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { SchemaRegistry, type SchemaRegistryKey } from "@kukui/schemas";
 import {
   callFreeText,
@@ -15,20 +15,30 @@ type ResponseState =
   | { kind: "none" }
   | { kind: "pending" }
   | {
-      kind: "structured";
-      summary: string;
+      // Edit-mode change exceeded the destructive threshold — wait for
+      // explicit confirmation before mutating the form value.
+      kind: "confirming";
       proposed: unknown;
+      summary: string;
       raw: string;
-      timestamp: number;
+      changeRatio: number;
+    }
+  | {
+      // Auto-applied: form value already swapped, banner shows what
+      // happened with an Undo affordance. previousValue holds the
+      // pre-AI state so Undo can restore it.
+      kind: "applied";
+      previousValue: unknown;
+      summary: string;
+      raw: string;
+      appliedAt: number;
     }
   | { kind: "text"; text: string; timestamp: number }
   | { kind: "error"; code: ChatCompletionsError["code"]; message: string };
 
 /**
- * Diffable summary of what the model proposes to change. Walks top-level
- * keys only — anything deeper folds into "modified". Good enough for the
- * "Proposed changes" card; the user clicks Accept to see the full result
- * via the form / JSON tabs.
+ * Plain-English summary of top-level field changes for the applied
+ * banner. Walks top-level keys only — deeper diffs fold into "Updated".
  */
 function summariseChanges(before: unknown, after: unknown): string {
   if (!isPlainObject(before) || !isPlainObject(after)) {
@@ -50,6 +60,30 @@ function summariseChanges(before: unknown, after: unknown): string {
   return parts.length ? parts.join(" · ") : "No top-level fields changed.";
 }
 
+/**
+ * Rough "how destructive is this edit?" heuristic. Returns 0..1 where
+ * 1 means the proposal replaced everything. Counts a top-level key as
+ * "changed" if its JSON-stringified value differs from before. Doesn't
+ * recurse — fine for guardrail purposes since we're trying to catch
+ * "you're about to nuke the whole activity," not measure deep diffs.
+ */
+function changeRatio(before: unknown, after: unknown): number {
+  if (!isPlainObject(before) || !isPlainObject(after)) return 1;
+  const beforeKeys = Object.keys(before);
+  if (beforeKeys.length === 0) return 0;
+  let changed = 0;
+  for (const k of beforeKeys) {
+    if (!(k in after)) {
+      changed += 1;
+      continue;
+    }
+    if (JSON.stringify(before[k]) !== JSON.stringify(after[k])) changed += 1;
+  }
+  return changed / beforeKeys.length;
+}
+
+const DESTRUCTIVE_THRESHOLD = 0.5;
+
 function isPlainObject(v: unknown): v is Record<string, unknown> {
   return typeof v === "object" && v !== null && !Array.isArray(v);
 }
@@ -62,10 +96,10 @@ const MODE_LABELS: Record<Mode, string> = {
 
 const MODE_HINTS: Record<Mode, string> = {
   generate:
-    "Generate a new activity from a short description. Overwrites the current value when you accept.",
-  edit: "Revise the current JSON based on your prompt. Preserves fields you didn't ask to change.",
+    "Generate a new activity from a short description. Replaces your current draft. (Undo available right after.)",
+  edit: "Revise the current activity based on your prompt. Preserves anything you didn't ask to change. Big rewrites ask for confirmation first.",
   explain:
-    "Read-only summary of the current activity. Doesn't change the form value.",
+    "Read-only summary of the current activity. Doesn't change anything.",
 };
 
 export function AIEditor({
@@ -85,6 +119,17 @@ export function AIEditor({
   );
   const [prompt, setPrompt] = useState("");
   const [response, setResponse] = useState<ResponseState>({ kind: "none" });
+  const [showDetails, setShowDetails] = useState(false);
+  // Latest "applied" banner needs to know whether to render full vs.
+  // collapsed pill. Flips after 30s; resets when a new response lands.
+  const [bannerCollapsed, setBannerCollapsed] = useState(false);
+
+  // Always keep the LATEST onChange in a ref so the applied-state
+  // closure in handleSuccessfulProposal isn't stale across renders.
+  const onChangeRef = useRef(onChange);
+  useEffect(() => {
+    onChangeRef.current = onChange;
+  }, [onChange]);
 
   // Re-read settings whenever this tab mounts — the settings dialog might
   // have written new ones while we weren't visible.
@@ -106,6 +151,76 @@ export function AIEditor({
       Math.max(1, Math.ceil((prompt.length + (mode !== "generate" ? JSON.stringify(value).length : 0)) / 4)),
     [prompt, mode, value],
   );
+
+  /**
+   * Apply-then-undo flow: when a valid proposal lands, either swap it in
+   * immediately (most edits) or pause for confirm (destructive ones,
+   * Edit mode only — Generate always replaces so confirming there is
+   * just noise).
+   */
+  const finalizeProposal = (
+    baseline: unknown,
+    proposed: unknown,
+    raw: string,
+  ) => {
+    const summary = summariseChanges(baseline, proposed);
+    const ratio = changeRatio(baseline, proposed);
+    if (mode === "edit" && ratio >= DESTRUCTIVE_THRESHOLD) {
+      setResponse({
+        kind: "confirming",
+        proposed,
+        summary,
+        raw,
+        changeRatio: ratio,
+      });
+      return;
+    }
+    onChangeRef.current(proposed);
+    setBannerCollapsed(false);
+    setResponse({
+      kind: "applied",
+      previousValue: value,
+      summary,
+      raw,
+      appliedAt: Date.now(),
+    });
+  };
+
+  const confirmDestructive = () => {
+    if (response.kind !== "confirming") return;
+    onChangeRef.current(response.proposed);
+    setBannerCollapsed(false);
+    setResponse({
+      kind: "applied",
+      previousValue: value,
+      summary: response.summary,
+      raw: response.raw,
+      appliedAt: Date.now(),
+    });
+  };
+
+  const cancelDestructive = () => {
+    if (response.kind !== "confirming") return;
+    setResponse({ kind: "none" });
+  };
+
+  const undoLastApplied = () => {
+    if (response.kind !== "applied") return;
+    onChangeRef.current(response.previousValue);
+    setResponse({ kind: "none" });
+  };
+
+  const tryAnotherPrompt = () => {
+    setResponse({ kind: "none" });
+    setPrompt("");
+  };
+
+  // Banner auto-collapses to a pill after 30s; new responses reset it.
+  useEffect(() => {
+    if (response.kind !== "applied") return;
+    const id = window.setTimeout(() => setBannerCollapsed(true), 30000);
+    return () => window.clearTimeout(id);
+  }, [response.kind, "appliedAt" in response ? response.appliedAt : 0]);
 
   const handleGenerate = async () => {
     if (!usable) {
@@ -153,13 +268,12 @@ export function AIEditor({
           const retryValid = SchemaRegistry[kind].safeParse(retry.json);
           if (retryValid.success) {
             setSettings(retry.nextSettings);
-            setResponse({
-              kind: "structured",
-              proposed: retryValid.data,
-              raw: JSON.stringify(retry.json, null, 2),
-              summary: summariseChanges(includeCurrent ? value : STARTERS[kind], retryValid.data),
-              timestamp: Date.now(),
-            });
+            const baseline = includeCurrent ? value : STARTERS[kind];
+            finalizeProposal(
+              baseline,
+              retryValid.data,
+              JSON.stringify(retry.json, null, 2),
+            );
             return;
           }
           setResponse({
@@ -181,13 +295,12 @@ export function AIEditor({
         }
       }
 
-      setResponse({
-        kind: "structured",
-        proposed: validation.data,
-        raw: JSON.stringify(result.json, null, 2),
-        summary: summariseChanges(includeCurrent ? value : STARTERS[kind], validation.data),
-        timestamp: Date.now(),
-      });
+      const baseline = includeCurrent ? value : STARTERS[kind];
+      finalizeProposal(
+        baseline,
+        validation.data,
+        JSON.stringify(result.json, null, 2),
+      );
     } catch (err) {
       setResponse({
         kind: "error",
@@ -202,27 +315,19 @@ export function AIEditor({
     }
   };
 
-  const accept = () => {
-    if (response.kind !== "structured") return;
-    onChange(response.proposed);
-    setResponse({ kind: "none" });
-    setPrompt("");
-  };
-
-  const refine = async () => {
-    if (response.kind !== "structured") return;
-    // Re-prompt with the existing prompt + a follow-up the user types.
-    // For v1 (single-shot refine without a dedicated follow-up textarea)
-    // we just re-run the same prompt against the model's last output as
-    // the new "current JSON" — gives the model a chance to iterate.
-    const userPrompt = prompt;
-    const baseline = response.proposed;
+  const refineFromApplied = async () => {
+    if (response.kind !== "applied") return;
+    // Treat "Refine" from the applied banner as: re-run the same prompt
+    // against the newly-applied JSON as the new baseline. The model gets
+    // a chance to iterate without the user re-typing.
+    if (!prompt.trim()) return;
+    const baseline = value;
     setResponse({ kind: "pending" });
     try {
       const result = await callStructured({
         kind,
         settings,
-        userPrompt,
+        userPrompt: prompt,
         currentJson: baseline,
         refinement: "Please refine the previous output further based on the same request.",
       });
@@ -236,13 +341,7 @@ export function AIEditor({
         });
         return;
       }
-      setResponse({
-        kind: "structured",
-        proposed: validation.data,
-        raw: JSON.stringify(result.json, null, 2),
-        summary: summariseChanges(baseline, validation.data),
-        timestamp: Date.now(),
-      });
+      finalizeProposal(baseline, validation.data, JSON.stringify(result.json, null, 2));
     } catch (err) {
       setResponse({
         kind: "error",
@@ -395,34 +494,103 @@ export function AIEditor({
         </div>
       ) : null}
 
-      {response.kind === "structured" ? (
-        <div className="kukui-studio-ai__card">
-          <h3 className="kukui-studio-ai__card-title">Proposed changes</h3>
-          <p className="kukui-studio-ai__meta">{response.summary}</p>
-          <pre className="kukui-studio-ai__card-body">{response.raw}</pre>
+      {response.kind === "confirming" ? (
+        <div className="kukui-studio-ai__confirm" role="alertdialog" aria-labelledby="kukui-ai-confirm-title">
+          <h3 id="kukui-ai-confirm-title" className="kukui-studio-ai__confirm-title">
+            This is a big rewrite — apply it?
+          </h3>
+          <p className="kukui-studio-ai__confirm-body">
+            About {Math.round(response.changeRatio * 100)}% of your activity's top-level
+            fields would change ({response.summary}). Anything you didn't ask the AI to
+            touch will be replaced too. You can undo right after applying.
+          </p>
           <div className="kukui-studio-ai__card-actions">
             <button
               type="button"
               className="kukui-studio-btn kukui-studio-btn--primary"
-              onClick={accept}
+              onClick={confirmDestructive}
             >
-              Accept
+              Apply changes
             </button>
             <button
               type="button"
               className="kukui-studio-btn kukui-studio-btn--ghost"
-              onClick={refine}
+              onClick={cancelDestructive}
             >
-              Refine
-            </button>
-            <button
-              type="button"
-              className="kukui-studio-btn kukui-studio-btn--ghost"
-              onClick={discard}
-            >
-              Discard
+              Cancel
             </button>
           </div>
+        </div>
+      ) : null}
+
+      {response.kind === "applied" ? (
+        <div
+          className={[
+            "kukui-studio-ai__banner",
+            bannerCollapsed ? "kukui-studio-ai__banner--collapsed" : "",
+          ]
+            .filter(Boolean)
+            .join(" ")}
+          role="status"
+          aria-live="polite"
+        >
+          {bannerCollapsed ? (
+            <button
+              type="button"
+              className="kukui-studio-ai__banner-pill"
+              onClick={undoLastApplied}
+              title="Undo the last AI change"
+            >
+              <span aria-hidden="true">↶</span>
+              <span>Undo last AI change</span>
+            </button>
+          ) : (
+            <>
+              <div className="kukui-studio-ai__banner-text">
+                <strong>
+                  <span aria-hidden="true">✓</span> Applied to your activity
+                </strong>
+                <span className="kukui-studio-ai__banner-summary">{response.summary}</span>
+              </div>
+              <div className="kukui-studio-ai__banner-actions">
+                <button
+                  type="button"
+                  className="kukui-studio-btn kukui-studio-btn--ghost kukui-studio-btn--sm"
+                  onClick={undoLastApplied}
+                >
+                  Undo
+                </button>
+                <button
+                  type="button"
+                  className="kukui-studio-btn kukui-studio-btn--ghost kukui-studio-btn--sm"
+                  onClick={refineFromApplied}
+                  disabled={!prompt.trim()}
+                  title={
+                    prompt.trim()
+                      ? "Re-run the same prompt against the new baseline"
+                      : "Type a follow-up prompt to refine"
+                  }
+                >
+                  Refine
+                </button>
+                <button
+                  type="button"
+                  className="kukui-studio-btn kukui-studio-btn--ghost kukui-studio-btn--sm"
+                  onClick={tryAnotherPrompt}
+                >
+                  Try another prompt
+                </button>
+              </div>
+              <details
+                className="kukui-studio-ai__details"
+                open={showDetails}
+                onToggle={(e) => setShowDetails(e.currentTarget.open)}
+              >
+                <summary>Show technical details</summary>
+                <pre className="kukui-studio-ai__details-body">{response.raw}</pre>
+              </details>
+            </>
+          )}
         </div>
       ) : null}
 
