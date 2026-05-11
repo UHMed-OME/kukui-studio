@@ -37,7 +37,7 @@ const cfg: ImageAnnotationConfig = {
     src: "https://placehold.co/800x600?text=Chest+X-ray",
     alt: "Frontal chest X-ray",
   },
-  behaviour: { enableRetry: true, allowEdit: true },
+  behaviour: { enableRetry: true },
   ui: { submitButtonLabel: "Submit", clearButton: "Clear all" },
 };
 

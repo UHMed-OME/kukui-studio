@@ -20,6 +20,6 @@
       "label": "Right upper-lobe opacity"
     }
   ],
-  "behaviour": { "enableRetry": true, "allowEdit": true },
+  "behaviour": { "enableRetry": true },
   "ui": { "submitButtonLabel": "Submit annotations", "clearButton": "Clear all" }
 }

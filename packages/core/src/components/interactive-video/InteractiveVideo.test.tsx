@@ -202,4 +202,50 @@ describe("InteractiveVideo", () => {
     expect(screen.queryByTestId("kukui-iv-video")).not.toBeInTheDocument();
     expect(screen.getByText(/youtube embeds are not yet supported/i)).toBeInTheDocument();
   });
+
+  it("seeking forward past an unresolved required interaction rewinds and pauses", () => {
+    render(<InteractiveVideo config={cfg} onSubmit={vi.fn()} />);
+    const video = getVideo();
+    const { pause } = stubVideoMethods(video);
+    // Allow setting currentTime (the real video element's currentTime is
+    // writable on jsdom, but our previous tick() mock made it read-only).
+    let _t = 0;
+    Object.defineProperty(video, "currentTime", {
+      configurable: true,
+      get: () => _t,
+      set: (v: number) => {
+        _t = v;
+      },
+    });
+
+    // Pretend the learner seeked to t=8 — past the t=5 required interaction.
+    _t = 8;
+    fireEvent.timeUpdate(video);
+
+    // Implementation should rewind to before atSeconds and pause.
+    expect(_t).toBeLessThan(5);
+    expect(_t).toBeGreaterThanOrEqual(0);
+    expect(pause).toHaveBeenCalled();
+  });
+
+  it("enableRetry shows Try again after submit and resets state on click", async () => {
+    const user = userEvent.setup();
+    const onSubmit = vi.fn();
+    const retryCfg: InteractiveVideoConfig = {
+      ...cfg,
+      interactions: [],
+      behaviour: { enableRetry: true, passPercentage: 50 },
+    };
+    render(<InteractiveVideo config={retryCfg} onSubmit={onSubmit} />);
+    const video = getVideo();
+    stubVideoMethods(video);
+    fireEvent.ended(video);
+    expect(onSubmit).toHaveBeenCalledTimes(1);
+    const tryAgain = screen.getByRole("button", { name: /try again/i });
+    await user.click(tryAgain);
+    // After reset, the Try again button is gone (back to watching stage).
+    expect(
+      screen.queryByRole("button", { name: /try again/i }),
+    ).not.toBeInTheDocument();
+  });
 });

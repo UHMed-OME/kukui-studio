@@ -74,6 +74,13 @@ export const OSCEConfigSchema = z
         enableRetry: z.boolean().optional(),
         /** When true, learner can click any phase in the stepper to jump there. */
         allowSkipPhase: z.boolean().optional(),
+        /**
+         * Penalty multiplier applied to each wrong action when scoring a phase.
+         * Defaults to 1 (a wrong selection subtracts 1 from the phase's earned
+         * points). Set to 0 to remove penalties — wrong picks no longer count
+         * against the score. Range: 0..1.
+         */
+        guessPenalty: z.number().min(0).max(1).optional(),
       })
       .strict()
       .optional(),

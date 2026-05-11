@@ -209,4 +209,34 @@ describe("OSCE", () => {
       screen.getByRole("heading", { level: 2, name: /chest pain/i }),
     ).toBeInTheDocument();
   });
+
+  it("guessPenalty=0 removes the penalty for wrong picks", async () => {
+    const user = userEvent.setup();
+    const onSubmit = vi.fn();
+    const noPenalty: OSCEConfig = {
+      ...cfg,
+      behaviour: { ...cfg.behaviour, guessPenalty: 0 },
+    };
+    render(<OSCE config={noPenalty} onSubmit={onSubmit} />);
+
+    // Phase 1: pick BOTH correct actions AND the wrong "tropical travel" one.
+    // With guessPenalty=1 (default), that'd be 2 - 1 = 1/2. With 0, it stays 2/2.
+    await user.click(screen.getByRole("button", { name: /pain character/i }));
+    await user.click(screen.getByRole("button", { name: /cardiac risk factors/i }));
+    await user.click(screen.getByRole("button", { name: /tropical/i }));
+    await user.click(screen.getByRole("button", { name: /next phase/i }));
+    // Phase 2: pick only the wrong one — with no penalty, stays 0/1.
+    await user.click(screen.getByRole("button", { name: /palpate abdomen/i }));
+    await user.click(screen.getByRole("button", { name: /next phase/i }));
+    // Phase 3: leave empty.
+    await user.click(screen.getByRole("button", { name: /submit OSCE/i }));
+
+    const score = onSubmit.mock.calls[0]?.[0];
+    // Phase 1: 2/2 (no penalty for the wrong tropical pick).
+    // Phase 2: 0/1.
+    // Phase 3: 0/2.
+    // Order: history → exam → investigations matches expected → 3/3.
+    // Total raw = 2 + 0 + 0 + 3 = 5; max = 2 + 1 + 2 + 3 = 8.
+    expect(score).toMatchObject({ raw: 5, max: 8 });
+  });
 });

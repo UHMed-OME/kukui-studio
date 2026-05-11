@@ -4,9 +4,7 @@
   "prompt": "<p>Click the <strong>left ventricle</strong> &mdash; the chamber that pumps oxygenated blood to the body.</p>",
   "model": {
     "src": "models/heart.glb",
-    "scale": 1.5,
-    "rotation": { "x": 0, "y": -15, "z": 0 },
-    "position": { "x": 0, "y": 0, "z": 0 }
+    "scale": 1.5
   },
   "camera": {
     "mode": "orbit",
@@ -52,8 +50,7 @@
   "behaviour": {
     "enableRetry": true,
     "showHotspotMarkers": false,
-    "allowOrbit": true,
-    "singlePoint": true
+    "allowOrbit": true
   },
   "ui": {
     "tryAgainButton": "Try again",

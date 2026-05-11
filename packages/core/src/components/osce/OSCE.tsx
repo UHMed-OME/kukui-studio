@@ -1,7 +1,7 @@
 import { useEffect, useId, useMemo, useState } from "react";
 import type { OSCEConfig } from "@kukui/schemas/osce";
 import type { ActivityProps, ScoreState } from "../../types.js";
-import { aggregate, percentage, scoreSelection } from "../../scoring.js";
+import { aggregate, percentage } from "../../scoring.js";
 import { SafeHtml, htmlToText } from "../../safe-html.js";
 import "./OSCE.css";
 
@@ -337,6 +337,9 @@ type Scoring = {
 function computeScoring(config: OSCEConfig, state: State): Scoring {
   const byPhase: Record<string, ScoreState> = {};
   const phaseScores: ScoreState[] = [];
+  // Default 1: a wrong selection subtracts 1 from the phase's earned points
+  // (matches scoreSelection's behaviour). Set to 0 to disable penalty.
+  const guessPenalty = config.behaviour?.guessPenalty ?? 1;
 
   for (const phase of config.phases) {
     const correctIndices = new Set(
@@ -348,12 +351,19 @@ function computeScoring(config: OSCEConfig, state: State): Scoring {
         .map((id) => phase.actions.findIndex((a) => a.id === id))
         .filter((i) => i >= 0),
     );
-    const score = scoreSelection({
-      selectedIndices,
-      correctIndices,
-      totalAnswers: phase.actions.length,
-    });
-    const ss: ScoreState = { ...score };
+
+    const totalCorrect = correctIndices.size;
+    let earned = 0;
+    for (const i of selectedIndices) {
+      if (correctIndices.has(i)) earned += 1;
+      else earned -= guessPenalty;
+    }
+    const clamped = Math.max(0, Math.min(totalCorrect, earned));
+    const ss: ScoreState = {
+      raw: clamped,
+      max: totalCorrect,
+      success: clamped === totalCorrect && totalCorrect > 0,
+    };
     byPhase[phase.id] = ss;
     phaseScores.push(ss);
   }

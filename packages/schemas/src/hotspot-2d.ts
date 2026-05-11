@@ -43,7 +43,6 @@ export const Hotspot2DConfigSchema = z
       .object({
         enableRetry: z.boolean().optional(),
         showHotspotMarkers: z.boolean().optional(),
-        singlePoint: z.boolean().optional(),
       })
       .strict()
       .optional(),

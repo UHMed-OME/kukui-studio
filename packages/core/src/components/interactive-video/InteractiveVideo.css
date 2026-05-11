@@ -115,6 +115,29 @@
   min-height: 28px;
 }
 
+.kukui-iv__actions {
+  display: flex;
+  justify-content: flex-end;
+  padding: 0 var(--spacing-3xl, 28px) var(--spacing-lg, 16px);
+}
+
+.kukui-iv__secondary {
+  min-height: 44px;
+  padding: 10px 20px;
+  background: transparent;
+  color: var(--color-primary, #7b4324);
+  border: 2px solid var(--color-primary, #7b4324);
+  border-radius: var(--radius-md, 8px);
+  font-size: var(--font-size-answer, 15px);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.kukui-iv__secondary:hover:not(:disabled) {
+  background: var(--color-primary, #7b4324);
+  color: #ffffff;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .kukui-iv__primary {
     transition: none;

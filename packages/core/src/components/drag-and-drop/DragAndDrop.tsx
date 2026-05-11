@@ -205,6 +205,36 @@ export function DragAndDrop({
             : ""}
         </div>
 
+        {submitted ? (
+          <section
+            className="kukui-dnd__summary"
+            aria-label="Per-draggable summary"
+          >
+            <ul className="kukui-dnd__summary-list">
+              {config.draggables.map((d) => {
+                const zid = state.placement[d.id] ?? null;
+                const correct = isCorrect(d.id, zid);
+                return (
+                  <li key={d.id} className="kukui-dnd__summary-item">
+                    <span
+                      className="kukui-dnd__summary-icon"
+                      aria-hidden="true"
+                    >
+                      {correct ? "✓" : "✗"}
+                    </span>
+                    <span className="kukui-dnd__summary-name">{d.label}</span>
+                    {d.feedback ? (
+                      <span className="kukui-dnd__summary-feedback">
+                        {d.feedback}
+                      </span>
+                    ) : null}
+                  </li>
+                );
+              })}
+            </ul>
+          </section>
+        ) : null}
+
         <div className="kukui-dnd__actions">
           {submitted ? (
             config.behaviour?.enableRetry ? (

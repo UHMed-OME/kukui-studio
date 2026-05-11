@@ -15,13 +15,11 @@ export const Hotspot3DConfigSchema = z
       .object({
         src: z.string().min(1),
         scale: z.number().positive().optional(),
-        rotation: Vector3.optional(),
-        position: Vector3.optional(),
       })
       .strict(),
     camera: z
       .object({
-        mode: z.enum(["orbit", "fixed"]).optional(),
+        mode: z.enum(["orbit"]).optional(),
         initialDistance: z.number().positive().optional(),
         minDistance: z.number().positive().optional(),
         maxDistance: z.number().positive().optional(),
@@ -48,7 +46,6 @@ export const Hotspot3DConfigSchema = z
         enableRetry: z.boolean().optional(),
         showHotspotMarkers: z.boolean().optional(),
         allowOrbit: z.boolean().optional(),
-        singlePoint: z.boolean().optional(),
       })
       .strict()
       .optional(),

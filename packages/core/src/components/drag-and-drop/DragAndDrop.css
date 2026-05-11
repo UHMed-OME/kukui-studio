@@ -234,6 +234,46 @@
   font-size: var(--font-size-answer, 15px);
 }
 
+.kukui-dnd__summary {
+  margin: var(--spacing-md, 12px) 0;
+}
+
+.kukui-dnd__summary-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs, 4px);
+}
+
+.kukui-dnd__summary-item {
+  display: grid;
+  grid-template-columns: 24px auto 1fr;
+  gap: var(--spacing-sm, 8px);
+  align-items: baseline;
+  padding: var(--spacing-xs, 4px) 0;
+  border-bottom: 1px solid var(--color-border, #dad2c6);
+}
+
+.kukui-dnd__summary-icon {
+  font-weight: 700;
+  font-size: 18px;
+  text-align: center;
+  color: var(--color-text-primary);
+}
+
+.kukui-dnd__summary-name {
+  font-size: var(--font-size-answer, 15px);
+  color: var(--color-text-primary);
+  font-weight: 700;
+}
+
+.kukui-dnd__summary-feedback {
+  font-size: var(--font-size-meta, 13px);
+  color: var(--color-text-secondary);
+}
+
 @media (prefers-reduced-motion: reduce) {
   .kukui-dnd__feedback,
   .kukui-dnd__zone {

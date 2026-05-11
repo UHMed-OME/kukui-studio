@@ -124,6 +124,7 @@ export function QuestionSet({
 
   const allAnswered = answeredCount === total;
   const showProgressBar = config.behaviour?.showProgressBar ?? true;
+  const showResults = config.behaviour?.showResults ?? false;
   const submitted = state.stage === "submitted";
   const current = validated[state.current];
 
@@ -207,6 +208,39 @@ export function QuestionSet({
               ? `Answered ${answeredCount} of ${total}.`
               : "All questions answered — press Submit set."}
         </p>
+
+        {submitted && showResults ? (
+          <section
+            className="kukui-qs__results"
+            aria-label="Per-question results"
+          >
+            <h2 className="kukui-qs__results-title">Per-question results</h2>
+            <ul className="kukui-qs__results-list">
+              {validated.map((q, displayIdx) => {
+                const sc = state.scores[q.index];
+                const isCorrect = sc ? sc.raw === sc.max && sc.max > 0 : false;
+                const qTitle =
+                  q.config.title ?? `Question ${displayIdx + 1}`;
+                return (
+                  <li key={q.index} className="kukui-qs__results-item">
+                    <span
+                      className="kukui-qs__results-icon"
+                      aria-hidden="true"
+                    >
+                      {isCorrect ? "✓" : "✗"}
+                    </span>
+                    <span className="kukui-qs__results-name">
+                      {displayIdx + 1}. {qTitle}
+                    </span>
+                    <span className="kukui-qs__results-score">
+                      {sc ? `${Math.round(sc.raw * 100) / 100} / ${sc.max}` : "—"}
+                    </span>
+                  </li>
+                );
+              })}
+            </ul>
+          </section>
+        ) : null}
       </article>
     </div>
   );

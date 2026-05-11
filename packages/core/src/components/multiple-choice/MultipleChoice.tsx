@@ -9,11 +9,35 @@ type Stage = "answering" | "submitted";
 
 type State = {
   stage: Stage;
+  /** Indices into the ORIGINAL config.answers array (stable identity). */
   selected: number[];
   attempts: number;
 };
 
 const initialState: State = { stage: "answering", selected: [], attempts: 0 };
+
+/** Tiny seeded PRNG (mulberry32) — stable shuffle across remounts. */
+function rng(seed: number): () => number {
+  let t = seed >>> 0;
+  return () => {
+    t = (t + 0x6d2b79f5) >>> 0;
+    let r = Math.imul(t ^ (t >>> 15), 1 | t);
+    r = (r + Math.imul(r ^ (r >>> 7), 61 | r)) ^ r;
+    return ((r ^ (r >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+function shuffleIndices(n: number, seed: number): number[] {
+  const out = Array.from({ length: n }, (_, i) => i);
+  const rand = rng(seed);
+  for (let i = out.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(rand() * (i + 1));
+    const tmp = out[i] as number;
+    out[i] = out[j] as number;
+    out[j] = tmp;
+  }
+  return out;
+}
 
 export function MultipleChoice({
   config,
@@ -31,6 +55,18 @@ export function MultipleChoice({
     [config.answers],
   );
   const isMulti = correctIndices.size > 1;
+
+  // Display order of answer indices into config.answers. Selection still
+  // tracks the original indices so scoring is by stable identity.
+  const displayOrder = useMemo<number[]>(() => {
+    if (!config.behaviour?.randomAnswers) {
+      return config.answers.map((_, i) => i);
+    }
+    // Per-mount seed: stable across re-renders, varies across mounts.
+    const seed = Math.floor(Math.random() * 0xffffffff) >>> 0;
+    return shuffleIndices(config.answers.length, seed);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [config.answers.length, config.behaviour?.randomAnswers]);
 
   useEffect(() => {
     if (!onPersist) return;
@@ -96,7 +132,9 @@ export function MultipleChoice({
             roving tabindex + arrow-key navigation, which we don't yet do.
             A plain group with aria-pressed buttons gives accurate semantics. */}
         <ul role="group" aria-label="Answer choices" className="kukui-mc__answers">
-          {config.answers.map((a, i) => {
+          {displayOrder.map((i) => {
+            const a = config.answers[i];
+            if (!a) return null;
             const selected = state.selected.includes(i);
             const submitted = state.stage === "submitted";
             const correct = a.correct;
@@ -120,6 +158,7 @@ export function MultipleChoice({
                   aria-pressed={selected}
                   aria-label={`${htmlToText(a.text)}, ${stateLabel}`}
                   disabled={submitted}
+                  title={!submitted && a.tip ? a.tip : undefined}
                   className={[
                     "kukui-mc__answer",
                     selected ? "is-selected" : "",
@@ -136,6 +175,11 @@ export function MultipleChoice({
                     {right ? "✓" : wrong ? "✗" : reveal ? "○" : ""}
                   </span>
                 </button>
+                {submitted && selected && a.tip ? (
+                  <div className="kukui-mc__tip" aria-live="polite">
+                    <span className="kukui-mc__tip-label">Tip:</span> {a.tip}
+                  </div>
+                ) : null}
                 <div
                   className={[
                     "kukui-mc__feedback",
