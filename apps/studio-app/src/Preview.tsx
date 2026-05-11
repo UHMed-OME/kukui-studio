@@ -91,6 +91,23 @@ export function Preview({
     [kind, value],
   );
 
+  // Most activity components derive local state from `config` in their
+  // initial `useState`, which doesn't re-fire when `value` changes
+  // externally (form edit, AI editor accept, import, reset). Keying the
+  // preview by a stable hash of `value` forces a fresh mount on every
+  // change so the author sees the latest config rendered. We accept the
+  // trade-off that in-preview play state (a half-flipped Flashcard, a
+  // typed-in fill-in answer) resets when the author edits — for an
+  // authoring preview, showing the live config beats preserving session
+  // state.
+  const valueKey = useMemo(() => {
+    try {
+      return JSON.stringify(value);
+    } catch {
+      return String(value);
+    }
+  }, [value]);
+
   if (mode === "edit") {
     // Visual editor doesn't strictly require Zod-valid input; show the editor
     // as long as the activity kind has one. The EditCanvas reads `value`
@@ -123,7 +140,7 @@ export function Preview({
   const noop = () => {};
 
   return (
-    <Suspense fallback={<PreviewLoading />}>
+    <Suspense fallback={<PreviewLoading />} key={valueKey}>
       {renderActivity(kind, config, noop)}
     </Suspense>
   );

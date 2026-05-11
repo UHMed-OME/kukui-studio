@@ -336,8 +336,23 @@ export function AIEditor({
             response.kind === "pending" || prompt.trim().length === 0
           }
         >
-          <SparkleIcon />
+          {response.kind === "pending" ? (
+            <span
+              className="kukui-studio-ai__spinner"
+              aria-hidden="true"
+            />
+          ) : (
+            <SparkleIcon />
+          )}
           <span>{response.kind === "pending" ? "Generating…" : mode === "explain" ? "Explain" : "Generate"}</span>
+        </button>
+        <button
+          type="button"
+          className="kukui-studio-btn kukui-studio-btn--ghost kukui-studio-btn--sm"
+          onClick={onOpenSettings}
+          title="AI editor settings"
+        >
+          Settings
         </button>
         <div className="kukui-studio-ai__meta">
           <span>{settings.model}</span>
@@ -345,6 +360,22 @@ export function AIEditor({
           <span>~{tokenEstimate} tokens</span>
         </div>
       </div>
+
+      {response.kind === "pending" ? (
+        <div
+          className="kukui-studio-ai__progress"
+          role="status"
+          aria-live="polite"
+        >
+          <span className="kukui-studio-ai__spinner kukui-studio-ai__spinner--lg" aria-hidden="true" />
+          <div className="kukui-studio-ai__progress-text">
+            <strong>Generating with {settings.model}…</strong>
+            <span className="kukui-studio-ai__progress-sub">
+              This usually takes 5–15 seconds. Larger schemas may take longer.
+            </span>
+          </div>
+        </div>
+      ) : null}
 
       {response.kind === "error" ? (
         <div className="kukui-studio-ai__error" role="alert">

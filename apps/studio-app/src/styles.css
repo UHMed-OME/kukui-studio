@@ -2832,6 +2832,68 @@ html[data-theme="glass"] .kukui-studio-footer {
   color: var(--color-text-muted);
 }
 
+.kukui-studio-ai__spinner {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border: 2px solid currentColor;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: kukui-spinner-rotate 0.8s linear infinite;
+  flex-shrink: 0;
+}
+
+.kukui-studio-ai__spinner--lg {
+  width: 22px;
+  height: 22px;
+  border-width: 3px;
+  color: var(--color-primary);
+}
+
+@keyframes kukui-spinner-rotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kukui-studio-ai__spinner,
+  .kukui-studio-ai__spinner--lg {
+    animation: none;
+    border: 2px dashed currentColor;
+  }
+}
+
+.kukui-studio-ai__progress {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  padding: var(--spacing-md);
+  margin-top: var(--spacing-sm);
+  background: var(--color-primary-soft);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+}
+
+.kukui-studio-ai__progress-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.kukui-studio-ai__progress-text strong {
+  font-size: var(--font-size-meta);
+  color: var(--color-text-primary);
+}
+
+.kukui-studio-ai__progress-sub {
+  font-size: var(--font-size-micro);
+  color: var(--color-text-secondary);
+}
+
 .kukui-studio-ai__card {
   background: var(--color-surface-alt);
   border: 1px solid var(--color-border);

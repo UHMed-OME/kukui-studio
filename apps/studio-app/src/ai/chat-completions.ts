@@ -144,11 +144,18 @@ function buildMessages(opts: StructuredCallOptions, mode: OutputMode): ChatMessa
 
 function buildResponseFormat(kind: SchemaRegistryKey, mode: OutputMode): unknown | undefined {
   if (mode === "json_schema") {
+    // strict: false on purpose — OpenAI's strict mode requires every
+    // property to appear in `required` and no `additionalProperties`,
+    // which fights Zod schemas that use `.optional()` extensively (most
+    // of ours do, esp. `behaviour` / `ui` blocks). We still send the
+    // schema for the model to use as guidance and validate the response
+    // with Zod on our side, so flipping strict off costs us nothing and
+    // skips a guaranteed 400 from OpenAI's family of models.
     return {
       type: "json_schema",
       json_schema: {
         name: kind.replace(/-/g, "_"),
-        strict: true,
+        strict: false,
         schema: getJsonSchema(kind),
       },
     };
