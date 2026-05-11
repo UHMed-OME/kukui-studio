@@ -23,6 +23,7 @@ import {
   PencilIcon,
   PlayIcon,
   SaveIcon,
+  SearchIcon,
   UploadIcon,
   XIcon,
 } from "./icons.js";
@@ -456,6 +457,10 @@ export function App() {
 
       <nav className="kukui-studio-sidebar" aria-label="Activity type">
         <div className="kukui-studio-sidebar__search">
+          <SearchIcon
+            className="kukui-studio-sidebar__search-icon"
+            aria-hidden="true"
+          />
           <input
             type="search"
             className="kukui-studio-sidebar__search-input"

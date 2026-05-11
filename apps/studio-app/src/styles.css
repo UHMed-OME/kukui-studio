@@ -370,13 +370,29 @@ button {
 .kukui-studio-sidebar__search-input {
   width: 100%;
   min-height: 36px;
-  padding: 8px 32px 8px 12px;
+  padding: 8px 32px 8px 32px;
   background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
   font-size: var(--font-size-meta);
   color: var(--color-text-primary);
   transition: border-color 160ms ease, box-shadow 160ms ease;
+}
+
+.kukui-studio-sidebar__search-icon {
+  position: absolute;
+  top: 50%;
+  left: 10px;
+  transform: translateY(-50%);
+  width: 14px;
+  height: 14px;
+  color: var(--color-text-muted);
+  pointer-events: none;
+}
+
+.kukui-studio-sidebar__search-input:focus + .kukui-studio-sidebar__search-icon,
+.kukui-studio-sidebar__search:focus-within .kukui-studio-sidebar__search-icon {
+  color: var(--color-primary);
 }
 
 .kukui-studio-sidebar__search-input::placeholder {
