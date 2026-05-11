@@ -1425,12 +1425,19 @@ button {
   font-size: var(--font-size-body);
 }
 
-.ks-tooltip {
+/* Tooltip trigger (the ⓘ button) sits inline next to its labeled
+   element. The bubble itself is portalled to document.body via the
+   <Tooltip> React component so ancestor overflow:hidden + low z-index
+   no longer clip or under-stack it.  See Tooltip.tsx for the
+   positioning logic; styles here cover trigger + bubble appearance. */
+.kukui-tooltip,
+.ks-tooltip /* legacy alias for any uncovered call sites */ {
   display: inline-block;
   position: relative;
   line-height: 0;
 }
 
+.kukui-tooltip__btn,
 .ks-tooltip__btn {
   display: inline-flex;
   align-items: center;
@@ -1447,6 +1454,8 @@ button {
   cursor: help;
 }
 
+.kukui-tooltip__btn:hover,
+.kukui-tooltip__btn:focus-visible,
 .ks-tooltip__btn:hover,
 .ks-tooltip__btn:focus-visible {
   border-color: var(--color-primary);
@@ -1454,6 +1463,56 @@ button {
   outline: none;
 }
 
+/* The bubble: portalled to <body>, position:fixed, anchored by JS.
+   Lives outside every Studio container so it can't be clipped by
+   overflow:hidden, and z-index 10000 keeps it above the panel chrome
+   and modal backdrops. */
+.kukui-tooltip__bubble {
+  position: fixed;
+  /* JS sets top/left to the trigger's bounding rect. transform centres
+     horizontally and offsets vertically by placement. */
+  transform: translate(-50%, -100%);
+  width: max-content;
+  max-width: min(320px, calc(100vw - 32px));
+  padding: 8px 12px;
+  background: var(--color-text-primary);
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.45;
+  border-radius: 6px;
+  box-shadow: 0 6px 18px rgb(0 0 0 / 0.22);
+  z-index: 10000;
+  pointer-events: none;
+  white-space: normal;
+}
+
+.kukui-tooltip__bubble--bottom {
+  transform: translate(-50%, 0);
+}
+
+.kukui-tooltip__bubble::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+}
+
+.kukui-tooltip__bubble--top::after {
+  top: 100%;
+  border-top-color: var(--color-text-primary);
+}
+
+.kukui-tooltip__bubble--bottom::after {
+  bottom: 100%;
+  border-bottom-color: var(--color-text-primary);
+}
+
+/* Legacy CSS-only tooltip — kept for any call sites still using the
+   .ks-tooltip pattern from FieldTemplate's inline <Tooltip>. The
+   portalled version is preferred; this fallback ensures the older
+   markup still renders. */
 .ks-tooltip__bubble {
   position: absolute;
   bottom: calc(100% + 8px);

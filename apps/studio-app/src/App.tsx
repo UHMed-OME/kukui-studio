@@ -17,6 +17,7 @@ import { hasEditor } from "./EditCanvas/index.js";
 import { ConfirmDialog } from "./ConfirmDialog.js";
 import { AISettingsDialog } from "./AISettingsDialog.js";
 import { AIEditor } from "./AIEditor.js";
+import { Tooltip } from "./Tooltip.js";
 import {
   DownloadIcon,
   GearIcon,
@@ -605,7 +606,7 @@ export function App() {
                   .join(" ")}
                 onClick={() => setTab("form")}
               >
-                Form editor
+                Editor
               </button>
               <button
                 type="button"
@@ -629,7 +630,7 @@ export function App() {
                   .join(" ")}
                 onClick={() => setTab("ai")}
               >
-                AI editor
+                AI assistant
               </button>
             </div>
             <div className="kukui-studio-panel-actions">
@@ -724,7 +725,8 @@ export function App() {
             ) : (
               <h2 className="kukui-studio-panel__heading">Live preview</h2>
             )}
-            <PreviewModeTooltip
+            <Tooltip
+              label="What does this mode show?"
               text={
                 hasEditor(kind) && previewMode === "edit"
                   ? "Drag elements directly on the canvas. The form on the left updates live."
@@ -789,8 +791,8 @@ export function App() {
             type="button"
             className="kukui-studio-footer__icon-btn"
             onClick={() => setShowAISettings(true)}
-            aria-label="AI editor settings"
-            title="AI editor settings"
+            aria-label="AI assistant settings"
+            title="AI assistant settings"
           >
             <GearIcon />
           </button>
@@ -823,7 +825,7 @@ export function App() {
       <ConfirmDialog
         open={showPrivacy}
         title="Privacy & data"
-        message="Kukui Studio runs entirely in your browser. Drafts auto-save to your local browser storage (localStorage) and never leave your device. We don't operate any backend, don't set analytics cookies, and don't transmit form data anywhere. When you click Download, the SCORM zip is generated client-side; what happens after upload is between you and your LMS. SCORM activities packaged by Studio post grades only to the LMS that hosts them (D2L Brightspace, Canvas, Moodle, etc.) — same channel any LMS-hosted activity uses. If you enable the AI editor, requests go directly from your browser to whatever LLM endpoint you configured (OpenAI, Groq, your institution's internal proxy, etc.). Kukui Studio never sees or proxies the request. Your API key and base URL are stored in your browser only (localStorage or sessionStorage — your choice in the settings dialog). The activity JSON you're working on, plus your prompt, are sent to the endpoint you picked; the response comes back to your browser only. Your provider's data-handling policies apply to that traffic — pick a provider whose policies match your institution's rules."
+        message="Kukui Studio runs entirely in your browser. Drafts auto-save to your local browser storage (localStorage) and never leave your device. We don't operate any backend, don't set analytics cookies, and don't transmit form data anywhere. When you click Download, the SCORM zip is generated client-side; what happens after upload is between you and your LMS. SCORM activities packaged by Studio post grades only to the LMS that hosts them (D2L Brightspace, Canvas, Moodle, etc.) — same channel any LMS-hosted activity uses. If you enable the AI assistant, requests go directly from your browser to whatever LLM endpoint you configured (OpenAI, Groq, your institution's internal proxy, etc.). Kukui Studio never sees or proxies the request. Your API key and base URL are stored in your browser only (localStorage or sessionStorage — your choice in the settings dialog). The activity JSON you're working on, plus your prompt, are sent to the endpoint you picked; the response comes back to your browser only. Your provider's data-handling policies apply to that traffic — pick a provider whose policies match your institution's rules."
         confirmLabel="OK"
         hideCancel
         onConfirm={() => setShowPrivacy(false)}
@@ -838,28 +840,8 @@ export function App() {
   );
 }
 
-/**
- * Hover/focus info-icon tooltip — reuses the .ks-tooltip pattern from
- * FieldTemplate so the affordance is consistent with field-help bubbles
- * elsewhere in Studio. Used for short meta strings that would otherwise
- * sit always-visible next to a header (preview-mode hint, etc.).
- */
-function PreviewModeTooltip({ text }: { text: string }) {
-  return (
-    <span className="ks-tooltip ks-tooltip--inline">
-      <button
-        type="button"
-        className="ks-tooltip__btn"
-        aria-label="What does this mode show?"
-      >
-        ⓘ
-      </button>
-      <span role="tooltip" className="ks-tooltip__bubble">
-        {text}
-      </span>
-    </span>
-  );
-}
+/* PreviewModeTooltip removed — now uses the shared <Tooltip> portal
+   component directly inline at the call site. See Tooltip.tsx. */
 
 function filenameSlug(s: unknown): string {
   if (typeof s !== "string") return "";

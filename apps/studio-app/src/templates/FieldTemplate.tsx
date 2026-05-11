@@ -1,5 +1,5 @@
-import { useId, type ReactNode } from "react";
 import type { FieldTemplateProps, UiSchema } from "@rjsf/utils";
+import { Tooltip } from "../Tooltip.js";
 
 /**
  * RJSF FieldTemplate that renders the label + an optional ⓘ tooltip icon
@@ -57,7 +57,7 @@ export function FieldTemplate(props: FieldTemplateProps) {
             {label}
             {required ? <span className="ks-field__required">*</span> : null}
           </label>
-          {helpText ? <Tooltip text={helpText} /> : null}
+          {helpText ? <Tooltip text={helpText} label="Field help" /> : null}
         </div>
       ) : null}
       {description ? <div className="ks-field__desc">{description}</div> : null}
@@ -95,22 +95,3 @@ function readHelp(uiSchema: UiSchema | undefined): string | null {
   return typeof help === "string" ? help : null;
 }
 
-function Tooltip({ text }: { text: string }) {
-  const id = useId();
-  return (
-    <span className="ks-tooltip">
-      <button
-        type="button"
-        className="ks-tooltip__btn"
-        aria-describedby={id}
-        aria-label="Field help"
-        tabIndex={0}
-      >
-        ⓘ
-      </button>
-      <span id={id} role="tooltip" className="ks-tooltip__bubble">
-        {text as ReactNode}
-      </span>
-    </span>
-  );
-}

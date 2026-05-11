@@ -515,15 +515,10 @@ export function AIEditor({
   const sendLabel = inferredMode === "generate" ? "Create" : "Apply changes";
   const fieldLabel =
     inferredMode === "generate" ? "What should it be about?" : "What should change?";
-  // Single short safety note. Avoids the "describe a flashcards" grammar
-  // hazard from stitching activity names into a template sentence.
-  const sendHint = "Big rewrites confirm before applying. Undo is always available.";
   const placeholder = getPlaceholder(kind, inferredMode);
 
   return (
     <div className="kukui-studio-ai">
-      <p className="kukui-studio-ai__meta">{sendHint}</p>
-
       <label className="kukui-studio-ai__field">
         <span className="kukui-studio-ai__label">{fieldLabel}</span>
         <textarea
