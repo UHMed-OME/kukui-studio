@@ -383,6 +383,13 @@ button {
   color: var(--color-text-muted);
 }
 
+/* Hide the browser-native clear control on <input type="search"> so it
+   doesn't stack next to our own clear button. */
+.kukui-studio-sidebar__search-input::-webkit-search-cancel-button {
+  -webkit-appearance: none;
+  appearance: none;
+}
+
 .kukui-studio-sidebar__search-input:focus-visible {
   outline: none;
   border-color: var(--color-primary);
