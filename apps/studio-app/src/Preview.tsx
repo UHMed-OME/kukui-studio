@@ -91,22 +91,10 @@ export function Preview({
     [kind, value],
   );
 
-  // Most activity components derive local state from `config` in their
-  // initial `useState`, which doesn't re-fire when `value` changes
-  // externally (form edit, AI editor accept, import, reset). Keying the
-  // preview by a stable hash of `value` forces a fresh mount on every
-  // change so the author sees the latest config rendered. We accept the
-  // trade-off that in-preview play state (a half-flipped Flashcard, a
-  // typed-in fill-in answer) resets when the author edits — for an
-  // authoring preview, showing the live config beats preserving session
-  // state.
-  const valueKey = useMemo(() => {
-    try {
-      return JSON.stringify(value);
-    } catch {
-      return String(value);
-    }
-  }, [value]);
+  // Note: each activity component now resets its own derived-from-config
+  // local state via `useEffect([config])`, so we don't remount the
+  // Suspense tree on every keystroke. This keeps three.js / audio /
+  // imagery from re-initializing on every form edit.
 
   if (mode === "edit") {
     // Visual editor doesn't strictly require Zod-valid input; show the editor
@@ -140,7 +128,7 @@ export function Preview({
   const noop = () => {};
 
   return (
-    <Suspense fallback={<PreviewLoading />} key={valueKey}>
+    <Suspense fallback={<PreviewLoading />}>
       {renderActivity(kind, config, noop)}
     </Suspense>
   );

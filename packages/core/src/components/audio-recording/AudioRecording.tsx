@@ -132,6 +132,23 @@ export function AudioRecording({
       },
   );
 
+  // Reset local state when `config` changes externally (Studio Preview edit,
+  // AI Accept, draft load, etc.). Reference equality on the `config` prop —
+  // engine context loads JSON once and never mutates the ref, so this only
+  // fires in Studio Preview. Replaces the now-removed JSON.stringify(value)
+  // remount key.
+  useEffect(() => {
+    setState(
+      parseSuspend(suspendData, config) ?? {
+        stage: "idle",
+        blobUrl: null,
+        durationSeconds: 0,
+        errorMessage: "",
+      },
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [config]);
+
   // Prefer mutable refs over state for the recorder + stream so we don't
   // re-render on every level-meter tick or chunk arrival.
   const recorderRef = useRef<MediaRecorder | null>(null);

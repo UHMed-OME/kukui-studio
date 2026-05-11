@@ -102,6 +102,17 @@ export function FillInTheBlanks({
     onPersist(JSON.stringify(state));
   }, [state, onPersist]);
 
+  // Reset local state when `config` changes externally (Studio Preview edit,
+  // AI Accept, draft load, etc.). Reference equality on the `config` prop —
+  // engine context loads JSON once and never mutates the ref, so this only
+  // fires in Studio Preview. Replaces the now-removed JSON.stringify(value)
+  // remount key.
+  useEffect(() => {
+    setState(parseSuspend(suspendData, blanks.length) ?? initialState);
+    setSolutionsRevealed(false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [config]);
+
   const setBlankValue = (idx: number, value: string) => {
     if (state.stage !== "answering") return;
     setState((s) => {

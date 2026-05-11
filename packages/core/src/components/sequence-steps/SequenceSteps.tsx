@@ -103,6 +103,16 @@ export function SequenceSteps({
     () => parseSuspend(suspendData, correctOrder) ?? initial,
   );
 
+  // Reset local state when `config` changes externally (Studio Preview edit,
+  // AI Accept, draft load, etc.). Reference equality on the `config` prop —
+  // engine context loads JSON once and never mutates the ref, so this only
+  // fires in Studio Preview. Replaces the now-removed JSON.stringify(value)
+  // remount key.
+  useEffect(() => {
+    setState(parseSuspend(suspendData, correctOrder) ?? initial);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [config]);
+
   const sensors = useSensors(
     useSensor(PointerSensor),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
