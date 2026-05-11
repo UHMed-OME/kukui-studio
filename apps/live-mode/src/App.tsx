@@ -1,15 +1,17 @@
 import { useEffect, useRef, useState } from "react";
-import { joinLiveRoom, deriveRoomCode, getRoomState, type LiveRoomHandle } from "@kukui/live";
+import { joinLiveRoom, deriveRoomCode, type LiveRoomHandle } from "@kukui/live";
 import type { Presence } from "@kukui/live";
+import { LiveHost } from "./LiveHost.js";
 
 /**
- * Kukui Live — M0 lobby shell.
+ * Kukui Live — M1 shell.
  *
- * Phase 3 starting point. The full Live activity catalog (TBL Round, Live
- * Poll, Live Timeline) lands later — this v0 establishes the join flow,
- * the Trystero+Y.js mesh handshake, and the presence list. From here,
- * each Live activity component plugs into the existing room handle and
- * runs against the same Y.Doc.
+ * The M0 lobby (join flow + presence) lives here unchanged. Once a room
+ * handle exists, we delegate to LiveHost which validates an activity JSON
+ * config and routes to InstructorConsole or StudentParticipant by role.
+ *
+ * The activity catalog (TBL Round in M2, Live Poll in M3, Live Timeline in
+ * M4) plugs in via LiveHost as those land.
  */
 export function App() {
   const [code, setCode] = useState("");
@@ -18,6 +20,7 @@ export function App() {
   const [room, setRoom] = useState<LiveRoomHandle | null>(null);
   const [presence, setPresence] = useState<Map<string, Presence>>(new Map());
   const [error, setError] = useState<string | null>(null);
+  const [configUrl, setConfigUrl] = useState<string | undefined>(undefined);
   const subscribed = useRef(false);
 
   const join = async () => {
@@ -61,17 +64,24 @@ export function App() {
     };
   }, [room]);
 
+  const handleLeave = () => {
+    if (room) room.leave();
+    setRoom(null);
+    setPresence(new Map());
+    setConfigUrl(undefined);
+    subscribed.current = false;
+  };
+
   if (room) {
     return (
-      <Lobby
+      <LiveHost
+        kind="multiple-choice"
+        configUrl={configUrl}
         room={room}
         presence={presence}
-        onLeave={() => {
-          room.leave();
-          setRoom(null);
-          setPresence(new Map());
-          subscribed.current = false;
-        }}
+        role={role}
+        onLoadDemo={() => setConfigUrl("/samples/multiple-choice/basic.json")}
+        onLeave={handleLeave}
       />
     );
   }
@@ -84,8 +94,8 @@ export function App() {
           <h1 className="live-title">Kukui Live</h1>
         </div>
         <p className="live-subtitle">
-          Real-time classroom activities — peer-to-peer, no UH-operated server. M0 transport
-          + presence shell. Activity catalog lands in M2+.
+          Real-time classroom activities — peer-to-peer, no UH-operated server. M1 lobby +
+          host shell. Activity catalog lands in M2+.
         </p>
         <div className="live-field">
           <label htmlFor="code">Room code (6 digits)</label>
@@ -161,63 +171,3 @@ export function App() {
   );
 }
 
-function Lobby({
-  room,
-  presence,
-  onLeave,
-}: {
-  room: LiveRoomHandle;
-  presence: Map<string, Presence>;
-  onLeave: () => void;
-}) {
-  const state = getRoomState(room);
-  const phase = state.getPhase();
-
-  return (
-    <div className="live-shell">
-      <article className="live-card">
-        <div className="live-brand">
-          <img className="live-logo" src="/kukui-logo.svg" alt="" aria-hidden="true" />
-          <h1 className="live-title">Lobby</h1>
-        </div>
-        <p className="live-subtitle">
-          Connected to room <code>{room.code.slice(0, 8)}…</code> · phase: <strong>{phase}</strong>
-        </p>
-        <div className="live-banner">
-          <strong>{presence.size}</strong> participant{presence.size === 1 ? "" : "s"} in the
-          room.
-        </div>
-        <div className="live-presence">
-          {[...presence.values()].map((p) => (
-            <span
-              key={p.id}
-              className={[
-                "live-presence__chip",
-                p.role === "instructor" ? "live-presence__chip--instructor" : "",
-              ]
-                .filter(Boolean)
-                .join(" ")}
-            >
-              {p.name} {p.role === "instructor" ? "(instructor)" : ""}
-            </span>
-          ))}
-        </div>
-        <div className="live-actions" style={{ marginTop: 24 }}>
-          <button type="button" className="live-btn live-btn--ghost" onClick={onLeave}>
-            Leave room
-          </button>
-        </div>
-      </article>
-      <p
-        style={{
-          fontSize: 12,
-          color: "var(--color-text-secondary)",
-          textAlign: "center",
-        }}
-      >
-        Activity catalog lands in M2 (TBL Round, Live Poll, Live Timeline). For now this is a
-        bare lobby that proves the mesh handshake + presence sync.
-      </p>
-    </div>
-  );
-}

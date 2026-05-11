@@ -154,6 +154,9 @@ importers:
       vite:
         specifier: ^6.0.0
         version: 6.4.2(@types/node@22.19.17)(jiti@2.7.0)(lightningcss@1.32.0)
+      yjs:
+        specifier: ^13.6.0
+        version: 13.6.30
 
   apps/studio-app:
     dependencies:
