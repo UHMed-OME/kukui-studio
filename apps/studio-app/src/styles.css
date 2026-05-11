@@ -79,10 +79,11 @@ button {
 .kukui-studio-shell {
   display: grid;
   grid-template-columns: 220px 1fr;
-  grid-template-rows: auto 1fr;
+  grid-template-rows: auto 1fr auto;
   grid-template-areas:
     "header header"
-    "sidebar main";
+    "sidebar main"
+    "footer footer";
   height: 100%;
   background: var(--color-bg);
 }
@@ -2208,6 +2209,87 @@ html[data-theme="glass"] .kukui-theme-toggle {
   backdrop-filter: blur(8px);
 }
 
+/* ---------- Footer ---------- */
+
+.kukui-studio-footer {
+  grid-area: footer;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-md);
+  padding: var(--spacing-md) var(--spacing-2xl);
+  border-top: 1px solid var(--color-border);
+  background: var(--color-surface);
+  font-size: var(--font-size-meta);
+  color: var(--color-text-secondary);
+}
+
+.kukui-studio-footer__about {
+  margin: 0;
+  flex: 1 1 320px;
+  min-width: 0;
+  line-height: 1.5;
+}
+
+.kukui-studio-footer__about strong {
+  color: var(--color-text-primary);
+}
+
+.kukui-studio-footer__nav {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  flex-wrap: wrap;
+}
+
+.kukui-studio-footer__link {
+  color: var(--color-primary);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.kukui-studio-footer__link:hover {
+  text-decoration: underline;
+}
+
+.kukui-studio-footer__link:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.kukui-studio-footer__sep {
+  color: var(--color-text-muted);
+}
+
+.kukui-studio-footer__btn {
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  color: var(--color-primary);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.kukui-studio-footer__btn:hover {
+  text-decoration: underline;
+}
+
+.kukui-studio-footer__btn:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+html[data-theme="glass"] .kukui-studio-footer {
+  background: var(--color-surface-glass);
+  -webkit-backdrop-filter: var(--backdrop-glass);
+  backdrop-filter: var(--backdrop-glass);
+  border-top-color: var(--color-border-glass-deep);
+}
+
 /* ---------- Narrow-viewport (mobile / small tablet) overrides ----------
  *
  * Studio's desktop layout is a fixed-220px sidebar + side-by-side editor &
@@ -2224,12 +2306,13 @@ html[data-theme="glass"] .kukui-theme-toggle {
 @media (max-width: 760px) {
   .kukui-studio-shell {
     grid-template-columns: 1fr;
-    grid-template-rows: auto auto auto 1fr;
+    grid-template-rows: auto auto auto 1fr auto;
     grid-template-areas:
       "header"
       "picker"
       "switch"
-      "main";
+      "main"
+      "footer";
   }
 
   /* Hide the full sidebar on mobile — the dropdown takes its place. */
@@ -2368,6 +2451,18 @@ html[data-theme="glass"] .kukui-theme-toggle {
   /* Panel body — drop the generous desktop padding. */
   .kukui-studio-panel-body {
     padding: var(--spacing-md);
+  }
+
+  /* Footer wraps to stacked rows on phones so the about text isn't crushed. */
+  .kukui-studio-footer {
+    padding: var(--spacing-md);
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spacing-sm);
+    text-align: left;
+  }
+  .kukui-studio-footer__about {
+    flex-basis: auto;
   }
 }
 

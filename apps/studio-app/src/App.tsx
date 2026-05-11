@@ -37,8 +37,6 @@ const BLOOM_BY_KIND: Partial<Record<ActivityKind, BloomLevel>> = {
   "hotspot-2d": "understand",
   "anatomy-labeling": "understand",
   "highlight-text": "understand",
-  // course-presentation deliberately omitted — UH staff already author
-  // slides in Google Slides; we're not duplicating that workflow.
   // Apply — use procedures in new contexts
   "drag-and-drop": "apply",
   "sequence-steps": "apply",
@@ -110,6 +108,7 @@ export function App() {
   );
   const [toast, setToast] = useState<string | null>(null);
   const [confirmReset, setConfirmReset] = useState(false);
+  const [showPrivacy, setShowPrivacy] = useState(false);
   // On narrow viewports the editor + preview panels can't both fit, so we
   // hide one or the other. Desktop CSS ignores this — both panels show.
   const [mobilePanel, setMobilePanel] = useState<"edit" | "preview">("edit");
@@ -559,6 +558,53 @@ export function App() {
         </section>
       </main>
 
+      <footer className="kukui-studio-footer">
+        <p className="kukui-studio-footer__about">
+          <strong>Kukui Studio</strong> — open-source interactive learning activities for the
+          LMS. Built at{" "}
+          <a
+            href="https://jabsom.hawaii.edu/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="kukui-studio-footer__link"
+          >
+            UH JABSOM
+          </a>{" "}
+          Office of Medical Education.
+        </p>
+        <nav className="kukui-studio-footer__nav" aria-label="Project links">
+          <a
+            href="https://github.com/UHMed-OME/kukui-studio"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="kukui-studio-footer__link"
+          >
+            GitHub
+          </a>
+          <span aria-hidden="true" className="kukui-studio-footer__sep">
+            ·
+          </span>
+          <a
+            href="https://github.com/UHMed-OME/kukui-studio/blob/main/LICENSE"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="kukui-studio-footer__link"
+          >
+            MIT License
+          </a>
+          <span aria-hidden="true" className="kukui-studio-footer__sep">
+            ·
+          </span>
+          <button
+            type="button"
+            className="kukui-studio-footer__btn"
+            onClick={() => setShowPrivacy(true)}
+          >
+            Privacy &amp; data
+          </button>
+        </nav>
+      </footer>
+
       {/* Persistent live region — announce save/import/error messages to AT.
           Stays in the DOM with empty text when no toast is showing so the
           first message after page load actually fires. */}
@@ -580,6 +626,16 @@ export function App() {
         destructive
         onConfirm={confirmResetNow}
         onCancel={() => setConfirmReset(false)}
+      />
+
+      <ConfirmDialog
+        open={showPrivacy}
+        title="Privacy & data"
+        message="Kukui Studio runs entirely in your browser. Drafts auto-save to your local browser storage (localStorage) and never leave your device. We don't operate any backend, don't set analytics cookies, and don't transmit form data anywhere. When you click Download, the SCORM zip is generated client-side; what happens after upload is between you and your LMS. SCORM activities packaged by Studio post grades only to the LMS that hosts them (D2L Brightspace, Canvas, Moodle, etc.) — same channel any LMS-hosted activity uses."
+        confirmLabel="OK"
+        hideCancel
+        onConfirm={() => setShowPrivacy(false)}
+        onCancel={() => setShowPrivacy(false)}
       />
     </div>
   );

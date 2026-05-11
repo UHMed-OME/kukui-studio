@@ -215,46 +215,6 @@ export const UI_SCHEMAS: Record<ActivityKind, Record<string, unknown>> = {
     },
   },
 
-  "course-presentation": {
-    ...COMMON,
-    "ui:order": ["title", "slides", "passPercentage", "behaviour", "ui", "*"],
-    title: TITLE,
-    author: AUTHOR,
-    slides: {
-      "ui:title": "Slides",
-      "ui:help":
-        "Ordered list of slides. Each slide contains text, image, or interaction elements positioned on a 16:9 canvas.",
-      items: {
-        title: f("Slide title", "Optional caption shown in the corner of the slide."),
-        background: {
-          "ui:title": "Slide background",
-          src: f("Background image URL"),
-          color: f("Background color", "CSS color (e.g. #FCF8F2 or whitesmoke)."),
-        },
-        elements: {
-          "ui:title": "Elements on this slide",
-          "ui:help": "Pick text, image, or interaction. Each element has a normalized 0..1 rectangle.",
-        },
-      },
-    },
-    passPercentage: f(
-      "Pass threshold (%)",
-      "Default 70. Final score-as-percent must reach this for the activity to count as passed.",
-    ),
-    behaviour: {
-      "ui:title": "Activity behaviour",
-      showProgressBar: f("Show progress bar", "Display a slide-position indicator at the top."),
-      showKeywords: f("Show keyword index", "Reserved for a future keyword-navigation panel."),
-      enableRetry: f("Allow retry on embedded interactions"),
-    },
-    ui: {
-      "ui:title": "Button label overrides",
-      nextSlideButton: f("'Next' button text"),
-      previousSlideButton: f("'Previous' button text"),
-      finishButton: f("'Finish' button text"),
-    },
-  },
-
   "question-set": {
     ...COMMON,
     "ui:order": ["title", "questions", "passPercentage", "behaviour", "ui", "*"],

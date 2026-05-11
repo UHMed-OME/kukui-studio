@@ -57,7 +57,6 @@ const PHASE_1_ACTIVITIES = [
   "multiple-choice",
   "fill-in-the-blanks",
   "drag-and-drop",
-  "course-presentation",
   "question-set",
   "hotspot-3d",
   "hotspot-2d",

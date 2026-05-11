@@ -15,7 +15,6 @@ export default defineConfig({
         "multiple-choice": resolve(__dirname, "multiple-choice.html"),
         "fill-in-the-blanks": resolve(__dirname, "fill-in-the-blanks.html"),
         "drag-and-drop": resolve(__dirname, "drag-and-drop.html"),
-        "course-presentation": resolve(__dirname, "course-presentation.html"),
         "question-set": resolve(__dirname, "question-set.html"),
         "hotspot-3d": resolve(__dirname, "hotspot-3d.html"),
         "hotspot-2d": resolve(__dirname, "hotspot-2d.html"),

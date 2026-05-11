@@ -18,9 +18,6 @@ const FillInTheBlanks = lazy(() =>
 const DragAndDrop = lazy(() =>
   import("@kukui/core").then((m) => ({ default: m.DragAndDrop })),
 );
-const CoursePresentation = lazy(() =>
-  import("@kukui/core").then((m) => ({ default: m.CoursePresentation })),
-);
 const QuestionSet = lazy(() =>
   import("@kukui/core").then((m) => ({ default: m.QuestionSet })),
 );
@@ -145,8 +142,6 @@ function renderActivity(kind: ActivityKind, config: unknown, noop: () => void) {
       return <FillInTheBlanks config={c} onSubmit={noop} />;
     case "drag-and-drop":
       return <DragAndDrop config={c} onSubmit={noop} />;
-    case "course-presentation":
-      return <CoursePresentation config={c} onSubmit={noop} />;
     case "question-set":
       return <QuestionSet config={c} onSubmit={noop} />;
     case "hotspot-3d":

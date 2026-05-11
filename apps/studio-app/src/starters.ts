@@ -44,22 +44,6 @@ export const STARTERS: Record<ActivityKind, unknown> = {
     dropZones: [{ id: "z1", label: "Zone 1", rect: { x: 0.4, y: 0.4, w: 0.2, h: 0.2 } }],
     behaviour: { enableRetry: true },
   },
-  "course-presentation": {
-    version: "1.0",
-    title: "Course Presentation",
-    slides: [
-      {
-        elements: [
-          {
-            type: "text",
-            html: "<h1>Welcome</h1><p>Your first slide.</p>",
-            rect: { x: 0.1, y: 0.2, w: 0.8, h: 0.5 },
-          },
-        ],
-      },
-    ],
-    behaviour: { showProgressBar: true, enableRetry: true },
-  },
   "question-set": {
     version: "1.0",
     title: "Question Set",
@@ -394,7 +378,6 @@ export const ACTIVITY_LABELS: Record<ActivityKind, string> = {
   "multiple-choice": "Multiple Choice",
   "fill-in-the-blanks": "Fill in the Blanks",
   "drag-and-drop": "Drag and Drop",
-  "course-presentation": "Course Presentation",
   "question-set": "Question Set",
   "hotspot-3d": "3D Hotspot Identification",
   "hotspot-2d": "Image Hotspot 2D",

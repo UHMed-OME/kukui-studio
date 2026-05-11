@@ -22,7 +22,6 @@ export { ThemeToggle } from "./ThemeToggle.js";
 export { MultipleChoice } from "./components/multiple-choice/index.js";
 export { FillInTheBlanks } from "./components/fill-in-the-blanks/index.js";
 export { DragAndDrop } from "./components/drag-and-drop/index.js";
-export { CoursePresentation } from "./components/course-presentation/index.js";
 export { QuestionSet } from "./components/question-set/index.js";
 export { Hotspot3D } from "./components/hotspot-3d/index.js";
 export { Hotspot2D } from "./components/hotspot-2d/index.js";

@@ -10,7 +10,6 @@
     "./multiple-choice": "./src/multiple-choice.ts",
     "./fill-in-the-blanks": "./src/fill-in-the-blanks.ts",
     "./drag-and-drop": "./src/drag-and-drop.ts",
-    "./course-presentation": "./src/course-presentation.ts",
     "./question-set": "./src/question-set.ts",
     "./hotspot-3d": "./src/hotspot-3d.ts",
     "./hotspot-2d": "./src/hotspot-2d.ts",

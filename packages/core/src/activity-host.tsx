@@ -6,7 +6,6 @@ import type { ActivityKind, ScoreState } from "./types.js";
 import { MultipleChoice } from "./components/multiple-choice/index.js";
 import { FillInTheBlanks } from "./components/fill-in-the-blanks/index.js";
 import { DragAndDrop } from "./components/drag-and-drop/index.js";
-import { CoursePresentation } from "./components/course-presentation/index.js";
 import { QuestionSet } from "./components/question-set/index.js";
 import { Hotspot3D } from "./components/hotspot-3d/index.js";
 import { Hotspot2D } from "./components/hotspot-2d/index.js";
@@ -150,8 +149,6 @@ function renderActivity(kind: ActivityKind, cfg: unknown, callbacks: unknown) {
       return <FillInTheBlanks config={c} {...cb} />;
     case "drag-and-drop":
       return <DragAndDrop config={c} {...cb} />;
-    case "course-presentation":
-      return <CoursePresentation config={c} {...cb} />;
     case "question-set":
       return <QuestionSet config={c} {...cb} />;
     case "hotspot-3d":

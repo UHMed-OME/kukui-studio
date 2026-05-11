@@ -11,6 +11,7 @@ export function ConfirmDialog({
   message,
   confirmLabel = "Confirm",
   cancelLabel = "Cancel",
+  hideCancel = false,
   destructive = false,
   onConfirm,
   onCancel,
@@ -20,6 +21,8 @@ export function ConfirmDialog({
   message: string;
   confirmLabel?: string;
   cancelLabel?: string;
+  /** Hide the cancel button — turns the dialog into an info-only confirm. */
+  hideCancel?: boolean;
   destructive?: boolean;
   onConfirm: () => void;
   onCancel: () => void;
@@ -87,14 +90,16 @@ export function ConfirmDialog({
           {message}
         </p>
         <div className="ks-dialog__actions">
-          <button
-            ref={cancelRef}
-            type="button"
-            className="kukui-studio-btn kukui-studio-btn--ghost"
-            onClick={onCancel}
-          >
-            {cancelLabel}
-          </button>
+          {hideCancel ? null : (
+            <button
+              ref={cancelRef}
+              type="button"
+              className="kukui-studio-btn kukui-studio-btn--ghost"
+              onClick={onCancel}
+            >
+              {cancelLabel}
+            </button>
+          )}
           <button
             ref={confirmRef}
             type="button"
