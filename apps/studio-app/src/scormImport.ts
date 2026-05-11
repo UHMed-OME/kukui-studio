@@ -1,4 +1,3 @@
-import JSZip from "jszip";
 import { SchemaRegistry, type SchemaRegistryKey } from "@kukui/schemas";
 import type { ActivityKind } from "@kukui/core";
 
@@ -35,6 +34,9 @@ async function importJson(file: File): Promise<ImportResult> {
 }
 
 async function importZip(file: File): Promise<ImportResult> {
+  // JSZip (~25 KB gz) only matters when the author imports a zip — keep
+  // it out of the Studio's main chunk by dynamic-importing here too.
+  const { default: JSZip } = await import("jszip");
   const buffer = await file.arrayBuffer();
   const zip = await JSZip.loadAsync(buffer);
 

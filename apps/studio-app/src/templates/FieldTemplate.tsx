@@ -3,9 +3,11 @@ import { Tooltip } from "../Tooltip.js";
 
 /**
  * RJSF FieldTemplate that renders the label + an optional ⓘ tooltip icon
- * beside it, sourced from `ui:help`. The tooltip is CSS-only (visible on
- * hover/focus of the icon button), so it works with keyboard navigation
- * and screen readers via aria-describedby.
+ * beside it, sourced from `ui:help`. The tooltip is rendered by the
+ * portalled <Tooltip> component (see Tooltip.tsx) so it escapes ancestor
+ * overflow:hidden + low z-index containers; it's keyboard-accessible
+ * (hover/focus on the icon button) and exposes the help text to screen
+ * readers via aria-describedby.
  *
  * Falls back to RJSF's default rendering for fields whose label RJSF
  * suppresses (`displayLabel === false`, e.g. checkboxes whose label is
