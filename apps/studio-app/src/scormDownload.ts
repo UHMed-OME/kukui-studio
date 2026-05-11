@@ -1,10 +1,10 @@
-import JSZip from "jszip";
 import type { ActivityKind } from "@kukui/core";
+import { slug } from "./util/slug.js";
 
 /**
  * Build a SCORM 1.2 zip in the browser by patching a pre-built template.
  *
- * The 7 templates live at /scorm-templates/kukui-<kind>.scorm.zip — those
+ * The 23 templates live at /scorm-templates/kukui-<kind>.scorm.zip — those
  * were produced by `node packaging/pack-scorm.js --all` against the same
  * @kukui/core build the Studio is using. We open the template, swap in the
  * author's draft as `samples/<kind>/basic.json`, and rewrite the activity
@@ -12,6 +12,10 @@ import type { ActivityKind } from "@kukui/core";
  * author entered.
  */
 export async function downloadScormZip(kind: ActivityKind, config: unknown): Promise<void> {
+  // JSZip (~25 KB gz) only matters when the author actually clicks
+  // Download. Dynamic-import to keep it out of the Studio's main chunk.
+  const { default: JSZip } = await import("jszip");
+
   const templateUrl = `${import.meta.env.BASE_URL}scorm-templates/kukui-${kind}.scorm.zip`;
   const response = await fetch(templateUrl);
   if (!response.ok) {
@@ -46,20 +50,11 @@ export async function downloadScormZip(kind: ActivityKind, config: unknown): Pro
   // upload picker. Use the human title verbatim (slugified to keep
   // filesystems happy); plain `.zip` so D2L recognises it as a SCORM
   // package without the `.scorm.zip` double-extension.
-  const slug = slugify((config as { title?: string }).title) || kind;
+  const filename = slug((config as { title?: string }).title) || kind;
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = `${slug}.zip`;
+  a.download = `${filename}.zip`;
   a.click();
   URL.revokeObjectURL(url);
-}
-
-function slugify(s: unknown): string {
-  if (typeof s !== "string") return "";
-  return s
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "")
-    .slice(0, 60);
 }

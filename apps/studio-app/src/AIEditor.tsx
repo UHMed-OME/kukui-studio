@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { SchemaRegistry, type SchemaRegistryKey } from "@kukui/schemas";
 import {
-  callFreeText,
   callStructured,
   ChatCompletionsError,
 } from "./ai/chat-completions.js";
@@ -9,7 +8,7 @@ import { type AISettings, hasUsableSettings, loadSettings } from "./ai/settings.
 import { STARTERS } from "./starters.js";
 import { GearIcon, SparkleIcon } from "./icons.js";
 
-type Mode = "generate" | "edit" | "explain";
+type Mode = "generate" | "edit";
 
 type ResponseState =
   | { kind: "none" }
@@ -33,7 +32,6 @@ type ResponseState =
       raw: string;
       appliedAt: number;
     }
-  | { kind: "text"; text: string; timestamp: number }
   | { kind: "error"; code: ChatCompletionsError["code"]; message: string };
 
 /**
@@ -205,44 +203,32 @@ function getPlaceholder(kind: SchemaRegistryKey, mode: Mode): string {
   return mode === "generate" ? hint.gen : hint.edit;
 }
 
-// Two surface labels left for the single-input model. The internal Mode
-// is still tracked so the prompt-builder knows whether to include the
-// current activity JSON (edit) or treat the prompt as a from-scratch
-// description (generate). Inferred from value-vs-starter; the user
-// doesn't see modes.
-const MODE_HINTS: Record<Mode, string> = {
-  generate:
-    "Generate a new activity from a short description. Replaces your current draft. (Undo available right after.)",
-  edit: "Revise the current activity based on your prompt. Preserves anything you didn't ask to change. Big rewrites ask for confirmation first.",
-  explain:
-    "Read-only summary of the current activity. Doesn't change anything.",
-};
-
 export function AIEditor({
   kind,
   value,
   onChange,
+  isDirty,
   onOpenSettings,
 }: {
   kind: SchemaRegistryKey;
   value: unknown;
   onChange: (next: unknown) => void;
+  /**
+   * Whether the current activity has diverged from STARTERS[kind]. App.tsx
+   * owns this — flipped true on any mutation, reset on kind change / reset.
+   * Drives generate-vs-edit inference without a per-render deep compare.
+   */
+  isDirty: boolean;
   onOpenSettings: () => void;
 }) {
   const [settings, setSettings] = useState<AISettings>(() => loadSettings());
   const [prompt, setPrompt] = useState("");
   // The internal mode for the next request is inferred from whether the
-  // form value differs from the starter. Authors don't see modes — the
-  // input is "describe what you want" and Send figures out whether that
-  // means "generate new" or "revise current." Explain is a separate
-  // button that bypasses this and forces read-only.
-  const inferredMode: Mode = useMemo(
-    () =>
-      JSON.stringify(value) === JSON.stringify(STARTERS[kind])
-        ? "generate"
-        : "edit",
-    [value, kind],
-  );
+  // form value has been touched since the activity was loaded. Authors
+  // don't see modes — the input is "describe what you want" and Send
+  // figures out whether that means "generate new" (clean starter) or
+  // "revise current" (dirty).
+  const inferredMode: Mode = isDirty ? "edit" : "generate";
   const [response, setResponse] = useState<ResponseState>({ kind: "none" });
   const [showDetails, setShowDetails] = useState(false);
   // Latest "applied" banner needs to know whether to render full vs.
@@ -264,9 +250,9 @@ export function AIEditor({
 
   const usable = hasUsableSettings(settings);
 
-  // Default mode tracks the activity's "is starter?" status whenever kind
-  // flips. Doesn't reset if the user has manually picked a mode for this
-  // session (kept simple — small UX cost).
+  // Clear any in-flight response state when the author switches to a
+  // different activity — stale "applied" banners or errors from a previous
+  // kind would be confusing against the new form.
   useEffect(() => {
     setResponse({ kind: "none" });
   }, [kind]);
@@ -358,17 +344,6 @@ export function AIEditor({
     setResponse({ kind: "pending" });
 
     try {
-      if (activeMode === "explain") {
-        const text = await callFreeText({
-          kind,
-          settings,
-          userPrompt: prompt,
-          currentJson: value,
-        });
-        setResponse({ kind: "text", text, timestamp: Date.now() });
-        return;
-      }
-
       const includeCurrent = activeMode === "edit";
       const result = await callStructured({
         kind,
@@ -481,10 +456,6 @@ export function AIEditor({
           err instanceof Error ? err.message : "Refine failed.",
       });
     }
-  };
-
-  const discard = () => {
-    setResponse({ kind: "none" });
   };
 
   if (!usable) {
@@ -695,23 +666,6 @@ export function AIEditor({
         </div>
       ) : null}
 
-      {response.kind === "text" ? (
-        <div className="kukui-studio-ai__card">
-          <h3 className="kukui-studio-ai__card-title">Explanation</h3>
-          <div className="kukui-studio-ai__card-body kukui-studio-ai__card-body--text">
-            {response.text}
-          </div>
-          <div className="kukui-studio-ai__card-actions">
-            <button
-              type="button"
-              className="kukui-studio-btn kukui-studio-btn--ghost"
-              onClick={discard}
-            >
-              Close
-            </button>
-          </div>
-        </div>
-      ) : null}
     </div>
   );
 }

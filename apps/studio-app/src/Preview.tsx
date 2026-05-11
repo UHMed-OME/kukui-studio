@@ -7,7 +7,7 @@ export type PreviewMode = "live" | "edit";
 
 // Each activity component is its own lazy chunk. Switching activity kinds
 // only fetches the chunk for the kind being previewed; in particular, the
-// 2D activities (MC / FIB / DnD / CP / QS) never pay for three.js + r3f
+// 2D activities (MC / FIB / DnD / QS) never pay for three.js + r3f
 // unless the user opens the 3D Hotspot or Virtual Tour preview.
 const MultipleChoice = lazy(() =>
   import("@kukui/core").then((m) => ({ default: m.MultipleChoice })),

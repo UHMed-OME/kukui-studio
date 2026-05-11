@@ -36,6 +36,7 @@ import { ACTIVITY_LABELS, STARTERS } from "./starters.js";
 import { clearDraft, debouncedSaver, loadDraft, saveDraft } from "./drafts.js";
 import { downloadScormZip } from "./scormDownload.js";
 import { importFromFile } from "./scormImport.js";
+import { slug } from "./util/slug.js";
 
 type Tab = "form" | "json" | "ai";
 
@@ -127,6 +128,18 @@ export function App() {
     return "drag-and-drop";
   });
   const [value, setValue] = useState<unknown>(() => loadDraft(kind) ?? STARTERS[kind]);
+  // Whether `value` has diverged from STARTERS[kind] for the current
+  // activity. Flipped true on any form/json/preview/AI edit, on draft
+  // hydration when the draft differs, and on import. Resets to false
+  // whenever `kind` changes or the author hits Reset. The AIEditor reads
+  // this to decide whether the next request is a from-scratch generate
+  // (clean) or an edit (dirty), avoiding a JSON.stringify deep-compare
+  // on every render.
+  const [isDirty, setIsDirty] = useState(false);
+  const markDirty = (next: unknown) => {
+    setValue(next);
+    setIsDirty(true);
+  };
   const [tab, setTab] = useState<Tab>("form");
   const [previewMode, setPreviewMode] = useState<PreviewMode>(() =>
     hasEditor(kind) ? "edit" : "live",
@@ -161,9 +174,13 @@ export function App() {
     window.history.replaceState(null, "", url.toString());
   }, [kind]);
 
-  // Hydrate from draft when kind changes.
+  // Hydrate from draft when kind changes. Dirty-state tracks whether the
+  // restored value differs from the starter — a stored draft is by
+  // definition dirty (otherwise it wouldn't have been saved).
   useEffect(() => {
-    setValue(loadDraft(kind) ?? STARTERS[kind]);
+    const draft = loadDraft(kind);
+    setValue(draft ?? STARTERS[kind]);
+    setIsDirty(draft != null);
   }, [kind]);
 
   // Debounced auto-save per kind.
@@ -270,6 +287,7 @@ export function App() {
   const confirmResetNow = () => {
     clearDraft(kind);
     setValue(STARTERS[kind]);
+    setIsDirty(false);
     setConfirmReset(false);
     flash("Reset.");
   };
@@ -295,8 +313,8 @@ export function App() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    const slug = filenameSlug((validation.data as { title?: string }).title) || kind;
-    a.download = `kukui-${slug}.json`;
+    const filename = slug((validation.data as { title?: string }).title) || kind;
+    a.download = `kukui-${filename}.json`;
     a.click();
     URL.revokeObjectURL(url);
     flash("Exported.");
@@ -326,6 +344,7 @@ export function App() {
     }
     setKind(result.kind);
     setValue(result.config);
+    setIsDirty(true);
     setAsyncStatus({
       kind: "success",
       message: `Imported ${ACTIVITY_LABELS[result.kind] ?? result.kind}.`,
@@ -675,16 +694,17 @@ export function App() {
               <EditorForm
                 kind={kind}
                 value={value}
-                onChange={setValue}
+                onChange={markDirty}
                 extraErrors={extraErrors}
               />
             ) : tab === "json" ? (
-              <JsonEditor value={value} onChange={setValue} />
+              <JsonEditor value={value} onChange={markDirty} />
             ) : (
               <AIEditor
                 kind={kind as SchemaRegistryKey}
                 value={value}
-                onChange={setValue}
+                onChange={markDirty}
+                isDirty={isDirty}
                 onOpenSettings={() => setShowAISettings(true)}
               />
             )}
@@ -739,7 +759,7 @@ export function App() {
             />
           </div>
           <div className="kukui-studio-panel-body kukui-studio-preview">
-            <Preview kind={kind} value={value} mode={previewMode} onChange={setValue} />
+            <Preview kind={kind} value={value} mode={previewMode} onChange={markDirty} />
           </div>
         </section>
       </main>
@@ -846,18 +866,6 @@ export function App() {
       />
     </div>
   );
-}
-
-/* PreviewModeTooltip removed — now uses the shared <Tooltip> portal
-   component directly inline at the call site. See Tooltip.tsx. */
-
-function filenameSlug(s: unknown): string {
-  if (typeof s !== "string") return "";
-  return s
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "")
-    .slice(0, 60);
 }
 
 /**

@@ -1,4 +1,3 @@
-import JSZip from "jszip";
 import { SchemaRegistry, type SchemaRegistryKey } from "@kukui/schemas";
 import type { ActivityKind } from "@kukui/core";
 
@@ -42,6 +41,9 @@ const MAX_TOTAL_UNCOMPRESSED = 50 * 1024 * 1024; // 50 MB across all entries
 const MAX_CONFIG_BYTES = 1 * 1024 * 1024; // 1 MB for the matched config file
 
 async function importZip(file: File): Promise<ImportResult> {
+  // JSZip (~25 KB gz) only matters when the author imports a zip — keep
+  // it out of the Studio's main chunk by dynamic-importing here too.
+  const { default: JSZip } = await import("jszip");
   const buffer = await file.arrayBuffer();
   const zip = await JSZip.loadAsync(buffer);
 

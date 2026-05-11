@@ -32,8 +32,3 @@ export function getJsonSchema(kind: SchemaRegistryKey): Record<string, unknown> 
   cache.set(kind, json);
   return json;
 }
-
-/** Test seam — flush the cache between runs. */
-export function _clearJsonSchemaCache(): void {
-  cache.clear();
-}

@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { lazy, Suspense, useMemo } from "react";
 import Form from "@rjsf/core";
 import validator from "@rjsf/validator-ajv8";
 import type { IChangeEvent } from "@rjsf/core";
@@ -10,16 +10,25 @@ import { UI_SCHEMAS } from "./uiSchemas.js";
 import { ArrayFieldTemplate } from "./templates/ArrayFieldTemplate.js";
 import { ObjectFieldTemplate } from "./templates/ObjectFieldTemplate.js";
 import { FieldTemplate } from "./templates/FieldTemplate.js";
-import { RichTextWidget } from "./widgets/RichTextWidget.js";
 import { FileUploadWidget } from "./widgets/FileUploadWidget.js";
 import { NodeSelectWidget } from "./widgets/NodeSelectWidget.js";
+
+// Lazy-loaded — Tiptap + StarterKit + linkify is ~90-120 KB gz and only
+// renders when the active activity has at least one `ui:widget: "html"`
+// field. Wrapping the whole RJSF <Form> in Suspense keeps the form
+// render-once and lets RJSF mount the widget normally; React resolves
+// the lazy chunk lazily the first time it's needed.
+const RichTextWidget = lazy(() =>
+  import("./widgets/RichTextWidget.js").then((m) => ({ default: m.RichTextWidget })),
+);
 
 /**
  * Auto-generated form per activity kind.
  *
- * The Zod schema is converted to JSON Schema via zod-to-json-schema, then
- * rendered with RJSF. This means every field across the seven activity
- * types is editable without hand-writing one form per kind.
+ * The Zod schema is converted to JSON Schema via Zod 4's native
+ * `z.toJSONSchema`, then rendered with RJSF. This means every field
+ * across the seven activity types is editable without hand-writing one
+ * form per kind.
  *
  * Limitations: discriminated unions render as `oneOf` selectors which are
  * a bit clunky; complex `additionalProperties: false` objects sometimes
@@ -70,27 +79,29 @@ export function EditorForm({
 
   return (
     <div className="rjsf">
-      <Form
-        schema={jsonSchema}
-        formData={value}
-        validator={validator}
-        onChange={handleChange}
-        liveValidate
-        showErrorList={false}
-        extraErrors={extraErrors}
-        uiSchema={uiSchema}
-        templates={{
-          ArrayFieldTemplate,
-          ObjectFieldTemplate,
-          FieldTemplate,
-        }}
-        widgets={{
-          html: RichTextWidget,
-          file: FileUploadWidget,
-          nodeSelect: NodeSelectWidget,
-        }}
-        formContext={{ formData: value }}
-      />
+      <Suspense fallback={null}>
+        <Form
+          schema={jsonSchema}
+          formData={value}
+          validator={validator}
+          onChange={handleChange}
+          liveValidate
+          showErrorList={false}
+          extraErrors={extraErrors}
+          uiSchema={uiSchema}
+          templates={{
+            ArrayFieldTemplate,
+            ObjectFieldTemplate,
+            FieldTemplate,
+          }}
+          widgets={{
+            html: RichTextWidget,
+            file: FileUploadWidget,
+            nodeSelect: NodeSelectWidget,
+          }}
+          formContext={{ formData: value }}
+        />
+      </Suspense>
     </div>
   );
 }

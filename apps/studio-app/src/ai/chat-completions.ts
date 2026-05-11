@@ -14,8 +14,6 @@
  *
  * The working mode is cached per (baseUrl, model) so subsequent requests
  * skip the dance.
- *
- * Free-form mode (Explain) skips the chain entirely and returns raw text.
  */
 import type { SchemaRegistryKey } from "@kukui/schemas";
 import {
@@ -384,85 +382,4 @@ export async function callStructured(
       "Every output mode was rejected by the provider.",
     )
   );
-}
-
-/**
- * Free-text completion for Explain mode. No `response_format`, no schema
- * injection — just the system prompt and the user message.
- */
-export async function callFreeText(opts: {
-  kind: SchemaRegistryKey;
-  settings: AISettings;
-  userPrompt: string;
-  currentJson?: unknown;
-  fetchImpl?: typeof fetch;
-}): Promise<string> {
-  const { settings } = opts;
-  if (!settings.apiKey || !settings.baseUrl || !settings.model) {
-    throw new ChatCompletionsError("no-settings", "AI editor isn't configured yet.");
-  }
-  const url = joinUrl(settings.baseUrl, "/chat/completions");
-  const userParts: string[] = [];
-  if (opts.currentJson !== undefined) {
-    userParts.push(
-      `Current activity JSON:\n\`\`\`json\n${JSON.stringify(opts.currentJson, null, 2)}\n\`\`\``,
-    );
-  }
-  userParts.push(opts.userPrompt.trim());
-  const messages: ChatMessage[] = [
-    { role: "system", content: systemPromptFor(opts.kind) },
-    {
-      role: "system",
-      content:
-        "For this request, respond in plain prose — DO NOT produce JSON. Summarise, critique, or suggest as the user asks.",
-    },
-    { role: "user", content: userParts.join("\n\n") },
-  ];
-  const f = opts.fetchImpl ?? fetch;
-  let res: Response;
-  try {
-    res = await f(url, {
-      method: "POST",
-      headers: {
-        "content-type": "application/json",
-        authorization: `Bearer ${settings.apiKey}`,
-      },
-      body: JSON.stringify({ model: settings.model, messages, temperature: 0.5 }),
-    });
-  } catch (err) {
-    const msg = err instanceof Error ? err.message : String(err);
-    const looksLikeCors = /failed to fetch|networkerror|cors/i.test(msg);
-    throw new ChatCompletionsError(
-      looksLikeCors ? "cors" : "network",
-      looksLikeCors
-        ? "Couldn't reach the provider. This is often a CORS restriction."
-        : "Network error reaching the provider.",
-      { cause: err },
-    );
-  }
-  if (res.status === 401 || res.status === 403) {
-    throw new ChatCompletionsError("unauthorized", "Provider rejected your API key.", {
-      status: res.status,
-    });
-  }
-  if (res.status === 429) {
-    throw new ChatCompletionsError("rate-limited", "Provider rate-limited the request.", {
-      status: res.status,
-      retryAfterMs: parseRetryAfter(res.headers.get("retry-after")),
-    });
-  }
-  if (!res.ok) {
-    throw new ChatCompletionsError("server", `Provider returned ${res.status}.`, {
-      status: res.status,
-    });
-  }
-  let payload: unknown;
-  try {
-    payload = await res.json();
-  } catch (err) {
-    throw new ChatCompletionsError("parse", "Couldn't parse provider response as JSON.", {
-      cause: err,
-    });
-  }
-  return extractContent(payload);
 }
