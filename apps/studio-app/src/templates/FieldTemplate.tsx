@@ -16,7 +16,7 @@ export function FieldTemplate(props: FieldTemplateProps) {
     id,
     label,
     children,
-    errors,
+    rawErrors,
     description,
     displayLabel,
     required,
@@ -31,9 +31,26 @@ export function FieldTemplate(props: FieldTemplateProps) {
   if (widget === "hidden") return null;
 
   const helpText = readHelp(uiSchema);
+  // Dedupe — RJSF + the Zod extraErrors path can produce overlapping
+  // messages for the same issue (e.g. "Required" from AJV plus the more
+  // specific Zod message). Showing both is noisy; collapse to unique
+  // strings while preserving order.
+  const errors = uniq(rawErrors ?? []);
+  const hasErrors = errors.length > 0;
+  const errorId = hasErrors ? `${id}__errors` : undefined;
 
   return (
-    <div className={["ks-field", classNames].filter(Boolean).join(" ")}>
+    <div
+      className={[
+        "ks-field",
+        hasErrors ? "ks-field--has-error" : "",
+        classNames,
+      ]
+        .filter(Boolean)
+        .join(" ")}
+      aria-invalid={hasErrors ? true : undefined}
+      aria-describedby={errorId}
+    >
       {displayLabel && label ? (
         <div className="ks-field__label-row">
           <label htmlFor={id} className="ks-field__label">
@@ -45,9 +62,31 @@ export function FieldTemplate(props: FieldTemplateProps) {
       ) : null}
       {description ? <div className="ks-field__desc">{description}</div> : null}
       {children}
-      {errors}
+      {hasErrors ? (
+        <ul
+          id={errorId}
+          className="kukui-studio-field-error"
+          role="alert"
+        >
+          {errors.map((msg, i) => (
+            <li key={i}>{msg}</li>
+          ))}
+        </ul>
+      ) : null}
     </div>
   );
+}
+
+function uniq(xs: string[]): string[] {
+  const seen = new Set<string>();
+  const out: string[] = [];
+  for (const x of xs) {
+    if (!seen.has(x)) {
+      seen.add(x);
+      out.push(x);
+    }
+  }
+  return out;
 }
 
 function readHelp(uiSchema: UiSchema | undefined): string | null {

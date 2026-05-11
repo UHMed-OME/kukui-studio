@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import Form from "@rjsf/core";
 import validator from "@rjsf/validator-ajv8";
 import type { IChangeEvent } from "@rjsf/core";
-import type { RJSFSchema } from "@rjsf/utils";
+import type { ErrorSchema, RJSFSchema } from "@rjsf/utils";
 import { z } from "zod";
 import { SchemaRegistry, type SchemaRegistryKey } from "@kukui/schemas";
 import type { ActivityKind } from "@kukui/core";
@@ -29,10 +29,18 @@ export function EditorForm({
   kind,
   value,
   onChange,
+  extraErrors,
 }: {
   kind: ActivityKind;
   value: unknown;
   onChange: (next: unknown) => void;
+  /**
+   * Zod-derived per-field errors merged into RJSF's error schema so each
+   * issue shows up inline beneath the offending field. Zod is the source
+   * of truth for the activity config; RJSF + AJV catches a subset (types,
+   * required, format) that we still leave on for instant feedback.
+   */
+  extraErrors?: ErrorSchema;
 }) {
   const jsonSchema = useMemo<RJSFSchema>(() => {
     const zod = SchemaRegistry[kind as SchemaRegistryKey];
@@ -67,8 +75,9 @@ export function EditorForm({
         formData={value}
         validator={validator}
         onChange={handleChange}
-        liveValidate={false}
+        liveValidate
         showErrorList={false}
+        extraErrors={extraErrors}
         uiSchema={uiSchema}
         templates={{
           ArrayFieldTemplate,

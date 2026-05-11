@@ -157,6 +157,42 @@ describe("AudioRecording", () => {
     expect(screen.getByLabelText(/playback/i)).toBeInTheDocument();
   });
 
+  it("restores the submitted stage from suspendData on mount", () => {
+    installRecorderStubs();
+    const suspendData = JSON.stringify({
+      stage: "submitted",
+      audioDataUrl: "data:audio/webm;base64,eA==",
+      durationSeconds: 3,
+    });
+    render(
+      <AudioRecording
+        config={cfgBasic}
+        onSubmit={vi.fn()}
+        suspendData={suspendData}
+      />,
+    );
+    // Submitted-with-audio shape: playback audio + "submitted" confirmation.
+    expect(screen.getByLabelText(/playback/i)).toBeInTheDocument();
+    // Both the status strip and the confirmation div say "submitted".
+    expect(screen.getAllByText(/recording submitted/i).length).toBeGreaterThan(
+      0,
+    );
+    // No Record button: stage is terminal.
+    expect(screen.queryByRole("button", { name: /^record$/i })).toBeNull();
+  });
+
+  it("falls back to idle when suspendData is malformed", () => {
+    installRecorderStubs();
+    render(
+      <AudioRecording
+        config={cfgBasic}
+        onSubmit={vi.fn()}
+        suspendData="not-json"
+      />,
+    );
+    expect(screen.getByRole("button", { name: /record/i })).toBeInTheDocument();
+  });
+
   it("Submit calls onSubmit with audioDataUrl + durationSeconds in suspendData", async () => {
     installRecorderStubs();
     const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
