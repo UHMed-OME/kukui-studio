@@ -367,18 +367,18 @@ export function App() {
     <div className="kukui-studio-shell">
       <header className="kukui-studio-header">
         <div className="kukui-studio-brand">
-          <div className="kukui-studio-brand-row">
-            <img
-              className="kukui-studio-logo"
-              src={`${import.meta.env.BASE_URL}kukui-logo.svg`}
-              alt=""
-              aria-hidden="true"
-            />
+          <img
+            className="kukui-studio-logo"
+            src={`${import.meta.env.BASE_URL}kukui-logo.svg`}
+            alt=""
+            aria-hidden="true"
+          />
+          <div className="kukui-studio-brand-text">
             <h1 className="kukui-studio-title">Kukui Studio</h1>
+            <p className="kukui-studio-subtitle">
+              Interactive learning activities for Lamakū and other LMS.
+            </p>
           </div>
-          <p className="kukui-studio-subtitle">
-            Interactive learning activities for Lamakū and other LMS.
-          </p>
         </div>
         <div className="kukui-studio-toolbar">
           <input

@@ -107,35 +107,32 @@ button {
   background: var(--color-surface);
 }
 
-/* Brand block: logo+title row on top, subtitle aligned under the title
-   text below. Shrinks before the toolbar wraps so the header reads as one
-   horizontal band on common desktop widths. */
+/* Brand block: logo + stacked (title above, subtitle below) text to its
+   right. Renders as a tight logo+wordmark pair — the logo aligns with
+   the text block's vertical centre, no manual indents. Shrinks before
+   the toolbar wraps so the header reads as one horizontal band on
+   common desktop widths. */
 .kukui-studio-brand {
-  flex: 1 1 320px;
+  flex: 0 1 auto;
   min-width: 0;
-  max-width: 720px;
+  max-width: 640px;
   display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.kukui-studio-brand-row {
-  display: flex;
+  flex-direction: row;
   align-items: center;
   gap: var(--spacing-md);
 }
 
-.kukui-studio-logo {
-  width: 44px;
-  height: 44px;
-  flex-shrink: 0;
-  display: block;
+.kukui-studio-brand-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
 }
 
-/* Indent subtitle so it lines up with the title text, not the logo edge. */
-.kukui-studio-brand .kukui-studio-subtitle {
-  margin: 0;
-  padding-left: calc(44px + var(--spacing-md));
+.kukui-studio-logo {
+  width: 48px;
+  height: 48px;
+  flex-shrink: 0;
+  display: block;
 }
 
 .kukui-studio-title {
@@ -143,6 +140,7 @@ button {
   font-size: var(--font-size-title);
   font-weight: 700;
   color: var(--color-text-primary);
+  line-height: 1.15;
 }
 
 .kukui-studio-subtitle {
@@ -2937,15 +2935,16 @@ html[data-theme="glass"] .kukui-studio-footer {
   gap: var(--spacing-xs);
 }
 
-/* Icon-only button (Settings gear next to the primary CTA). 44 px tap
-   target per the design system; ghost styling so it doesn't compete
-   with the primary action. */
+/* Icon-only button (Settings gear next to the primary CTA). Matches the
+   primary CTA's 38 px height so the two sit visually balanced — bumping
+   to 44 px (the design-system tap target) would make the gear tower
+   over the primary. Ghost styling keeps it visually subordinate. */
 .kukui-studio-ai__icon-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 44px;
-  height: 44px;
+  width: 38px;
+  height: 38px;
   padding: 0;
   background: transparent;
   border: 1px solid var(--color-border);
