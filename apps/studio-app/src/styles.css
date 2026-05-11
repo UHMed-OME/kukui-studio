@@ -2734,3 +2734,300 @@ html[data-theme="glass"] .kukui-studio-footer {
     min-width: 0;
   }
 }
+
+/* ---------- AI editor tab ----------
+ *
+ * Mode toggle uses the same segmented look as the preview Edit/Live picker
+ * so the visual vocabulary is consistent. Prompt textarea + response card
+ * stack vertically; the response card only appears once we have a result.
+ */
+
+.kukui-studio-ai {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+  padding: var(--spacing-lg);
+}
+
+.kukui-studio-ai__modes {
+  display: inline-flex;
+  background: var(--color-surface-alt);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 2px;
+  align-self: flex-start;
+}
+
+.kukui-studio-ai__mode-btn {
+  border: none;
+  background: transparent;
+  color: var(--color-text-secondary);
+  font: inherit;
+  font-size: var(--font-size-meta);
+  font-weight: 600;
+  padding: 6px 14px;
+  border-radius: calc(var(--radius-md) - 2px);
+  cursor: pointer;
+}
+
+.kukui-studio-ai__mode-btn.is-active {
+  background: var(--color-surface);
+  color: var(--color-primary);
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.06);
+}
+
+.kukui-studio-ai__mode-btn:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.kukui-studio-ai__field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.kukui-studio-ai__label {
+  font-size: var(--font-size-meta);
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.kukui-studio-ai__textarea {
+  width: 100%;
+  min-height: 140px;
+  font: inherit;
+  font-size: var(--font-size-prompt);
+  padding: var(--spacing-md);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+  resize: vertical;
+}
+
+.kukui-studio-ai__textarea:focus {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 1px;
+  border-color: var(--color-primary);
+}
+
+.kukui-studio-ai__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-md);
+  flex-wrap: wrap;
+}
+
+.kukui-studio-ai__meta {
+  font-size: var(--font-size-micro);
+  color: var(--color-text-secondary);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.kukui-studio-ai__meta-sep {
+  color: var(--color-text-muted);
+}
+
+.kukui-studio-ai__card {
+  background: var(--color-surface-alt);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+  padding: var(--spacing-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.kukui-studio-ai__card-title {
+  margin: 0;
+  font-size: var(--font-size-meta);
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+.kukui-studio-ai__card-body {
+  font-size: var(--font-size-answer);
+  color: var(--color-text-primary);
+  white-space: pre-wrap;
+  max-height: 320px;
+  overflow-y: auto;
+  padding: var(--spacing-md);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  margin: 0;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: var(--font-size-micro);
+  line-height: 1.5;
+}
+
+.kukui-studio-ai__card-body--text {
+  font-family: inherit;
+  font-size: var(--font-size-answer);
+  white-space: pre-wrap;
+}
+
+.kukui-studio-ai__card-actions {
+  display: flex;
+  gap: var(--spacing-sm);
+  flex-wrap: wrap;
+}
+
+.kukui-studio-ai__error {
+  background: var(--color-error-soft);
+  border: 1px solid var(--color-error);
+  color: var(--color-error);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-md);
+  font-size: var(--font-size-meta);
+}
+
+.kukui-studio-ai__empty {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  background: var(--color-surface-alt);
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius-card);
+  padding: var(--spacing-2xl);
+  align-items: flex-start;
+}
+
+.kukui-studio-ai__empty-title {
+  margin: 0;
+  font-size: var(--font-size-subtitle);
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+.kukui-studio-ai__empty-body {
+  margin: 0;
+  font-size: var(--font-size-meta);
+  color: var(--color-text-secondary);
+  line-height: 1.5;
+  max-width: 560px;
+}
+
+/* ---------- AI settings dialog ----------
+ *
+ * Wider than the confirm dialog so the form fields breathe. We disable
+ * ConfirmDialog's strict focus-trap pattern here — too many tabbable
+ * fields. The dialog still closes on Escape and click-outside.
+ */
+
+.ks-dialog--wide {
+  width: min(560px, 100%);
+  max-height: calc(100vh - 2 * var(--spacing-lg));
+  overflow-y: auto;
+}
+
+.ks-ai-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-lg);
+}
+
+.ks-ai-form__field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  border: none;
+  padding: 0;
+  margin: 0;
+  min-width: 0;
+}
+
+.ks-ai-form__label {
+  font-size: var(--font-size-meta);
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.ks-ai-form__input {
+  font: inherit;
+  font-size: var(--font-size-meta);
+  padding: 8px 10px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+  min-width: 0;
+}
+
+.ks-ai-form__input:focus {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 1px;
+  border-color: var(--color-primary);
+}
+
+.ks-ai-form__input[readonly] {
+  background: var(--color-surface-alt);
+  color: var(--color-text-secondary);
+}
+
+.ks-ai-form__hint {
+  font-size: var(--font-size-micro);
+  color: var(--color-text-secondary);
+  line-height: 1.5;
+}
+
+.ks-ai-form__code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  background: var(--color-surface-alt);
+  padding: 1px 5px;
+  border-radius: 4px;
+  border: 1px solid var(--color-border);
+  font-size: 0.95em;
+}
+
+.ks-ai-form__radio-row {
+  display: flex;
+  gap: var(--spacing-md);
+  flex-wrap: wrap;
+}
+
+.ks-ai-form__radio {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--font-size-meta);
+  color: var(--color-text-primary);
+  cursor: pointer;
+}
+
+.ks-ai-form__pointer {
+  margin: 0;
+  font-size: var(--font-size-meta);
+  color: var(--color-text-secondary);
+}
+
+.ks-dialog__actions--split {
+  justify-content: space-between;
+}
+
+.kukui-studio-footer__icon-btn {
+  background: none;
+  border: 1px solid transparent;
+  padding: 4px 6px;
+  border-radius: var(--radius-sm);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.kukui-studio-footer__icon-btn:hover {
+  color: var(--color-primary);
+  background: var(--color-primary-soft);
+}
+
+.kukui-studio-footer__icon-btn:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}

@@ -14,13 +14,22 @@ import { JsonEditor } from "./JsonEditor.js";
 import { Preview, type PreviewMode } from "./Preview.js";
 import { hasEditor } from "./EditCanvas/index.js";
 import { ConfirmDialog } from "./ConfirmDialog.js";
-import { DownloadIcon, PencilIcon, PlayIcon, SaveIcon, UploadIcon } from "./icons.js";
+import { AISettingsDialog } from "./AISettingsDialog.js";
+import { AIEditor } from "./AIEditor.js";
+import {
+  DownloadIcon,
+  GearIcon,
+  PencilIcon,
+  PlayIcon,
+  SaveIcon,
+  UploadIcon,
+} from "./icons.js";
 import { ACTIVITY_LABELS, STARTERS } from "./starters.js";
 import { clearDraft, debouncedSaver, loadDraft, saveDraft } from "./drafts.js";
 import { downloadScormZip } from "./scormDownload.js";
 import { importFromFile } from "./scormImport.js";
 
-type Tab = "form" | "json";
+type Tab = "form" | "json" | "ai";
 
 /**
  * Studio promotes activities the LMS can't do natively. Quiz-style
@@ -128,6 +137,7 @@ export function App() {
   } | null>(null);
   const [confirmReset, setConfirmReset] = useState(false);
   const [showPrivacy, setShowPrivacy] = useState(false);
+  const [showAISettings, setShowAISettings] = useState(false);
   // On narrow viewports the editor + preview panels can't both fit, so we
   // hide one or the other. Desktop CSS ignores this — both panels show.
   const [mobilePanel, setMobilePanel] = useState<"edit" | "preview">("edit");
@@ -533,6 +543,18 @@ export function App() {
               >
                 Raw JSON
               </button>
+              <button
+                type="button"
+                className={[
+                  "kukui-studio-subtab",
+                  tab === "ai" ? "is-active" : "",
+                ]
+                  .filter(Boolean)
+                  .join(" ")}
+                onClick={() => setTab("ai")}
+              >
+                AI editor
+              </button>
             </div>
             <div className="kukui-studio-panel-actions">
               <ValidationBadge result={validation} disabled={tab === "json"} />
@@ -575,8 +597,15 @@ export function App() {
                 onChange={setValue}
                 extraErrors={extraErrors}
               />
-            ) : (
+            ) : tab === "json" ? (
               <JsonEditor value={value} onChange={setValue} />
+            ) : (
+              <AIEditor
+                kind={kind as SchemaRegistryKey}
+                value={value}
+                onChange={setValue}
+                onOpenSettings={() => setShowAISettings(true)}
+              />
             )}
           </div>
         </section>
@@ -675,6 +704,18 @@ export function App() {
           >
             Privacy &amp; data
           </button>
+          <span aria-hidden="true" className="kukui-studio-footer__sep">
+            ·
+          </span>
+          <button
+            type="button"
+            className="kukui-studio-footer__icon-btn"
+            onClick={() => setShowAISettings(true)}
+            aria-label="AI editor settings"
+            title="AI editor settings"
+          >
+            <GearIcon />
+          </button>
         </nav>
       </footer>
 
@@ -704,11 +745,16 @@ export function App() {
       <ConfirmDialog
         open={showPrivacy}
         title="Privacy & data"
-        message="Kukui Studio runs entirely in your browser. Drafts auto-save to your local browser storage (localStorage) and never leave your device. We don't operate any backend, don't set analytics cookies, and don't transmit form data anywhere. When you click Download, the SCORM zip is generated client-side; what happens after upload is between you and your LMS. SCORM activities packaged by Studio post grades only to the LMS that hosts them (D2L Brightspace, Canvas, Moodle, etc.) — same channel any LMS-hosted activity uses."
+        message="Kukui Studio runs entirely in your browser. Drafts auto-save to your local browser storage (localStorage) and never leave your device. We don't operate any backend, don't set analytics cookies, and don't transmit form data anywhere. When you click Download, the SCORM zip is generated client-side; what happens after upload is between you and your LMS. SCORM activities packaged by Studio post grades only to the LMS that hosts them (D2L Brightspace, Canvas, Moodle, etc.) — same channel any LMS-hosted activity uses. If you enable the AI editor, requests go directly from your browser to whatever LLM endpoint you configured (OpenAI, Groq, your institution's internal proxy, etc.). Kukui Studio never sees or proxies the request. Your API key and base URL are stored in your browser only (localStorage or sessionStorage — your choice in the settings dialog). The activity JSON you're working on, plus your prompt, are sent to the endpoint you picked; the response comes back to your browser only. Your provider's data-handling policies apply to that traffic — pick a provider whose policies match your institution's rules."
         confirmLabel="OK"
         hideCancel
         onConfirm={() => setShowPrivacy(false)}
         onCancel={() => setShowPrivacy(false)}
+      />
+
+      <AISettingsDialog
+        open={showAISettings}
+        onClose={() => setShowAISettings(false)}
       />
     </div>
   );
