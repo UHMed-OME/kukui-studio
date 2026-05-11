@@ -6,7 +6,7 @@ import {
   ChatCompletionsError,
 } from "./ai/chat-completions.js";
 import { type AISettings, hasUsableSettings, loadSettings } from "./ai/settings.js";
-import { ACTIVITY_LABELS, STARTERS } from "./starters.js";
+import { STARTERS } from "./starters.js";
 import { GearIcon, SparkleIcon } from "./icons.js";
 
 type Mode = "generate" | "edit" | "explain";
@@ -512,17 +512,12 @@ export function AIEditor({
   }
 
   const isPending = response.kind === "pending";
-  const activityName = ACTIVITY_LABELS[kind] ?? "activity";
-  const sendLabel =
-    inferredMode === "generate" ? `Create ${activityName.toLowerCase()}` : "Apply changes";
-  const sendHint =
-    inferredMode === "generate"
-      ? `Describe a ${activityName.toLowerCase()} and I'll write it for you. Big rewrites ask to confirm first.`
-      : `Describe a change to your ${activityName.toLowerCase()} and I'll revise it. Big rewrites ask to confirm first.`;
+  const sendLabel = inferredMode === "generate" ? "Create" : "Apply changes";
   const fieldLabel =
-    inferredMode === "generate"
-      ? `Describe the ${activityName.toLowerCase()} you want`
-      : `What should change about this ${activityName.toLowerCase()}?`;
+    inferredMode === "generate" ? "What should it be about?" : "What should change?";
+  // Single short safety note. Avoids the "describe a flashcards" grammar
+  // hazard from stitching activity names into a template sentence.
+  const sendHint = "Big rewrites confirm before applying. Undo is always available.";
   const placeholder = getPlaceholder(kind, inferredMode);
 
   return (

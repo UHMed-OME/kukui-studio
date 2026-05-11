@@ -719,11 +719,13 @@ export function App() {
             ) : (
               <h2 className="kukui-studio-panel__heading">Live preview</h2>
             )}
-            <span className="kukui-studio-meta">
-              {hasEditor(kind) && previewMode === "edit"
-                ? "Drag elements directly. Form on the left updates live."
-                : "Renders the actual learner-facing component."}
-            </span>
+            <PreviewModeTooltip
+              text={
+                hasEditor(kind) && previewMode === "edit"
+                  ? "Drag elements directly on the canvas. The form on the left updates live."
+                  : "Renders the actual learner-facing component, exactly as it will appear after the SCORM zip is uploaded."
+              }
+            />
           </div>
           <div className="kukui-studio-panel-body kukui-studio-preview">
             <Preview kind={kind} value={value} mode={previewMode} onChange={setValue} />
@@ -828,6 +830,29 @@ export function App() {
         onClose={() => setShowAISettings(false)}
       />
     </div>
+  );
+}
+
+/**
+ * Hover/focus info-icon tooltip — reuses the .ks-tooltip pattern from
+ * FieldTemplate so the affordance is consistent with field-help bubbles
+ * elsewhere in Studio. Used for short meta strings that would otherwise
+ * sit always-visible next to a header (preview-mode hint, etc.).
+ */
+function PreviewModeTooltip({ text }: { text: string }) {
+  return (
+    <span className="ks-tooltip ks-tooltip--inline">
+      <button
+        type="button"
+        className="ks-tooltip__btn"
+        aria-label="What does this mode show?"
+      >
+        ⓘ
+      </button>
+      <span role="tooltip" className="ks-tooltip__bubble">
+        {text}
+      </span>
+    </span>
   );
 }
 
