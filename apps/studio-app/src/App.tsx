@@ -378,7 +378,7 @@ export function App() {
           <div className="kukui-studio-brand-text">
             <h1 className="kukui-studio-title">Kukui Studio</h1>
             <p className="kukui-studio-subtitle">
-              Interactive learning activities for Lamakū and other LMS.
+              Interactive learning activities for Lamakū.
             </p>
           </div>
         </div>
