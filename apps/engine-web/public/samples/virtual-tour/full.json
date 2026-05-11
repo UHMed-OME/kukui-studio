@@ -4,21 +4,17 @@
   "scene": {
     "src": "scenes/loi-kalo.glb",
     "spawn": {
-      "position": { "x": 0, "y": 1.6, "z": -3 },
-      "yaw": 0
+      "position": { "x": 0, "y": 1.6, "z": -3 }
     }
   },
   "movement": {
-    "mode": "hybrid",
-    "speed": 2.5,
-    "navmeshConstrained": true
+    "speed": 2.5
   },
   "overlays": [
     {
       "id": "kalo-1",
       "position": { "x": 1.5, "y": 1.2, "z": 2.0 },
       "trigger": "click",
-      "icon": "images/icons/info.png",
       "title": "Kalo",
       "content": [
         {
@@ -43,8 +39,7 @@
     {
       "id": "kalo-2",
       "position": { "x": -2.0, "y": 1.0, "z": 4.5 },
-      "trigger": "proximity",
-      "proximityRadius": 1.5,
+      "trigger": "click",
       "title": "ʻAuwai",
       "content": [
         {
@@ -76,9 +71,7 @@
     "requiredOverlayIds": ["kalo-1", "kalo-2", "kalo-3"]
   },
   "behaviour": {
-    "showMinimap": true,
-    "enableRetry": false,
-    "showOverlayMarkers": true
+    "enableRetry": false
   },
   "ui": {
     "doneButton": "I'm done exploring",

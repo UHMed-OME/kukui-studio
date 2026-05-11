@@ -93,6 +93,52 @@
   color: var(--color-text-primary);
 }
 
+.kukui-qs__results {
+  padding: 0 var(--spacing-3xl, 28px) var(--spacing-lg, 16px);
+}
+
+.kukui-qs__results-title {
+  margin: 0 0 var(--spacing-sm, 8px);
+  font-size: var(--font-size-prompt, 16px);
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+.kukui-qs__results-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs, 4px);
+}
+
+.kukui-qs__results-item {
+  display: grid;
+  grid-template-columns: 24px 1fr auto;
+  gap: var(--spacing-sm, 8px);
+  align-items: baseline;
+  padding: var(--spacing-xs, 4px) 0;
+  border-bottom: 1px solid var(--color-border, #dad2c6);
+}
+
+.kukui-qs__results-icon {
+  font-weight: 700;
+  font-size: 18px;
+  text-align: center;
+  color: var(--color-text-primary);
+}
+
+.kukui-qs__results-name {
+  font-size: var(--font-size-answer, 15px);
+  color: var(--color-text-primary);
+}
+
+.kukui-qs__results-score {
+  font-size: var(--font-size-meta, 13px);
+  color: var(--color-text-secondary);
+}
+
 @media (prefers-reduced-motion: reduce) {
   .kukui-qs__feedback {
     transition: none;

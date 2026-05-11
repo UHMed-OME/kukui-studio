@@ -114,8 +114,22 @@ export function InteractiveVideo({
 
   const ui = config.ui ?? {};
   const resumeLabel = ui.resumeButtonLabel ?? "Resume";
+  const tryAgainLabel = "Try again";
   const videoType = config.video.type ?? "html5";
   const isUnsupportedSource = videoType === "youtube" || videoType === "vimeo";
+
+  const tryAgain = () => {
+    setActiveId(null);
+    setState({
+      stage: "watching",
+      resolvedInteractions: {},
+      currentTime: 0,
+    });
+    const v = videoRef.current;
+    if (v) {
+      v.currentTime = 0;
+    }
+  };
 
   const finish = () => {
     if (state.stage !== "watching") return;
@@ -153,12 +167,22 @@ export function InteractiveVideo({
     setState((s) => (s.currentTime === t ? s : { ...s, currentTime: t }));
     if (activeId !== null) return;
     if (state.stage !== "watching") return;
+    // First pass: in-window trigger (chronological order). If the learner
+    // seeks forward past an unresolved REQUIRED interaction, rewind to it
+    // and pause — mirrors handleEnded's behaviour, but mid-playback.
     for (const it of validated) {
       if (state.resolvedInteractions[it.id]) continue;
       if (Math.abs(t - it.atSeconds) < TRIGGER_WINDOW && t >= it.atSeconds - TRIGGER_WINDOW) {
         v.pause();
         setActiveId(it.id);
-        break;
+        return;
+      }
+      if (it.required && t > it.atSeconds + TRIGGER_WINDOW) {
+        // Learner skipped past this required interaction. Seek back so the
+        // overlay fires as playback re-enters its trigger window.
+        v.currentTime = Math.max(0, it.atSeconds - 0.5);
+        v.pause();
+        return;
       }
     }
   };
@@ -287,6 +311,18 @@ export function InteractiveVideo({
             ? `Submitted. ${Object.keys(state.resolvedInteractions).length} of ${validated.length} interactions answered.`
             : `${Object.keys(state.resolvedInteractions).length} of ${validated.length} interactions answered.`}
         </p>
+
+        {state.stage === "submitted" && config.behaviour?.enableRetry ? (
+          <div className="kukui-iv__actions">
+            <button
+              type="button"
+              className="kukui-iv__secondary"
+              onClick={tryAgain}
+            >
+              {tryAgainLabel}
+            </button>
+          </div>
+        ) : null}
       </article>
     </div>
   );

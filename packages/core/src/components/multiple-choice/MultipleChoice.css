@@ -134,6 +134,18 @@
   padding-bottom: var(--spacing-sm, 8px);
 }
 
+.kukui-mc__tip {
+  font-size: var(--font-size-meta, 13px);
+  color: var(--color-text-secondary, #606069);
+  padding: var(--spacing-xs, 4px) var(--spacing-lg, 16px) 0;
+  font-style: italic;
+}
+
+.kukui-mc__tip-label {
+  font-weight: 700;
+  font-style: normal;
+}
+
 .kukui-mc__actions {
   margin-top: var(--spacing-xl, 20px);
   display: flex;

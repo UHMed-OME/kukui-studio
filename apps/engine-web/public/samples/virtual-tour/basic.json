@@ -5,12 +5,10 @@
   "scene": {
     "src": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/main/Models/DamagedHelmet/glTF-Binary/DamagedHelmet.glb",
     "spawn": {
-      "position": { "x": 0, "y": 0.5, "z": 4 },
-      "yaw": 0
+      "position": { "x": 0, "y": 0.5, "z": 4 }
     }
   },
   "movement": {
-    "mode": "firstPerson",
     "speed": 2
   },
   "overlays": [
@@ -56,7 +54,6 @@
     "requiredOverlayIds": ["visor", "shell", "intake"]
   },
   "behaviour": {
-    "showOverlayMarkers": true,
     "enableRetry": true
   }
 }

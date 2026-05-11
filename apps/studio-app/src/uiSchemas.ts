@@ -281,15 +281,10 @@ export const UI_SCHEMAS: Record<ActivityKind, Record<string, unknown>> = {
         },
       ),
       scale: f("Uniform scale", "Multiplies model size by this factor. Default 1."),
-      rotation: f("Initial rotation", "Optional XYZ rotation in radians."),
-      position: f("Initial position", "Optional XYZ offset in scene units."),
     },
     camera: {
       "ui:title": "Camera setup",
-      mode: {
-        ...f("Camera mode", "Orbit lets the learner rotate around the model. Fixed locks the view."),
-        "ui:enumNames": ["Orbit (rotate around model)", "Fixed view"],
-      },
+      mode: HIDDEN,
       initialDistance: f("Starting distance", "How far the camera sits from the model on load."),
       minDistance: f("Closest zoom", "How close the orbit camera can get."),
       maxDistance: f("Farthest zoom", "How far the orbit camera can pull back."),
@@ -323,10 +318,6 @@ export const UI_SCHEMAS: Record<ActivityKind, Record<string, unknown>> = {
         "When on, learners see labeled spheres indicating each hotspot. When off, blind identification.",
       ),
       allowOrbit: f("Allow orbit camera", "Lets learners rotate the camera around the model."),
-      singlePoint: f(
-        "All-or-nothing scoring",
-        "Hotspot is binary anyway — usually leave on.",
-      ),
     },
     ui: {
       "ui:title": "Button label overrides",
@@ -384,7 +375,6 @@ export const UI_SCHEMAS: Record<ActivityKind, Record<string, unknown>> = {
         "Show hotspot markers",
         "When on, learners see labeled rectangles indicating each region. When off, blind identification.",
       ),
-      singlePoint: f("All-or-nothing scoring", "Hotspot is binary anyway — usually leave on."),
     },
     ui: {
       "ui:title": "Button label overrides",
@@ -414,41 +404,21 @@ export const UI_SCHEMAS: Record<ActivityKind, Record<string, unknown>> = {
       spawn: {
         "ui:title": "Where the learner starts",
         position: f("Spawn position (x, y, z)", "World-space coordinates."),
-        yaw: f("Spawn yaw (degrees)", "Initial look direction. 0 = facing +Z."),
       },
     },
     movement: {
       "ui:title": "Movement controls",
-      mode: {
-        ...f(
-          "Movement mode",
-          "First-person: WASD + click-to-look. Click-to-move: tap a point to teleport. Hybrid: both.",
-        ),
-        "ui:enumNames": ["First-person (WASD + look)", "Click to move", "Hybrid (both)"],
-      },
       speed: f("Movement speed", "Higher = faster walk. Try 2 for a slow tour, 5 for a brisk one."),
-      navmeshConstrained: f(
-        "Constrain to navmesh",
-        "If on, movement is limited to a baked walkable area. Recommended for outdoor scenes.",
-      ),
     },
     overlays: {
       "ui:title": "Points of interest",
       "ui:help":
-        "Clickable or proximity-triggered info panels. Each opens a modal with text, images, and audio.",
+        "Clickable info panels. Each opens a modal with text, images, and audio.",
       items: {
         id: HIDDEN,
         title: f("Display title", "Shown above the overlay panel and on the marker chip."),
         position: f("World position (x, y, z)"),
-        trigger: {
-          ...f("Trigger", "How the overlay panel opens for the learner."),
-          "ui:enumNames": ["On click / tap", "When learner is nearby"],
-        },
-        proximityRadius: f(
-          "Proximity radius",
-          "How close the learner must be (in scene units) to auto-trigger. Only used when trigger=proximity.",
-        ),
-        icon: f("Marker icon URL", "Optional billboard icon shown on the marker."),
+        trigger: HIDDEN,
         content: {
           "ui:title": "Overlay content",
           "ui:help": "Heterogeneous list rendered top-to-bottom. Pick text, image, or audio per item.",
@@ -471,12 +441,7 @@ export const UI_SCHEMAS: Record<ActivityKind, Record<string, unknown>> = {
     },
     behaviour: {
       "ui:title": "Activity behaviour",
-      showMinimap: f("Show minimap", "Reserved for a future top-down minimap UI."),
       enableRetry: f("Allow retry", "Allow the learner to restart the tour after completing."),
-      showOverlayMarkers: f(
-        "Show overlay markers",
-        "When on, learners see labeled chips floating at each overlay's position.",
-      ),
     },
     ui: {
       "ui:title": "Button label overrides",
@@ -832,7 +797,6 @@ export const UI_SCHEMAS: Record<ActivityKind, Record<string, unknown>> = {
       circle: f("Circle"),
       arrow: f("Arrow"),
       freehand: f("Freehand"),
-      text: f("Text"),
     },
     expectedAnnotations: {
       "ui:title": "Expected (ground-truth) marks",
@@ -846,7 +810,6 @@ export const UI_SCHEMAS: Record<ActivityKind, Record<string, unknown>> = {
     behaviour: {
       "ui:title": "Activity behaviour",
       enableRetry: BEHAVIOUR_RETRY,
-      allowEdit: f("Let learner edit after submit", "Otherwise the canvas locks on submit."),
       singlePoint: BEHAVIOUR_SINGLEPOINT,
     },
     ui: {
@@ -981,6 +944,10 @@ export const UI_SCHEMAS: Record<ActivityKind, Record<string, unknown>> = {
     behaviour: {
       "ui:title": "Activity behaviour",
       enableRetry: BEHAVIOUR_RETRY,
+      passPercentage: f(
+        "Pass threshold (%)",
+        "Default 50. Aggregated percent across required interactions must reach this for the video to count as passed.",
+      ),
     },
     ui: {
       "ui:title": "Button label overrides",
@@ -1139,6 +1106,15 @@ export const UI_SCHEMAS: Record<ActivityKind, Record<string, unknown>> = {
     behaviour: {
       "ui:title": "Activity behaviour",
       enableRetry: BEHAVIOUR_RETRY,
+      allowSkipPhase: f(
+        "Allow free phase navigation",
+        "Lets the learner jump between phases via the stepper. Off = linear (next/back) only.",
+      ),
+      guessPenalty: f(
+        "Wrong-answer penalty (0..1)",
+        "How much each wrong selection subtracts from a phase's earned points. Default 1; set to 0 to remove the penalty entirely.",
+        { "ui:options": { step: 0.1, min: 0, max: 1 } },
+      ),
     },
     ui: {
       "ui:title": "Button label overrides",

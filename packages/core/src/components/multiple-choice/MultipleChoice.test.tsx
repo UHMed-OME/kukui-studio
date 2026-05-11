@@ -100,4 +100,44 @@ describe("MultipleChoice", () => {
     render(<MultipleChoice config={cfgSingle} onSubmit={vi.fn()} headingLevel={2} />);
     expect(screen.getByRole("heading", { level: 2, name: /photosynthesis/i })).toBeInTheDocument();
   });
+
+  it("randomAnswers shuffles display order but scoring stays by stable identity", async () => {
+    const user = userEvent.setup();
+    const onSubmit = vi.fn();
+    const cfg: MultipleChoiceConfig = {
+      ...cfgSingle,
+      behaviour: { ...cfgSingle.behaviour, randomAnswers: true },
+    };
+    render(<MultipleChoice config={cfg} onSubmit={onSubmit} />);
+    // Selecting the correct answer by its accessible name still scores 1/1,
+    // regardless of where the shuffle put it in the DOM.
+    await user.click(screen.getByRole("button", { name: /carbon dioxide/i }));
+    await user.click(screen.getByRole("button", { name: /^check$/i }));
+    expect(onSubmit.mock.calls[0]?.[0]).toMatchObject({
+      raw: 1,
+      max: 1,
+      success: true,
+    });
+  });
+
+  it("shows the answer tip next to a selected answer after submit", async () => {
+    const user = userEvent.setup();
+    const cfg: MultipleChoiceConfig = {
+      version: "1.0",
+      title: "With tip",
+      question: "<p>Pick the right one.</p>",
+      answers: [
+        {
+          text: "Alpha",
+          correct: true,
+          tip: "Greek letter A is the first.",
+        },
+        { text: "Beta", correct: false },
+      ],
+    };
+    render(<MultipleChoice config={cfg} onSubmit={vi.fn()} />);
+    await user.click(screen.getByRole("button", { name: /alpha/i }));
+    await user.click(screen.getByRole("button", { name: /^check$/i }));
+    expect(screen.getByText(/greek letter a is the first/i)).toBeInTheDocument();
+  });
 });

@@ -41,7 +41,6 @@ export const VirtualTourConfigSchema = z
         spawn: z
           .object({
             position: Vector3,
-            yaw: z.number().optional(),
           })
           .strict()
           .optional(),
@@ -49,9 +48,7 @@ export const VirtualTourConfigSchema = z
       .strict(),
     movement: z
       .object({
-        mode: z.enum(["firstPerson", "clickToMove", "hybrid"]).optional(),
         speed: z.number().positive().optional(),
-        navmeshConstrained: z.boolean().optional(),
       })
       .strict()
       .optional(),
@@ -61,9 +58,7 @@ export const VirtualTourConfigSchema = z
           .object({
             id: z.string().min(1),
             position: Vector3,
-            trigger: z.enum(["click", "proximity"]).optional(),
-            proximityRadius: z.number().positive().optional(),
-            icon: z.string().optional(),
+            trigger: z.enum(["click"]).optional(),
             title: z.string().optional(),
             content: z.array(ContentItem).min(1),
           })
@@ -79,9 +74,7 @@ export const VirtualTourConfigSchema = z
       .optional(),
     behaviour: z
       .object({
-        showMinimap: z.boolean().optional(),
         enableRetry: z.boolean().optional(),
-        showOverlayMarkers: z.boolean().optional(),
       })
       .strict()
       .optional(),

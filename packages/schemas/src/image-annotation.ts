@@ -30,7 +30,6 @@ export const ImageAnnotationConfigSchema = z
         circle: z.boolean().optional(),
         arrow: z.boolean().optional(),
         freehand: z.boolean().optional(),
-        text: z.boolean().optional(),
       })
       .strict()
       .optional(),
@@ -48,7 +47,6 @@ export const ImageAnnotationConfigSchema = z
     behaviour: z
       .object({
         enableRetry: z.boolean().optional(),
-        allowEdit: z.boolean().optional(),
         singlePoint: z.boolean().optional(),
       })
       .strict()

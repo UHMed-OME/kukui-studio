@@ -72,7 +72,7 @@ export const STARTERS: Record<ActivityKind, unknown> = {
       src: "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/main/Models/BoomBox/glTF-Binary/BoomBox.glb",
       scale: 50,
     },
-    camera: { mode: "orbit", initialDistance: 0.6 },
+    camera: { initialDistance: 0.6 },
     hotspots: [
       {
         id: "part-a",
@@ -122,7 +122,7 @@ export const STARTERS: Record<ActivityKind, unknown> = {
       src: "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/main/Models/DamagedHelmet/glTF-Binary/DamagedHelmet.glb",
       spawn: { position: { x: 0, y: 0.5, z: 4 } },
     },
-    movement: { mode: "firstPerson", speed: 2 },
+    movement: { speed: 2 },
     overlays: [
       {
         id: "stop-1",
@@ -133,7 +133,7 @@ export const STARTERS: Record<ActivityKind, unknown> = {
       },
     ],
     completion: { mode: "manual" },
-    behaviour: { enableRetry: true, showOverlayMarkers: true },
+    behaviour: { enableRetry: true },
   },
   "sequence-steps": {
     version: "1.0",
