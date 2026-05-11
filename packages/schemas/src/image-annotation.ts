@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { SAFE_MEDIA_URL } from "./url.js";
 
 const versionRe = /^\d+\.\d+(\.\d+)?$/;
 
@@ -20,7 +21,7 @@ export const ImageAnnotationConfigSchema = z
     prompt: z.string().min(1),
     image: z
       .object({
-        src: z.string().min(1),
+        src: SAFE_MEDIA_URL,
         alt: z.string().min(1),
       })
       .strict(),

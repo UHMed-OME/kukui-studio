@@ -72,6 +72,10 @@ export function SafeHtml({ html, as, className }: SafeHtmlProps) {
     ALLOWED_TAGS,
     ALLOWED_ATTR: ALLOWED_ATTRS,
     ALLOW_DATA_ATTR: false,
+    // Pin the URI scheme allow-list to what Kukui actually uses, instead of
+    // relying on DOMPurify's defaults. Blocks ftp, callto, xmpp, matrix,
+    // sms, cid, and any future schemes upstream decides to permit.
+    ALLOWED_URI_REGEXP: /^(?:(?:https?|mailto|tel):)/i,
   });
   return createElement(
     as ?? "div",

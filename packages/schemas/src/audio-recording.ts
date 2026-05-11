@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { SAFE_MEDIA_URL } from "./url.js";
 
 const versionRe = /^\d+\.\d+(\.\d+)?$/;
 
@@ -29,7 +30,7 @@ export const AudioRecordingConfigSchema = z
     prompt: z.string().min(1),
     referenceAudio: z
       .object({
-        src: z.string().min(1),
+        src: SAFE_MEDIA_URL,
         caption: z.string().optional(),
       })
       .strict()

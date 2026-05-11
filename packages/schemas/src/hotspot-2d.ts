@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { SAFE_MEDIA_URL } from "./url.js";
 
 const versionRe = /^\d+\.\d+(\.\d+)?$/;
 
@@ -20,7 +21,7 @@ export const Hotspot2DConfigSchema = z
     prompt: z.string().min(1),
     image: z
       .object({
-        src: z.string().min(1),
+        src: SAFE_MEDIA_URL,
         // Required for AT — the keyboard/region-list fallback also surfaces
         // it as the image's accessible name.
         alt: z.string().min(1),

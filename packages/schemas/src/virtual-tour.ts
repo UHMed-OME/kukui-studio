@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { SAFE_MEDIA_URL } from "./url.js";
 
 const versionRe = /^\d+\.\d+(\.\d+)?$/;
 
@@ -11,7 +12,7 @@ const TextContent = z
 const ImageContent = z
   .object({
     type: z.literal("image"),
-    src: z.string().min(1),
+    src: SAFE_MEDIA_URL,
     alt: z.string().min(1),
     caption: z.string().optional(),
   })
@@ -20,7 +21,7 @@ const ImageContent = z
 const AudioContent = z
   .object({
     type: z.literal("audio"),
-    src: z.string().min(1),
+    src: SAFE_MEDIA_URL,
     autoplay: z.boolean().optional(),
     loop: z.boolean().optional(),
     caption: z.string().optional(),
@@ -37,7 +38,7 @@ export const VirtualTourConfigSchema = z
     author: z.string().optional(),
     scene: z
       .object({
-        src: z.string().min(1),
+        src: SAFE_MEDIA_URL,
         spawn: z
           .object({
             position: Vector3,

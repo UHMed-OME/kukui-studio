@@ -1,10 +1,11 @@
 import { z } from "zod";
+import { SAFE_MEDIA_URL } from "./url.js";
 
 const versionRe = /^\d+\.\d+(\.\d+)?$/;
 
 const ImageSchema = z
   .object({
-    src: z.string().min(1),
+    src: SAFE_MEDIA_URL,
     alt: z.string().min(1),
     caption: z.string().optional(),
   })

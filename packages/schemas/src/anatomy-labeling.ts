@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { SAFE_MEDIA_URL } from "./url.js";
 
 const versionRe = /^\d+\.\d+(\.\d+)?$/;
 
@@ -24,7 +25,7 @@ export const AnatomyLabelingConfigSchema = z
     prompt: z.string().min(1),
     image: z
       .object({
-        src: z.string().min(1),
+        src: SAFE_MEDIA_URL,
         // Required so screen-reader learners get a description of the diagram.
         // Authors who genuinely have a decorative-only image (rare for this
         // activity) can pass a brief explanation of what's being labeled.

@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { SAFE_MEDIA_URL } from "./url.js";
 
 const versionRe = /^\d+\.\d+(\.\d+)?$/;
 
@@ -13,7 +14,7 @@ export const Hotspot3DConfigSchema = z
     prompt: z.string().min(1),
     model: z
       .object({
-        src: z.string().min(1),
+        src: SAFE_MEDIA_URL,
         scale: z.number().positive().optional(),
       })
       .strict(),
