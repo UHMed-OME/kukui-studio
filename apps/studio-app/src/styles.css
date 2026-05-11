@@ -1466,7 +1466,14 @@ button {
 /* The bubble: portalled to <body>, position:fixed, anchored by JS.
    Lives outside every Studio container so it can't be clipped by
    overflow:hidden, and z-index 10000 keeps it above the panel chrome
-   and modal backdrops. */
+   and modal backdrops.
+
+   Intentionally no `transition` on opacity / transform — the portalled
+   bubble is mounted/unmounted on hover/focus instead of fade-animated,
+   which keeps it `prefers-reduced-motion`-safe out of the box. The
+   legacy .ks-tooltip__bubble below DOES fade and is left as-is for any
+   uncovered call sites; if it needs revisiting, gate its transition
+   behind @media (prefers-reduced-motion: no-preference). */
 .kukui-tooltip__bubble {
   position: fixed;
   /* JS sets top/left to the trigger's bounding rect. transform centres
@@ -2575,7 +2582,11 @@ html[data-theme="glass"] .kukui-studio-subtab {
 }
 
 /* Reduce-transparency / high-contrast OS preferences fall back to flat
-   even if the user explicitly chose glass — accessibility wins */
+   even if the user explicitly chose glass — accessibility wins.
+
+   Includes the dialog backdrop (which has a backdrop-filter even outside
+   glass mode) and the toast / badge / secondary-button surfaces that the
+   audit flagged as missing reduced-transparency fallbacks. */
 @media (prefers-reduced-transparency: reduce) {
   html[data-theme="glass"] body {
     background: var(--color-bg);
@@ -2592,6 +2603,43 @@ html[data-theme="glass"] .kukui-studio-subtab {
   html[data-theme="glass"] .ks-file,
   html[data-theme="glass"] .ks-array-item {
     background: var(--color-surface);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+
+  /* Toast: opaque dark fallback (no blur, no translucent backdrop). */
+  html[data-theme="glass"] .kukui-studio-toast {
+    background: var(--color-text-primary);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+
+  /* Validation badges: drop blur, swap translucent tints for opaque
+     surface tokens. Colour-bearing badges keep their semantic borders
+     via the base selector. */
+  html[data-theme="glass"] .kukui-studio-badge--ok,
+  html[data-theme="glass"] .kukui-studio-badge--err {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+  html[data-theme="glass"] .kukui-studio-badge--ok {
+    background: var(--color-surface);
+  }
+  html[data-theme="glass"] .kukui-studio-badge--err {
+    background: var(--color-surface);
+  }
+
+  /* Secondary button: opaque surface fallback. */
+  html[data-theme="glass"] .kukui-studio-btn--secondary,
+  html[data-theme="glass"] .kukui-studio-btn--secondary:hover {
+    background: var(--color-surface);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+
+  /* Dialog backdrop: keep the dim, drop the blur. The ks-dialog-backdrop
+     selector applies regardless of theme, so this isn't scoped to glass. */
+  .ks-dialog-backdrop {
     -webkit-backdrop-filter: none;
     backdrop-filter: none;
   }

@@ -78,8 +78,8 @@ export function InstructorConsole({
           <strong data-testid="phase-label">{PHASE_LABELS[phase]}</strong>
         </p>
 
-        <section aria-labelledby="activity-heading" style={sectionStyle}>
-          <h2 id="activity-heading" style={sectionHeading}>
+        <section aria-labelledby="activity-heading" className="live-section">
+          <h2 id="activity-heading" className="live-section__heading">
             Activity
           </h2>
           {hasDemoLoaded ? (
@@ -112,23 +112,26 @@ export function InstructorConsole({
           )}
         </section>
 
-        <section aria-labelledby="phase-heading" style={sectionStyle}>
-          <h2 id="phase-heading" style={sectionHeading}>
+        <section aria-labelledby="phase-heading" className="live-section">
+          <h2 id="phase-heading" className="live-section__heading">
             Phase progression
           </h2>
-          <ol style={phaseTrackStyle} aria-label="Phase progression">
+          <ol className="live-phase-track" aria-label="Phase progression">
             {PHASE_ORDER.map((p, i) => {
               const isCurrent = p === phase;
               const isPast = i < currentIndex;
+              const chipClass = [
+                "live-phase-chip",
+                isCurrent ? "live-phase-chip--current" : "",
+                isPast ? "live-phase-chip--past" : "",
+              ]
+                .filter(Boolean)
+                .join(" ");
               return (
                 <li
                   key={p}
                   aria-current={isCurrent ? "step" : undefined}
-                  style={{
-                    ...phaseChipStyle,
-                    ...(isCurrent ? phaseChipCurrent : {}),
-                    ...(isPast ? phaseChipPast : {}),
-                  }}
+                  className={chipClass}
                 >
                   {PHASE_LABELS[p]}
                 </li>
@@ -176,8 +179,8 @@ export function InstructorConsole({
           </div>
         </section>
 
-        <section aria-labelledby="presence-heading" style={sectionStyle}>
-          <h2 id="presence-heading" style={sectionHeading}>
+        <section aria-labelledby="presence-heading" className="live-section">
+          <h2 id="presence-heading" className="live-section__heading">
             Participants ({presence.size})
           </h2>
           <div className="live-presence">
@@ -212,47 +215,3 @@ export function InstructorConsole({
   );
 }
 
-const sectionStyle = {
-  marginTop: "var(--spacing-2xl, 24px)",
-  paddingTop: "var(--spacing-lg, 16px)",
-  borderTop: "1px solid var(--color-border)",
-};
-
-const sectionHeading = {
-  margin: "0 0 var(--spacing-md, 12px)",
-  fontSize: "var(--font-size-prompt, 16px)",
-  fontWeight: 700,
-};
-
-const phaseTrackStyle = {
-  listStyle: "none",
-  padding: 0,
-  margin: 0,
-  display: "flex",
-  flexWrap: "wrap" as const,
-  gap: "var(--spacing-sm, 8px)",
-};
-
-const phaseChipStyle = {
-  padding: "6px 14px",
-  borderWidth: 1,
-  borderStyle: "solid",
-  borderColor: "var(--color-border)",
-  borderRadius: 999,
-  background: "var(--color-surface)",
-  fontSize: 13,
-  color: "var(--color-text-secondary)",
-};
-
-const phaseChipCurrent = {
-  background: "var(--color-primary)",
-  color: "#ffffff",
-  borderColor: "var(--color-primary)",
-  fontWeight: 700,
-};
-
-const phaseChipPast = {
-  background: "var(--color-primary-soft)",
-  color: "var(--color-primary)",
-  borderColor: "var(--color-primary)",
-};
