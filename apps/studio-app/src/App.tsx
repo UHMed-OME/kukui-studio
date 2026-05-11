@@ -21,6 +21,7 @@ import { Tooltip } from "./Tooltip.js";
 import {
   DownloadIcon,
   GearIcon,
+  KukuiGlyphIcon,
   PencilIcon,
   PlayIcon,
   SaveIcon,
@@ -405,7 +406,7 @@ export function App() {
             className="kukui-studio-btn kukui-studio-btn--primary kukui-studio-btn--with-subtext"
             title="Download a SCORM 1.2 zip ready to upload into Lamakū or any SCORM 1.2 compatible LMS"
           >
-            <DownloadIcon />
+            <KukuiGlyphIcon className="kukui-studio-btn__glyph" />
             <span className="kukui-studio-btn__stack">
               <span className="kukui-studio-btn__main">Download</span>
               <span className="kukui-studio-btn__sub">SCORM 1.2 zip</span>
