@@ -223,16 +223,20 @@ button {
   margin-top: -2px;
 }
 
-/* Brand wordmark — a two-line lockup ("Kukui" / "STUDIO") with the
-   italic pronunciation as a sibling on the right, baseline-aligned to
-   the headword. The lockup column auto-sizes to "Kukui"'s width, so
-   STUDIO centers under just the headword regardless of how long the
-   pronunciation runs alongside it. */
+/* Brand wordmark — grid layout solves the two competing alignment
+   needs: pronunciation must baseline-align with "Kukui", AND "STUDIO"
+   must center under just "Kukui" (not under the whole row).
+   Two-row, two-column grid:
+     [Kukui]    [pronunciation]
+     [STUDIO ]   .
+   STUDIO lives in the Kukui column only and self-centers there. */
 .kukui-studio-title {
   margin: 0;
-  display: inline-flex;
-  align-items: center;
-  gap: 12px;
+  display: inline-grid;
+  grid-template-columns: max-content max-content;
+  align-items: baseline;
+  column-gap: 12px;
+  row-gap: 4px;
   font-family: var(--font-family-display);
   font-weight: 500;
   color: var(--color-text-primary);
@@ -240,23 +244,31 @@ button {
   letter-spacing: -0.015em;
 }
 
-.kukui-studio-title__lockup {
-  display: inline-flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-}
-
 .kukui-studio-title__word {
+  grid-column: 1;
+  grid-row: 1;
   font-size: 34px;
   line-height: 1;
-  display: block;
 }
 
-/* "STUDIO" subhead sits centered under "Kukui" because both are
-   children of __lockup with align-items: center. Letter-spacing is
-   tuned so the rendered width approximately matches "Kukui" itself. */
+.kukui-studio-title__pronunciation {
+  grid-column: 2;
+  grid-row: 1;
+  font-family: var(--font-family-display);
+  font-style: italic;
+  font-weight: 400;
+  font-size: 16px;
+  color: var(--color-text-muted);
+  letter-spacing: 0;
+  white-space: nowrap;
+}
+
+/* "STUDIO" occupies the second row, but only the Kukui column —
+   justify-self: center horizontally centers it under "Kukui". */
 .kukui-studio-title__sub {
+  grid-column: 1;
+  grid-row: 2;
+  justify-self: center;
   font-family: var(--font-family-sans);
   font-size: 11px;
   font-weight: 600;
@@ -264,23 +276,9 @@ button {
   color: var(--color-text-secondary);
   text-transform: uppercase;
   line-height: 1;
-  /* Letter-spacing pushes the last glyph's right edge past its own
-     bounding box; pull text-indent back so the optical center matches
-     the headword's. */
+  /* Letter-spacing pushes the last glyph's right edge past its bounds;
+     a matching text-indent pulls visual center back onto Kukui's. */
   text-indent: 0.32em;
-}
-
-.kukui-studio-title__pronunciation {
-  font-family: var(--font-family-display);
-  font-style: italic;
-  font-weight: 400;
-  font-size: 15px;
-  color: var(--color-text-muted);
-  letter-spacing: 0;
-  white-space: nowrap;
-  /* Optical baseline-align with the headword, not the lockup's center. */
-  align-self: flex-start;
-  margin-top: 7px;
 }
 
 /* Legacy subtitle — kept as a safety net for any non-App.tsx call
