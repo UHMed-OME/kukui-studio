@@ -12,6 +12,7 @@
     "./content": "./src/content.ts",
     "./scorm": "./src/scorm.ts",
     "./activity-host": "./src/activity-host.tsx",
+    "./components/_shared/HotspotPin": "./src/components/_shared/HotspotPin.tsx",
     "./components/registry": "./src/components/registry.ts",
     "./components/multiple-choice": "./src/components/multiple-choice/index.ts",
     "./components/fill-in-the-blanks": "./src/components/fill-in-the-blanks/index.ts",

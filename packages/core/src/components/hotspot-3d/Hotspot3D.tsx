@@ -1,10 +1,11 @@
-import { Suspense, useEffect, useId, useMemo, useState } from "react";
+import { Suspense, useEffect, useId, useMemo, useRef, useState } from "react";
 import { Canvas } from "@react-three/fiber";
-import { Html, OrbitControls, useGLTF } from "@react-three/drei";
+import { OrbitControls, useGLTF } from "@react-three/drei";
+import * as THREE from "three";
 import type { Hotspot3DConfig } from "@kukui/schemas";
 import type { ActivityProps } from "../../types.js";
 import { SafeHtml } from "../../safe-html.js";
-import { tokens } from "../../tokens.js";
+import { HotspotPin } from "../_shared/HotspotPin.js";
 import "./Hotspot3D.css";
 
 type Stage = "answering" | "submitted";
@@ -111,6 +112,7 @@ export function Hotspot3D({
         <Hotspot3DScene
           config={config}
           disabled={submitted}
+          submitted={submitted}
           selectedHotspotId={state.selectedHotspotId}
           onPick={selectHotspot}
         />
@@ -196,11 +198,13 @@ function Hotspot3DScene({
   config,
   disabled,
   selectedHotspotId,
+  submitted,
   onPick,
 }: {
   config: Hotspot3DConfig;
   disabled: boolean;
   selectedHotspotId: string | null;
+  submitted: boolean;
   onPick: (id: string) => void;
 }) {
   const hasWebGL =
@@ -219,27 +223,58 @@ function Hotspot3DScene({
   const showMarkers = config.behaviour?.showHotspotMarkers ?? true;
   const allowOrbit = config.behaviour?.allowOrbit ?? true;
   const cameraCfg = config.camera ?? {};
+  // The model is the only meaningful occluder. Pins raycast against it
+  // each frame to decide whether to render the "behind" style.
+  const modelRef = useRef<THREE.Object3D | null>(null);
+
+  // Initial camera position: prefer an explicit camera.initialPosition
+  // (added when the author clicks "Save current view" in the editor),
+  // otherwise fall back to the legacy "distance only" path.
+  const initialPos: [number, number, number] = cameraCfg.initialPosition
+    ? [
+        cameraCfg.initialPosition.x,
+        cameraCfg.initialPosition.y,
+        cameraCfg.initialPosition.z,
+      ]
+    : [0, 0.05, cameraCfg.initialDistance ?? 0.6];
 
   return (
     <div className="kukui-h3d__canvas-wrap">
-      <Canvas camera={{ position: [0, 0.05, cameraCfg.initialDistance ?? 0.6], fov: 35 }}>
+      <Canvas camera={{ position: initialPos, fov: 35 }}>
         <ambientLight intensity={0.6} />
         <directionalLight position={[3, 5, 4]} intensity={1.0} />
         <directionalLight position={[-3, 2, -2]} intensity={0.4} />
         <Suspense fallback={null}>
-          <Model src={config.model.src} scale={config.model.scale ?? 1} />
+          <Model src={config.model.src} scale={config.model.scale ?? 1} sceneRef={modelRef} />
         </Suspense>
         {showMarkers
-          ? config.hotspots.map((h, i) => (
-              <HotspotMarker
-                key={h.id}
-                index={i + 1}
-                hotspot={h}
-                isSelected={selectedHotspotId === h.id}
-                disabled={disabled}
-                onPick={onPick}
-              />
-            ))
+          ? config.hotspots.map((h, i) => {
+              const isSelected = selectedHotspotId === h.id;
+              const kind = submitted
+                ? isSelected
+                  ? h.correct
+                    ? "correct"
+                    : "incorrect"
+                  : h.correct
+                    ? "reveal"
+                    : "default"
+                : isSelected
+                  ? "selected"
+                  : "default";
+              return (
+                <HotspotPin
+                  key={h.id}
+                  position={h.position}
+                  number={i + 1}
+                  label={h.label ?? h.id}
+                  kind={kind}
+                  disabled={disabled}
+                  onClick={() => onPick(h.id)}
+                  occluders={[modelRef.current]}
+                  ariaLabel={`Hotspot ${i + 1}: ${h.label ?? h.id}`}
+                />
+              );
+            })
           : null}
         {allowOrbit ? (
           <OrbitControls
@@ -258,67 +293,23 @@ function Hotspot3DScene({
   );
 }
 
-function Model({ src, scale }: { src: string; scale: number }) {
-  const { scene } = useGLTF(src);
-  return <primitive object={scene} scale={scale} />;
-}
-
-function HotspotMarker({
-  hotspot,
-  index,
-  isSelected,
-  disabled,
-  onPick,
+function Model({
+  src,
+  scale,
+  sceneRef,
 }: {
-  hotspot: Hotspot3DConfig["hotspots"][number];
-  index: number;
-  isSelected: boolean;
-  disabled: boolean;
-  onPick: (id: string) => void;
+  src: string;
+  scale: number;
+  sceneRef?: React.MutableRefObject<THREE.Object3D | null>;
 }) {
-  return (
-    <group position={[hotspot.position.x, hotspot.position.y, hotspot.position.z]}>
-      <mesh
-        onClick={(ev) => {
-          ev.stopPropagation();
-          if (!disabled) onPick(hotspot.id);
-        }}
-      >
-        <sphereGeometry args={[hotspot.radius, 24, 24]} />
-        <meshStandardMaterial
-          color={isSelected ? tokens.primary : tokens.primaryHover}
-          transparent
-          opacity={isSelected ? 0.85 : 0.55}
-          emissive={isSelected ? tokens.primary : "#000000"}
-          emissiveIntensity={isSelected ? 0.4 : 0}
-        />
-      </mesh>
-      <Html
-        center
-        distanceFactor={8}
-        occlude={false}
-        style={{ pointerEvents: "none" }}
-      >
-        <div
-          aria-hidden="true"
-          style={{
-            background: isSelected ? tokens.primary : "rgba(28, 30, 32, 0.85)",
-            color: "#ffffff",
-            fontWeight: 700,
-            fontSize: 12,
-            lineHeight: 1,
-            padding: "4px 8px",
-            borderRadius: 999,
-            whiteSpace: "nowrap",
-            border: `2px solid ${isSelected ? "#ffffff" : tokens.primaryHover}`,
-            transform: "translateY(-150%)",
-          }}
-        >
-          {index}. {hotspot.label ?? hotspot.id}
-        </div>
-      </Html>
-    </group>
-  );
+  const { scene } = useGLTF(src);
+  useEffect(() => {
+    if (sceneRef) sceneRef.current = scene;
+    return () => {
+      if (sceneRef) sceneRef.current = null;
+    };
+  }, [scene, sceneRef]);
+  return <primitive object={scene} scale={scale} />;
 }
 
 function parseSuspend(s: string | undefined): State | null {

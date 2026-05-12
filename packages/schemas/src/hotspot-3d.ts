@@ -25,6 +25,12 @@ export const Hotspot3DConfigSchema = z
         minDistance: z.number().positive().optional(),
         maxDistance: z.number().positive().optional(),
         target: Vector3.optional(),
+        // Full camera-position snapshot captured by the Studio editor's
+        // "Save current view" action. When set, the runtime starts the
+        // OrbitControls at exactly this position looking at `target`.
+        // Authors who set `initialDistance` only still work — that path
+        // is the fallback.
+        initialPosition: Vector3.optional(),
       })
       .strict()
       .optional(),
