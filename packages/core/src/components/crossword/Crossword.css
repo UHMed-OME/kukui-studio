@@ -19,6 +19,11 @@
   display: flex;
   justify-content: center;
   padding: var(--spacing-2xl, 24px);
+  /* Establish an inline-size containment context so the inner layout
+     can adapt to its actual rendered width, not the viewport. Lets the
+     crossword stack vertically in Studio's narrow preview panel while
+     still rendering side-by-side in the full SCORM player. */
+  container-type: inline-size;
 }
 
 .kukui-cw__frame {
@@ -57,11 +62,23 @@
 
 .kukui-cw__layout {
   display: grid;
-  grid-template-columns: auto 1fr;
+  grid-template-columns: auto minmax(220px, 1fr);
   gap: var(--spacing-xl, 20px);
   align-items: start;
 }
 
+/* When the rendered crossword container is narrow (Studio preview at
+   ~500px, or a phone-width SCORM player), stack the grid above the clue
+   list so the clue text gets the full inline width to wrap naturally. */
+@container (max-width: 760px) {
+  .kukui-cw__layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Fallback for environments without container query support: viewport
+   media query keeps the legacy mobile behavior. Container query above
+   takes precedence wherever it applies. */
 @media (max-width: 760px) {
   .kukui-cw__layout {
     grid-template-columns: 1fr;
