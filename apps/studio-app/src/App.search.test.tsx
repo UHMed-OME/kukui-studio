@@ -1,7 +1,18 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { cleanup, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { MemoryRouter } from "react-router-dom";
 import { App } from "./App.js";
+
+// App.tsx renders <Link>s in the footer, which require a Router context.
+// Tests wrap with MemoryRouter so the component mounts in isolation.
+function renderApp() {
+  return render(
+    <MemoryRouter initialEntries={["/studio"]}>
+      <App />
+    </MemoryRouter>,
+  );
+}
 
 describe("Studio sidebar — activity search", () => {
   beforeEach(() => {
@@ -11,7 +22,7 @@ describe("Studio sidebar — activity search", () => {
   afterEach(() => cleanup());
 
   it("renders every Bloom-grouped activity by default", () => {
-    render(<App />);
+    renderApp();
     const sidebar = screen.getByRole("navigation", { name: /activity type/i });
     expect(within(sidebar).getByRole("button", { name: /flashcards/i }))
       .toBeInTheDocument();
@@ -23,7 +34,7 @@ describe("Studio sidebar — activity search", () => {
 
   it("hides non-matching activities while typing in the search input", async () => {
     const user = userEvent.setup();
-    render(<App />);
+    renderApp();
     const sidebar = screen.getByRole("navigation", { name: /activity type/i });
     const input = within(sidebar).getByRole("searchbox", {
       name: /search activities/i,
@@ -41,7 +52,7 @@ describe("Studio sidebar — activity search", () => {
 
   it("shows an empty state when nothing matches", async () => {
     const user = userEvent.setup();
-    render(<App />);
+    renderApp();
     const sidebar = screen.getByRole("navigation", { name: /activity type/i });
     const input = within(sidebar).getByRole("searchbox", {
       name: /search activities/i,
@@ -55,7 +66,7 @@ describe("Studio sidebar — activity search", () => {
 
   it("clears the search via the clear button", async () => {
     const user = userEvent.setup();
-    render(<App />);
+    renderApp();
     const sidebar = screen.getByRole("navigation", { name: /activity type/i });
     const input = within(sidebar).getByRole("searchbox", {
       name: /search activities/i,
@@ -74,7 +85,7 @@ describe("Studio sidebar — activity search", () => {
 
   it("Escape clears the query when it is non-empty", async () => {
     const user = userEvent.setup();
-    render(<App />);
+    renderApp();
     const sidebar = screen.getByRole("navigation", { name: /activity type/i });
     const input = within(sidebar).getByRole("searchbox", {
       name: /search activities/i,

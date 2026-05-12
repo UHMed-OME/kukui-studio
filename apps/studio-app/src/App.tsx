@@ -6,6 +6,7 @@ import {
   type ChangeEvent,
   type KeyboardEvent as ReactKeyboardEvent,
 } from "react";
+import { Link } from "react-router-dom";
 import { type ActivityKind, PLANNED_ACTIVITY_KINDS } from "@kukui/core";
 import {
   SchemaRegistry,
@@ -838,6 +839,12 @@ export function App() {
           Office of Medical Education.
         </p>
         <nav className="kukui-studio-footer__nav" aria-label="Project links">
+          <Link to="/docs" className="kukui-studio-footer__link">
+            Docs
+          </Link>
+          <span aria-hidden="true" className="kukui-studio-footer__sep">
+            ·
+          </span>
           <a
             href="https://github.com/UHMed-OME/kukui-studio"
             target="_blank"
