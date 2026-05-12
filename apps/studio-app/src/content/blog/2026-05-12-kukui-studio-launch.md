@@ -64,4 +64,4 @@ The launch backlog, in roughly the order we're working on it:
 - **[Getting started guide](/docs/getting-started)** — five minutes from "open the URL" to "SCORM zip in hand"
 - **[GitHub](https://github.com/UHMed-OME/kukui-studio)** — source, issues, contributing
 
-Mahalo to everyone who tested, broke things, and pushed back on the design over the past few months. Kukui is yours now.
+Mahalo to everyone who tested, broke things, and pushed back on the design over the past week of build-out. Kukui is yours now.
