@@ -4,6 +4,7 @@ import type { ActivityKind } from "@kukui/core";
 import { ActivityIcon } from "../activityIcons.js";
 import { ACTIVITY_LABELS } from "../starters.js";
 import { DownloadIcon, PlayIcon } from "../icons.js";
+import { LandingTopNav } from "./shared/LandingTopNav.js";
 import "./Landing.css";
 
 const SHOWCASE: ReadonlyArray<{ kind: ActivityKind; blurb: string }> = [
@@ -64,28 +65,7 @@ const HOW_IT_WORKS = [
 export function Landing() {
   return (
     <div className="kukui-landing">
-      <header className="kukui-landing__nav">
-        <Link to="/" className="kukui-landing__brand" aria-label="Kukui Studio">
-          <img
-            className="kukui-landing__brand-logo"
-            src={`${import.meta.env.BASE_URL}kukui-logo.svg`}
-            alt=""
-            aria-hidden="true"
-          />
-          <span className="kukui-landing__brand-stack">
-            <span className="kukui-landing__brand-word">Kukui</span>
-            <span className="kukui-landing__brand-tag">Studio</span>
-          </span>
-        </Link>
-        <nav className="kukui-landing__nav-links" aria-label="Primary">
-          <a href="https://github.com/UHMed-OME/kukui-studio" target="_blank" rel="noreferrer">
-            GitHub
-          </a>
-          <Link to="/studio" className="kukui-landing__cta-secondary">
-            Open Studio
-          </Link>
-        </nav>
-      </header>
+      <LandingTopNav />
 
       <section className="kukui-landing__hero">
         <div className="kukui-landing__hero-text">
@@ -279,10 +259,7 @@ export function Landing() {
         </div>
 
         <div className="kukui-landing__footer-bottom">
-          <p>
-            <strong>Kukui Studio</strong> — open-source, MIT-licensed. Drafts
-            auto-save to your browser; nothing is sent to a server we operate.
-          </p>
+          <p>© Kukui Studio · MIT-licensed open source</p>
           <p className="kukui-landing__footer-pronounce">
             <em>Kukui</em> · /koo-KOO-ee/
           </p>

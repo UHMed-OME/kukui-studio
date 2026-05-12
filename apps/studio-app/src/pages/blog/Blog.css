@@ -1,0 +1,225 @@
+/*
+ * Blog pages — single-column editorial layout for posts. Shares the
+ * top nav with Landing and Docs.
+ */
+
+.kukui-blog {
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.kukui-blog__main {
+  max-width: 760px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 48px var(--spacing-2xl) 96px;
+  flex: 1 1 auto;
+}
+
+.kukui-blog__main--post {
+  max-width: 720px;
+}
+
+.kukui-blog__header {
+  margin: 0 0 48px;
+}
+
+.kukui-blog__title {
+  margin: 0 0 var(--spacing-md);
+  font-family: var(--font-family-display);
+  font-size: 44px;
+  font-weight: 500;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+
+.kukui-blog__lede {
+  margin: 0;
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--color-text-secondary);
+}
+
+.kukui-blog__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+}
+
+.kukui-blog__card a {
+  display: block;
+  padding: 24px;
+  background: var(--color-surface);
+  border: 1px solid color-mix(in oklab, var(--color-border) 50%, transparent);
+  border-radius: var(--radius-md);
+  text-decoration: none;
+  color: inherit;
+  transition: transform 160ms ease, box-shadow 160ms ease;
+}
+
+.kukui-blog__card a:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgb(0 0 0 / 0.06);
+}
+
+.kukui-blog__date {
+  display: block;
+  margin-bottom: 6px;
+  font-family: var(--font-family-sans);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+}
+
+.kukui-blog__card-title {
+  margin: 0 0 var(--spacing-sm);
+  font-family: var(--font-family-display);
+  font-size: 22px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  color: var(--color-text-primary);
+}
+
+.kukui-blog__excerpt {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--color-text-secondary);
+}
+
+.kukui-blog__empty {
+  margin: 48px 0;
+  text-align: center;
+  font-size: 15px;
+  color: var(--color-text-muted);
+}
+
+/* ---------- Single post ---------- */
+
+.kukui-blog__back {
+  margin: 0 0 24px;
+  font-size: 14px;
+}
+
+.kukui-blog__back a {
+  color: var(--color-text-secondary);
+  text-decoration: none;
+}
+
+.kukui-blog__back a:hover {
+  color: var(--color-text-primary);
+}
+
+.kukui-blog__post header {
+  margin: 0 0 32px;
+}
+
+.kukui-blog__post h1 {
+  margin: 0 0 var(--spacing-md);
+  font-family: var(--font-family-display);
+  font-size: 44px;
+  font-weight: 500;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+
+.kukui-blog__post h2 {
+  margin: 48px 0 var(--spacing-md);
+  font-family: var(--font-family-display);
+  font-size: 26px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}
+
+.kukui-blog__post h3 {
+  margin: 32px 0 var(--spacing-sm);
+  font-family: var(--font-family-display);
+  font-size: 19px;
+  font-weight: 500;
+}
+
+.kukui-blog__post p,
+.kukui-blog__post li {
+  font-size: 17px;
+  line-height: 1.7;
+  color: var(--color-text-primary);
+}
+
+.kukui-blog__post p {
+  margin: 0 0 var(--spacing-lg);
+}
+
+.kukui-blog__post ul,
+.kukui-blog__post ol {
+  margin: 0 0 var(--spacing-lg);
+  padding-left: 24px;
+}
+
+.kukui-blog__post li {
+  margin: 0 0 8px;
+}
+
+.kukui-blog__post a {
+  color: var(--color-primary);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+
+.kukui-blog__post a:hover {
+  text-decoration-thickness: 2px;
+}
+
+.kukui-blog__post code {
+  font-family: var(--font-family-mono);
+  font-size: 14px;
+  padding: 2px 6px;
+  background: var(--color-tip-bg);
+  border-radius: 4px;
+}
+
+.kukui-blog__post pre {
+  margin: 0 0 var(--spacing-lg);
+  padding: var(--spacing-md);
+  background: var(--color-text-primary);
+  color: var(--color-bg);
+  border-radius: var(--radius-md);
+  overflow-x: auto;
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.kukui-blog__post pre code {
+  background: transparent;
+  padding: 0;
+  color: inherit;
+}
+
+.kukui-blog__post blockquote {
+  margin: 0 0 var(--spacing-lg);
+  padding: var(--spacing-md) var(--spacing-lg);
+  border-left: 3px solid var(--color-primary);
+  font-size: 17px;
+  font-style: italic;
+  color: var(--color-text-secondary);
+}
+
+.kukui-blog__post blockquote p {
+  margin: 0;
+}
+
+@media (max-width: 760px) {
+  .kukui-blog__main {
+    padding: 32px var(--spacing-lg) 64px;
+  }
+  .kukui-blog__title,
+  .kukui-blog__post h1 {
+    font-size: 32px;
+  }
+}

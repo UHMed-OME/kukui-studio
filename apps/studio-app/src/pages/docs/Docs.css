@@ -1,0 +1,282 @@
+/*
+ * Docs pages — two-column layout (sticky sidebar nav + content area).
+ * Shares the top nav with Landing so the brand identity carries
+ * across /, /docs, and /blog uniformly.
+ */
+
+.kukui-docs {
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.kukui-docs__main {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  gap: 48px;
+  max-width: 1200px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 32px var(--spacing-2xl) 96px;
+  flex: 1 1 auto;
+}
+
+.kukui-docs__sidebar {
+  position: sticky;
+  top: 24px;
+  align-self: start;
+  padding: 0;
+}
+
+.kukui-docs__sidebar-title {
+  margin: 0 0 var(--spacing-md);
+  font-family: var(--font-family-sans);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-indent: 0.18em;
+  text-transform: uppercase;
+  color: var(--color-text-secondary);
+}
+
+.kukui-docs__sidebar nav ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.kukui-docs__nav-link {
+  display: block;
+  padding: 8px 12px;
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  color: var(--color-text-secondary);
+  text-decoration: none;
+  transition: background-color 120ms ease, color 120ms ease;
+}
+
+.kukui-docs__nav-link:hover {
+  background: color-mix(in oklab, var(--color-text-primary) 5%, transparent);
+  color: var(--color-text-primary);
+}
+
+.kukui-docs__nav-link.is-active {
+  background: var(--color-primary-soft);
+  color: var(--color-primary);
+  font-weight: 600;
+}
+
+.kukui-docs__content {
+  min-width: 0;
+}
+
+/* ---------- Index page ---------- */
+
+.kukui-docs__index h1 {
+  margin: 0 0 var(--spacing-md);
+  font-family: var(--font-family-display);
+  font-size: 38px;
+  font-weight: 500;
+  line-height: 1.1;
+  letter-spacing: -0.015em;
+}
+
+.kukui-docs__lede {
+  margin: 0 0 32px;
+  font-size: 16px;
+  line-height: 1.55;
+  color: var(--color-text-secondary);
+  max-width: 640px;
+}
+
+.kukui-docs__index-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: var(--spacing-lg);
+}
+
+.kukui-docs__index-card a {
+  display: block;
+  padding: 20px;
+  background: var(--color-surface);
+  border: 1px solid color-mix(in oklab, var(--color-border) 50%, transparent);
+  border-radius: var(--radius-md);
+  text-decoration: none;
+  color: inherit;
+  transition: transform 160ms ease, box-shadow 160ms ease;
+}
+
+.kukui-docs__index-card a:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgb(0 0 0 / 0.06);
+}
+
+.kukui-docs__index-card h3 {
+  margin: 0 0 8px;
+  font-family: var(--font-family-display);
+  font-size: 19px;
+  font-weight: 500;
+  letter-spacing: -0.005em;
+  color: var(--color-text-primary);
+}
+
+.kukui-docs__index-card p {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--color-text-secondary);
+}
+
+/* ---------- Doc page (markdown prose) ---------- */
+
+.kukui-docs__page h1 {
+  margin: 0 0 var(--spacing-md);
+  font-family: var(--font-family-display);
+  font-size: 36px;
+  font-weight: 500;
+  line-height: 1.1;
+  letter-spacing: -0.015em;
+}
+
+.kukui-docs__page h2 {
+  margin: 40px 0 var(--spacing-md);
+  font-family: var(--font-family-display);
+  font-size: 24px;
+  font-weight: 500;
+  letter-spacing: -0.005em;
+}
+
+.kukui-docs__page h3 {
+  margin: 28px 0 var(--spacing-sm);
+  font-family: var(--font-family-display);
+  font-size: 18px;
+  font-weight: 500;
+}
+
+.kukui-docs__page p,
+.kukui-docs__page li {
+  font-size: 15px;
+  line-height: 1.7;
+  color: var(--color-text-primary);
+}
+
+.kukui-docs__page p {
+  margin: 0 0 var(--spacing-md);
+}
+
+.kukui-docs__page ul,
+.kukui-docs__page ol {
+  margin: 0 0 var(--spacing-md);
+  padding-left: 24px;
+}
+
+.kukui-docs__page li {
+  margin: 0 0 6px;
+}
+
+.kukui-docs__page a {
+  color: var(--color-primary);
+  text-decoration: none;
+}
+
+.kukui-docs__page a:hover {
+  text-decoration: underline;
+}
+
+.kukui-docs__page code {
+  font-family: var(--font-family-mono);
+  font-size: 13px;
+  padding: 2px 6px;
+  background: var(--color-tip-bg);
+  border-radius: 4px;
+}
+
+.kukui-docs__page pre {
+  margin: 0 0 var(--spacing-lg);
+  padding: var(--spacing-md);
+  background: var(--color-text-primary);
+  color: var(--color-bg);
+  border-radius: var(--radius-md);
+  overflow-x: auto;
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.kukui-docs__page pre code {
+  background: transparent;
+  padding: 0;
+  color: inherit;
+}
+
+.kukui-docs__page blockquote {
+  margin: 0 0 var(--spacing-md);
+  padding: var(--spacing-md) var(--spacing-lg);
+  background: color-mix(in oklab, var(--color-primary) 5%, transparent);
+  border-left: 3px solid var(--color-primary);
+  border-radius: 0 var(--radius-md) var(--radius-md) 0;
+  font-size: 15px;
+  color: var(--color-text-primary);
+}
+
+.kukui-docs__page blockquote p {
+  margin: 0;
+}
+
+.kukui-docs__page table {
+  margin: 0 0 var(--spacing-lg);
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 14px;
+}
+
+.kukui-docs__page th,
+.kukui-docs__page td {
+  padding: 10px 14px;
+  text-align: left;
+  border-bottom: 1px solid color-mix(in oklab, var(--color-border) 50%, transparent);
+}
+
+.kukui-docs__page th {
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.kukui-docs__page hr {
+  margin: 32px 0;
+  border: 0;
+  border-top: 1px solid color-mix(in oklab, var(--color-border) 50%, transparent);
+}
+
+.kukui-docs__updated {
+  margin: 48px 0 0;
+  padding-top: 16px;
+  border-top: 1px solid color-mix(in oklab, var(--color-border) 50%, transparent);
+  font-size: 13px;
+  color: var(--color-text-muted);
+}
+
+/* ---------- Narrow viewports ---------- */
+
+@media (max-width: 880px) {
+  .kukui-docs__main {
+    grid-template-columns: 1fr;
+    gap: 24px;
+    padding: 24px var(--spacing-lg) 64px;
+  }
+  .kukui-docs__sidebar {
+    position: static;
+  }
+  .kukui-docs__sidebar nav ul {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+}

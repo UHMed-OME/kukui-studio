@@ -21,10 +21,13 @@
     "@tiptap/extension-text-align": "^3.23.1",
     "@tiptap/react": "^3.23.1",
     "@tiptap/starter-kit": "^3.23.1",
+    "gray-matter": "^4.0.3",
     "jszip": "^3.10.1",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
+    "react-markdown": "^10.1.0",
     "react-router-dom": "^7.15.0",
+    "remark-gfm": "^4.0.1",
     "three": "^0.171.0",
     "zod": "^4.0.0"
   },

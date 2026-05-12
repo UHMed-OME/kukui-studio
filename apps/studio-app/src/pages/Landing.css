@@ -297,8 +297,15 @@
   margin: 0;
   padding: 0;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: var(--spacing-xl);
+  grid-template-columns: repeat(5, 1fr);
+  gap: var(--spacing-md);
+}
+
+@media (max-width: 1080px) {
+  .kukui-landing__props-grid {
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: var(--spacing-xl);
+  }
 }
 
 .kukui-landing__prop {
@@ -603,13 +610,6 @@
   margin: 0;
 }
 
-.kukui-landing__footer-bottom strong {
-  font-family: var(--font-family-display);
-  font-weight: 500;
-  font-size: 14px;
-  color: var(--color-text-secondary);
-  letter-spacing: -0.005em;
-}
 
 .kukui-landing__footer-pronounce {
   font-style: italic;
