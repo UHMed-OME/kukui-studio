@@ -16,6 +16,9 @@ const ImageAnnotationEditor = lazy(() =>
 const ConceptMapEditor = lazy(() =>
   import("./ConceptMapEditor.js").then((m) => ({ default: m.ConceptMapEditor })),
 );
+const Hotspot3DEditor = lazy(() =>
+  import("./Hotspot3DEditor.js").then((m) => ({ default: m.Hotspot3DEditor })),
+);
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type AnyEditor = ComponentType<{ config: any; onChange: (next: any) => void }>;
@@ -26,6 +29,7 @@ const EDITORS: Partial<Record<ActivityKind, AnyEditor>> = {
   "anatomy-labeling": AnatomyLabelingEditor as AnyEditor,
   "image-annotation": ImageAnnotationEditor as AnyEditor,
   "concept-map": ConceptMapEditor as AnyEditor,
+  "hotspot-3d": Hotspot3DEditor as AnyEditor,
 };
 
 /** Single source of truth for which activities have a visual editor. */

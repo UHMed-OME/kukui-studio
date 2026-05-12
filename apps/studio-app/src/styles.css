@@ -3485,3 +3485,185 @@ html[data-theme="glass"] .kukui-studio-footer {
   outline: 2px solid var(--color-primary);
   outline-offset: 2px;
 }
+
+/*
+ * Hotspot 3D author editor — 3D viewport on the left, hotspot list +
+ * inspector on the right. The viewport is the same OrbitControls scene
+ * the learner sees, with extra click-to-place affordances.
+ */
+
+.ks-h3d-editor {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(220px, 1fr);
+  gap: var(--spacing-md);
+  height: 100%;
+  min-height: 480px;
+}
+
+@media (max-width: 880px) {
+  .ks-h3d-editor {
+    grid-template-columns: 1fr;
+  }
+}
+
+.ks-h3d-editor__viewport {
+  position: relative;
+  background: var(--color-tip-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  min-height: 360px;
+}
+
+.ks-h3d-editor__viewport canvas {
+  outline: none;
+}
+
+.ks-h3d-editor__hint {
+  position: absolute;
+  bottom: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  margin: 0;
+  padding: 4px 10px;
+  background: rgb(28 30 32 / 0.78);
+  color: #ffffff;
+  font-size: var(--font-size-meta);
+  border-radius: var(--radius-sm);
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.ks-h3d-editor__panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm) var(--spacing-md);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  overflow: auto;
+}
+
+.ks-h3d-editor__panel-header h3 {
+  margin: 0;
+  font-size: var(--font-size-body);
+  color: var(--color-text-primary);
+}
+
+.ks-h3d-editor__empty {
+  margin: 0;
+  font-size: var(--font-size-meta);
+  color: var(--color-text-secondary);
+}
+
+.ks-h3d-editor__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.ks-h3d-editor__list-btn {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-xs);
+  width: 100%;
+  min-height: 36px;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  background: transparent;
+  border: 2px solid transparent;
+  border-radius: var(--radius-sm);
+  text-align: left;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.ks-h3d-editor__list-btn:hover {
+  background: var(--color-tip-bg);
+}
+
+.ks-h3d-editor__list-btn.is-selected {
+  background: var(--color-primary-soft);
+  border-color: var(--color-primary);
+}
+
+.ks-h3d-editor__list-label {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ks-h3d-editor__list-badge {
+  font-size: var(--font-size-meta);
+  font-weight: 700;
+  color: #2e6e41;
+}
+
+.ks-h3d-editor__fields {
+  margin-top: var(--spacing-sm);
+  padding-top: var(--spacing-sm);
+  border-top: 1px solid var(--color-border);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.ks-h3d-editor__field {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: var(--font-size-meta);
+}
+
+.ks-h3d-editor__field > span {
+  color: var(--color-text-secondary);
+}
+
+.ks-h3d-editor__field input[type="text"],
+.ks-h3d-editor__field input[type="number"] {
+  min-height: 36px;
+  padding: 4px 8px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  font: inherit;
+  color: var(--color-text-primary);
+}
+
+.ks-h3d-editor__field--checkbox {
+  flex-direction: row;
+  align-items: center;
+  gap: var(--spacing-xs);
+  cursor: pointer;
+}
+
+.ks-h3d-editor__field-coords {
+  font-size: var(--font-size-meta);
+  color: var(--color-text-secondary);
+}
+
+.ks-h3d-editor__field-coords code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 11px;
+}
+
+.ks-h3d-editor__delete {
+  align-self: flex-start;
+  min-height: 36px;
+  padding: 4px 10px;
+  background: transparent;
+  border: 1px solid #c34132;
+  border-radius: var(--radius-sm);
+  color: #c34132;
+  font: inherit;
+  cursor: pointer;
+}
+
+.ks-h3d-editor__delete:hover {
+  background: rgb(195 65 50 / 0.08);
+}

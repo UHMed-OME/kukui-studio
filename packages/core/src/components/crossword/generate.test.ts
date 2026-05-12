@@ -73,7 +73,9 @@ describe("generateLayout", () => {
   });
 
   it("falls back to isolated placement when no intersection works", () => {
-    // Two terms with no letters in common — the second can't intersect.
+    // Two terms with no letters in common — one of them can't intersect
+    // the other, so exactly one of the two ids ends up in `unplaced`
+    // (which one depends on the seeded shuffle).
     const layout = generateLayout(
       [
         { id: "1", term: "ABCD" },
@@ -82,7 +84,8 @@ describe("generateLayout", () => {
       42,
     );
     expect(layout.placements).toHaveLength(2);
-    expect(layout.unplaced).toContain("2");
+    expect(layout.unplaced).toHaveLength(1);
+    expect(["1", "2"]).toContain(layout.unplaced[0]);
   });
 
   it("returns an empty layout when given no entries", () => {

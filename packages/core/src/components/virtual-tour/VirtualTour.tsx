@@ -1,6 +1,6 @@
 import { Suspense, useEffect, useId, useMemo, useRef, useState } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { Html, PointerLockControls, useGLTF } from "@react-three/drei";
+import { Html, useGLTF } from "@react-three/drei";
 import * as THREE from "three";
 import type { VirtualTourConfig } from "@kukui/schemas";
 import type { ActivityProps } from "../../types.js";
@@ -245,7 +245,7 @@ function VirtualTourScene({
   return (
     <div className="kukui-vt__canvas-wrap">
       <p className="kukui-vt__hint" role="note">
-        Click the scene to look around · WASD or arrow keys to move · Esc to release
+        Click and drag to look around · WASD or arrow keys to move · Click a marker to visit it
       </p>
       <Canvas camera={{ position: [spawn.x, spawn.y, spawn.z], fov: 60 }}>
         <ambientLight intensity={0.6} />
@@ -255,7 +255,7 @@ function VirtualTourScene({
           <TourModel src={config.scene.src} />
         </Suspense>
         <FirstPersonRig speed={movementSpeed} />
-        <PointerLockControls />
+        <DragLookControls />
         {config.overlays.map((o) => (
           <mesh
             key={o.id}
@@ -356,6 +356,99 @@ function FirstPersonRig({ speed }: { speed: number }) {
     if (keys.current.right) camera.position.addScaledVector(rightVec, d);
     if (keys.current.left) camera.position.addScaledVector(rightVec, -d);
   });
+
+  return null;
+}
+
+/**
+ * Drag-to-look camera controller — no pointer lock.
+ *
+ * On pointerdown anywhere on the canvas we start tracking; on
+ * pointermove we accumulate yaw / pitch deltas and reorient the camera;
+ * on pointerup we stop. Because we never call requestPointerLock(), the
+ * cursor stays visible and the browser's Escape-to-release trap never
+ * fires — closing the "click to enter tour, hit Escape to leave" UX
+ * dead-end that PointerLockControls would otherwise inflict on learners.
+ *
+ * Single-click hotspot picking still works: r3f's `onClick` listens to
+ * the DOM click event, which the browser only dispatches when pointerup
+ * happens on the same target after a near-stationary pointerdown. A real
+ * drag (more than ~5 px of movement) suppresses the click, so the camera
+ * rotates and the hotspot underneath does NOT get visited unintentionally.
+ *
+ * Pitch is clamped to ±85° so the camera can't flip upside-down.
+ */
+function DragLookControls() {
+  const { camera, gl } = useThree();
+  // Initialise yaw/pitch from the camera's current rotation so the spawn
+  // position the config asked for is preserved.
+  const eulerRef = useRef<THREE.Euler>(
+    new THREE.Euler(0, 0, 0, "YXZ"),
+  );
+  const [initialized, setInitialized] = useState(false);
+
+  useEffect(() => {
+    if (initialized) return;
+    eulerRef.current.setFromQuaternion(camera.quaternion);
+    eulerRef.current.order = "YXZ";
+    setInitialized(true);
+  }, [camera, initialized]);
+
+  useEffect(() => {
+    const el = gl.domElement;
+    let dragging = false;
+    let pid = -1;
+    let lastX = 0;
+    let lastY = 0;
+    const SENSITIVITY = 0.0025;
+    const PITCH_LIMIT = (Math.PI / 2) * 0.94;
+
+    const onDown = (e: PointerEvent) => {
+      if (e.button !== 0) return;
+      dragging = true;
+      pid = e.pointerId;
+      lastX = e.clientX;
+      lastY = e.clientY;
+      try {
+        el.setPointerCapture(e.pointerId);
+      } catch {
+        /* setPointerCapture isn't critical — bail silently if unsupported */
+      }
+    };
+    const onMove = (e: PointerEvent) => {
+      if (!dragging || e.pointerId !== pid) return;
+      const dx = e.clientX - lastX;
+      const dy = e.clientY - lastY;
+      lastX = e.clientX;
+      lastY = e.clientY;
+      const eul = eulerRef.current;
+      eul.y -= dx * SENSITIVITY;
+      eul.x -= dy * SENSITIVITY;
+      eul.x = Math.max(-PITCH_LIMIT, Math.min(PITCH_LIMIT, eul.x));
+      camera.quaternion.setFromEuler(eul);
+    };
+    const onUp = (e: PointerEvent) => {
+      if (e.pointerId !== pid) return;
+      dragging = false;
+      pid = -1;
+      try {
+        el.releasePointerCapture(e.pointerId);
+      } catch {
+        /* releasePointerCapture isn't critical — bail silently if unsupported */
+      }
+    };
+
+    el.addEventListener("pointerdown", onDown);
+    el.addEventListener("pointermove", onMove);
+    el.addEventListener("pointerup", onUp);
+    el.addEventListener("pointercancel", onUp);
+    return () => {
+      el.removeEventListener("pointerdown", onDown);
+      el.removeEventListener("pointermove", onMove);
+      el.removeEventListener("pointerup", onUp);
+      el.removeEventListener("pointercancel", onUp);
+    };
+  }, [camera, gl]);
 
   return null;
 }

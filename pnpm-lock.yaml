@@ -166,6 +166,12 @@ importers:
       '@kukui/schemas':
         specifier: workspace:*
         version: link:../../packages/schemas
+      '@react-three/drei':
+        specifier: ^10.0.0
+        version: 10.7.7(@react-three/fiber@9.6.1(@types/react@19.2.14)(react-dom@19.2.5(react@19.2.5))(react@19.2.5)(three@0.171.0))(@types/react@19.2.14)(@types/three@0.171.0)(react-dom@19.2.5(react@19.2.5))(react@19.2.5)(three@0.171.0)
+      '@react-three/fiber':
+        specifier: ^9.0.0
+        version: 9.6.1(@types/react@19.2.14)(react-dom@19.2.5(react@19.2.5))(react@19.2.5)(three@0.171.0)
       '@rjsf/core':
         specifier: ^5.24.0
         version: 5.24.13(@rjsf/utils@5.24.13(react@19.2.5))(react@19.2.5)
@@ -199,6 +205,9 @@ importers:
       react-dom:
         specifier: ^19.0.0
         version: 19.2.5(react@19.2.5)
+      three:
+        specifier: ^0.171.0
+        version: 0.171.0
       zod:
         specifier: ^4.0.0
         version: 4.4.3
@@ -212,6 +221,9 @@ importers:
       '@types/react-dom':
         specifier: ^19.0.0
         version: 19.2.3(@types/react@19.2.14)
+      '@types/three':
+        specifier: ^0.171.0
+        version: 0.171.0
       '@vitejs/plugin-react':
         specifier: ^4.3.4
         version: 4.7.0(vite@6.4.2(@types/node@22.19.17)(jiti@2.7.0)(lightningcss@1.32.0))
