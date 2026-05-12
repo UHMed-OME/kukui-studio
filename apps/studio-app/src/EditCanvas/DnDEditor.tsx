@@ -3,11 +3,14 @@ import {
   useRef,
   useState,
   type CSSProperties,
+  type DragEvent,
   type MouseEvent,
   type PointerEvent,
 } from "react";
 import type { DragAndDropConfig } from "@kukui/schemas";
 import { ContextMenu, type ContextMenuPos } from "./ContextMenu.js";
+import { DnDChipPanel } from "./DnDChipPanel.js";
+import { DnDLinkOverlay } from "./DnDLinkOverlay.js";
 import { reorder, roundCoord, type ZOrderOp } from "./zorder.js";
 
 const roundRect = <T extends { x: number; y: number; w: number; h: number }>(r: T): T => ({
@@ -68,7 +71,9 @@ export function DnDEditor({
   const boardRef = useRef<HTMLDivElement>(null);
   const [drag, setDrag] = useState<DragState>({ kind: "idle" });
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [selectedChipId, setSelectedChipId] = useState<string | null>(null);
   const [menu, setMenu] = useState<{ id: string; pos: ContextMenuPos } | null>(null);
+  const [dropTargetZoneId, setDropTargetZoneId] = useState<string | null>(null);
 
   // Local override for the zone currently being dragged. Lets the visible
   // element track the cursor at the device's refresh rate without bouncing
@@ -229,91 +234,156 @@ export function DnDEditor({
 
   const isDragging = drag.kind !== "idle";
 
+  // Drag-from-side-panel → drop-on-zone. When the author drags a chip
+  // row from the panel and drops it on a zone here, the dragged chip's
+  // correctZones gets the zone's id appended. Lighter than reworking
+  // the pointer-based geometry editor; HTML5 drag uses different
+  // events so the two flows don't collide.
+  const handleZoneDragOver = (zoneId: string) => (e: DragEvent<HTMLDivElement>) => {
+    if (!e.dataTransfer.types.includes("application/x-kukui-chip")) return;
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "link";
+    if (dropTargetZoneId !== zoneId) setDropTargetZoneId(zoneId);
+  };
+
+  const handleZoneDragLeave = () => {
+    setDropTargetZoneId(null);
+  };
+
+  const handleZoneDrop = (zoneId: string) => (e: DragEvent<HTMLDivElement>) => {
+    const chipId = e.dataTransfer.getData("application/x-kukui-chip");
+    setDropTargetZoneId(null);
+    if (!chipId) return;
+    e.preventDefault();
+    const chip = config.draggables.find((d) => d.id === chipId);
+    if (!chip || chip.correctZones.includes(zoneId)) return;
+    onChange({
+      ...config,
+      draggables: config.draggables.map((d) =>
+        d.id === chipId ? { ...d, correctZones: [...d.correctZones, zoneId] } : d,
+      ),
+    });
+    setSelectedChipId(chipId);
+  };
+
+  const handleZoneClick = (zoneId: string) => {
+    setSelectedId((cur) => (cur === zoneId ? null : zoneId));
+  };
+
   return (
     <div className="ks-edit-dnd">
       <p className="ks-edit-dnd__hint">
         Drag on the background to draw a zone. Click a zone to select; drag to move, corner
         handle to resize, ✕ or <kbd>Delete</kbd> to remove. Right-click a zone for stacking
-        options. Form on the left updates when you let go.
+        options. Drag a chip from the side panel onto a zone to link them.
       </p>
-      <div
-        ref={boardRef}
-        className={["ks-edit-dnd__board", isDragging ? "is-dragging" : ""]
-          .filter(Boolean)
-          .join(" ")}
-        style={{
-          backgroundImage: config.background?.src ? `url(${config.background.src})` : undefined,
-        }}
-        onPointerDown={startDrawZone}
-        onPointerMove={handlePointerMove}
-        onPointerUp={handlePointerUp}
-        onPointerCancel={handlePointerUp}
-      >
-        {config.dropZones.map((z) => {
-          // If this zone is currently being dragged, render with the live
-          // rect so the element tracks the cursor 1:1.
-          const rect = liveRect && liveRect.id === z.id ? liveRect.rect : z.rect;
-          const style: CSSProperties = {
-            left: `${rect.x * 100}%`,
-            top: `${rect.y * 100}%`,
-            width: `${rect.w * 100}%`,
-            height: `${rect.h * 100}%`,
-          };
-          const isSelected = z.id === selectedId;
-          const isThisDragging =
-            drag.kind !== "idle" && "zoneId" in drag && drag.zoneId === z.id;
-          return (
+      <div className="ks-edit-dnd__layout">
+        <div
+          ref={boardRef}
+          className={["ks-edit-dnd__board", isDragging ? "is-dragging" : ""]
+            .filter(Boolean)
+            .join(" ")}
+          style={{
+            backgroundImage: config.background?.src
+              ? `url(${config.background.src})`
+              : undefined,
+          }}
+          onPointerDown={startDrawZone}
+          onPointerMove={handlePointerMove}
+          onPointerUp={handlePointerUp}
+          onPointerCancel={handlePointerUp}
+        >
+          {config.dropZones.map((z) => {
+            // If this zone is currently being dragged, render with the live
+            // rect so the element tracks the cursor 1:1.
+            const rect = liveRect && liveRect.id === z.id ? liveRect.rect : z.rect;
+            const style: CSSProperties = {
+              left: `${rect.x * 100}%`,
+              top: `${rect.y * 100}%`,
+              width: `${rect.w * 100}%`,
+              height: `${rect.h * 100}%`,
+            };
+            const isSelected = z.id === selectedId;
+            const isThisDragging =
+              drag.kind !== "idle" && "zoneId" in drag && drag.zoneId === z.id;
+            const isDropTarget = dropTargetZoneId === z.id;
+            return (
+              <div
+                key={z.id}
+                className={[
+                  "ks-edit-dnd__zone",
+                  isSelected ? "is-selected" : "",
+                  isThisDragging ? "is-dragging" : "",
+                  isDropTarget ? "is-drop-target" : "",
+                ]
+                  .filter(Boolean)
+                  .join(" ")}
+                style={style}
+                onPointerDown={startMoveZone(z.id)}
+                onClick={(e) => {
+                  // Only treat as zone-selection click if we're not in
+                  // the middle of a geometry drag.
+                  if (drag.kind === "idle") {
+                    e.stopPropagation();
+                    handleZoneClick(z.id);
+                  }
+                }}
+                onContextMenu={openContextMenu(z.id)}
+                onDragOver={handleZoneDragOver(z.id)}
+                onDragLeave={handleZoneDragLeave}
+                onDrop={handleZoneDrop(z.id)}
+              >
+                <span className="ks-edit-dnd__zone-label">{z.label ?? z.id}</span>
+                {isSelected ? (
+                  <>
+                    <button
+                      type="button"
+                      className="ks-edit-dnd__delete"
+                      onPointerDown={(e) => e.stopPropagation()}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        deleteZone(z.id);
+                      }}
+                      aria-label={`Delete zone ${z.label ?? z.id}`}
+                    >
+                      ✕
+                    </button>
+                    <div
+                      className="ks-edit-dnd__handle ks-edit-dnd__handle--se"
+                      onPointerDown={startResizeZone(z.id)}
+                      aria-label="Resize"
+                      role="button"
+                      tabIndex={-1}
+                    />
+                  </>
+                ) : null}
+              </div>
+            );
+          })}
+          {drag.kind === "draw" && drag.rect.w > 0 && drag.rect.h > 0 ? (
             <div
-              key={z.id}
-              className={[
-                "ks-edit-dnd__zone",
-                isSelected ? "is-selected" : "",
-                isThisDragging ? "is-dragging" : "",
-              ]
-                .filter(Boolean)
-                .join(" ")}
-              style={style}
-              onPointerDown={startMoveZone(z.id)}
-              onContextMenu={openContextMenu(z.id)}
-            >
-              <span className="ks-edit-dnd__zone-label">{z.label ?? z.id}</span>
-              {isSelected ? (
-                <>
-                  <button
-                    type="button"
-                    className="ks-edit-dnd__delete"
-                    onPointerDown={(e) => e.stopPropagation()}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      deleteZone(z.id);
-                    }}
-                    aria-label={`Delete zone ${z.label ?? z.id}`}
-                  >
-                    ✕
-                  </button>
-                  <div
-                    className="ks-edit-dnd__handle ks-edit-dnd__handle--se"
-                    onPointerDown={startResizeZone(z.id)}
-                    aria-label="Resize"
-                    role="button"
-                    tabIndex={-1}
-                  />
-                </>
-              ) : null}
-            </div>
-          );
-        })}
-        {drag.kind === "draw" && drag.rect.w > 0 && drag.rect.h > 0 ? (
-          <div
-            className="ks-edit-dnd__draft"
-            style={{
-              left: `${drag.rect.x * 100}%`,
-              top: `${drag.rect.y * 100}%`,
-              width: `${drag.rect.w * 100}%`,
-              height: `${drag.rect.h * 100}%`,
-            }}
+              className="ks-edit-dnd__draft"
+              style={{
+                left: `${drag.rect.x * 100}%`,
+                top: `${drag.rect.y * 100}%`,
+                width: `${drag.rect.w * 100}%`,
+                height: `${drag.rect.h * 100}%`,
+              }}
+            />
+          ) : null}
+          <DnDLinkOverlay
+            config={config}
+            selectedChipId={selectedChipId}
+            selectedZoneId={selectedId}
           />
-        ) : null}
+        </div>
+        <DnDChipPanel
+          config={config}
+          onChange={onChange}
+          selectedChipId={selectedChipId}
+          onSelectChip={setSelectedChipId}
+          selectedZoneId={selectedId}
+        />
       </div>
       {menu ? (
         <ContextMenu

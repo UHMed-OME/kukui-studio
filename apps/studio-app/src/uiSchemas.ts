@@ -243,6 +243,20 @@ export const UI_SCHEMAS: Record<ActivityKind, Record<string, unknown>> = {
       enableRetry: BEHAVIOUR_RETRY,
       enableSolutionsButton: BEHAVIOUR_SHOW_SOLUTION,
       singlePoint: BEHAVIOUR_SINGLEPOINT,
+      interaction: {
+        ...f(
+          "Interaction mode",
+          "How learners place chips. Auto picks drag for mouse/pen and tap-to-place for touch / keyboard. Drag forces the drag flow; tap forces tap-to-place (also used on phones regardless of this setting).",
+        ),
+        "ui:enumNames": ["Auto-detect", "Drag", "Tap-to-place"],
+      },
+      aspectRatio: {
+        ...f(
+          "Board aspect ratio",
+          "Shape of the board. 16:10 (default) is widest; pick 4:3 or 1:1 if your background image is taller.",
+        ),
+        "ui:enumNames": ["16:10 (widescreen)", "4:3", "1:1 (square)"],
+      },
     },
     ui: {
       "ui:title": "Button label overrides",
