@@ -39,7 +39,7 @@ export function TapLayer(props: TapLayerProps) {
     if (before.selectedChipId !== state.selectedChipId) {
       if (state.selectedChipId) {
         setMessage(
-          `Chip "${chipLabel(config, state.selectedChipId)}" selected. Tap a zone to place.`,
+          `Label "${chipLabel(config, state.selectedChipId)}" selected. Tap a zone to place.`,
         );
         return;
       }
@@ -48,7 +48,7 @@ export function TapLayer(props: TapLayerProps) {
         before.selectedChipId &&
         JSON.stringify(before.placement) === JSON.stringify(state.placement)
       ) {
-        setMessage(`Chip "${chipLabel(config, before.selectedChipId)}" deselected.`);
+        setMessage(`Label "${chipLabel(config, before.selectedChipId)}" deselected.`);
         return;
       }
     }

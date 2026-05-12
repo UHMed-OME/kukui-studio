@@ -191,25 +191,25 @@ export const UI_SCHEMAS: Record<ActivityKind, Record<string, unknown>> = {
       ),
     },
     draggables: {
-      "ui:title": "Draggable labels",
-      "ui:help": "The chips the learner picks up. Each one declares which zone(s) count as correct for it.",
+      "ui:title": "Labels",
+      "ui:help": "The labels the learner picks up and drags into zones. Each one declares which zone(s) count as correct for it.",
       items: {
         id: HIDDEN,
-        label: f("Label text", "What the learner sees on the chip."),
+        label: f("Text", "What the learner sees on the label."),
         correctZones: f(
           "Correct zone IDs",
-          "List of dropZone IDs where placing this chip counts as correct.",
+          "List of dropZone IDs where placing this label counts as correct.",
         ),
         feedback: f(
           "Feedback after submit",
-          "Per-draggable feedback shown after the learner checks their work.",
+          "Shown after the learner checks their work.",
           { "ui:widget": "textarea", "ui:options": { rows: 2 } },
         ),
       },
     },
     dropZones: {
       "ui:title": "Drop zones",
-      "ui:help": "Rectangles overlaid on the background image where chips can be placed.",
+      "ui:help": "Rectangles overlaid on the background image where labels can be dropped.",
       items: {
         id: HIDDEN,
         label: f("Zone label", "Optional — shown when the zone has its label visible."),
@@ -222,8 +222,8 @@ export const UI_SCHEMAS: Record<ActivityKind, Record<string, unknown>> = {
           h: f("Height", "0..1 fraction of the background's height."),
         },
         capacity: f(
-          "Max chips this zone can hold",
-          "Default 1. Set higher to allow multiple chips in the same zone.",
+          "Max labels this zone can hold",
+          "Default 1. Set higher to allow multiple labels in the same zone.",
         ),
         showLabel: f("Show the zone's label", "Render the zone's text label inside the rectangle."),
       },
@@ -236,7 +236,7 @@ export const UI_SCHEMAS: Record<ActivityKind, Record<string, unknown>> = {
       interaction: {
         ...f(
           "Interaction mode",
-          "How learners place chips. Auto picks drag for mouse/pen and tap-to-place for touch / keyboard. Drag forces the drag flow; tap forces tap-to-place (also used on phones regardless of this setting).",
+          "How learners place labels. Auto picks drag for mouse/pen and tap-to-place for touch / keyboard. Drag forces the drag flow; tap forces tap-to-place (also used on phones regardless of this setting).",
         ),
         "ui:enumNames": ["Auto-detect", "Drag", "Tap-to-place"],
       },
@@ -336,7 +336,7 @@ export const UI_SCHEMAS: Record<ActivityKind, Record<string, unknown>> = {
         id: HIDDEN,
         label: f(
           "Label",
-          "Shown in the keyboard fallback list and as a 3D marker chip when markers are visible.",
+          "Shown in the keyboard fallback list and as a 3D marker pin when markers are visible.",
         ),
         position: f("Position (x, y, z)", "Where the hotspot sits in the model's local space."),
         radius: f("Click radius", "How close the click has to be to count as a hit."),
@@ -391,7 +391,7 @@ export const UI_SCHEMAS: Record<ActivityKind, Record<string, unknown>> = {
         "Rectangles overlaid on the image. Exactly one should be marked correct. Edit positions visually in the Edit-mode tab once that lands.",
       items: {
         id: HIDDEN,
-        label: f("Label", "Shown on the marker chip and in the keyboard fallback list."),
+        label: f("Label", "Shown on the marker pin and in the keyboard fallback list."),
         rect: {
           "ui:title": "Rectangle (normalized 0..1)",
           x: f("X (left)"),
@@ -454,7 +454,7 @@ export const UI_SCHEMAS: Record<ActivityKind, Record<string, unknown>> = {
         "Clickable info panels. Each opens a modal with text, images, and audio.",
       items: {
         id: HIDDEN,
-        title: f("Display title", "Shown above the overlay panel and on the marker chip."),
+        title: f("Display title", "Shown above the overlay panel and on the marker pin."),
         position: f("World position (x, y, z)"),
         trigger: HIDDEN,
         content: {
@@ -579,7 +579,7 @@ export const UI_SCHEMAS: Record<ActivityKind, Record<string, unknown>> = {
       "ui:help": "Each item declares which category id is its correct home.",
       items: {
         id: HIDDEN,
-        text: f("Item text", "What the learner sees on the chip."),
+        text: f("Item text", "What the learner sees on the item card."),
         correctCategory: f(
           "Correct category id",
           "Must match one of the category ids declared above.",
@@ -923,7 +923,7 @@ export const UI_SCHEMAS: Record<ActivityKind, Record<string, unknown>> = {
       "ui:help": "Optional. Concepts the learner can drag onto the canvas.",
       items: {
         id: HIDDEN,
-        label: f("Label", "Visible chip text."),
+        label: f("Label", "Visible label text."),
       },
     },
     expected: {

@@ -166,7 +166,7 @@ export function DnDActivity({
           <div
             id={trayDomId}
             className="kukui-dnd__tray"
-            aria-label="Tray of unplaced chips"
+            aria-label="Tray of unplaced labels"
           >
             {trayItems.map((d) => (
               <Chip
@@ -181,7 +181,7 @@ export function DnDActivity({
               />
             ))}
             {trayItems.length === 0 ? (
-              <p className="kukui-dnd__tray-empty">All chips placed.</p>
+              <p className="kukui-dnd__tray-empty">All labels placed.</p>
             ) : null}
           </div>
         </div>
@@ -201,7 +201,7 @@ export function DnDActivity({
         </div>
 
         {state.stage === "submitted" ? (
-          <section className="kukui-dnd__summary" aria-label="Per-chip summary">
+          <section className="kukui-dnd__summary" aria-label="Per-label summary">
             <ul className="kukui-dnd__summary-list">
               {config.draggables.map((d) => {
                 const zid = state.placement[d.id] ?? null;

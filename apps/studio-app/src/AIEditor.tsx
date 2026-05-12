@@ -124,8 +124,8 @@ const PLACEHOLDER_EXAMPLES: Partial<
     edit: "e.g. Swap the left/right columns and add 2 more pairs",
   },
   "drag-and-drop": {
-    gen: "e.g. Chips labeled organelles, drop zones over a plant-cell diagram",
-    edit: "e.g. Rename the chips to use more clinical language",
+    gen: "e.g. Labels for the organelles, drop zones over a plant-cell diagram",
+    edit: "e.g. Rename the labels to use more clinical language",
   },
   "sequence-steps": {
     gen: "e.g. The 7 steps of an arterial blood-gas draw, in order",

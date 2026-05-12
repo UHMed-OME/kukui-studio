@@ -95,12 +95,12 @@ export function DnDChipPanel({
     };
 
   return (
-    <aside className="ks-edit-dnd__panel" aria-label="Chips">
+    <aside className="ks-edit-dnd__panel" aria-label="Labels">
       <header className="ks-edit-dnd__panel-header">
-        <h3 className="ks-edit-dnd__panel-title">Chips</h3>
+        <h3 className="ks-edit-dnd__panel-title">Labels</h3>
         <p className="ks-edit-dnd__panel-help">
-          Drag a chip onto a zone in the canvas to add the zone to its correct list, or use
-          the picker below each chip. Selecting a chip highlights its target zones on the
+          Drag a label onto a zone in the canvas to add the zone to its correct list, or use
+          the picker below each label. Selecting a label highlights its target zones on the
           board.
         </p>
       </header>
@@ -129,7 +129,7 @@ export function DnDChipPanel({
                 className="ks-edit-dnd__chip-row-handle"
                 style={{ backgroundColor: chipColor(chip.id) }}
                 onClick={() => onSelectChip(isSelected ? null : chip.id)}
-                aria-label={isSelected ? `Deselect chip ${chip.label}` : `Select chip ${chip.label}`}
+                aria-label={isSelected ? `Deselect label ${chip.label}` : `Select label ${chip.label}`}
                 aria-pressed={isSelected}
               />
               <div className="ks-edit-dnd__chip-row-body">
@@ -138,7 +138,7 @@ export function DnDChipPanel({
                   className="ks-edit-dnd__chip-label-input"
                   value={chip.label}
                   onChange={(e) => updateChip(chip.id, { label: e.target.value })}
-                  aria-label={`Chip ${chip.id} label`}
+                  aria-label={`Label ${chip.id} text`}
                   onFocus={() => onSelectChip(chip.id)}
                 />
                 <ZoneRefPicker
@@ -152,7 +152,7 @@ export function DnDChipPanel({
                     role="status"
                     aria-live="polite"
                   >
-                    This chip has nowhere correct to drop.
+                    This label has nowhere correct to drop.
                   </p>
                 ) : null}
               </div>
@@ -160,7 +160,7 @@ export function DnDChipPanel({
                 type="button"
                 className="ks-edit-dnd__chip-row-delete"
                 onClick={() => removeChip(chip.id)}
-                aria-label={`Delete chip ${chip.label}`}
+                aria-label={`Delete label ${chip.label}`}
               >
                 ✕
               </button>
@@ -178,17 +178,17 @@ export function DnDChipPanel({
         <input
           type="text"
           className="ks-edit-dnd__chip-add-input"
-          placeholder="New chip label"
+          placeholder="New label text"
           value={newChipLabel}
           onChange={(e) => setNewChipLabel(e.target.value)}
-          aria-label="New chip label"
+          aria-label="New label text"
         />
         <button
           type="submit"
           className="ks-edit-dnd__chip-add-btn"
           disabled={!newChipLabel.trim()}
         >
-          + Add chip
+          + Add label
         </button>
       </form>
     </aside>

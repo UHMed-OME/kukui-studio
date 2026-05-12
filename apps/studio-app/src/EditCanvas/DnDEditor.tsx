@@ -298,7 +298,7 @@ export function DnDEditor({
         <p className="ks-edit-dnd__hint">
           Drag on the background to draw a zone. Click a zone to select; drag to move, corner
           handle to resize, ✕ or <kbd>Delete</kbd> to remove. Right-click a zone for stacking
-          options. Drag a chip from the side panel onto a zone to link them.
+          options. Drag a label from the side panel onto a zone to link them.
         </p>
         <div className="ks-edit-dnd__bg-controls">
           <label className="ks-edit-dnd__bg-upload">
