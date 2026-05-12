@@ -62,8 +62,16 @@ function ArrayItem({
   index: number;
   itemLabel: string;
 }) {
-  const { children, hasMoveDown, hasMoveUp, hasRemove, onDropIndexClick, onReorderClick } =
-    item;
+  const {
+    children,
+    hasCopy,
+    hasMoveDown,
+    hasMoveUp,
+    hasRemove,
+    onCopyIndexClick,
+    onDropIndexClick,
+    onReorderClick,
+  } = item;
   return (
     <li className="ks-array-item">
       <div className="ks-array-item__bar">
@@ -95,6 +103,20 @@ function ArrayItem({
               }}
             >
               ↓
+            </button>
+          ) : null}
+          {hasCopy ? (
+            <button
+              type="button"
+              aria-label="Duplicate item"
+              title="Duplicate item"
+              className="ks-icon-btn"
+              onClick={(e) => {
+                e.preventDefault();
+                onCopyIndexClick(item.index)(e);
+              }}
+            >
+              ⎘
             </button>
           ) : null}
           {hasRemove ? (

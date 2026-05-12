@@ -167,7 +167,8 @@
 }
 
 .kukui-al__chip.is-dragging {
-  opacity: 0.35;
+  opacity: 0;
+  pointer-events: none;
 }
 
 /* Ghost rendered inside <DragOverlay>: opaque label chip that follows

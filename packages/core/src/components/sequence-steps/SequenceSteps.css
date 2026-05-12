@@ -58,7 +58,8 @@
 }
 
 .kukui-seq__item.is-dragging {
-  opacity: 0.35;
+  opacity: 0;
+  pointer-events: none;
 }
 
 /* Ghost rendered inside <DragOverlay>: opaque copy that follows the

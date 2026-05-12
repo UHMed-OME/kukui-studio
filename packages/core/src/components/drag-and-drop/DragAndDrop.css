@@ -122,8 +122,13 @@
   background: var(--color-error-soft);
 }
 
+/* While being dragged, the original chip is fully hidden — the
+ * <DragOverlay> ghost renders the visible copy under the cursor. Keeping
+ * the original mounted (opacity 0 instead of display: none) reserves
+ * its slot in the tray/zone so the surrounding layout doesn't reflow. */
 .kukui-dnd__chip.is-dragging {
-  opacity: 0.35;
+  opacity: 0;
+  pointer-events: none;
 }
 
 /* Ghost rendered inside <DragOverlay>: full-opacity copy of the chip that
