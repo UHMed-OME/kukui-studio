@@ -14,10 +14,11 @@ import type { ArrayFieldTemplateProps, ArrayFieldTemplateItemType } from "@rjsf/
  * it into the JSON Schema.
  */
 export function ArrayFieldTemplate(props: ArrayFieldTemplateProps) {
-  const { schema, items, canAdd, onAddClick, uiSchema } = props;
+  const { schema, items, canAdd, onAddClick, uiSchema, formData } = props;
   const uiTitle = (uiSchema as Record<string, unknown> | undefined)?.["ui:title"];
   const title = typeof uiTitle === "string" ? uiTitle : props.title;
   const description = schema?.description;
+  const arr = Array.isArray(formData) ? formData : [];
 
   return (
     <div className="ks-array">
@@ -31,6 +32,7 @@ export function ArrayFieldTemplate(props: ArrayFieldTemplateProps) {
               item={item}
               index={idx + 1}
               itemLabel={titleCase(singular(title))}
+              preview={previewLabel(arr[idx])}
             />
           ))}
         </ul>
@@ -53,14 +55,41 @@ export function ArrayFieldTemplate(props: ArrayFieldTemplateProps) {
   );
 }
 
+/**
+ * Pull a short, recognisable identifier out of an array item so the
+ * badge can render "Term 1: AORTA" instead of just "Term 1". Helps
+ * authors map editor entries to where they end up in the preview —
+ * notably for the crossword, where preview clue numbers come from
+ * row-major placement order and don't match the editor's entry order.
+ *
+ * Looks at a small whitelist of properties common across activity
+ * kinds: `term`, `label`, `text`, `front`, `name`, `title`. Returns
+ * the first non-empty string found, trimmed to 32 chars so a long
+ * definition doesn't blow up the row's layout.
+ */
+function previewLabel(item: unknown): string | undefined {
+  if (!item || typeof item !== "object") return undefined;
+  const obj = item as Record<string, unknown>;
+  for (const key of ["term", "label", "text", "front", "name", "title"] as const) {
+    const value = obj[key];
+    if (typeof value === "string" && value.trim().length > 0) {
+      const cleaned = value.replace(/<[^>]+>/g, "").trim();
+      return cleaned.length > 32 ? `${cleaned.slice(0, 32)}…` : cleaned;
+    }
+  }
+  return undefined;
+}
+
 function ArrayItem({
   item,
   index,
   itemLabel,
+  preview,
 }: {
   item: ArrayFieldTemplateItemType;
   index: number;
   itemLabel: string;
+  preview?: string;
 }) {
   const {
     children,
@@ -75,7 +104,12 @@ function ArrayItem({
   return (
     <li className="ks-array-item">
       <div className="ks-array-item__bar">
-        <span className="ks-array-item__index">{itemLabel} {index}</span>
+        <span className="ks-array-item__index">
+          {itemLabel} {index}
+          {preview ? (
+            <span className="ks-array-item__preview"> · {preview}</span>
+          ) : null}
+        </span>
         <div className="ks-array-item__actions">
           {hasMoveUp ? (
             <button

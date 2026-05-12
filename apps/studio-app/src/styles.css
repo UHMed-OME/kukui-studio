@@ -1224,6 +1224,27 @@ button {
   font-weight: 700;
   color: var(--color-text-secondary);
   letter-spacing: 0.04em;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+  min-width: 0;
+}
+
+/* Inline term/label preview next to the row number, so authors can
+ * recognise which entry maps to which preview clue even when the
+ * preview's clue numbering differs from the editor's row order
+ * (crossword clue numbers come from row-major placement, not insertion
+ * order). */
+.ks-array-item__preview {
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--color-text-primary);
+  font-size: var(--font-size-caption, 14px);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 28ch;
 }
 
 .ks-array-item__actions {
