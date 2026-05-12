@@ -1,0 +1,22 @@
+{
+  "version": "1.0",
+  "title": "Quick check",
+  "prompt": "Which artery supplies the inferior wall of the left ventricle in most patients?",
+  "choices": [
+    { "id": "rca", "label": "Right coronary artery (RCA)", "correct": true },
+    { "id": "lad", "label": "Left anterior descending (LAD)" },
+    { "id": "lcx", "label": "Left circumflex (LCx)" },
+    { "id": "ramus", "label": "Ramus intermedius" }
+  ],
+  "behaviour": {
+    "showLiveResultsToStudents": false,
+    "revealCorrectAnswer": true,
+    "allowChangeAnswer": true,
+    "showNamesAtReveal": false
+  },
+  "live": {
+    "joinKey": "quiz-coronary-fall25",
+    "adminKey": "demo-admin-key-replace-me",
+    "signaling": "nostr"
+  }
+}

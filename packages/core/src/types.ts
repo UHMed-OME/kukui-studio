@@ -59,7 +59,11 @@ export type BuiltActivityKind =
   | "ddx-tree"
   | "osce"
   | "crossword"
-  | "straw-poll";
+  | "straw-poll"
+  | "confidence-meter"
+  | "word-cloud"
+  | "qa-board"
+  | "quick-quiz";
 
 /** Reserved for future activity kinds that haven't been implemented yet. */
 export type PlannedKind = never;
@@ -92,6 +96,10 @@ export const BUILT_ACTIVITY_KINDS: readonly BuiltActivityKind[] = [
   "osce",
   "crossword",
   "straw-poll",
+  "confidence-meter",
+  "word-cloud",
+  "qa-board",
+  "quick-quiz",
 ] as const;
 
 export const ACTIVITY_KINDS: readonly ActivityKind[] = [

@@ -145,7 +145,13 @@ export function Preview({
  * the author can dress-rehearse the multi-peer flow without leaving
  * Studio.
  */
-const LIVE_ACTIVITY_KINDS: readonly ActivityKind[] = ["straw-poll"];
+const LIVE_ACTIVITY_KINDS: readonly ActivityKind[] = [
+  "straw-poll",
+  "confidence-meter",
+  "word-cloud",
+  "qa-board",
+  "quick-quiz",
+];
 
 function isLiveActivity(kind: ActivityKind): boolean {
   return LIVE_ACTIVITY_KINDS.includes(kind);

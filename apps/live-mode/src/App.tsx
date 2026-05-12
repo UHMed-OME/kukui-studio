@@ -115,17 +115,33 @@ function readConfigSignaling(config: unknown): PreloadedConfigLive | null {
  * dispatch branch in LiveHost.
  */
 const LIVE_ACTIVITIES: { kind: ActivityKind; label: string; sampleUrl: string }[] = [
+  { kind: "straw-poll", label: "Straw Poll", sampleUrl: "/samples/straw-poll/basic.json" },
   {
-    kind: "straw-poll",
-    label: "Straw Poll",
-    sampleUrl: "/samples/straw-poll/basic.json",
+    kind: "confidence-meter",
+    label: "Confidence Meter",
+    sampleUrl: "/samples/confidence-meter/basic.json",
   },
+  {
+    kind: "word-cloud",
+    label: "Word Cloud",
+    sampleUrl: "/samples/word-cloud/basic.json",
+  },
+  { kind: "qa-board", label: "Q&A Board", sampleUrl: "/samples/qa-board/basic.json" },
+  { kind: "quick-quiz", label: "Quick Quiz", sampleUrl: "/samples/quick-quiz/basic.json" },
   {
     kind: "multiple-choice",
     label: "Multiple Choice (demo shell)",
     sampleUrl: "/samples/multiple-choice/basic.json",
   },
 ];
+
+const LIVE_AUTO_LOAD_KINDS = new Set<ActivityKind>([
+  "straw-poll",
+  "confidence-meter",
+  "word-cloud",
+  "qa-board",
+  "quick-quiz",
+]);
 
 /**
  * Kukui Live — M1 shell.
@@ -256,7 +272,7 @@ export function App() {
         setConfigUrl(URL.createObjectURL(blob));
       } else {
         const sample = LIVE_ACTIVITIES.find((a) => a.kind === activityKind);
-        if (sample && activityKind === "straw-poll") {
+        if (sample && LIVE_AUTO_LOAD_KINDS.has(activityKind)) {
           setConfigUrl(sample.sampleUrl);
         }
       }

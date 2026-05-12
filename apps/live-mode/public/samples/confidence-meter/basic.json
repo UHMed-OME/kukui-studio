@@ -1,0 +1,19 @@
+{
+  "version": "1.0",
+  "title": "Confidence rating",
+  "prompt": "How confident are you about today's material on cardiac conduction?",
+  "scale": {
+    "min": 0,
+    "max": 100,
+    "step": 1,
+    "lowLabel": "Lost",
+    "highLabel": "Could teach it",
+    "unit": "%"
+  },
+  "behaviour": { "showLiveResultsToStudents": true, "allowChangeRating": true },
+  "live": {
+    "joinKey": "cardio-confidence-fall25",
+    "adminKey": "demo-admin-key-replace-me",
+    "signaling": "nostr"
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "version": "1.0",
+  "title": "Class Q&A board",
+  "prompt": "Post any questions you have during lecture — upvote the ones you also want answered.",
+  "maxQuestionsPerStudent": 5,
+  "maxQuestionLength": 240,
+  "behaviour": {
+    "allowAnonymous": true,
+    "allowUpvoteOwn": false,
+    "showAnsweredBelow": true
+  },
+  "live": {
+    "joinKey": "qa-cardio-fall25",
+    "adminKey": "demo-admin-key-replace-me",
+    "signaling": "nostr"
+  }
+}

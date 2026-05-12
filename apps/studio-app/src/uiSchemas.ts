@@ -55,6 +55,38 @@ const BEHAVIOUR_SINGLEPOINT = f(
   "When on, the activity is graded 1/1 only when fully correct. Otherwise partial credit.",
 );
 
+/**
+ * Shared uiSchema fragment for the `live` section of every live
+ * activity. Keeps the join + admin keys top-of-form (rendered with
+ * the password-copy widget) and labels the transport overrides as
+ * advanced.
+ */
+const LIVE_SETTINGS_UI = {
+  "ui:title": "Live session keys",
+  "ui:options": { advanced: false },
+  "ui:help":
+    "Auto-generated when you start a new draft or hit Reset. Tap Show to read the values; tap Copy to put them on your clipboard. Replace if you want a specific room name.",
+  "ui:order": ["joinKey", "adminKey", "signaling", "relayUrls"],
+  joinKey: f(
+    "Join key (public)",
+    "Hashed to derive the room id. Same key in two copies of this activity = same mesh. Safe to share with students; this is what they need to enter the room.",
+    { "ui:widget": "passwordCopy", "ui:options": { copyHint: "Copy join key" } },
+  ),
+  adminKey: f(
+    "Admin key (private)",
+    "Secret that unlocks host controls. The 'Launch instructor view' button embeds this in the URL; in an LMS deploy, the instructor enters it via the lock icon in the activity. Keep off the syllabus.",
+    { "ui:widget": "passwordCopy", "ui:options": { copyHint: "Copy admin key" } },
+  ),
+  signaling: f(
+    "Signaling backend (advanced)",
+    "Nostr (default) is federated WebSocket signaling — usually permitted on edu networks. MQTT is the fallback if Nostr is blocked.",
+  ),
+  relayUrls: f(
+    "Pinned relay URLs (advanced, optional)",
+    "Optional list of relay/broker URLs to use instead of Trystero's defaults. Pin to relays you've verified work on your institution's network.",
+  ),
+} as const;
+
 export const UI_SCHEMAS: Record<ActivityKind, Record<string, unknown>> = {
   "multiple-choice": {
     ...COMMON,
@@ -1174,36 +1206,165 @@ export const UI_SCHEMAS: Record<ActivityKind, Record<string, unknown>> = {
       submitVoteButton: f("'Submit vote' button text"),
       changeVoteButton: f("'Change vote' button text"),
     },
-    live: {
-      "ui:title": "Live session keys",
-      // The keys are top-level concerns (the author needs to copy them
-      // out to share with students / paste into an LMS launch URL), so
-      // keep the live section expanded. Per-field "advanced" treatment
-      // for signaling + relayUrls below — those are real opt-in
-      // overrides most authors never touch.
-      "ui:options": { advanced: false },
-      "ui:help":
-        "Auto-generated when you start a new draft or hit Reset. Tap Show to read the values; tap Copy to put them on your clipboard. Replace if you want a specific room name.",
-      "ui:order": ["joinKey", "adminKey", "signaling", "relayUrls"],
-      joinKey: f(
-        "Join key (public)",
-        "Hashed to derive the room id. Same key in two copies of this activity = same mesh. Safe to share with students; this is what they need to enter the room.",
-        { "ui:widget": "passwordCopy", "ui:options": { copyHint: "Copy join key" } },
+    live: LIVE_SETTINGS_UI,
+  },
+
+  "confidence-meter": {
+    ...COMMON,
+    "ui:order": ["title", "prompt", "scale", "behaviour", "live", "ui", "*"],
+    title: TITLE,
+    author: AUTHOR,
+    prompt: f(
+      "Prompt",
+      "The question students rate themselves against. One sentence works best.",
+      { "ui:widget": "textarea", "ui:options": { rows: 2 } },
+    ),
+    scale: {
+      "ui:title": "Slider scale",
+      min: f("Minimum", "Default 0."),
+      max: f("Maximum", "Default 100. Higher = more confident."),
+      step: f("Step size", "Increment per slider tick. 1 is fine for percentages; 5 or 10 for coarser scales."),
+      lowLabel: f("Low-end label", "Tooltip shown next to the slider's minimum (e.g. 'Lost')."),
+      highLabel: f("High-end label", "Tooltip shown next to the slider's maximum (e.g. 'Could teach it back')."),
+      unit: f("Unit", "Suffix shown beside numeric values (e.g. '%'). Optional."),
+    },
+    behaviour: {
+      "ui:title": "Behaviour",
+      showLiveResultsToStudents: f(
+        "Show live histogram to students",
+        "Default on. Turn off for blind ratings (students don't see classmates' values until reveal).",
       ),
-      adminKey: f(
-        "Admin key (private)",
-        "Secret that unlocks host controls. The 'Launch instructor view' button embeds this in the URL; in an LMS deploy, the instructor enters it via the lock icon in the activity. Keep off the syllabus.",
-        { "ui:widget": "passwordCopy", "ui:options": { copyHint: "Copy admin key" } },
+      allowChangeRating: f("Allow students to change their rating", "Default on; last drag wins."),
+    },
+    ui: { "ui:title": "Button label overrides" },
+    live: LIVE_SETTINGS_UI,
+  },
+
+  "word-cloud": {
+    ...COMMON,
+    "ui:order": [
+      "title",
+      "prompt",
+      "submissionsPerStudent",
+      "maxWordsPerSubmission",
+      "maxCharsPerSubmission",
+      "behaviour",
+      "live",
+      "ui",
+      "*",
+    ],
+    title: TITLE,
+    author: AUTHOR,
+    prompt: f(
+      "Prompt",
+      "Frame the response — e.g. 'Sum up today's lecture in one or two words'. Short answers are the whole point; longer prompts dilute the cloud.",
+      { "ui:widget": "textarea", "ui:options": { rows: 2 } },
+    ),
+    submissionsPerStudent: f(
+      "Submissions per student",
+      "Default 1. Raise to 2 or 3 for richer clouds in smaller classes (×N entries each).",
+    ),
+    maxWordsPerSubmission: f(
+      "Max words per submission",
+      "Default 2. Keep low (1–3) so the cloud aggregates meaningfully.",
+    ),
+    maxCharsPerSubmission: f(
+      "Max characters per submission",
+      "Hard cap on submission length. 24 is a good default for a few words.",
+    ),
+    behaviour: {
+      "ui:title": "Behaviour",
+      showLiveResultsToStudents: f(
+        "Show live cloud to students",
+        "Default on. Turn off if seeing peer answers would prime students.",
       ),
-      signaling: f(
-        "Signaling backend (advanced)",
-        "Nostr (default) is federated WebSocket signaling — usually permitted on edu networks. MQTT is the fallback if Nostr is blocked.",
-      ),
-      relayUrls: f(
-        "Pinned relay URLs (advanced, optional)",
-        "Optional list of relay/broker URLs to use instead of Trystero's defaults. Pin to relays you've verified work on your institution's network.",
+      caseSensitive: f(
+        "Case-sensitive tally",
+        "Default off — 'apple' and 'Apple' merge. Turn on for case-distinct content (gene names, acronyms).",
       ),
     },
+    ui: { "ui:title": "Button label overrides" },
+    live: LIVE_SETTINGS_UI,
+  },
+
+  "qa-board": {
+    ...COMMON,
+    "ui:order": [
+      "title",
+      "prompt",
+      "maxQuestionsPerStudent",
+      "maxQuestionLength",
+      "behaviour",
+      "live",
+      "ui",
+      "*",
+    ],
+    title: TITLE,
+    author: AUTHOR,
+    prompt: f(
+      "Prompt",
+      "Frame the backchannel — e.g. 'Post any questions you have during lecture'. Short.",
+      { "ui:widget": "textarea", "ui:options": { rows: 2 } },
+    ),
+    maxQuestionsPerStudent: f(
+      "Max questions per student",
+      "Default 5. Caps spam; raise for long lectures.",
+    ),
+    maxQuestionLength: f("Max characters per question", "Default 240."),
+    behaviour: {
+      "ui:title": "Behaviour",
+      allowAnonymous: f(
+        "Show questions as anonymous",
+        "Default on. Instructor still sees the author for moderation; classmates don't.",
+      ),
+      allowUpvoteOwn: f("Allow upvoting your own question", "Default off."),
+      showAnsweredBelow: f(
+        "Move answered questions below open ones",
+        "Default on. Keeps the active queue at the top.",
+      ),
+    },
+    ui: { "ui:title": "Button label overrides" },
+    live: LIVE_SETTINGS_UI,
+  },
+
+  "quick-quiz": {
+    ...COMMON,
+    "ui:order": ["title", "prompt", "choices", "behaviour", "live", "ui", "*"],
+    title: TITLE,
+    author: AUTHOR,
+    prompt: f(
+      "Question",
+      "Single question. For multiple questions, run a few Quick Quizzes back-to-back.",
+      { "ui:widget": "textarea", "ui:options": { rows: 2 } },
+    ),
+    choices: {
+      "ui:title": "Choices",
+      "ui:help":
+        "2–6 options. Tick the box on the correct one. At least one choice must be marked correct.",
+      items: {
+        id: HIDDEN,
+        label: f("Choice text", "What the student sees on the answer button."),
+        correct: f(
+          "Correct answer",
+          "Check this on the right answer. At least one choice must be marked.",
+        ),
+      },
+    },
+    behaviour: {
+      "ui:title": "Behaviour",
+      showLiveResultsToStudents: f(
+        "Show live tally to students before reveal",
+        "Default off. Most quizzes want students to commit before seeing the herd.",
+      ),
+      revealCorrectAnswer: f("Highlight the correct answer at reveal", "Default on."),
+      allowChangeAnswer: f("Allow students to change their answer", "Default on; last tap wins."),
+      showNamesAtReveal: f(
+        "Show student names with correct answers at reveal",
+        "Default off (anonymous). Turn on for kahoot-style leaderboards.",
+      ),
+    },
+    ui: { "ui:title": "Button label overrides" },
+    live: LIVE_SETTINGS_UI,
   },
 
   crossword: {

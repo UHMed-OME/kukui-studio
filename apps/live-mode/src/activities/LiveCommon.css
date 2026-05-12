@@ -1,0 +1,377 @@
+/*
+ * Shared styles for the new live activities (Confidence Meter, Word
+ * Cloud, Q&A Board, Quick Quiz). Mirrors the StrawPollLive.css
+ * idioms — prompt card, status banners, control row — so all live
+ * activities look like one family.
+ */
+
+.live-card--wide {
+  max-width: 880px;
+}
+
+.kukui-live-prompt {
+  margin-bottom: var(--spacing-lg, 16px);
+  padding: var(--spacing-md, 12px) var(--spacing-lg, 16px);
+  background: color-mix(in srgb, var(--color-tip-bg, #f2f0e8) 70%, transparent);
+  border-left: 3px solid var(--color-accent, #b69b5d);
+  border-radius: var(--radius-sm, 6px);
+}
+
+.kukui-live-prompt p {
+  margin: 0;
+  font-size: var(--font-size-prompt, 16px);
+  line-height: 1.5;
+  color: var(--color-text-primary, #1c1e20);
+}
+
+.kukui-live-status {
+  margin: 0 0 var(--spacing-lg, 16px);
+  padding: var(--spacing-md, 12px) var(--spacing-lg, 16px);
+  background: var(--color-tip-bg, #f2f0e8);
+  border: 1px solid var(--color-border, #dad2c6);
+  border-radius: var(--radius-sm, 6px);
+  font-size: var(--font-size-body, 15px);
+  text-align: center;
+}
+
+.kukui-live-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-sm, 8px);
+  margin-top: var(--spacing-lg, 16px);
+}
+
+/* Confidence Meter
+ * ──────────────── */
+
+.kukui-cm__slider-wrap {
+  margin-bottom: var(--spacing-lg, 16px);
+}
+
+.kukui-cm__slider-row {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md, 12px);
+}
+
+.kukui-cm__slider-end {
+  font-size: var(--font-size-caption, 14px);
+  color: var(--color-text-secondary, #606069);
+  min-width: 48px;
+  text-align: center;
+}
+
+.kukui-cm__slider {
+  flex: 1;
+  min-height: 44px;
+}
+
+.kukui-cm__slider-value {
+  margin-top: var(--spacing-sm, 8px);
+  font-size: var(--font-size-body, 15px);
+  text-align: center;
+}
+
+.kukui-cm__hist {
+  margin-bottom: var(--spacing-lg, 16px);
+}
+
+.kukui-cm__hist-head {
+  display: flex;
+  justify-content: space-between;
+  font-size: var(--font-size-caption, 14px);
+  color: var(--color-text-secondary, #606069);
+  margin-bottom: 4px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.kukui-cm__hist-bars {
+  display: grid;
+  grid-template-columns: repeat(10, 1fr);
+  gap: 2px;
+  height: 120px;
+  align-items: end;
+  background: var(--color-tip-bg, #f2f0e8);
+  padding: 6px;
+  border-radius: var(--radius-sm, 6px);
+}
+
+.kukui-cm__hist-col {
+  display: flex;
+  align-items: end;
+  height: 100%;
+}
+
+.kukui-cm__hist-bar {
+  width: 100%;
+  background: color-mix(in srgb, var(--color-accent, #b69b5d) 70%, #ffffff);
+  border-radius: 2px 2px 0 0;
+  transition: height 220ms ease;
+}
+
+.kukui-cm__hist-bar.is-revealed {
+  background: var(--color-accent, #b69b5d);
+}
+
+.kukui-cm__hist-axis {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 4px;
+  font-size: 11px;
+  color: var(--color-text-secondary, #606069);
+}
+
+/* Word Cloud
+ * ──────────── */
+
+.kukui-wc__input-row {
+  display: flex;
+  gap: var(--spacing-sm, 8px);
+  margin-bottom: var(--spacing-md, 12px);
+}
+
+.kukui-wc__input {
+  flex: 1;
+  min-height: 44px;
+  padding: 8px 12px;
+  border: 2px solid var(--color-border, #dad2c6);
+  border-radius: var(--radius-sm, 6px);
+  font-size: var(--font-size-body, 15px);
+}
+
+.kukui-wc__submissions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-bottom: var(--spacing-md, 12px);
+}
+
+.kukui-wc__submission {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  background: var(--color-tip-bg, #f2f0e8);
+  border: 1px solid var(--color-border, #dad2c6);
+  border-radius: 999px;
+  font-size: var(--font-size-meta, 13px);
+}
+
+.kukui-wc__submission-remove {
+  background: transparent;
+  border: 0;
+  font-size: 14px;
+  color: var(--color-text-secondary, #606069);
+  cursor: pointer;
+  padding: 0 4px;
+}
+
+.kukui-wc__cloud {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: var(--spacing-lg, 16px);
+  background: color-mix(in srgb, var(--color-tip-bg, #f2f0e8) 60%, transparent);
+  border: 1px solid var(--color-border, #dad2c6);
+  border-radius: var(--radius-md, 8px);
+  min-height: 160px;
+}
+
+.kukui-wc__word {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+  padding: 4px 8px;
+  font-weight: 700;
+  color: var(--color-text-primary, #1c1e20);
+}
+
+.kukui-wc__word-count {
+  font-size: 0.7em;
+  color: var(--color-text-secondary, #606069);
+  font-weight: 500;
+}
+
+/* Q&A Board
+ * ─────────── */
+
+.kukui-qa__form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm, 8px);
+  margin-bottom: var(--spacing-lg, 16px);
+}
+
+.kukui-qa__textarea {
+  width: 100%;
+  min-height: 80px;
+  padding: 8px 12px;
+  border: 2px solid var(--color-border, #dad2c6);
+  border-radius: var(--radius-sm, 6px);
+  font: inherit;
+  font-size: var(--font-size-body, 15px);
+  resize: vertical;
+}
+
+.kukui-qa__charcount {
+  font-size: var(--font-size-meta, 13px);
+  color: var(--color-text-secondary, #606069);
+  text-align: right;
+}
+
+.kukui-qa__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm, 8px);
+}
+
+.kukui-qa__item {
+  display: grid;
+  grid-template-columns: 56px 1fr auto;
+  gap: var(--spacing-md, 12px);
+  align-items: start;
+  padding: var(--spacing-md, 12px);
+  background: var(--color-surface, #ffffff);
+  border: 1px solid var(--color-border, #dad2c6);
+  border-radius: var(--radius-sm, 6px);
+}
+
+.kukui-qa__item.is-answered {
+  opacity: 0.65;
+  text-decoration: line-through;
+}
+
+.kukui-qa__upvote {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 44px;
+  padding: 4px;
+  background: var(--color-tip-bg, #f2f0e8);
+  border: 1px solid var(--color-border, #dad2c6);
+  border-radius: var(--radius-sm, 6px);
+  cursor: pointer;
+}
+
+.kukui-qa__upvote.is-voted {
+  background: var(--color-accent, #b69b5d);
+  color: #ffffff;
+  border-color: var(--color-accent, #b69b5d);
+}
+
+.kukui-qa__upvote-arrow {
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.kukui-qa__upvote-count {
+  font-size: var(--font-size-meta, 13px);
+  font-weight: 700;
+}
+
+.kukui-qa__text {
+  font-size: var(--font-size-body, 15px);
+  color: var(--color-text-primary, #1c1e20);
+  margin: 0;
+}
+
+.kukui-qa__author {
+  display: block;
+  font-size: var(--font-size-meta, 13px);
+  color: var(--color-text-secondary, #606069);
+  margin-top: 4px;
+}
+
+.kukui-qa__action {
+  background: transparent;
+  border: 1px solid var(--color-border, #dad2c6);
+  border-radius: var(--radius-sm, 6px);
+  padding: 4px 8px;
+  font-size: var(--font-size-meta, 13px);
+  cursor: pointer;
+  color: var(--color-text-secondary, #606069);
+}
+
+/* Quick Quiz
+ * ─────────── */
+
+.kukui-qq__choices {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm, 8px);
+  margin: 0 0 var(--spacing-lg, 16px);
+  padding: 0;
+  border: 0;
+}
+
+.kukui-qq__choice {
+  display: grid;
+  grid-template-columns: 44px 1fr auto;
+  align-items: center;
+  gap: var(--spacing-md, 12px);
+  min-height: 64px;
+  padding: var(--spacing-sm, 8px) var(--spacing-md, 12px);
+  background: var(--color-surface, #ffffff);
+  border: 2px solid var(--color-border, #dad2c6);
+  border-radius: var(--radius-md, 8px);
+  text-align: left;
+  cursor: pointer;
+  font: inherit;
+}
+
+.kukui-qq__choice:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--color-tip-bg, #f2f0e8) 60%, #ffffff);
+}
+
+.kukui-qq__choice.is-selected {
+  border-color: var(--color-accent, #b69b5d);
+  background: color-mix(in srgb, var(--color-accent, #b69b5d) 14%, var(--color-surface, #ffffff));
+}
+
+.kukui-qq__choice.is-correct {
+  border-color: #2e6e41;
+  background: color-mix(in srgb, #2e6e41 12%, var(--color-surface, #ffffff));
+}
+
+.kukui-qq__choice.is-incorrect {
+  border-color: #c34132;
+}
+
+.kukui-qq__letter {
+  width: 44px;
+  height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-tip-bg, #f2f0e8);
+  border-radius: 999px;
+  font-weight: 700;
+}
+
+.kukui-qq__choice.is-selected .kukui-qq__letter {
+  background: var(--color-accent, #b69b5d);
+  color: #ffffff;
+}
+
+.kukui-qq__choice.is-correct .kukui-qq__letter {
+  background: #2e6e41;
+  color: #ffffff;
+}
+
+.kukui-qq__choice-text {
+  font-size: var(--font-size-body, 15px);
+}
+
+.kukui-qq__choice-meta {
+  font-size: var(--font-size-meta, 13px);
+  color: var(--color-text-secondary, #606069);
+  font-weight: 600;
+}

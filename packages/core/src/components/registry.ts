@@ -47,6 +47,10 @@ export const ACTIVITY_REGISTRY: Record<BuiltActivityKind, ActivityComponent> = {
   "osce": lazy(() => import("./osce/index.js")),
   "crossword": lazy(() => import("./crossword/index.js")),
   "straw-poll": lazy(() => import("./straw-poll/index.js")),
+  "confidence-meter": lazy(() => import("./confidence-meter/index.js")),
+  "word-cloud": lazy(() => import("./word-cloud/index.js")),
+  "qa-board": lazy(() => import("./qa-board/index.js")),
+  "quick-quiz": lazy(() => import("./quick-quiz/index.js")),
 };
 
 /**

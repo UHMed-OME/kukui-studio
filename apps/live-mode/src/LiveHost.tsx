@@ -5,11 +5,23 @@ import {
   loadContent,
   type ActivityKind,
 } from "@kukui/core";
-import { SchemaRegistry, type SchemaRegistryKey, type StrawPollConfig } from "@kukui/schemas";
+import {
+  SchemaRegistry,
+  type SchemaRegistryKey,
+  type StrawPollConfig,
+  type ConfidenceMeterConfig,
+  type WordCloudConfig,
+  type QABoardConfig,
+  type QuickQuizConfig,
+} from "@kukui/schemas";
 import type { LiveRoomHandle, Presence } from "@kukui/live";
 import { InstructorConsole, type ConfigSummary } from "./InstructorConsole.js";
 import { StudentParticipant } from "./StudentParticipant.js";
 import { StrawPollLive } from "./activities/StrawPollLive.js";
+import { ConfidenceMeterLive } from "./activities/ConfidenceMeterLive.js";
+import { WordCloudLive } from "./activities/WordCloudLive.js";
+import { QABoardLive } from "./activities/QABoardLive.js";
+import { QuickQuizLive } from "./activities/QuickQuizLive.js";
 
 export type LiveHostProps = {
   /** Activity kind to host. Must be a key in `SchemaRegistry`. */
@@ -165,16 +177,41 @@ export function LiveHost({
   // first; future activities (TBL Round, Live Timeline) add their own
   // dispatch branch. The generic Instructor/Student split below is the
   // shell for kinds that don't yet have a bespoke live runtime.
-  if (kind === "straw-poll" && loadState.status === "ready") {
-    return (
-      <StrawPollLive
-        room={room}
-        presence={presence}
-        role={role}
-        config={loadState.config as StrawPollConfig}
-        onLeave={onLeave}
-      />
-    );
+  if (loadState.status === "ready") {
+    const liveProps = {
+      room,
+      presence,
+      role,
+      onLeave,
+    } as const;
+    if (kind === "straw-poll") {
+      return (
+        <StrawPollLive {...liveProps} config={loadState.config as StrawPollConfig} />
+      );
+    }
+    if (kind === "confidence-meter") {
+      return (
+        <ConfidenceMeterLive
+          {...liveProps}
+          config={loadState.config as ConfidenceMeterConfig}
+        />
+      );
+    }
+    if (kind === "word-cloud") {
+      return (
+        <WordCloudLive {...liveProps} config={loadState.config as WordCloudConfig} />
+      );
+    }
+    if (kind === "qa-board") {
+      return (
+        <QABoardLive {...liveProps} config={loadState.config as QABoardConfig} />
+      );
+    }
+    if (kind === "quick-quiz") {
+      return (
+        <QuickQuizLive {...liveProps} config={loadState.config as QuickQuizConfig} />
+      );
+    }
   }
 
   if (role === "instructor") {

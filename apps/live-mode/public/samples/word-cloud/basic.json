@@ -1,0 +1,14 @@
+{
+  "version": "1.0",
+  "title": "One word",
+  "prompt": "Sum up today's lecture in one or two words.",
+  "submissionsPerStudent": 2,
+  "maxWordsPerSubmission": 2,
+  "maxCharsPerSubmission": 24,
+  "behaviour": { "showLiveResultsToStudents": true, "caseSensitive": false },
+  "live": {
+    "joinKey": "lecture-wrap-fall25",
+    "adminKey": "demo-admin-key-replace-me",
+    "signaling": "nostr"
+  }
+}

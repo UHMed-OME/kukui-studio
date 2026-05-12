@@ -82,6 +82,10 @@ const BLOOM_BY_KIND: Partial<Record<ActivityKind, BloomLevel>> = {
   "reflection-prompt": "evaluate",
   osce: "evaluate",
   "straw-poll": "evaluate",
+  "confidence-meter": "evaluate",
+  "qa-board": "evaluate",
+  "quick-quiz": "evaluate",
+  "word-cloud": "remember",
   // Create — produce original work
   "audio-recording": "create",
 };

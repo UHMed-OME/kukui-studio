@@ -38,6 +38,11 @@
     "./components/osce": "./src/components/osce/index.ts",
     "./components/crossword": "./src/components/crossword/index.ts",
     "./components/straw-poll": "./src/components/straw-poll/index.ts",
+    "./components/confidence-meter": "./src/components/confidence-meter/index.ts",
+    "./components/word-cloud": "./src/components/word-cloud/index.ts",
+    "./components/qa-board": "./src/components/qa-board/index.ts",
+    "./components/quick-quiz": "./src/components/quick-quiz/index.ts",
+    "./components/_live-preview": "./src/components/_live-preview/index.ts",
     "./components/_stub": "./src/components/_stub/index.ts",
     "./components/*": "./src/components/*"
   },

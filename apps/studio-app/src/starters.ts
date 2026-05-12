@@ -396,6 +396,58 @@ export const STARTERS: Record<ActivityKind, unknown> = {
       signaling: "nostr",
     },
   },
+  "confidence-meter": {
+    version: "1.0",
+    title: "Confidence rating",
+    prompt: "How confident are you about today's material?",
+    scale: {
+      min: 0,
+      max: 100,
+      step: 1,
+      lowLabel: "Lost",
+      highLabel: "Could teach it",
+      unit: "%",
+    },
+    behaviour: { showLiveResultsToStudents: true, allowChangeRating: true },
+    live: { joinKey: "", adminKey: "", signaling: "nostr" },
+  },
+  "word-cloud": {
+    version: "1.0",
+    title: "Word cloud",
+    prompt: "Sum up the lecture in one or two words.",
+    submissionsPerStudent: 2,
+    maxWordsPerSubmission: 2,
+    maxCharsPerSubmission: 24,
+    behaviour: { showLiveResultsToStudents: true, caseSensitive: false },
+    live: { joinKey: "", adminKey: "", signaling: "nostr" },
+  },
+  "qa-board": {
+    version: "1.0",
+    title: "Class Q&A board",
+    prompt: "Post any questions you have during lecture — upvote the ones you also want answered.",
+    maxQuestionsPerStudent: 5,
+    maxQuestionLength: 240,
+    behaviour: { allowAnonymous: true, allowUpvoteOwn: false, showAnsweredBelow: true },
+    live: { joinKey: "", adminKey: "", signaling: "nostr" },
+  },
+  "quick-quiz": {
+    version: "1.0",
+    title: "Quick check",
+    prompt: "Which artery supplies the inferior wall of the left ventricle in most patients?",
+    choices: [
+      { id: "rca", label: "Right coronary artery (RCA)", correct: true },
+      { id: "lad", label: "Left anterior descending (LAD)" },
+      { id: "lcx", label: "Left circumflex (LCx)" },
+      { id: "ramus", label: "Ramus intermedius" },
+    ],
+    behaviour: {
+      showLiveResultsToStudents: false,
+      revealCorrectAnswer: true,
+      allowChangeAnswer: true,
+      showNamesAtReveal: false,
+    },
+    live: { joinKey: "", adminKey: "", signaling: "nostr" },
+  },
   crossword: {
     version: "1.0",
     title: "Crossword",
@@ -442,6 +494,10 @@ export const ACTIVITY_LABELS: Record<ActivityKind, string> = {
   osce: "OSCE Clinical Encounter",
   crossword: "Crossword",
   "straw-poll": "Straw Poll (Live)",
+  "confidence-meter": "Confidence Meter (Live)",
+  "word-cloud": "Word Cloud (Live)",
+  "qa-board": "Q&A Board (Live)",
+  "quick-quiz": "Quick Quiz (Live)",
   ...PLANNED_LABELS,
 } as Record<ActivityKind, string>;
 
@@ -480,8 +536,16 @@ function randomAdminKey(): string {
  * accidentally ship with the same admin key. Existing non-empty keys
  * are preserved.
  */
+const LIVE_KIND_SET = new Set<ActivityKind>([
+  "straw-poll",
+  "confidence-meter",
+  "word-cloud",
+  "qa-board",
+  "quick-quiz",
+]);
+
 export function ensureFreshKeys(kind: ActivityKind, value: unknown): unknown {
-  if (kind !== "straw-poll") return value;
+  if (!LIVE_KIND_SET.has(kind)) return value;
   if (!value || typeof value !== "object") return value;
   const obj = value as Record<string, unknown>;
   const live = (obj.live && typeof obj.live === "object"

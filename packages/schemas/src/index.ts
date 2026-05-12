@@ -69,6 +69,13 @@ export { DDxTreeConfigSchema, type DDxTreeConfig } from "./ddx-tree.js";
 export { OSCEConfigSchema, type OSCEConfig } from "./osce.js";
 export { CrosswordConfigSchema, type CrosswordConfig } from "./crossword.js";
 export { StrawPollConfigSchema, type StrawPollConfig } from "./straw-poll.js";
+export {
+  ConfidenceMeterConfigSchema,
+  type ConfidenceMeterConfig,
+} from "./confidence-meter.js";
+export { WordCloudConfigSchema, type WordCloudConfig } from "./word-cloud.js";
+export { QABoardConfigSchema, type QABoardConfig } from "./qa-board.js";
+export { QuickQuizConfigSchema, type QuickQuizConfig } from "./quick-quiz.js";
 export { StubConfigSchema, type StubConfig } from "./stub.js";
 
 import { MultipleChoiceConfigSchema } from "./multiple-choice.js";
@@ -96,6 +103,10 @@ import { DDxTreeConfigSchema } from "./ddx-tree.js";
 import { OSCEConfigSchema } from "./osce.js";
 import { CrosswordConfigSchema } from "./crossword.js";
 import { StrawPollConfigSchema } from "./straw-poll.js";
+import { ConfidenceMeterConfigSchema } from "./confidence-meter.js";
+import { WordCloudConfigSchema } from "./word-cloud.js";
+import { QABoardConfigSchema } from "./qa-board.js";
+import { QuickQuizConfigSchema } from "./quick-quiz.js";
 
 /**
  * Map of activity-kind → Zod schema. Keys match `ActivityKind` in
@@ -129,6 +140,10 @@ export const SchemaRegistry = {
   osce: OSCEConfigSchema,
   crossword: CrosswordConfigSchema,
   "straw-poll": StrawPollConfigSchema,
+  "confidence-meter": ConfidenceMeterConfigSchema,
+  "word-cloud": WordCloudConfigSchema,
+  "qa-board": QABoardConfigSchema,
+  "quick-quiz": QuickQuizConfigSchema,
 } as const;
 
 export type SchemaRegistryKey = keyof typeof SchemaRegistry;
