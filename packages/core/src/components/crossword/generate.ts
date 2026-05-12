@@ -187,6 +187,13 @@ export function generateLayout(entries: readonly InputEntry[], seed: number): La
   for (let i = 0; i < ATTEMPTS; i += 1) {
     const subseed = Math.floor(subseedRand() * 0x7fffffff);
     const candidate = attemptLayout(entries, subseed);
+    // Defense-in-depth: discard any candidate where two placements
+    // disagree on a cell. The placer is supposed to prevent this via
+    // `tryPlace`, but if a future regression slips through, an
+    // inconsistent layout is worse than no layout — the puzzle would
+    // appear solvable but no answer would satisfy both intersecting
+    // words. Skip silently and let the next sub-seed try.
+    if (!isLayoutConsistent(candidate)) continue;
     if (!best) {
       best = candidate;
       if (candidate.unplaced.length === 0) break;
@@ -205,6 +212,21 @@ export function generateLayout(entries: readonly InputEntry[], seed: number): La
     }
   }
   return best ?? { rows: 0, cols: 0, placements: [], unplaced: [] };
+}
+
+function isLayoutConsistent(layout: Layout): boolean {
+  const byCell = new Map<string, string>();
+  for (const p of layout.placements) {
+    for (let i = 0; i < p.term.length; i += 1) {
+      const r = p.direction === "across" ? p.row : p.row + i;
+      const c = p.direction === "across" ? p.col + i : p.col;
+      const k = `${r},${c}`;
+      const prev = byCell.get(k);
+      if (prev !== undefined && prev !== p.term[i]) return false;
+      byCell.set(k, p.term[i] as string);
+    }
+  }
+  return true;
 }
 
 function attemptLayout(entries: readonly InputEntry[], seed: number): Layout {
