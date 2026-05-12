@@ -530,7 +530,7 @@ export function App() {
             .sort((a, b) => ACTIVITY_LABELS[a].localeCompare(ACTIVITY_LABELS[b]));
           if (kindsAtLevel.length === 0) return null;
           return (
-            <div key={level} className="kukui-studio-sidebar__group">
+            <div key={level} className="kukui-studio-sidebar__group" data-bloom={level}>
               <h2 className="kukui-studio-sidebar__heading">{BLOOM_LABELS[level]}</h2>
               <p className="kukui-studio-sidebar__tagline">{BLOOM_TAGLINES[level]}</p>
               <ul className="kukui-studio-sidebar__list">

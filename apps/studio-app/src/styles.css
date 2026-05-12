@@ -56,6 +56,43 @@
   --font-family-sans: "Inter Variable", ui-sans-serif, system-ui, -apple-system,
     Segoe UI, Helvetica, Arial, sans-serif;
   --font-family-mono: ui-monospace, "SF Mono", Menlo, "Cascadia Code", monospace;
+
+  /* Bloom-level category colors. Muted on purpose — they're indicator dots
+     and low-alpha active tints, not accents. Active rows get
+     color-mix(...) at ~12% over the Bloom color so the category cue is
+     readable but never competes with the actual content. */
+  --bloom-remember: #c2861c; /* warm amber */
+  --bloom-understand: #5d8a4a; /* sage */
+  --bloom-apply: #b5532a; /* terracotta */
+  --bloom-analyze: #7a5680; /* dusty plum */
+  --bloom-evaluate: #2e6e41; /* kalo (matches --color-success) */
+  --bloom-create: #7b4324; /* kukui (matches --color-primary) */
+}
+
+/* Bloom-level themed surfaces. Anything inside a [data-bloom=…] subtree
+   can read `var(--bloom-color)` — dots, active-row tints, icon hover
+   colors. Falls back to text-muted so planned/uncategorized rows still
+   render a neutral dot. */
+[data-bloom] {
+  --bloom-color: var(--color-text-muted);
+}
+[data-bloom="remember"] {
+  --bloom-color: var(--bloom-remember);
+}
+[data-bloom="understand"] {
+  --bloom-color: var(--bloom-understand);
+}
+[data-bloom="apply"] {
+  --bloom-color: var(--bloom-apply);
+}
+[data-bloom="analyze"] {
+  --bloom-color: var(--bloom-analyze);
+}
+[data-bloom="evaluate"] {
+  --bloom-color: var(--bloom-evaluate);
+}
+[data-bloom="create"] {
+  --bloom-color: var(--bloom-create);
 }
 
 html,
@@ -537,72 +574,63 @@ button {
 .kukui-studio-sidebar__btn {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   gap: var(--spacing-sm);
   width: 100%;
-  min-height: 44px;
-  padding: 10px 14px;
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
+  min-height: 36px;
+  padding: 7px 10px;
+  background: transparent;
+  border: 1px solid transparent;
   border-radius: var(--radius-md);
   text-align: left;
-  font-size: var(--font-size-answer);
+  font-size: var(--font-size-caption);
   color: var(--color-text-primary);
   cursor: pointer;
-  box-shadow: 0 1px 2px rgb(0 0 0 / 0.04);
   transition:
     background-color 120ms ease,
-    border-color 120ms ease,
-    box-shadow 120ms ease,
-    transform 120ms ease;
+    color 120ms ease;
 }
 
-/* Chevron — pseudo-element so we don't have to touch the JSX. Drifts right
-   on hover/active to reinforce the "clickable, opens this activity" cue. */
+/* Chevron — pseudo-element so we don't have to touch the JSX. Hidden by
+   default; surfaces on hover + active as a quiet "clickable" cue. */
 .kukui-studio-sidebar__btn::after {
   content: "›";
-  font-size: 18px;
-  font-weight: 700;
+  font-size: 16px;
+  font-weight: 600;
   color: var(--color-text-muted);
   flex-shrink: 0;
-  transition: transform 120ms ease, color 120ms ease;
+  opacity: 0;
+  transition: opacity 120ms ease, color 120ms ease;
 }
 
 .kukui-studio-sidebar__btn:hover {
   background: var(--color-surface);
-  border-color: var(--color-primary);
-  box-shadow: 0 4px 12px rgb(123 67 36 / 0.10);
-  transform: translateY(-1px);
 }
 
 .kukui-studio-sidebar__btn:hover::after {
-  color: var(--color-primary);
-  transform: translateX(2px);
+  opacity: 1;
 }
 
 .kukui-studio-sidebar__btn:focus-visible {
   outline: 2px solid var(--color-primary);
-  outline-offset: 2px;
+  outline-offset: -2px;
 }
 
 .kukui-studio-sidebar__btn.is-active {
-  background: var(--color-primary-soft);
-  border-color: var(--color-primary);
+  background: color-mix(in oklab, var(--bloom-color) 12%, transparent);
   color: var(--color-primary);
-  font-weight: 700;
-  box-shadow: 0 4px 12px rgb(123 67 36 / 0.15);
+  font-weight: 600;
 }
 
 .kukui-studio-sidebar__btn.is-active::after {
+  opacity: 1;
   color: var(--color-primary);
-  transform: translateX(2px);
 }
 
 .kukui-studio-sidebar__btn-icon {
-  flex: 0 0 16px;
-  width: 16px;
-  height: 16px;
-  color: var(--color-text-secondary);
+  flex: 0 0 14px;
+  width: 14px;
+  height: 14px;
+  color: var(--color-text-muted);
   transition: color 120ms ease;
 }
 
@@ -613,7 +641,7 @@ button {
 
 .kukui-studio-sidebar__btn:hover .kukui-studio-sidebar__btn-icon,
 .kukui-studio-sidebar__btn.is-active .kukui-studio-sidebar__btn-icon {
-  color: var(--color-primary);
+  color: var(--bloom-color);
 }
 
 /* (Sidebar mobile styling is handled by the dedicated mobile-picker
@@ -2761,10 +2789,6 @@ button {
 }
 
 .kukui-studio-sidebar__btn--planned {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--spacing-sm, 8px);
   opacity: 0.78;
 }
 
@@ -2863,25 +2887,16 @@ html[data-theme="glass"] .kukui-studio-panel-header {
   border-bottom-color: var(--color-border-glass-deep);
 }
 
-/* Sidebar buttons get a glass treatment that brightens on hover/active */
-html[data-theme="glass"] .kukui-studio-sidebar__btn {
-  background: rgba(255, 255, 255, 0.7);
-  border-color: rgba(255, 255, 255, 0.55);
-  box-shadow: 0 2px 6px rgb(123 67 36 / 0.06);
-}
-
+/* Glass theme: sidebar buttons follow the base Editorial-Calm treatment
+   (transparent idle, surface-tint on hover, Bloom-color tint on active).
+   No per-row borders or shadows in the glass theme either — the chrome
+   stays uniform across themes. */
 html[data-theme="glass"] .kukui-studio-sidebar__btn:hover {
-  background: rgba(255, 255, 255, 0.95);
-  border-color: var(--color-primary);
-  box-shadow: 0 6px 16px rgb(123 67 36 / 0.14);
+  background: rgba(255, 255, 255, 0.7);
 }
 
 html[data-theme="glass"] .kukui-studio-sidebar__btn.is-active {
-  background: rgba(255, 255, 255, 0.95);
-  border-color: var(--color-primary);
-  box-shadow:
-    0 6px 18px rgb(123 67 36 / 0.16),
-    inset 0 1px 0 rgba(255, 255, 255, 0.7);
+  background: color-mix(in oklab, var(--bloom-color) 14%, rgba(255, 255, 255, 0.4));
 }
 
 /* Toolbar buttons */
