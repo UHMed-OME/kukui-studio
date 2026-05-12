@@ -46,7 +46,7 @@
   width: 100%;
   aspect-ratio: 16 / 10;
   background: var(--color-tip-bg, #f2f0e8);
-  border: 2px dashed var(--color-border-hover);
+  border: 1.5px solid var(--color-border-hover);
   border-radius: var(--radius-md, 8px);
   color: var(--color-text-secondary);
   font-size: var(--font-size-meta, 13px);
@@ -117,7 +117,7 @@
 
 .kukui-h3d__fallback-button.is-reveal {
   border-color: var(--color-success);
-  border-style: dashed;
+  border-style: solid;
 }
 
 .kukui-h3d__fallback-icon {
@@ -266,12 +266,12 @@
 .kukui-pin--reveal {
   background: var(--color-success, #2e6e41);
   opacity: 0.85;
-  border-style: dashed;
+  border-style: solid;
 }
 
 .kukui-pin.is-behind {
   opacity: 0.55;
-  border-style: dashed;
+  border-style: solid;
   background: rgba(28, 30, 32, 0.7);
 }
 

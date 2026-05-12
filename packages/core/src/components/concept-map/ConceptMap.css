@@ -208,7 +208,7 @@
 .kukui-cm__node.is-edge-start {
   border-color: var(--color-primary-hover, #9b5830);
   background: var(--color-primary-soft);
-  outline: 2px dashed var(--color-primary, #7b4324);
+  outline: 2px solid var(--color-primary, #7b4324);
   outline-offset: 2px;
 }
 

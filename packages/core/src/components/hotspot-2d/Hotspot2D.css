@@ -45,7 +45,7 @@
 .kukui-h2d__hotspot {
   position: absolute;
   background: rgb(123 67 36 / 0.08);
-  border: 2px dashed var(--color-primary);
+  border: 1.5px solid var(--color-primary);
   border-radius: 6px;
   cursor: pointer;
   transition:
@@ -82,7 +82,7 @@
 
 .kukui-h2d__hotspot.is-reveal {
   border-color: var(--color-success);
-  border-style: dashed;
+  border-style: solid;
   background: var(--color-success-soft);
 }
 
@@ -154,7 +154,7 @@
 
 .kukui-h2d__fb-btn.is-reveal {
   border-color: var(--color-success);
-  border-style: dashed;
+  border-style: solid;
 }
 
 .kukui-h2d__feedback {

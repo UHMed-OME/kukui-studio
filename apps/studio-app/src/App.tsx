@@ -413,9 +413,18 @@ export function App() {
             aria-hidden="true"
           />
           <div className="kukui-studio-brand-text">
-            <h1 className="kukui-studio-title">Kukui Studio</h1>
+            <h1 className="kukui-studio-title">
+              Kukui
+              <span
+                className="kukui-studio-title__pronunciation"
+                aria-label="pronounced koo-KOO-ee"
+              >
+                /koo-KOO-ee/
+              </span>
+              <span className="kukui-studio-title__studio">Studio</span>
+            </h1>
             <p className="kukui-studio-subtitle">
-              Interactive learning activities for Lamakū.
+              Interactive learning activities for Lamakū and other LMS.
             </p>
           </div>
         </div>
@@ -795,13 +804,7 @@ export function App() {
           >
             UH JABSOM
           </a>{" "}
-          Office of Medical Education.{" "}
-          <span
-            className="kukui-studio-footer__pronunciation"
-            aria-label="Kukui is pronounced koo-KOO-ee"
-          >
-            (Kukui · /koo-KOO-ee/)
-          </span>
+          Office of Medical Education.
         </p>
         <nav className="kukui-studio-footer__nav" aria-label="Project links">
           <a

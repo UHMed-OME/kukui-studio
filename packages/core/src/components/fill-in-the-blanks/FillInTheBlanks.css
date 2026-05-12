@@ -91,7 +91,7 @@
 
 .kukui-fib__input.is-reveal {
   border-color: var(--color-success, #2e6e41);
-  border-style: dashed;
+  border-style: solid;
   background: var(--color-success-soft);
 }
 

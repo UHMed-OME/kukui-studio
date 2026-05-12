@@ -67,7 +67,7 @@
 /* Zones are <button> elements — reset the native button look. */
 .kukui-dnd__zone {
   position: absolute;
-  border: 2px dashed var(--color-border-hover, #bbae9a);
+  border: 1.5px solid var(--color-border-hover, #bbae9a);
   border-radius: var(--radius-md, 8px);
   display: flex;
   flex-wrap: wrap;
@@ -132,7 +132,7 @@
   min-height: 200px;
   padding: var(--spacing-md, 12px);
   background: var(--color-tip-bg, #f2f0e8);
-  border: 2px dashed var(--color-border);
+  border: 1.5px solid var(--color-border);
   border-radius: var(--radius-md, 8px);
 }
 

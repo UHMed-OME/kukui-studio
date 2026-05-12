@@ -320,7 +320,7 @@
 
 .kukui-lp__choice.is-reveal {
   border-color: var(--color-success, #2e6e41);
-  border-style: dashed;
+  border-style: solid;
 }
 
 .kukui-lp__choice-text {

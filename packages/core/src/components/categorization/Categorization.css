@@ -47,7 +47,7 @@
   min-height: 64px;
   padding: var(--spacing-md, 12px);
   background: var(--color-tip-bg, #f2f0e8);
-  border: 2px dashed var(--color-border);
+  border: 1px solid color-mix(in oklab, var(--color-border) 50%, transparent);
   border-radius: var(--radius-md, 8px);
   transition: background-color 150ms ease;
 }
@@ -74,7 +74,7 @@
   flex-direction: column;
   min-height: 160px;
   background: var(--color-tip-bg, #f2f0e8);
-  border: 2px dashed var(--color-border-hover, #bbae9a);
+  border: 1px solid color-mix(in oklab, var(--color-border-hover, #bbae9a) 50%, transparent);
   border-radius: var(--radius-md, 8px);
   transition: background-color 150ms ease;
 }

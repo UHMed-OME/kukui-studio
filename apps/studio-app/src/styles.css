@@ -12,6 +12,28 @@
   font-display: swap;
 }
 
+/* Source Serif 4 Variable — self-hosted at /fonts/SourceSerif4Variable-
+   Roman.woff2 (~420KB). Used only for the brand wordmark and key
+   editorial moments (Bloom group headings, panel titles, the
+   pronunciation guide). Carries the "Hawaiian editorial publication"
+   feel that the cream + brown palette is reaching for. Inter still
+   handles all body/UI text. */
+@font-face {
+  font-family: "Source Serif 4 Variable";
+  src: url("/fonts/SourceSerif4Variable-Roman.woff2") format("woff2");
+  font-weight: 200 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Source Serif 4 Variable";
+  src: url("/fonts/SourceSerif4Variable-Italic.woff2") format("woff2");
+  font-weight: 200 900;
+  font-style: italic;
+  font-display: swap;
+}
+
 @theme {
   --color-bg: #fcf8f2;
   --color-surface: #ffffff;
@@ -55,6 +77,9 @@
 
   --font-family-sans: "Inter Variable", ui-sans-serif, system-ui, -apple-system,
     Segoe UI, Helvetica, Arial, sans-serif;
+  --font-family-display: "Source Serif 4 Variable", "Iowan Old Style",
+    "Apple Garamond", Baskerville, "Times New Roman", "Droid Serif", Times,
+    "Source Serif Pro", serif;
   --font-family-mono: ui-monospace, "SF Mono", Menlo, "Cascadia Code", monospace;
 
   /* Bloom-level category colors. Muted on purpose — they're indicator dots
@@ -190,13 +215,42 @@ button {
   display: block;
 }
 
+/* Brand wordmark — set like a dictionary entry: headword + phonetic
+   pronunciation + subhead "STUDIO" in tracked caps. The pronunciation
+   guide is the single typographic moment in the header. */
 .kukui-studio-title {
   margin: 0;
-  font-size: var(--font-size-title);
-  font-weight: 650;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0 var(--spacing-sm);
+  font-family: var(--font-family-display);
+  font-size: 30px;
+  font-weight: 500;
   color: var(--color-text-primary);
-  line-height: 1.15;
+  line-height: 1;
   letter-spacing: -0.015em;
+}
+
+.kukui-studio-title__pronunciation {
+  font-family: var(--font-family-display);
+  font-style: italic;
+  font-weight: 400;
+  font-size: 15px;
+  color: var(--color-text-muted);
+  letter-spacing: 0;
+  white-space: nowrap;
+}
+
+.kukui-studio-title__studio {
+  width: 100%;
+  margin-top: 4px;
+  font-family: var(--font-family-sans);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
 }
 
 .kukui-studio-subtitle {
@@ -548,13 +602,14 @@ button {
 }
 
 .kukui-studio-sidebar__heading {
-  font-size: var(--font-size-micro);
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--color-primary);
+  font-family: var(--font-family-display);
+  font-size: 15px;
+  font-weight: 500;
+  letter-spacing: 0;
+  color: var(--bloom-color, var(--color-primary));
   margin: 0;
   padding: 0 var(--spacing-sm);
+  text-transform: none;
 }
 
 .kukui-studio-sidebar__tagline {
@@ -1160,8 +1215,9 @@ button {
 
 .ks-object__title {
   margin: 0 0 var(--spacing-md);
-  font-size: var(--font-size-subtitle);
-  font-weight: 600;
+  font-family: var(--font-family-display);
+  font-size: 19px;
+  font-weight: 500;
   color: var(--color-text-primary);
   letter-spacing: -0.005em;
 }
@@ -1170,14 +1226,13 @@ button {
  * a subtle "Advanced" tag so authors know they can skip it on the
  * happy path. */
 .ks-object--advanced {
-  background: var(--color-surface);
-  border: 1px dashed var(--color-border);
+  background: color-mix(in oklab, var(--color-surface) 60%, transparent);
+  border: 1px solid color-mix(in oklab, var(--color-border) 50%, transparent);
   border-radius: var(--radius-md);
   padding: var(--spacing-sm) var(--spacing-md);
 }
 
 .ks-object--advanced[open] {
-  border-style: solid;
   padding: var(--spacing-md) var(--spacing-lg);
 }
 
@@ -1326,13 +1381,12 @@ button {
 }
 
 .ks-array__title {
-  margin: 0;
-  font-size: var(--font-size-subtitle);
-  font-weight: 700;
+  margin: 0 0 var(--spacing-xs);
+  font-family: var(--font-family-display);
+  font-size: 19px;
+  font-weight: 500;
   color: var(--color-text-primary);
-  border-bottom: 2px solid var(--color-border);
-  padding-bottom: 6px;
-  margin-bottom: 4px;
+  letter-spacing: -0.005em;
 }
 
 .ks-array__desc {
@@ -1439,7 +1493,7 @@ button {
   margin: 0;
   padding: var(--spacing-md);
   background: var(--color-tip-bg);
-  border: 2px dashed var(--color-border);
+  border: 1px solid color-mix(in oklab, var(--color-border) 60%, transparent);
   border-radius: var(--radius-md);
   font-size: var(--font-size-meta);
   color: var(--color-text-secondary);
@@ -1448,14 +1502,14 @@ button {
 
 .ks-array__add {
   align-self: stretch;
-  min-height: 44px;
+  min-height: 38px;
   padding: 8px 14px;
-  background: transparent;
+  background: color-mix(in oklab, var(--color-primary) 8%, transparent);
   color: var(--color-primary);
-  border: 2px dashed var(--color-primary);
+  border: 1px solid transparent;
   border-radius: var(--radius-md);
-  font-size: var(--font-size-answer);
-  font-weight: 700;
+  font-size: var(--font-size-caption);
+  font-weight: 600;
   margin-top: var(--spacing-xs);
   transition: background-color 120ms ease;
 }
@@ -1934,7 +1988,7 @@ button {
 
 .ks-edit-dnd__zone {
   position: absolute;
-  border: 2px dashed var(--color-primary);
+  border: 1.5px solid var(--color-primary);
   background: var(--color-primary-soft);
   border-radius: 6px;
   display: flex;
@@ -2041,7 +2095,7 @@ button {
 
 .ks-edit-dnd__draft {
   position: absolute;
-  border: 2px dashed var(--color-primary);
+  border: 1.5px solid var(--color-primary);
   background: rgb(123 67 36 / 0.18);
   border-radius: 6px;
   pointer-events: none;
@@ -2231,8 +2285,8 @@ button {
 .ks-edit-dnd__chip-row-image-clear {
   font-size: var(--font-size-meta);
   color: var(--color-primary);
-  background: none;
-  border: 1px dashed var(--color-primary);
+  background: var(--color-primary-soft);
+  border: 1px solid transparent;
   border-radius: var(--radius-sm);
   padding: 2px 8px;
   cursor: pointer;
@@ -2384,7 +2438,7 @@ button {
 
 .ks-edit-canvas__draft {
   position: absolute;
-  border: 2px dashed var(--color-primary);
+  border: 1.5px solid var(--color-primary);
   background: rgb(123 67 36 / 0.18);
   border-radius: 6px;
   pointer-events: none;
@@ -2396,7 +2450,7 @@ button {
 
 .ks-edit-rect {
   position: absolute;
-  border: 2px dashed var(--color-primary);
+  border: 1.5px solid var(--color-primary);
   background: var(--color-primary-soft);
   border-radius: 6px;
   display: flex;
@@ -2633,9 +2687,9 @@ button {
 }
 
 .ks-file.is-drophover {
-  border-style: dashed;
   border-color: var(--color-primary);
   background: var(--color-primary-soft);
+  box-shadow: 0 0 0 3px var(--color-primary-soft);
 }
 
 .ks-file__url {
@@ -2823,22 +2877,31 @@ button {
 /* =================================================================== */
 
 html[data-theme="glass"] body {
+  /* Four-stop ambient gradient — top-left amber (kukui-nut warmth),
+     top-right rose (sunset), bottom-right blue-grey (ocean haze),
+     bottom-left kalo-green (taro-leaf). Stronger alpha than the
+     original pass so the cream base actually reads as alive instead
+     of beige. */
   background:
-    radial-gradient(at 15% 12%, rgba(255, 224, 198, 0.55) 0%, transparent 45%),
-    radial-gradient(at 85% 8%, rgba(248, 214, 230, 0.4) 0%, transparent 50%),
-    radial-gradient(at 70% 92%, rgba(208, 224, 232, 0.4) 0%, transparent 55%),
-    linear-gradient(180deg, #fdf7ed 0%, #fbeee0 100%);
+    radial-gradient(at 12% 8%, rgba(255, 210, 168, 0.75) 0%, transparent 48%),
+    radial-gradient(at 88% 12%, rgba(248, 200, 220, 0.55) 0%, transparent 52%),
+    radial-gradient(at 84% 88%, rgba(196, 218, 230, 0.55) 0%, transparent 56%),
+    radial-gradient(at 8% 92%, rgba(180, 214, 175, 0.45) 0%, transparent 52%),
+    linear-gradient(180deg, #fdf6ea 0%, #f9e9d6 100%);
   background-attachment: fixed;
 }
 
 html[data-theme="glass"] {
-  --color-surface-glass: rgba(255, 255, 255, 0.62);
-  --color-surface-glass-strong: rgba(255, 255, 255, 0.82);
+  /* Warm-tinted glass instead of pure white — picks up the cream
+     undertone of the body, gives panels a slight cream cast vs. the
+     ambient gradient behind them. */
+  --color-surface-glass: rgba(253, 248, 240, 0.68);
+  --color-surface-glass-strong: rgba(253, 248, 240, 0.86);
   --color-border-glass: rgba(255, 255, 255, 0.55);
   --color-border-glass-deep: rgba(123, 67, 36, 0.10);
   --shadow-glass-card: 0 12px 32px rgb(123 67 36 / 0.08), 0 2px 8px rgb(0 0 0 / 0.04);
   --shadow-glass-pop: 0 18px 48px rgb(123 67 36 / 0.14), 0 4px 12px rgb(0 0 0 / 0.05);
-  --backdrop-glass: blur(22px) saturate(170%);
+  --backdrop-glass: blur(20px) saturate(180%);
 }
 
 html[data-theme="glass"] .kukui-studio-header,
@@ -3526,7 +3589,8 @@ html[data-theme="glass"] .kukui-studio-footer {
   .kukui-studio-ai__spinner,
   .kukui-studio-ai__spinner--lg {
     animation: none;
-    border: 2px dashed currentColor;
+    border: 2px solid color-mix(in oklab, currentColor 35%, transparent);
+    border-top-color: currentColor;
   }
 }
 
@@ -3737,8 +3801,8 @@ html[data-theme="glass"] .kukui-studio-footer {
   display: flex;
   flex-direction: column;
   gap: var(--spacing-md);
-  background: var(--color-surface-alt);
-  border: 1px dashed var(--color-border);
+  background: color-mix(in oklab, var(--color-surface-alt) 70%, transparent);
+  border: 1px solid color-mix(in oklab, var(--color-border) 50%, transparent);
   border-radius: var(--radius-card);
   padding: var(--spacing-2xl);
   align-items: flex-start;

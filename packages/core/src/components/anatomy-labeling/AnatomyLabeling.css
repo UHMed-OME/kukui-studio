@@ -123,7 +123,7 @@
   min-height: 64px;
   padding: var(--spacing-md, 12px);
   background: var(--color-tip-bg, #f2f0e8);
-  border: 2px dashed var(--color-border, #dad2c6);
+  border: 1.5px solid var(--color-border, #dad2c6);
   border-radius: var(--radius-md, 8px);
 }
 

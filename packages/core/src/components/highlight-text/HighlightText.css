@@ -104,7 +104,7 @@
 
 .kukui-ht__token.is-reveal {
   border-color: var(--color-success, #2e6e41);
-  border-style: dashed;
+  border-style: solid;
   background: transparent;
 }
 
