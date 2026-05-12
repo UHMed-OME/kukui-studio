@@ -93,6 +93,20 @@ type PreloadedConfigLive = {
   relayUrls?: string[];
 };
 
+/**
+ * Generate a per-session anonymous handle ("Guest-A37"). Used as the
+ * display name in presence broadcasts so a real student name never
+ * touches the federated Nostr / MQTT relay, which is observable to any
+ * peer watching the same room hash. Letter + 2-digit suffix gives
+ * 2,600 distinct handles — well above any realistic classroom size, so
+ * collisions inside a single room are vanishingly rare.
+ */
+function pickAnonymousHandle(): string {
+  const letter = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".charAt(Math.floor(Math.random() * 26));
+  const suffix = Math.floor(Math.random() * 100).toString().padStart(2, "0");
+  return `Guest-${letter}${suffix}`;
+}
+
 function readConfigSignaling(config: unknown): PreloadedConfigLive | null {
   if (!config || typeof config !== "object") return null;
   const live = (config as Record<string, unknown>).live;
@@ -155,7 +169,6 @@ const LIVE_AUTO_LOAD_KINDS = new Set<ActivityKind>([
  */
 export function App() {
   const [code, setCode] = useState("");
-  const [name, setName] = useState("");
   const [role, setRole] = useState<"instructor" | "student">("student");
   const [signalingBackend, setSignalingBackend] = useState<SignalingBackend>(
     () => readBackendPreference(),
@@ -192,10 +205,15 @@ export function App() {
 
   const join = async () => {
     setError(null);
-    if (name.trim().length === 0) {
-      setError("Pick a display name first.");
-      return;
-    }
+    // Identity is anonymous-by-design. The federated relay (Nostr / MQTT
+    // public broker) is observable to any peer watching the same room
+    // hash, so we never transmit a real name. Each session gets a fresh
+    // anonymous handle like "Guest-A37" — distinct enough for the
+    // instructor's presence list, opaque to bystanders. If the engine
+    // ever runs inside a SCORM iframe we'd swap to the LMS-side
+    // identifier through a different code path; the relay still wouldn't
+    // see it.
+    const effectiveName = pickAnonymousHandle();
 
     // Two code paths depending on whether the URL preloaded a config:
     //   1. preloaded — room is derived from `config.live.joinKey`,
@@ -256,7 +274,7 @@ export function App() {
         /* private mode / SCORM sandbox — non-fatal */
       }
 
-      handle.setPresence({ name: name.trim(), role: effectiveRole });
+      handle.setPresence({ name: effectiveName, role: effectiveRole });
       setRoom(handle);
       setRole(effectiveRole);
       setActivityKind(activityForConfig);
@@ -359,20 +377,9 @@ export function App() {
             </h1>
           </div>
           <p className="live-subtitle">
-            Joining as <strong>{previewRole}</strong>. Room derived from the activity's
-            join key — no code to type.
+            Joining as <strong>{previewRole}</strong> with an anonymous handle. Room derived
+            from the activity's join key — no code to type.
           </p>
-          <div className="live-field">
-            <label htmlFor="name">Display name</label>
-            <input
-              id="name"
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="Your name (or a handle)"
-              maxLength={40}
-            />
-          </div>
           {error ? (
             <p
               role="alert"
@@ -429,17 +436,6 @@ export function App() {
             value={code}
             onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))}
             placeholder="123456"
-          />
-        </div>
-        <div className="live-field">
-          <label htmlFor="name">Display name</label>
-          <input
-            id="name"
-            type="text"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="Your name (or a handle)"
-            maxLength={40}
           />
         </div>
         <div className="live-field">
