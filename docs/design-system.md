@@ -63,16 +63,27 @@ Use these values only. Skip granularity that isn't here.
 
 ## Type scale
 
+**Family:** Inter Variable, self-hosted at `apps/studio-app/public/fonts/InterVariable.woff2` (~344KB, single file with weight axis 100–900 + slant). Loaded via `@font-face` with `font-display: swap`; falls back to `ui-sans-serif, system-ui, -apple-system, …` while the woff2 is fetching on first load.
+
+Body opt-in features: `font-feature-settings: "cv11", "ss03"` (single-storey `a`, sharper `i J l` stems). `text-rendering: optimizeLegibility` + grayscale font-smoothing. Numeric elements (badges, counts) add `font-variant-numeric: tabular-nums` to prevent digit reflow.
+
+Heading weights are **600** (formerly 700) — Inter at 700 is too dense at UI sizes. Letter-spacing tightens with size:
+
+- Display/title (16px+): `-0.015em`
+- Subtitle (15–17px): `-0.005em`
+- Body and below: 0
+- Uppercase headings (sidebar group labels): `+0.06em`
+
 | Token | px | Weight | Use |
 |---|---|---|---|
-| `display` | 28 | Bold | Activity title (hero) — use sparingly |
-| `title` | 24 | Bold | Card / section title |
-| `subtitle` | 18 | Regular | Section intro |
-| `prompt` | 16 | Regular | Question text, body |
-| `answer` | 15 | Regular | Answer button label |
-| `caption` | 14 | Regular | Tertiary info, score line |
-| `meta` | 13 | Italic / Regular | Hints, captions, fine print |
-| `micro` | 12 | Regular | Smallest, only when desperate |
+| `display` | 28 | 650 | Activity title (hero) — use sparingly |
+| `title` | 22 | 650 | Brand wordmark, card / section title (was 24; Inter is optically wider) |
+| `subtitle` | 17 | 500 | Section intro (was 18) |
+| `prompt` | 16 | 400 | Question text, body |
+| `answer` | 15 | 500 | Answer button label |
+| `caption` | 14 | 400 | Tertiary info, score line |
+| `meta` | 13 | 400–600 | Hints, panel headings, badges |
+| `micro` | 12 | 600 | Sidebar group labels (uppercase), fine print |
 
 Always set `whiteSpace = WhiteSpace.Normal` on labels that may wrap.
 

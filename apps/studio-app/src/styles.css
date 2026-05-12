@@ -1,5 +1,17 @@
 @import "tailwindcss";
 
+/* Inter Variable — self-hosted at /fonts/InterVariable.woff2 (~344KB).
+   Variable axes: weight 100–900, slant -10° to 0°. Single file for the
+   entire UI; no Google Fonts network dependency and no FOUT after the
+   first cache. */
+@font-face {
+  font-family: "Inter Variable";
+  src: url("/fonts/InterVariable.woff2") format("woff2");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
 @theme {
   --color-bg: #fcf8f2;
   --color-surface: #ffffff;
@@ -33,16 +45,16 @@
   --radius-card: 18px;
 
   --font-size-display: 28px;
-  --font-size-title: 24px;
-  --font-size-subtitle: 18px;
+  --font-size-title: 22px;
+  --font-size-subtitle: 17px;
   --font-size-prompt: 16px;
   --font-size-answer: 15px;
   --font-size-caption: 14px;
   --font-size-meta: 13px;
   --font-size-micro: 12px;
 
-  --font-family-sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Helvetica, Arial,
-    sans-serif;
+  --font-family-sans: "Inter Variable", ui-sans-serif, system-ui, -apple-system,
+    Segoe UI, Helvetica, Arial, sans-serif;
   --font-family-mono: ui-monospace, "SF Mono", Menlo, "Cascadia Code", monospace;
 }
 
@@ -56,6 +68,12 @@ body,
   font-family: var(--font-family-sans);
   font-size: var(--font-size-prompt);
   line-height: 1.5;
+  /* Inter Variable polish: cv11 = single-storey 'a' (modernizes letterforms);
+     ss03 = sharper i/J/l stems. Both subtle, both improve UI legibility. */
+  font-feature-settings: "cv11", "ss03";
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 *,
@@ -138,9 +156,10 @@ button {
 .kukui-studio-title {
   margin: 0;
   font-size: var(--font-size-title);
-  font-weight: 700;
+  font-weight: 650;
   color: var(--color-text-primary);
   line-height: 1.15;
+  letter-spacing: -0.015em;
 }
 
 .kukui-studio-subtitle {
@@ -656,8 +675,9 @@ button {
 .kukui-studio-panel__heading {
   margin: 0;
   font-size: var(--font-size-meta);
-  font-weight: 700;
+  font-weight: 600;
   color: var(--color-text-primary);
+  letter-spacing: -0.005em;
 }
 
 .kukui-studio-subtab {
@@ -690,6 +710,7 @@ button {
   padding: 4px 10px 4px 8px;
   border-radius: 999px;
   letter-spacing: 0.01em;
+  font-variant-numeric: tabular-nums;
 }
 
 .kukui-studio-badge::before {
