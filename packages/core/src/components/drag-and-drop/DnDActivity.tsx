@@ -92,7 +92,15 @@ export function DnDActivity({
   };
 
   return (
-    <div className={["kukui-dnd", `kukui-dnd--mode-${mode}`].join(" ")}>
+    <div
+      className={[
+        "kukui-dnd",
+        `kukui-dnd--mode-${mode}`,
+        state.stage === "showing-solution" ? "kukui-dnd--showing-solution" : "",
+      ]
+        .filter(Boolean)
+        .join(" ")}
+    >
       <article className="kukui-dnd__card" aria-labelledby={headingId}>
         <HeadingTag id={headingId} className="kukui-dnd__title">
           {config.title}

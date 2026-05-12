@@ -366,6 +366,29 @@
   white-space: nowrap;
 }
 
+/* Showing-solution state: each placed chip plays a brief settling
+ * animation so the author's "Show solution" button feels intentional
+ * rather than the chips just blinking into their slots. Falls back
+ * to a focus pulse when motion is reduced. */
+.kukui-dnd--showing-solution .kukui-dnd__chip.is-placed {
+  animation: kukui-dnd-settle 600ms ease-out;
+}
+
+@keyframes kukui-dnd-settle {
+  0% {
+    transform: scale(0.85);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.06);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .kukui-dnd__feedback,
   .kukui-dnd__zone,
@@ -377,5 +400,12 @@
   }
   .kukui-dnd__chip:hover:not(:disabled) {
     transform: none;
+  }
+  .kukui-dnd--showing-solution .kukui-dnd__chip.is-placed {
+    animation: kukui-dnd-pulse-focus 800ms ease-in-out;
+  }
+  @keyframes kukui-dnd-pulse-focus {
+    0%, 100% { box-shadow: none; }
+    50% { box-shadow: 0 0 0 4px var(--color-primary-soft); }
   }
 }
