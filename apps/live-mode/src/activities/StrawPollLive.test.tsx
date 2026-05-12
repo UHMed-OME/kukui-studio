@@ -19,6 +19,7 @@ function makeHandle(participantId: string, doc?: Y.Doc): LiveRoomHandle {
     code: "test-room",
     doc: sharedDoc,
     participantId,
+    backend: "nostr",
     setPresence: () => {},
     presence: () => new Map(),
     onPeerJoin: () => () => {},

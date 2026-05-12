@@ -1,8 +1,35 @@
 import { useEffect, useRef, useState } from "react";
-import { joinLiveRoom, deriveRoomCode, type LiveRoomHandle } from "@kukui/live";
+import {
+  joinLiveRoom,
+  deriveRoomCode,
+  SIGNALING_BACKENDS,
+  SIGNALING_BACKEND_LABELS,
+  type LiveRoomHandle,
+  type SignalingBackend,
+} from "@kukui/live";
 import type { Presence } from "@kukui/live";
 import type { ActivityKind } from "@kukui/core";
 import { LiveHost } from "./LiveHost.js";
+
+const SIGNALING_STORAGE_KEY = "kukui-live:signaling-backend";
+
+function readBackendPreference(): SignalingBackend {
+  if (typeof window === "undefined") return "nostr";
+  const params = new URLSearchParams(window.location.search);
+  const fromUrl = params.get("signal");
+  if (fromUrl && (SIGNALING_BACKENDS as readonly string[]).includes(fromUrl)) {
+    return fromUrl as SignalingBackend;
+  }
+  try {
+    const stored = window.localStorage.getItem(SIGNALING_STORAGE_KEY);
+    if (stored && (SIGNALING_BACKENDS as readonly string[]).includes(stored)) {
+      return stored as SignalingBackend;
+    }
+  } catch {
+    /* localStorage might be unavailable (private mode, SCORM sandboxes) */
+  }
+  return "nostr";
+}
 
 /**
  * Activity kinds that have a real Live runtime today. Anything not in
@@ -38,6 +65,9 @@ export function App() {
   const [code, setCode] = useState("");
   const [name, setName] = useState("");
   const [role, setRole] = useState<"instructor" | "student">("student");
+  const [signalingBackend, setSignalingBackend] = useState<SignalingBackend>(
+    () => readBackendPreference(),
+  );
   // The activity choice doubles as both "what kind to host" and "what
   // sample to auto-load". URL ?activity=<kind> is honoured so an
   // instructor can paste a deeplink that already names the activity.
@@ -70,7 +100,16 @@ export function App() {
       const roomCode = await deriveRoomCode(code.trim());
       const handle = joinLiveRoom(roomCode, {
         appId: "kukui-live",
+        backend: signalingBackend,
       });
+      // Persist the working backend so the next session opens with the
+      // same choice without re-picking. URL params still win on first
+      // load (handy for QA / linked tutorials).
+      try {
+        window.localStorage.setItem(SIGNALING_STORAGE_KEY, signalingBackend);
+      } catch {
+        /* private mode / SCORM sandbox — non-fatal */
+      }
       handle.setPresence({ name: name.trim(), role });
       setRoom(handle);
       // For the activities with a real Live runtime, auto-load the
@@ -202,6 +241,42 @@ export function App() {
             ))}
           </select>
         </div>
+        <details className="live-field" style={{ marginBottom: 16 }}>
+          <summary
+            style={{
+              fontSize: 13,
+              color: "var(--color-text-secondary)",
+              cursor: "pointer",
+              userSelect: "none",
+            }}
+          >
+            Advanced: signaling backend
+          </summary>
+          <div style={{ marginTop: 8 }}>
+            <label htmlFor="signal" style={{ fontSize: 13 }}>
+              How peers find each other (data still flows P2P regardless)
+            </label>
+            <select
+              id="signal"
+              value={signalingBackend}
+              onChange={(e) => setSignalingBackend(e.target.value as SignalingBackend)}
+              style={{
+                marginTop: 4,
+                minHeight: 44,
+                padding: "10px 12px",
+                border: "2px solid var(--color-border)",
+                borderRadius: 8,
+                width: "100%",
+              }}
+            >
+              {SIGNALING_BACKENDS.map((b) => (
+                <option key={b} value={b}>
+                  {SIGNALING_BACKEND_LABELS[b]}
+                </option>
+              ))}
+            </select>
+          </div>
+        </details>
         {error ? (
           <p
             role="alert"
@@ -227,9 +302,10 @@ export function App() {
           textAlign: "center",
         }}
       >
-        Public BitTorrent trackers signal the mesh. Public STUN handles NAT traversal.{" "}
-        <code>?turn=&lt;url&gt;</code> in the URL adds a TURN fallback when symmetric NATs block
-        STUN.
+        Peers discover each other via Nostr relays by default (MQTT brokers as an alternate —
+        Advanced above). After signaling, data flows direct WebRTC P2P. Public STUN handles NAT
+        traversal; <code>?turn=&lt;url&gt;</code> in the URL adds a TURN fallback when symmetric
+        NATs block STUN.
       </p>
     </div>
   );

@@ -51,6 +51,7 @@ export function installMockMeshFactory(): void {
       code,
       doc: slot.doc,
       participantId,
+      backend: "nostr",
       setPresence(p) {
         const record: Presence = {
           ...p,

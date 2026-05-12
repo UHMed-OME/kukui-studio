@@ -1,20 +1,36 @@
-import { joinRoom as trysteroJoin } from "trystero";
+import { joinRoom as joinNostr } from "trystero/nostr";
+import { joinRoom as joinMqtt } from "trystero/mqtt";
 import type { Room as TrysteroRoom } from "trystero";
 import * as Y from "yjs";
-import type { ParticipantId, Presence, TransportOptions } from "./types.js";
+import type {
+  ParticipantId,
+  Presence,
+  SignalingBackend,
+  TransportOptions,
+} from "./types.js";
 
 /**
  * Trystero + Y.js transport wrapper.
  *
- * `joinLiveRoom(code, options)` opens a P2P mesh signaled over public
- * BitTorrent trackers (Trystero default), then establishes a Y.Doc shared
- * across the mesh for CRDT-merged room state.
+ * `joinLiveRoom(code, options)` opens a P2P mesh using the chosen
+ * signaling backend (Nostr by default, MQTT as an alternate), then
+ * establishes a Y.Doc shared across the mesh for CRDT-merged room
+ * state. Public BitTorrent trackers (Trystero's default backend) are
+ * deliberately *not* offered — they're commonly DPI-blocked on
+ * institutional networks, which is exactly where Kukui Live needs to
+ * work.
  *
- * The returned handle exposes:
- *   - `doc`: a Y.Doc that all peers see merge-consistently
- *   - `presence`: a Map<ParticipantId, Presence> backed by Y.js awareness
- *   - `onPeerJoin / onPeerLeave`: lightweight subscription
- *   - `leave()`: graceful teardown — fires LMSFinish via the host page's SCORM driver
+ * Signaling backends:
+ *   - **Nostr** (default): WebSocket relays from the Nostr ecosystem.
+ *     Lightweight, federated, generally permitted on edu networks
+ *     because it's not associated with file-sharing.
+ *   - **MQTT**: public MQTT brokers. Use as a fallback if Nostr
+ *     relays are blocked or flaky.
+ *
+ * Switching backends only changes how peers *find* each other. After
+ * signaling, data flows direct WebRTC P2P regardless of backend — the
+ * `LiveRoomHandle`, Y.Doc, presence model, and activity code don't
+ * change.
  *
  * Mocked in tests via `__setRoomFactoryForTest`.
  */
@@ -23,6 +39,8 @@ export interface LiveRoomHandle {
   code: string;
   doc: Y.Doc;
   participantId: ParticipantId;
+  /** Signaling backend that opened the mesh — handy for diagnostics / UI badges. */
+  backend: SignalingBackend;
   setPresence(p: Omit<Presence, "id" | "joinedAt">): void;
   presence(): Map<ParticipantId, Presence>;
   onPeerJoin(cb: (id: ParticipantId) => void): () => void;
@@ -52,15 +70,32 @@ export function __setRoomFactoryForTest(factory: RoomFactory | null): void {
   roomFactory = factory ?? realRoomFactory;
 }
 
+type JoinFn = typeof joinNostr;
+
+const JOIN_BY_BACKEND: Record<SignalingBackend, JoinFn> = {
+  nostr: joinNostr,
+  mqtt: joinMqtt,
+};
+
 function realRoomFactory(
   code: string,
   options: TransportOptions,
   participantId: ParticipantId,
 ): LiveRoomHandle {
+  const backend: SignalingBackend = options.backend ?? "nostr";
+  const joinFn = JOIN_BY_BACKEND[backend];
+  if (!joinFn) {
+    throw new Error(
+      `Unknown signaling backend "${backend}" — supported: ${Object.keys(JOIN_BY_BACKEND).join(", ")}`,
+    );
+  }
   const appId = options.appId ?? "kukui-live";
-  const room: TrysteroRoom = trysteroJoin(
+  const room: TrysteroRoom = joinFn(
     {
       appId,
+      ...(options.relayUrls && options.relayUrls.length > 0
+        ? { relayUrls: options.relayUrls }
+        : {}),
       ...(options.turn?.url
         ? {
             rtcConfig: {
@@ -100,6 +135,7 @@ function realRoomFactory(
     code,
     doc,
     participantId,
+    backend,
     setPresence(p) {
       presenceMap.set(participantId, {
         ...p,
@@ -158,3 +194,11 @@ export async function deriveRoomCode(instructorCode: string): Promise<string> {
     .map((b) => b.toString(16).padStart(2, "0"))
     .join("");
 }
+
+/** Display-friendly labels for each backend (used by the lobby picker). */
+export const SIGNALING_BACKEND_LABELS: Record<SignalingBackend, string> = {
+  nostr: "Nostr relays (default — federated, edu-friendly)",
+  mqtt: "MQTT brokers (fallback if Nostr is blocked)",
+};
+
+export const SIGNALING_BACKENDS: readonly SignalingBackend[] = ["nostr", "mqtt"];

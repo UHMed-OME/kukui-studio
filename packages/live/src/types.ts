@@ -50,9 +50,33 @@ export type TurnConfig = {
   credential?: string;
 };
 
+/**
+ * Which Trystero signaling backend to use. Determines how peers find
+ * each other before WebRTC kicks in. After signaling, data flows
+ * direct P2P regardless of which backend you picked.
+ *
+ *   - `nostr`: WebSocket connections to public Nostr relays. The
+ *     default — federated, lightweight, not associated with file-
+ *     sharing, so generally permitted on edu networks.
+ *   - `mqtt`: public MQTT brokers. Use as a fallback if Nostr relays
+ *     are blocked or flaky in a given network environment.
+ *
+ * BitTorrent trackers (Trystero's library default) are deliberately
+ * not offered — they're commonly DPI-blocked on institutional networks.
+ */
+export type SignalingBackend = "nostr" | "mqtt";
+
 export type TransportOptions = {
+  /** Which signaling backend to use. Defaults to `"nostr"`. */
+  backend?: SignalingBackend;
+  /**
+   * Optional explicit list of relay/broker URLs. When omitted, Trystero
+   * picks sensible public defaults per backend. Useful for pinning to
+   * an institution-friendly relay or testing a self-hosted one.
+   */
+  relayUrls?: string[];
   /** Optional TURN endpoint; falls back to public STUN otherwise. */
   turn?: TurnConfig;
-  /** App identifier — segregates rooms across deployments using the same trackers. */
+  /** App identifier — segregates rooms across deployments using the same relays. */
   appId?: string;
 };
