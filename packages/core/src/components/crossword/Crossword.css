@@ -37,8 +37,10 @@
 
 .kukui-cw__title {
   margin: 0 0 var(--spacing-lg, 16px);
+  font-family: var(--font-family-display, "Iowan Old Style", "Apple Garamond", Baskerville, "Times New Roman", serif);
   font-size: var(--font-size-title, 24px);
-  font-weight: 700;
+  font-weight: 500;
+  letter-spacing: -0.005em;
   color: var(--color-text-primary, #1c1e20);
 }
 

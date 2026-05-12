@@ -47,6 +47,13 @@
 
   --font-family-sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Helvetica, Arial,
     sans-serif;
+  /* Editorial display face for activity titles. Engine bundles ship inside
+     SCORM zips; we don't currently embed Source Serif 4 to keep the .zip
+     small, so this resolves to the host platform's best serif (Iowan on
+     macOS, Times on Windows/Linux) — close enough to the Studio preview
+     to keep the typographic intent. */
+  --font-family-display: "Iowan Old Style", "Apple Garamond", Baskerville,
+    "Times New Roman", "Source Serif Pro", serif;
 }
 
 /*
