@@ -195,52 +195,44 @@ button {
    the text block's vertical centre, no manual indents. Shrinks before
    the toolbar wraps so the header reads as one horizontal band on
    common desktop widths. */
-/* Brand block fits within the sidebar's column width (220px) so its
-   left edge + visual mass aligns with the sidebar column beneath it.
-   Logo and wordmark sit on row 1; the meta strip (STUDIO / /pron/ /
-   descriptor) stacks vertically below and naturally wraps inside the
-   constrained width. */
+/* Brand block — left edge aligns with the sidebar's content padding
+   (12px from page edge), but width flows freely so the meta strip
+   stays on one line. No column constraint = no cramming. */
 .kukui-studio-brand {
-  flex: 0 0 auto;
+  flex: 0 1 auto;
   min-width: 0;
-  width: 220px;
   display: flex;
   flex-direction: row;
-  align-items: flex-start;
-  gap: 12px;
+  align-items: center;
+  gap: 14px;
 }
 
 .kukui-studio-brand-text {
   display: flex;
   flex-direction: column;
   min-width: 0;
-  gap: 8px;
-  flex: 1 1 auto;
+  gap: 4px;
 }
 
 .kukui-studio-logo {
-  width: 40px;
-  height: 40px;
+  width: 48px;
+  height: 48px;
   flex-shrink: 0;
   display: block;
-  margin-top: 2px;
+  margin-top: -1px;
 }
 
-/* Brand wordmark — option B layout: brand block constrained to the
-   sidebar column width (220px), so the meta strip can't fit one
-   horizontal line and stacks instead.
-     Row 1:  Kukui                ← headword
-     Row 2:  STUDIO               ← product label, tracked sans caps
-     Row 3:  /koo-KOO-ee/         ← phonetic, italic serif
-     Row 4:  Interactive learning ← descriptor, wraps within column
-             activities for…
-   No mid-dot separators since items are on their own lines. */
+/* Brand wordmark — two rows, single-line each (no column constraint):
+     Row 1:  Kukui                                       ← headword
+     Row 2:  STUDIO · /koo-KOO-ee/ · Interactive…       ← meta strip
+   The meta strip flows inline with mid-dot separators; brand block
+   stays compact (~70px tall). */
 .kukui-studio-title {
   margin: 0;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 6px;
+  gap: 4px;
   font-family: var(--font-family-display);
   font-weight: 500;
   color: var(--color-text-primary);
@@ -249,44 +241,52 @@ button {
 }
 
 .kukui-studio-title__word {
-  font-size: 30px;
+  font-size: 34px;
   line-height: 1;
 }
 
 .kukui-studio-title__meta {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
+  display: inline-flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0 8px;
+  font-family: var(--font-family-sans);
+  font-size: var(--font-size-meta);
+  font-weight: 400;
+  letter-spacing: 0;
+  color: var(--color-text-muted);
 }
 
 .kukui-studio-title__sub {
   font-family: var(--font-family-sans);
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 600;
   letter-spacing: 0.22em;
   color: var(--color-text-secondary);
   text-transform: uppercase;
   text-indent: 0.22em;
-  line-height: 1.4;
 }
 
 .kukui-studio-title__pronunciation {
   font-family: var(--font-family-display);
   font-style: italic;
   font-weight: 400;
-  font-size: 13px;
+  font-size: 14px;
   color: var(--color-text-muted);
   letter-spacing: 0;
-  line-height: 1.2;
+  white-space: nowrap;
 }
 
 .kukui-studio-title__tagline {
-  font-family: var(--font-family-sans);
-  font-size: 12px;
-  font-weight: 400;
-  letter-spacing: 0;
-  color: var(--color-text-muted);
-  line-height: 1.35;
+  white-space: nowrap;
+}
+
+/* Mid-dot separators between meta segments. */
+.kukui-studio-title__pronunciation::before,
+.kukui-studio-title__tagline::before {
+  content: "·";
+  margin-right: 8px;
+  opacity: 0.55;
 }
 
 /* Legacy subtitle — kept as a safety net for any non-App.tsx call
