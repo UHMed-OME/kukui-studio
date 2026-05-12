@@ -3507,6 +3507,100 @@ html[data-theme="glass"] .kukui-studio-footer {
   outline-offset: 2px;
 }
 
+/* "Test in Kukui Live" launcher panel, shown below the preview for
+ * live-only activities (Straw Poll today; more later). */
+.kukui-studio-live-launch {
+  margin: var(--spacing-lg, 16px) auto 0;
+  max-width: 720px;
+  padding: var(--spacing-md, 12px) var(--spacing-lg, 16px);
+  background: color-mix(in srgb, var(--color-accent, #b69b5d) 10%, var(--color-surface, #ffffff));
+  border: 1px solid var(--color-accent, #b69b5d);
+  border-radius: var(--radius-md, 8px);
+}
+
+.kukui-studio-live-launch__row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--spacing-md, 12px);
+  justify-content: space-between;
+}
+
+.kukui-studio-live-launch__text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 240px;
+  flex: 1 1 280px;
+}
+
+.kukui-studio-live-launch__text strong {
+  font-size: var(--font-size-body, 15px);
+  color: var(--color-text-primary, #1c1e20);
+}
+
+.kukui-studio-live-launch__text span {
+  font-size: var(--font-size-caption, 14px);
+  color: var(--color-text-secondary, #606069);
+  line-height: 1.4;
+}
+
+.kukui-studio-live-launch__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-sm, 8px);
+}
+
+.kukui-studio-live-launch__actions a.kukui-studio-btn--primary,
+.kukui-studio-live-launch__actions a.kukui-studio-btn--ghost {
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+}
+
+.kukui-studio-live-launch__grid {
+  margin-top: var(--spacing-md, 12px);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--spacing-md, 12px);
+}
+
+@media (max-width: 720px) {
+  .kukui-studio-live-launch__grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.kukui-studio-live-launch__col {
+  padding: var(--spacing-md, 12px);
+  background: var(--color-surface, #ffffff);
+  border: 1px solid var(--color-border, #dad2c6);
+  border-radius: var(--radius-sm, 6px);
+}
+
+.kukui-studio-live-launch__col h4 {
+  margin: 0 0 4px;
+  font-size: var(--font-size-body, 15px);
+  color: var(--color-text-primary, #1c1e20);
+}
+
+.kukui-studio-live-launch__col p {
+  margin: 0 0 var(--spacing-sm, 8px);
+  font-size: var(--font-size-caption, 14px);
+  color: var(--color-text-secondary, #606069);
+  line-height: 1.4;
+}
+
+.kukui-studio-live-launch__warn {
+  margin: var(--spacing-sm, 8px) 0 0;
+  padding: var(--spacing-xs, 4px) var(--spacing-sm, 8px);
+  background: color-mix(in srgb, #c34132 10%, var(--color-surface, #ffffff));
+  border-left: 3px solid #c34132;
+  border-radius: var(--radius-sm, 6px);
+  font-size: var(--font-size-meta, 13px);
+  color: var(--color-text-primary, #1c1e20);
+}
+
 /*
  * Hotspot 3D author editor — 3D viewport on the left, hotspot list +
  * inspector on the right. The viewport is the same OrbitControls scene

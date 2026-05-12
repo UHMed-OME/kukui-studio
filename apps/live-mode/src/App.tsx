@@ -31,6 +31,51 @@ function readBackendPreference(): SignalingBackend {
   return "nostr";
 }
 
+/** Reverse of Studio's base64url encoder — see Preview.tsx. */
+function fromBase64Url(input: string): string {
+  const b64 = input.replace(/-/g, "+").replace(/_/g, "/");
+  const pad = b64.length % 4 === 0 ? "" : "=".repeat(4 - (b64.length % 4));
+  const bin = atob(b64 + pad);
+  const bytes = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i += 1) bytes[i] = bin.charCodeAt(i);
+  return new TextDecoder().decode(bytes);
+}
+
+/**
+ * Studio's "Open in Kukui Live" button packs the draft JSON into a
+ * base64url URL param so the live app can preload it without a sample
+ * fetch. Returns the parsed object on success, null otherwise.
+ */
+function readPreloadedConfig(): unknown | null {
+  if (typeof window === "undefined") return null;
+  const raw = new URLSearchParams(window.location.search).get("config");
+  if (!raw) return null;
+  try {
+    return JSON.parse(fromBase64Url(raw));
+  } catch {
+    return null;
+  }
+}
+
+type PreloadedConfigLive = {
+  signaling?: SignalingBackend;
+  relayUrls?: string[];
+};
+
+function readConfigSignaling(config: unknown): PreloadedConfigLive | null {
+  if (!config || typeof config !== "object") return null;
+  const live = (config as Record<string, unknown>).live;
+  if (!live || typeof live !== "object") return null;
+  const out: PreloadedConfigLive = {};
+  const sig = (live as Record<string, unknown>).signaling;
+  if (sig === "nostr" || sig === "mqtt") out.signaling = sig;
+  const urls = (live as Record<string, unknown>).relayUrls;
+  if (Array.isArray(urls) && urls.every((u) => typeof u === "string")) {
+    out.relayUrls = urls as string[];
+  }
+  return out;
+}
+
 /**
  * Activity kinds that have a real Live runtime today. Anything not in
  * this list falls through to the generic InstructorConsole /
@@ -84,41 +129,105 @@ export function App() {
   const [presence, setPresence] = useState<Map<string, Presence>>(new Map());
   const [error, setError] = useState<string | null>(null);
   const [configUrl, setConfigUrl] = useState<string | undefined>(undefined);
+  const [preloadedConfig, setPreloadedConfig] = useState<unknown | null>(() =>
+    readPreloadedConfig(),
+  );
+  // The URL's adminKey is the canonical "you are the host" proof when
+  // Studio launches the instructor view. The lobby still falls back to
+  // the manual role picker for non-preloaded sessions (legacy flow,
+  // local dev convenience).
+  const adminKeyFromUrl = useRef<string | null>(
+    typeof window !== "undefined"
+      ? new URLSearchParams(window.location.search).get("adminKey")
+      : null,
+  );
   const subscribed = useRef(false);
 
   const join = async () => {
     setError(null);
-    if (!/^\d{6}$/.test(code.trim())) {
-      setError("Room code must be 6 digits.");
-      return;
-    }
     if (name.trim().length === 0) {
       setError("Pick a display name first.");
       return;
     }
+
+    // Two code paths depending on whether the URL preloaded a config:
+    //   1. preloaded — room is derived from `config.live.joinKey`,
+    //      signaling/relays from `config.live`, role from the URL's
+    //      `?adminKey=` match. The user never types a room code.
+    //   2. manual lobby — original M1 flow: user types 6-digit code,
+    //      picks activity from dropdown, sample fixture is loaded.
     try {
-      const roomCode = await deriveRoomCode(code.trim());
+      let roomCode: string;
+      let effectiveRole: "instructor" | "student" = role;
+      let effectiveBackend: SignalingBackend = signalingBackend;
+      let effectiveRelays: string[] | undefined;
+      let activityForConfig: ActivityKind = activityKind;
+
+      if (preloadedConfig) {
+        const cfg = preloadedConfig as Record<string, unknown>;
+        const live = (cfg.live ?? {}) as Record<string, unknown>;
+        const joinKey =
+          typeof live.joinKey === "string" && live.joinKey.length > 0
+            ? live.joinKey
+            : (typeof cfg.title === "string" ? cfg.title : "kukui-live-default");
+        roomCode = await deriveRoomCode(joinKey);
+        if (live.signaling === "nostr" || live.signaling === "mqtt") {
+          effectiveBackend = live.signaling;
+        }
+        if (Array.isArray(live.relayUrls)) {
+          effectiveRelays = live.relayUrls.filter(
+            (u): u is string => typeof u === "string",
+          );
+        }
+        const sentAdmin = adminKeyFromUrl.current;
+        const expectedAdmin =
+          typeof live.adminKey === "string" ? live.adminKey : undefined;
+        effectiveRole =
+          expectedAdmin && sentAdmin && sentAdmin === expectedAdmin
+            ? "instructor"
+            : "student";
+        activityForConfig = (typeof cfg.kind === "string"
+          ? cfg.kind
+          : activityKind) as ActivityKind;
+      } else {
+        if (!/^\d{6}$/.test(code.trim())) {
+          setError("Room code must be 6 digits.");
+          return;
+        }
+        roomCode = await deriveRoomCode(code.trim());
+      }
+
       const handle = joinLiveRoom(roomCode, {
         appId: "kukui-live",
-        backend: signalingBackend,
+        backend: effectiveBackend,
+        ...(effectiveRelays ? { relayUrls: effectiveRelays } : {}),
       });
-      // Persist the working backend so the next session opens with the
-      // same choice without re-picking. URL params still win on first
-      // load (handy for QA / linked tutorials).
+
       try {
-        window.localStorage.setItem(SIGNALING_STORAGE_KEY, signalingBackend);
+        window.localStorage.setItem(SIGNALING_STORAGE_KEY, effectiveBackend);
       } catch {
         /* private mode / SCORM sandbox — non-fatal */
       }
-      handle.setPresence({ name: name.trim(), role });
+
+      handle.setPresence({ name: name.trim(), role: effectiveRole });
       setRoom(handle);
-      // For the activities with a real Live runtime, auto-load the
-      // sample so both instructor and students see the same JSON the
-      // moment they enter the room. The shell activities (multiple-
-      // choice diagnostic) still rely on the manual "Load demo" button.
-      const sample = LIVE_ACTIVITIES.find((a) => a.kind === activityKind);
-      if (sample && activityKind === "straw-poll") {
-        setConfigUrl(sample.sampleUrl);
+      setRole(effectiveRole);
+      setActivityKind(activityForConfig);
+
+      // Provide the activity config to LiveHost. For the manual lobby
+      // we point at the sample fixture; for the preloaded path we
+      // skip the network fetch and stash the parsed object behind a
+      // synthetic data URL.
+      if (preloadedConfig) {
+        const blob = new Blob([JSON.stringify(preloadedConfig)], {
+          type: "application/json",
+        });
+        setConfigUrl(URL.createObjectURL(blob));
+      } else {
+        const sample = LIVE_ACTIVITIES.find((a) => a.kind === activityKind);
+        if (sample && activityKind === "straw-poll") {
+          setConfigUrl(sample.sampleUrl);
+        }
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not join room.");
@@ -166,6 +275,85 @@ export function App() {
         onLoadDemo={() => setConfigUrl(sample)}
         onLeave={handleLeave}
       />
+    );
+  }
+
+  // The preload path (Studio's "Launch in Live" buttons + future
+  // SCO-embed) skips the room-code / activity / signaling pickers
+  // since those are dictated by the URL's `?config=` payload. Render
+  // a slim lobby that only asks for the display name and shows the
+  // author's title so the joiner knows what they're entering.
+  const previewTitle =
+    preloadedConfig && typeof preloadedConfig === "object"
+      ? (preloadedConfig as Record<string, unknown>).title
+      : undefined;
+  const previewRole: "instructor" | "student" = (() => {
+    if (!preloadedConfig) return role;
+    const live = (preloadedConfig as Record<string, unknown>).live as
+      | Record<string, unknown>
+      | undefined;
+    const expected = typeof live?.adminKey === "string" ? live.adminKey : undefined;
+    return expected && adminKeyFromUrl.current === expected
+      ? "instructor"
+      : "student";
+  })();
+
+  if (preloadedConfig) {
+    return (
+      <div className="live-shell">
+        <article className="live-card">
+          <div className="live-brand">
+            <img className="live-logo" src="/kukui-logo.svg" alt="" aria-hidden="true" />
+            <h1 className="live-title">
+              {typeof previewTitle === "string" ? previewTitle : "Kukui Live session"}
+            </h1>
+          </div>
+          <p className="live-subtitle">
+            Joining as <strong>{previewRole}</strong>. Room derived from the activity's
+            join key — no code to type.
+          </p>
+          <div className="live-field">
+            <label htmlFor="name">Display name</label>
+            <input
+              id="name"
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Your name (or a handle)"
+              maxLength={40}
+            />
+          </div>
+          {error ? (
+            <p
+              role="alert"
+              style={{ color: "var(--color-error)", fontSize: 13, marginBottom: 16 }}
+            >
+              {error}
+            </p>
+          ) : null}
+          <div className="live-actions">
+            <button
+              type="button"
+              className="live-btn live-btn--primary"
+              onClick={join}
+            >
+              Join {previewRole === "instructor" ? "as instructor" : "as student"}
+            </button>
+            <button
+              type="button"
+              className="live-btn live-btn--ghost"
+              onClick={() => {
+                // Drop the preload and fall through to the manual lobby
+                // — escape hatch if the URL looks suspicious.
+                setPreloadedConfig(null);
+                adminKeyFromUrl.current = null;
+              }}
+            >
+              Use manual lobby instead
+            </button>
+          </div>
+        </article>
+      </div>
     );
   }
 

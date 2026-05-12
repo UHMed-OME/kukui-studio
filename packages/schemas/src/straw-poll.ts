@@ -84,6 +84,43 @@ export const StrawPollConfigSchema = z
       })
       .strict()
       .optional(),
+    /**
+     * Live-mode transport settings baked into the activity. The author
+     * pins these so every learner who opens the SCO connects to the
+     * same mesh without having to type a backend / relay URL into a
+     * lobby. Optional — when omitted, Kukui Live falls back to its
+     * defaults (Nostr signaling, Trystero's bundled relay list).
+     *
+     * Use `relayUrls` to pin to specific relays that are known to work
+     * on your institution's network (and known not to disappear mid-
+     * lecture). Pass `signaling: "mqtt"` if Nostr is blocked.
+     */
+    live: z
+      .object({
+        /**
+         * Public room key. Hashed to derive the Trystero room id, so
+         * every learner whose activity JSON has the same `joinKey`
+         * lands in the same mesh. Author chooses any string (treated
+         * as opaque — 4..64 chars). Rotate per session if you want
+         * fresh rooms between class meetings.
+         */
+        joinKey: z.string().min(4).max(64).optional(),
+        /**
+         * Private admin key. When present, only a participant who
+         * proves they know it (via `?adminKey=…` URL param or the
+         * in-activity lock-icon prompt) is granted host role.
+         * Without an `adminKey`, anyone can claim host — fine for
+         * dev / sandbox, NOT for shared classroom polls.
+         */
+        adminKey: z.string().min(4).max(64).optional(),
+        signaling: z.enum(["nostr", "mqtt"]).optional(),
+        relayUrls: z
+          .array(z.string().url())
+          .max(8)
+          .optional(),
+      })
+      .strict()
+      .optional(),
   })
   .strict();
 

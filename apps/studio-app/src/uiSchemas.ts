@@ -1124,7 +1124,7 @@ export const UI_SCHEMAS: Record<ActivityKind, Record<string, unknown>> = {
 
   "straw-poll": {
     ...COMMON,
-    "ui:order": ["title", "prompt", "choices", "behaviour", "ui", "*"],
+    "ui:order": ["title", "prompt", "choices", "behaviour", "live", "ui", "*"],
     title: TITLE,
     author: AUTHOR,
     prompt: f(
@@ -1168,6 +1168,28 @@ export const UI_SCHEMAS: Record<ActivityKind, Record<string, unknown>> = {
       resetButton: f("'Reset' button text"),
       submitVoteButton: f("'Submit vote' button text"),
       changeVoteButton: f("'Change vote' button text"),
+    },
+    live: {
+      "ui:title": "Live session settings",
+      "ui:help":
+        "Settings the running activity uses to join the right room and grant host privileges. Set the join + admin keys before sharing the activity; pick a signaling backend only if Nostr is blocked on your network.",
+      "ui:order": ["joinKey", "adminKey", "signaling", "relayUrls"],
+      joinKey: f(
+        "Join key (public)",
+        "Any string — hashed to derive the room id. Everyone whose copy of this activity has the same join key lands in the same mesh. Safe to share with students.",
+      ),
+      adminKey: f(
+        "Admin key (private)",
+        "Secret that unlocks host controls. The Studio 'Launch as instructor' button passes this in the URL; in the LMS, the instructor enters it via the lock icon in the activity. Keep this off the syllabus.",
+      ),
+      signaling: f(
+        "Signaling backend",
+        "Nostr (default) is federated WebSocket signaling — usually permitted on edu networks. MQTT is the fallback if Nostr is blocked.",
+      ),
+      relayUrls: f(
+        "Pinned relay URLs (optional)",
+        "Optional list of relay/broker URLs to use instead of Trystero's defaults. Use this to pin the activity to relays you've verified work on your institution's network.",
+      ),
     },
   },
 

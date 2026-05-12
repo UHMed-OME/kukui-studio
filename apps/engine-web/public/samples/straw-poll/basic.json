@@ -12,5 +12,10 @@
     "showLiveResultsToStudents": true,
     "allowChangeVote": true,
     "showIndividualVotes": false
+  },
+  "live": {
+    "joinKey": "cardio-pulse-fall2025",
+    "adminKey": "demo-admin-key-replace-me",
+    "signaling": "nostr"
   }
 }

@@ -386,6 +386,15 @@ export const STARTERS: Record<ActivityKind, unknown> = {
       allowChangeVote: true,
       showIndividualVotes: false,
     },
+    live: {
+      // Author should rotate these per session — placeholder values
+      // make the form valid and the activity launchable from Studio
+      // immediately, but anyone reading them on GitHub can claim host
+      // in your room. Treat them like default API keys: replace.
+      joinKey: "pulse-check-classroom",
+      adminKey: "change-me-before-class",
+      signaling: "nostr",
+    },
   },
   crossword: {
     version: "1.0",
