@@ -198,65 +198,91 @@ button {
   max-width: 640px;
   display: flex;
   flex-direction: row;
-  align-items: center;
-  gap: var(--spacing-md);
+  /* Align the logo to the top of the type column, not the center of
+     the whole stack. The wordmark sits on top, subtitle below — the
+     logo's optical center then lines up with "Kukui" itself. */
+  align-items: flex-start;
+  gap: 14px;
 }
 
 .kukui-studio-brand-text {
   display: flex;
   flex-direction: column;
   min-width: 0;
+  gap: 4px;
 }
 
 .kukui-studio-logo {
-  width: 48px;
-  height: 48px;
+  width: 44px;
+  height: 44px;
   flex-shrink: 0;
   display: block;
+  /* Optical nudge: the logo's silhouette has a heavier base than top,
+     so dropping it 2px aligns its visual center with "Kukui"'s
+     x-height rather than its raw bounding box. */
+  margin-top: -3px;
 }
 
-/* Brand wordmark — set like a dictionary entry: headword + phonetic
-   pronunciation + subhead "STUDIO" in tracked caps. The pronunciation
-   guide is the single typographic moment in the header. */
+/* Brand wordmark — single confident line. Headword in serif, italic
+   phonetic at smaller size, mid-dot separator, then the product label
+   in tracked sans caps. All baseline-aligned so the logo can sit flush
+   with the type. */
 .kukui-studio-title {
   margin: 0;
-  display: flex;
+  display: inline-flex;
   flex-wrap: wrap;
   align-items: baseline;
-  gap: 0 var(--spacing-sm);
+  gap: 0 10px;
   font-family: var(--font-family-display);
-  font-size: 30px;
   font-weight: 500;
   color: var(--color-text-primary);
   line-height: 1;
   letter-spacing: -0.015em;
 }
 
+.kukui-studio-title__word {
+  font-size: 30px;
+}
+
 .kukui-studio-title__pronunciation {
-  font-family: var(--font-family-display);
   font-style: italic;
   font-weight: 400;
-  font-size: 15px;
+  font-size: 16px;
   color: var(--color-text-muted);
   letter-spacing: 0;
   white-space: nowrap;
+  /* Optical bump: italic letterforms ride slightly higher than roman
+     at the same baseline. Drop them ~1px to align with "Kukui". */
+  position: relative;
+  top: 1px;
+}
+
+.kukui-studio-title__sep {
+  font-family: var(--font-family-sans);
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--color-text-muted);
+  letter-spacing: 0;
+  /* Center the mid-dot vertically against the cap-height of "Kukui". */
+  position: relative;
+  top: -4px;
 }
 
 .kukui-studio-title__studio {
-  width: 100%;
-  margin-top: 4px;
   font-family: var(--font-family-sans);
   font-size: 11px;
   font-weight: 600;
-  letter-spacing: 0.22em;
+  letter-spacing: 0.18em;
   color: var(--color-text-secondary);
   text-transform: uppercase;
+  position: relative;
+  top: -3px;
 }
 
 .kukui-studio-subtitle {
-  margin: 2px 0 0;
+  margin: 0;
   font-size: var(--font-size-meta);
-  color: var(--color-text-secondary);
+  color: var(--color-text-muted);
   text-wrap: balance;
 }
 
