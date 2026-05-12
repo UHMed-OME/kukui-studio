@@ -322,3 +322,36 @@ html[data-theme="glass"] .kukui-theme-toggle {
   -webkit-backdrop-filter: blur(8px);
   backdrop-filter: blur(8px);
 }
+
+/* Attribution footer rendered below every live activity. Subtle,
+ * always visible, gives credit and a build stamp for support tickets. */
+.live-attrib {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 16px 24px;
+  font-size: 12px;
+  color: var(--color-text-secondary, #606069);
+}
+
+.live-attrib a {
+  color: var(--color-text-primary, #1c1e20);
+  font-weight: 600;
+  text-decoration: underline;
+  text-decoration-color: var(--color-accent, #b69b5d);
+  text-underline-offset: 2px;
+}
+
+.live-attrib a:hover {
+  color: var(--color-accent, #b69b5d);
+}
+
+.live-attrib code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 11px;
+  background: var(--color-tip-bg, #f2f0e8);
+  padding: 1px 6px;
+  border-radius: 4px;
+}

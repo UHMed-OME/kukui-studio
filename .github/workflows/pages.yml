@@ -1,10 +1,8 @@
-# Builds Kukui Studio and publishes it to GitHub Pages on every push to main.
-#
-# The studio is the only app that goes to Pages — engine-web is consumed via
-# the SCORM zips it gets bundled into, and live-mode is a dev-only Phase 3
-# preview. Pages is served at the apex of the custom domain kukuistudio.com,
-# so KUKUI_BASE is "/" and Vite emits root-relative asset URLs.
-name: Deploy Studio to GitHub Pages
+# Builds Kukui Studio + live-mode and publishes both to GitHub Pages on
+# every push to main. Studio sits at the apex (kukuistudio.com); live-mode
+# is mounted at /live/ so Studio's "Launch in Kukui Live" buttons resolve
+# correctly without an extra deploy. Engine-web is still SCORM-only.
+name: Deploy Studio + live-mode to GitHub Pages
 
 on:
   push:
@@ -67,6 +65,21 @@ jobs:
 
       - name: Build Studio
         run: pnpm --filter @kukui/studio-app build
+
+      - name: Build live-mode (served at /live/)
+        env:
+          # live-mode's vite config reads KUKUI_LIVE_BASE if set, otherwise
+          # `/live/` — matches where Studio's launcher buttons point.
+          KUKUI_LIVE_BASE: /live/
+          # Short commit SHA — surfaced in the live activity footer so
+          # learners + instructors can report which build they're on.
+          VITE_KUKUI_VERSION: ${{ github.sha }}
+        run: pnpm --filter @kukui/live-mode build
+
+      - name: Stage live-mode under studio/dist/live/
+        run: |
+          mkdir -p apps/studio-app/dist/live
+          cp -R apps/live-mode/dist/. apps/studio-app/dist/live/
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3

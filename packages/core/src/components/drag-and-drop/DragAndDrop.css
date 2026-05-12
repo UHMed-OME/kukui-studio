@@ -50,6 +50,16 @@
   overflow: hidden;
 }
 
+/* Image-less stage: the drop zones do the visual work (text-table /
+ * labelled-bin layouts). Add a faint grid so the author + learner can
+ * see they're on a structured canvas, not floating chips. */
+.kukui-dnd__board--no-image {
+  background-image:
+    linear-gradient(to right, rgb(0 0 0 / 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgb(0 0 0 / 0.05) 1px, transparent 1px);
+  background-size: 10% 10%;
+}
+
 .kukui-dnd__zone {
   position: absolute;
   border: 2px dashed var(--color-border-hover, #bbae9a);
@@ -125,10 +135,12 @@
 /* While being dragged, the original chip is fully hidden — the
  * <DragOverlay> ghost renders the visible copy under the cursor. Keeping
  * the original mounted (opacity 0 instead of display: none) reserves
- * its slot in the tray/zone so the surrounding layout doesn't reflow. */
+ * its slot in the tray/zone so the surrounding layout doesn't reflow.
+ * Don't add `pointer-events: none` here — dnd-kit relies on
+ * `setPointerCapture` on the original element to keep tracking the
+ * gesture; blocking pointer events stalls the drag mid-move. */
 .kukui-dnd__chip.is-dragging {
   opacity: 0;
-  pointer-events: none;
 }
 
 /* Ghost rendered inside <DragOverlay>: full-opacity copy of the chip that

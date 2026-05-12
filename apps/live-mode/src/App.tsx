@@ -13,6 +13,37 @@ import { LiveHost } from "./LiveHost.js";
 
 const SIGNALING_STORAGE_KEY = "kukui-live:signaling-backend";
 
+/**
+ * Footer rendered under every live screen: who made this (a link to
+ * Kukui Studio so curious learners + instructors can author their
+ * own) and which build is deployed (CI sets `VITE_KUKUI_VERSION` to
+ * the commit SHA so support reports include the exact build).
+ *
+ * The Studio URL is taken from `VITE_KUKUI_STUDIO_URL` if set,
+ * otherwise defaults to the prod domain. Override in your fork.
+ */
+function AttributionFooter() {
+  const env = (import.meta as unknown as { env?: Record<string, string> }).env ?? {};
+  const studioUrl = env.VITE_KUKUI_STUDIO_URL ?? "https://kukuistudio.com";
+  const version = env.VITE_KUKUI_VERSION ?? "dev";
+  const shortVersion =
+    version.length > 7 && /^[0-9a-f]+$/i.test(version) ? version.slice(0, 7) : version;
+  return (
+    <footer className="live-attrib" aria-label="Build info">
+      <span>
+        Authored with{" "}
+        <a href={studioUrl} target="_blank" rel="noopener noreferrer">
+          Kukui Studio
+        </a>
+      </span>
+      <span aria-hidden="true">·</span>
+      <span>
+        Build <code>{shortVersion}</code>
+      </span>
+    </footer>
+  );
+}
+
 function readBackendPreference(): SignalingBackend {
   if (typeof window === "undefined") return "nostr";
   const params = new URLSearchParams(window.location.search);
@@ -266,15 +297,18 @@ export function App() {
       LIVE_ACTIVITIES.find((a) => a.kind === activityKind)?.sampleUrl ??
       "/samples/multiple-choice/basic.json";
     return (
-      <LiveHost
-        kind={activityKind}
-        configUrl={configUrl}
-        room={room}
-        presence={presence}
-        role={role}
-        onLoadDemo={() => setConfigUrl(sample)}
-        onLeave={handleLeave}
-      />
+      <>
+        <LiveHost
+          kind={activityKind}
+          configUrl={configUrl}
+          room={room}
+          presence={presence}
+          role={role}
+          onLoadDemo={() => setConfigUrl(sample)}
+          onLeave={handleLeave}
+        />
+        <AttributionFooter />
+      </>
     );
   }
 

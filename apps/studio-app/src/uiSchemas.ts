@@ -152,15 +152,20 @@ export const UI_SCHEMAS: Record<ActivityKind, Record<string, unknown>> = {
     title: TITLE,
     author: AUTHOR,
     background: {
-      "ui:title": "Background image",
-      "ui:help": "The image learners drop labels onto. Drop-zone rectangles are placed on top of it.",
-      src: f("Image", "Paste a link or upload a file. Uploaded files are saved inside the activity.", {
-        "ui:widget": "file",
-        "ui:options": { accept: "image/*", maxSizeMb: 5, kind: "image" },
-      }),
+      "ui:title": "Background image (optional)",
+      "ui:help":
+        "The image learners drop labels onto. Drop-zone rectangles are placed on top of it. Leave blank to use a plain stage with a faint grid — useful for text-table / labelled-bin puzzles where the drop zones do the visual work themselves.",
+      src: f(
+        "Image",
+        "Paste a link or upload a file. Uploaded files are saved inside the activity. Leave blank for an image-less stage.",
+        {
+          "ui:widget": "file",
+          "ui:options": { accept: "image/*", maxSizeMb: 5, kind: "image" },
+        },
+      ),
       alt: f(
-        "Alt text (required)",
-        "Describes the image for screen-reader users. Required for accessibility — describe what the image shows in one short sentence.",
+        "Alt text (required if image set)",
+        "Describes the image for screen-reader users. Required for accessibility whenever you've supplied an image — describe what it shows in one short sentence.",
       ),
     },
     draggables: {

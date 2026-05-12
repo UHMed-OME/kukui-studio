@@ -1,4 +1,4 @@
-import { Suspense, useMemo, useState } from "react";
+import { Suspense, useMemo, useRef, useState } from "react";
 import { SchemaRegistry, type SchemaRegistryKey } from "@kukui/schemas";
 import { type ActivityKind, PLANNED_ACTIVITY_KINDS } from "@kukui/core";
 import {
@@ -37,6 +37,18 @@ export function Preview({
     [kind, value],
   );
 
+  // Stash the last value that validated cleanly per activity kind. When
+  // the author is mid-edit and the form temporarily fails validation,
+  // we keep rendering the previous good preview rather than going
+  // dark — the broken edit just doesn't get applied yet. Banner at the
+  // top tells the author updates are paused.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const lastValidByKind = useRef<Partial<Record<string, any>>>({});
+  if (result.success) {
+    lastValidByKind.current[kind] = result.data;
+  }
+  const fallbackConfig = lastValidByKind.current[kind];
+
   // Note: each activity component resets its own derived-from-config local
   // state via `useEffect([config])`, so we don't remount the Suspense tree
   // on every keystroke. This keeps three.js / audio / imagery from
@@ -49,21 +61,52 @@ export function Preview({
     return <EditCanvas kind={kind} value={value} onChange={onChange} />;
   }
 
+  // Failed validation: render the LAST KNOWN GOOD preview (if any) with
+  // a banner explaining the form has unresolved errors. First-time
+  // failures (no good state yet) still fall through to the verbose
+  // issue list so the author has something actionable.
   if (!result.success) {
+    if (!fallbackConfig) {
+      return (
+        <div className="kukui-studio-preview-error" role="status">
+          <strong>Preview is paused — config doesn't validate yet:</strong>
+          <ul>
+            {result.error.issues.slice(0, 8).map((issue, i) => (
+              <li key={i}>
+                <code>{issue.path.join(".") || "(root)"}</code> — {issue.message}
+              </li>
+            ))}
+          </ul>
+          <p style={{ fontSize: 12, color: "var(--color-text-secondary)" }}>
+            Fill in the highlighted fields on the left, then the preview reappears.
+          </p>
+        </div>
+      );
+    }
+    // Render the cached config; flag that edits aren't being applied.
+    const Stub = StubActivityLazy as unknown as React.ComponentType<{
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      config: any;
+      kind: never;
+      onSubmit: () => void;
+    }>;
+    const Component = ACTIVITY_REGISTRY[kind as keyof typeof ACTIVITY_REGISTRY];
+    const isPlanned = (PLANNED_ACTIVITY_KINDS as readonly string[]).includes(kind);
     return (
-      <div className="kukui-studio-preview-error" role="status">
-        <strong>Preview is paused — config doesn't validate yet:</strong>
-        <ul>
-          {result.error.issues.slice(0, 8).map((issue, i) => (
-            <li key={i}>
-              <code>{issue.path.join(".") || "(root)"}</code> — {issue.message}
-            </li>
-          ))}
-        </ul>
-        <p style={{ fontSize: 12, color: "var(--color-text-secondary)" }}>
-          Fill in the highlighted fields on the left, then the preview reappears.
-        </p>
-      </div>
+      <Suspense fallback={<PreviewLoading />}>
+        <div className="kukui-studio-preview-stale" role="status" aria-live="polite">
+          <strong>Form has unresolved errors</strong> — preview is paused at the last valid
+          state. Fix the highlighted fields on the left to resume live updates.
+        </div>
+        {isPlanned || !Component ? (
+          <Stub config={fallbackConfig} kind={kind as never} onSubmit={() => {}} />
+        ) : (
+          <Component config={fallbackConfig} onSubmit={() => {}} />
+        )}
+        {isLiveActivity(kind) ? (
+          <LiveTestLauncher kind={kind} config={fallbackConfig} onChange={onChange} />
+        ) : null}
+      </Suspense>
     );
   }
 
@@ -88,7 +131,9 @@ export function Preview({
       ) : (
         <Component config={config} onSubmit={noop} />
       )}
-      {isLiveActivity(kind) ? <LiveTestLauncher kind={kind} config={config} /> : null}
+      {isLiveActivity(kind) ? (
+        <LiveTestLauncher kind={kind} config={config} onChange={onChange} />
+      ) : null}
     </Suspense>
   );
 }
@@ -121,13 +166,22 @@ function isLiveActivity(kind: ActivityKind): boolean {
 function LiveTestLauncher({
   kind,
   config,
+  onChange,
 }: {
   kind: ActivityKind;
   config: unknown;
+  onChange: (next: unknown) => void;
 }) {
+  // Resolve where the Live app lives:
+  //   - Author can override via VITE_LIVE_URL (e.g., a staging deploy).
+  //   - Dev: vite spins live-mode on port 5175; Studio sits on 5174,
+  //     so a relative `../live-mode/` resolves to the wrong port.
+  //   - Prod (Pages deploy): live-mode is published under `/live/`
+  //     alongside Studio at the same origin.
+  const env = (import.meta as unknown as { env?: Record<string, string | boolean> }).env ?? {};
   const liveBaseUrl =
-    (import.meta as unknown as { env?: Record<string, string> }).env?.VITE_LIVE_URL ??
-    "../live-mode/";
+    (typeof env.VITE_LIVE_URL === "string" ? env.VITE_LIVE_URL : undefined) ??
+    (env.DEV ? "http://localhost:5175/" : "/live/");
 
   const adminKey = useMemo(() => {
     if (!config || typeof config !== "object") return undefined;
@@ -173,6 +227,34 @@ function LiveTestLauncher({
     }
   };
 
+  /**
+   * Replaces the join + admin keys with freshly-generated random
+   * values. Calls onChange so the form re-renders + the new keys are
+   * what the launcher URLs encode on the next click. Memorable join
+   * keys (adj-noun-NN, 6.4M combinations) read nicely if the
+   * instructor ever says them out loud; admin keys are 16 hex chars
+   * (64-bit entropy — enough to deter casual brute-forcing during a
+   * class session).
+   */
+  const generateKeys = () => {
+    const obj = (config && typeof config === "object" ? config : {}) as Record<
+      string,
+      unknown
+    >;
+    const live = (obj.live && typeof obj.live === "object" ? obj.live : {}) as Record<
+      string,
+      unknown
+    >;
+    onChange({
+      ...obj,
+      live: {
+        ...live,
+        joinKey: randomJoinKey(),
+        adminKey: randomAdminKey(),
+      },
+    });
+  };
+
   return (
     <div
       className="kukui-studio-live-launch"
@@ -186,6 +268,16 @@ function LiveTestLauncher({
             Opens your current draft in a new tab. The instructor URL embeds your admin key
             (auto-grants host role); the student URL is safe to share with anyone.
           </span>
+        </div>
+        <div className="kukui-studio-live-launch__actions">
+          <button
+            type="button"
+            className="kukui-studio-btn kukui-studio-btn--ghost"
+            onClick={generateKeys}
+            title="Replace join + admin keys with fresh random values"
+          >
+            Generate keys
+          </button>
         </div>
       </div>
       <div className="kukui-studio-live-launch__grid">
@@ -250,6 +342,63 @@ function toBase64Url(input: string): string {
   let bin = "";
   for (const b of bytes) bin += String.fromCharCode(b);
   return btoa(bin).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+}
+
+const ADJECTIVES = [
+  "bright",
+  "calm",
+  "clever",
+  "fierce",
+  "happy",
+  "lucky",
+  "merry",
+  "quiet",
+  "swift",
+  "wild",
+  "kind",
+  "bold",
+  "warm",
+  "sharp",
+  "noble",
+];
+
+const NOUNS = [
+  "badger",
+  "cougar",
+  "dolphin",
+  "eagle",
+  "falcon",
+  "fox",
+  "lion",
+  "owl",
+  "tiger",
+  "wolf",
+  "otter",
+  "heron",
+  "raven",
+  "hawk",
+  "lynx",
+];
+
+/**
+ * Memorable join key: `adj-noun-NN`. ~6.4M combinations is plenty for
+ * "different classroom rooms don't collide" at the scale of a single
+ * institution.
+ */
+function randomJoinKey(): string {
+  const pickFrom = (arr: readonly string[]): string =>
+    arr[Math.floor(Math.random() * arr.length)] as string;
+  const n = Math.floor(Math.random() * 100);
+  return `${pickFrom(ADJECTIVES)}-${pickFrom(NOUNS)}-${n.toString().padStart(2, "0")}`;
+}
+
+/** Admin key: 16 hex chars (64-bit entropy from crypto.getRandomValues). */
+function randomAdminKey(): string {
+  const bytes = new Uint8Array(8);
+  crypto.getRandomValues(bytes);
+  return Array.from(bytes)
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
 }
 
 function PreviewLoading() {

@@ -137,7 +137,6 @@
 
 .kukui-cat__chip.is-dragging {
   opacity: 0;
-  pointer-events: none;
 }
 
 /* Ghost rendered inside <DragOverlay>: opaque chip under the cursor. */

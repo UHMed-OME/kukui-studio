@@ -242,7 +242,7 @@ export function DnDEditor({
           .filter(Boolean)
           .join(" ")}
         style={{
-          backgroundImage: config.background.src ? `url(${config.background.src})` : undefined,
+          backgroundImage: config.background?.src ? `url(${config.background.src})` : undefined,
         }}
         onPointerDown={startDrawZone}
         onPointerMove={handlePointerMove}

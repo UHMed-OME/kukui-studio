@@ -164,14 +164,23 @@ export function DragAndDrop({
         >
           <div className="kukui-dnd__layout">
             <div
-              className="kukui-dnd__board"
-              style={{ backgroundImage: `url(${config.background.src})` }}
-              role="img"
+              className={[
+                "kukui-dnd__board",
+                config.background?.src ? "" : "kukui-dnd__board--no-image",
+              ]
+                .filter(Boolean)
+                .join(" ")}
+              style={
+                config.background?.src
+                  ? { backgroundImage: `url(${config.background.src})` }
+                  : undefined
+              }
+              role={config.background?.src ? "img" : "group"}
               // Don't fall back to the activity title — that would just have
               // assistive tech read the title twice. Empty alt here means
               // sighted-keyboard users still see the visual; AT users rely on
               // the fallback list below for the activity's full structure.
-              aria-label={config.background.alt ?? ""}
+              aria-label={config.background?.alt ?? ""}
             >
               {config.dropZones.map((zone) => {
                 const occupants = zoneOccupants.get(zone.id) ?? [];

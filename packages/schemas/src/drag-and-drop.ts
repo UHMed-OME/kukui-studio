@@ -18,12 +18,19 @@ export const DragAndDropConfigSchema = z
     version: z.string().regex(versionRe),
     title: z.string().min(1),
     author: z.string().optional(),
+    // Optional background image. When omitted, the activity renders a
+    // plain stage (16:10 aspect-ratio neutral canvas) so authors can
+    // build "text table" / labelled-zone puzzles where drop zones do
+    // the visual work themselves (e.g. category cells with their own
+    // headings). When `src` is provided, `alt` is required for
+    // accessibility.
     background: z
       .object({
         src: SAFE_MEDIA_URL,
         alt: z.string().min(1),
       })
-      .strict(),
+      .strict()
+      .optional(),
     draggables: z
       .array(
         z

@@ -1,10 +1,8 @@
 {
-  "_comment": "INTENTIONALLY INVALID: 'background' is required at the top level but missing here.",
+  "_comment": "INTENTIONALLY INVALID: 'draggables' must have at least 1 item (.min(1)). Background is now optional so omitting it is legal — but draggables and dropZones still need at least one entry each.",
   "version": "1.0",
   "title": "Label the parts of a plant cell",
-  "draggables": [
-    { "id": "d-nucleus", "label": "Nucleus", "correctZones": ["z-nucleus"] }
-  ],
+  "draggables": [],
   "dropZones": [
     {
       "id": "z-nucleus",
