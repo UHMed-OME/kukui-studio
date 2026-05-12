@@ -7,7 +7,7 @@ import {
   type FillInTheBlanksConfig,
 } from "@kukui/schemas";
 import type { ActivityProps, ScoreState } from "../../types.js";
-import { aggregate } from "../../scoring.js";
+import { aggregate, resolveScoring } from "../../scoring.js";
 import { MultipleChoice } from "../multiple-choice/index.js";
 import { FillInTheBlanks } from "../fill-in-the-blanks/index.js";
 import { SafeHtml } from "../../safe-html.js";
@@ -153,10 +153,11 @@ export function InteractiveVideo({
   // can use the just-committed state from recordScore's setState callback
   // — avoids a closure window where `state` could be one render behind the
   // latest `resolvedInteractions`.
+  const scoring = useMemo(() => resolveScoring(config, { mode: "points", passPercentage: 50 }), [config]);
+
   const submitFrom = (snapshot: State) => {
     const scores = Object.values(snapshot.resolvedInteractions);
-    const passPct = config.behaviour?.passPercentage ?? 50;
-    const aggregated = aggregate(scores, passPct);
+    const aggregated = aggregate(scores, scoring.passPercentage);
     const next: State = { ...snapshot, stage: "submitted" };
     setState(next);
     onSubmit({
@@ -340,7 +341,7 @@ export function InteractiveVideo({
             : `${Object.keys(state.resolvedInteractions).length} of ${validated.length} interactions answered.`}
         </p>
 
-        {state.stage === "submitted" && config.behaviour?.enableRetry ? (
+        {state.stage === "submitted" && scoring.enableRetry ? (
           <div className="kukui-iv__actions">
             <button
               type="button"

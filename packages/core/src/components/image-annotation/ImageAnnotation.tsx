@@ -2,6 +2,7 @@ import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react"
 import type { ImageAnnotationConfig } from "@kukui/schemas/image-annotation";
 import type { ActivityProps } from "../../types.js";
 import { SafeHtml } from "../../safe-html.js";
+import { resolveScoring } from "../../scoring.js";
 import "./ImageAnnotation.css";
 
 type ToolKind = "rectangle" | "circle" | "arrow" | "freehand" | "eraser";
@@ -73,6 +74,8 @@ export function ImageAnnotation({
   const svgRef = useRef<SVGSVGElement>(null);
   const dragRef = useRef<Drag | null>(null);
   const idCounterRef = useRef(0);
+
+  const scoring = useMemo(() => resolveScoring(config, { mode: "points" }), [config]);
 
   const enabledTools = useMemo<ToolKind[]>(() => {
     const t = config.tools;
@@ -238,7 +241,7 @@ export function ImageAnnotation({
 
   const submit = () => {
     if (state.submitted) return;
-    const score = computeScore(state.shapes, config);
+    const score = computeScore(state.shapes, config, scoring.mode === "all-or-nothing");
     setState((s) => ({ ...s, submitted: true, attempts: s.attempts + 1 }));
     onSubmit({
       ...score,
@@ -406,7 +409,7 @@ export function ImageAnnotation({
                 Submitted — {state.shapes.length} annotation
                 {state.shapes.length === 1 ? "" : "s"} recorded.
               </output>
-              {config.behaviour?.enableRetry ? (
+              {scoring.enableRetry ? (
                 <button
                   type="button"
                   className="kukui-ia__secondary"
@@ -525,6 +528,7 @@ type ScoreOut = { raw: number; max: number; success: boolean };
 function computeScore(
   shapes: AnnotationShape[],
   config: ImageAnnotationConfig,
+  singlePoint: boolean,
 ): ScoreOut {
   const expected = config.expectedAnnotations;
   if (!expected || expected.length === 0) {
@@ -554,7 +558,7 @@ function computeScore(
     if (best >= 0.5) hits += 1;
   }
   const max = expected.length;
-  if (config.behaviour?.singlePoint) {
+  if (singlePoint) {
     const all = hits === max;
     return { raw: all ? 1 : 0, max: 1, success: all };
   }

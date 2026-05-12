@@ -14,6 +14,7 @@ import {
 import type { CategorizationConfig } from "@kukui/schemas";
 import type { ActivityProps } from "../../types.js";
 import { SafeHtml } from "../../safe-html.js";
+import { resolveScoring } from "../../scoring.js";
 import "./Categorization.css";
 
 type Stage = "answering" | "submitted";
@@ -101,12 +102,14 @@ export function Categorization({
     return item.correctCategory === categoryId;
   };
 
+  const scoring = useMemo(() => resolveScoring(config, { mode: "points" }), [config]);
+
   const submit = () => {
     if (state.stage !== "answering") return;
     const total = config.items.length;
     const correct = Object.entries(state.placement).filter(([id, cid]) => isCorrect(id, cid))
       .length;
-    const singlePoint = config.behaviour?.singlePoint ?? false;
+    const singlePoint = scoring.mode === "all-or-nothing";
     const max = singlePoint ? 1 : total;
     const allRight = correct === total;
     const raw = singlePoint ? (allRight ? 1 : 0) : correct;
@@ -246,7 +249,7 @@ export function Categorization({
 
         <div className="kukui-cat__actions">
           {submitted ? (
-            config.behaviour?.enableRetry ? (
+            scoring.enableRetry ? (
               <button type="button" className="kukui-cat__secondary" onClick={tryAgain}>
                 {tryAgainLabel}
               </button>

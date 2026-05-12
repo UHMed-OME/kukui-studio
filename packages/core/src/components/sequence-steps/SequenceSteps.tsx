@@ -20,6 +20,7 @@ import { CSS } from "@dnd-kit/utilities";
 import type { SequenceStepsConfig } from "@kukui/schemas";
 import type { ActivityProps } from "../../types.js";
 import { SafeHtml } from "../../safe-html.js";
+import { resolveScoring } from "../../scoring.js";
 import "./SequenceSteps.css";
 
 type Stage = "answering" | "submitted";
@@ -166,10 +167,12 @@ export function SequenceSteps({
   );
   const allCorrect = correctCount === correctOrder.length;
 
+  const scoring = useMemo(() => resolveScoring(config, { mode: "points" }), [config]);
+
   const submit = () => {
     if (state.stage !== "answering") return;
     const total = correctOrder.length;
-    const singlePoint = config.behaviour?.singlePoint ?? false;
+    const singlePoint = scoring.mode === "all-or-nothing";
     const max = singlePoint ? 1 : total;
     const raw = singlePoint ? (allCorrect ? 1 : 0) : correctCount;
     const next: State = { ...state, stage: "submitted", attempts: state.attempts + 1 };
@@ -260,7 +263,7 @@ export function SequenceSteps({
 
         <div className="kukui-seq__actions">
           {submitted ? (
-            config.behaviour?.enableRetry ? (
+            scoring.enableRetry ? (
               <button type="button" className="kukui-seq__secondary" onClick={tryAgain}>
                 {tryAgainLabel}
               </button>

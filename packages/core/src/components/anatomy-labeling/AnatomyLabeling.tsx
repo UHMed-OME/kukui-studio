@@ -14,6 +14,7 @@ import {
 import type { AnatomyLabelingConfig } from "@kukui/schemas";
 import type { ActivityProps } from "../../types.js";
 import { SafeHtml } from "../../safe-html.js";
+import { resolveScoring } from "../../scoring.js";
 import "./AnatomyLabeling.css";
 
 type Stage = "answering" | "submitted";
@@ -133,13 +134,15 @@ export function AnatomyLabeling({
     return label.correctTargetId === targetId;
   };
 
+  const scoring = useMemo(() => resolveScoring(config, { mode: "points" }), [config]);
+
   const submit = () => {
     if (state.stage !== "answering") return;
     const total = config.labels.length;
     const correct = Object.entries(state.placement).filter(([id, tid]) =>
       isCorrect(id, tid),
     ).length;
-    const singlePoint = config.behaviour?.singlePoint ?? false;
+    const singlePoint = scoring.mode === "all-or-nothing";
     const max = singlePoint ? 1 : total;
     const allRight = correct === total;
     const raw = singlePoint ? (allRight ? 1 : 0) : correct;
@@ -289,7 +292,7 @@ export function AnatomyLabeling({
 
         <div className="kukui-al__actions">
           {submitted ? (
-            config.behaviour?.enableRetry ? (
+            scoring.enableRetry ? (
               <button type="button" className="kukui-al__secondary" onClick={tryAgain}>
                 {tryAgainLabel}
               </button>

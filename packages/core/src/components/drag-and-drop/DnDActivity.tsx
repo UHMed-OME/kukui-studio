@@ -1,5 +1,6 @@
 import { useId, useMemo, type CSSProperties, type ReactNode } from "react";
 import type { DragAndDropConfig } from "@kukui/schemas";
+import { resolveScoring } from "../../scoring.js";
 import { Chip } from "./Chip.js";
 import { Zone } from "./Zone.js";
 import type { State } from "./state.js";
@@ -72,6 +73,7 @@ export function DnDActivity({
     () => Object.entries(state.placement).filter(([id, zid]) => isCorrect(id, zid, config)).length,
     [state.placement, config],
   );
+  const scoring = useMemo(() => resolveScoring(config, { mode: "points" }), [config]);
 
   const ui = config.ui ?? {};
   const checkLabel = ui.checkAnswerButton ?? "Check";
@@ -233,7 +235,7 @@ export function DnDActivity({
               {checkLabel}
             </button>
           ) : null}
-          {state.stage === "submitted" && config.behaviour?.enableSolutionsButton ? (
+          {state.stage === "submitted" && scoring.enableSolutionsButton ? (
             <button
               type="button"
               className="kukui-dnd__secondary"
@@ -242,7 +244,7 @@ export function DnDActivity({
               {solutionLabel}
             </button>
           ) : null}
-          {submitted && config.behaviour?.enableRetry ? (
+          {submitted && scoring.enableRetry ? (
             <button
               type="button"
               className="kukui-dnd__secondary"

@@ -1,7 +1,7 @@
 import { useEffect, useId, useMemo, useState } from "react";
 import type { LabPanelConfig } from "@kukui/schemas/lab-panel";
 import type { ActivityProps } from "../../types.js";
-import { bandMessage, percentage, scoreSelection } from "../../scoring.js";
+import { bandMessage, percentage, resolveScoring, scoreSelection } from "../../scoring.js";
 import { SafeHtml, htmlToText } from "../../safe-html.js";
 import "./LabPanel.css";
 
@@ -101,18 +101,21 @@ export function LabPanel({
     [state.selectedRowIds, idToIndex],
   );
 
+  const scoring = useMemo(() => resolveScoring(config, { mode: "points" }), [config]);
+  const isSinglePoint = scoring.mode === "all-or-nothing";
+
   const score = useMemo(() => {
     const rowScore = scoreSelection({
       selectedIndices: new Set(selectedRowIdxs),
       correctIndices: abnormalIndices,
       totalAnswers: config.panel.values.length,
-      singlePoint: config.behaviour?.singlePoint,
+      singlePoint: isSinglePoint,
     });
     const interpretationCorrect =
       state.selectedChoiceId !== null &&
       state.selectedChoiceId === correctChoiceId;
 
-    if (config.behaviour?.singlePoint) {
+    if (isSinglePoint) {
       const exact = rowScore.success && interpretationCorrect;
       return { raw: exact ? 1 : 0, max: 1, success: exact };
     }
@@ -123,7 +126,7 @@ export function LabPanel({
     selectedRowIdxs,
     abnormalIndices,
     config.panel.values.length,
-    config.behaviour?.singlePoint,
+    isSinglePoint,
     state.selectedChoiceId,
     correctChoiceId,
   ]);
@@ -147,7 +150,7 @@ export function LabPanel({
 
   const submitted = state.stage === "submitted";
   const pct = submitted ? percentage(score) : 0;
-  const banner = submitted ? bandMessage(config.overallFeedback, pct) : null;
+  const banner = submitted ? bandMessage(scoring.bands, pct) : null;
 
   return (
     <div className="kukui-lp">
@@ -363,7 +366,7 @@ export function LabPanel({
                   <span className="kukui-lp__band"> — {banner}</span>
                 ) : null}
               </output>
-              {config.behaviour?.enableRetry ? (
+              {scoring.enableRetry ? (
                 <button
                   type="button"
                   className="kukui-lp__secondary"

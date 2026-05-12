@@ -1,7 +1,7 @@
 import { useEffect, useId, useMemo, useState } from "react";
 import type { MultipleChoiceConfig } from "@kukui/schemas";
 import type { ActivityProps } from "../../types.js";
-import { bandMessage, percentage, scoreSelection } from "../../scoring.js";
+import { bandMessage, percentage, resolveScoring, scoreSelection } from "../../scoring.js";
 import { SafeHtml, htmlToText } from "../../safe-html.js";
 import "./MultipleChoice.css";
 
@@ -94,13 +94,16 @@ export function MultipleChoice({
     });
   };
 
+  const scoring = useMemo(() => resolveScoring(config, { mode: "points" }), [config]);
+  const isSinglePoint = scoring.mode === "all-or-nothing";
+
   const submit = () => {
     if (state.selected.length === 0) return;
     const score = scoreSelection({
       selectedIndices: new Set(state.selected),
       correctIndices,
       totalAnswers: config.answers.length,
-      singlePoint: config.behaviour?.singlePoint,
+      singlePoint: isSinglePoint,
     });
     setState((s) => ({ ...s, stage: "submitted", attempts: s.attempts + 1 }));
     onSubmit({ ...score, suspendData: JSON.stringify({ ...state, stage: "submitted" }) });
@@ -108,8 +111,7 @@ export function MultipleChoice({
 
   const tryAgain = () => setState(initialState);
 
-  const showSolutions =
-    state.stage === "submitted" && config.behaviour?.enableSolutionsButton;
+  const showSolutions = state.stage === "submitted" && scoring.enableSolutionsButton;
 
   const ui = config.ui ?? {};
   const checkLabel = ui.checkAnswerButton ?? "Check";
@@ -122,14 +124,13 @@ export function MultipleChoice({
         selectedIndices: new Set(state.selected),
         correctIndices,
         totalAnswers: config.answers.length,
-        singlePoint: config.behaviour?.singlePoint,
+        singlePoint: isSinglePoint,
       }),
-    [state.selected, correctIndices, config.answers.length, config.behaviour?.singlePoint],
+    [state.selected, correctIndices, config.answers.length, isSinglePoint],
   );
 
   const pct = state.stage === "submitted" ? percentage(score) : 0;
-  const banner =
-    state.stage === "submitted" ? bandMessage(config.overallFeedback, pct) : null;
+  const banner = state.stage === "submitted" ? bandMessage(scoring.bands, pct) : null;
 
   return (
     <div className="kukui-mc">
@@ -222,7 +223,7 @@ export function MultipleChoice({
                 {score.raw} / {score.max}
                 {banner ? <span className="kukui-mc__band"> — {banner}</span> : null}
               </output>
-              {config.behaviour?.enableRetry ? (
+              {scoring.enableRetry ? (
                 <button type="button" className="kukui-mc__secondary" onClick={tryAgain}>
                   {tryAgainLabel}
                 </button>

@@ -25,19 +25,18 @@ describe("migrateToScoring", () => {
     expect(out.scoring).toEqual({ mode: "points" });
   });
 
-  it("behaviour.singlePoint=true → all-or-nothing (dual-written)", () => {
+  it("behaviour.singlePoint=true → all-or-nothing (legacy fields stripped)", () => {
     const input = {
       title: "x",
       behaviour: { singlePoint: true, enableRetry: true },
     };
     const out = migrateToScoring(input, "multiple-choice") as Record<string, unknown>;
     expect(out.scoring).toEqual({ mode: "all-or-nothing", enableRetry: true });
-    // dual-write keeps the legacy fields populated for unconverted runtimes
-    expect((out.behaviour as Record<string, unknown>).singlePoint).toBe(true);
-    expect((out.behaviour as Record<string, unknown>).enableRetry).toBe(true);
+    // legacy fields cleaned up; runtimes read via resolveScoring()
+    expect(out.behaviour).toBeUndefined();
   });
 
-  it("preserves passPercentage + overallFeedback when promoting to points", () => {
+  it("promotes passPercentage + overallFeedback into scoring block, strips originals", () => {
     const input = {
       title: "x",
       passPercentage: 80,
@@ -57,15 +56,13 @@ describe("migrateToScoring", () => {
       ],
       enableRetry: true,
     });
-    // dual-write: legacy fields still present
-    expect(out.passPercentage).toBe(80);
-    expect(out.overallFeedback).toEqual([
-      { from: 0, to: 49, message: "Review." },
-      { from: 50, to: 100, message: "Good." },
-    ]);
+    // root-level legacy fields removed — runtime reads scoring.passPercentage /
+    // scoring.bands via resolveScoring().
+    expect(out.passPercentage).toBeUndefined();
+    expect(out.overallFeedback).toBeUndefined();
   });
 
-  it("Question Set's root passPercentage is promoted (dual-written)", () => {
+  it("Question Set's root passPercentage is promoted into scoring block", () => {
     const input = {
       title: "Set",
       passPercentage: 75,
@@ -73,24 +70,26 @@ describe("migrateToScoring", () => {
     };
     const out = migrateToScoring(input, "question-set") as Record<string, unknown>;
     expect(out.scoring).toMatchObject({ mode: "points", passPercentage: 75 });
+    // unrelated behaviour fields stay where they are
     expect((out.behaviour as Record<string, unknown>).randomQuestions).toBe(true);
-    expect(out.passPercentage).toBe(75);
+    expect(out.passPercentage).toBeUndefined();
   });
 
   it("Flashcards default to completion mode", () => {
     const input = { title: "Cards", behaviour: { shuffle: true, enableRetry: true } };
     const out = migrateToScoring(input, "flashcards") as Record<string, unknown>;
     expect(out.scoring).toEqual({ mode: "completion", enableRetry: true });
+    // shuffle is playback-level (not a scoring field) so it stays in behaviour
     expect((out.behaviour as Record<string, unknown>).shuffle).toBe(true);
-    // completion mode clears single-point flag at the legacy site too
-    expect((out.behaviour as Record<string, unknown>).singlePoint).toBeUndefined();
+    expect((out.behaviour as Record<string, unknown>).enableRetry).toBeUndefined();
   });
 
-  it("Hotspot 2D defaults to all-or-nothing (dual-written)", () => {
+  it("Hotspot 2D defaults to all-or-nothing", () => {
     const input = { title: "H", behaviour: {} };
     const out = migrateToScoring(input, "hotspot-2d") as Record<string, unknown>;
     expect(out.scoring).toEqual({ mode: "all-or-nothing" });
-    expect((out.behaviour as Record<string, unknown>).singlePoint).toBe(true);
+    // legacy singlePoint is no longer written; runtime reads from scoring.mode
+    expect(out.behaviour).toBeUndefined();
   });
 
   it("Live activity kinds are skipped entirely", () => {
@@ -103,9 +102,8 @@ describe("migrateToScoring", () => {
     const input = { title: "x", behaviour: { showSolutionsButton: true } };
     const out = migrateToScoring(input, "fill-in-the-blanks") as Record<string, unknown>;
     expect(out.scoring).toEqual({ mode: "points", enableSolutionsButton: true });
-    // dual-write mirrors back to both legacy keys
-    expect((out.behaviour as Record<string, unknown>).showSolutionsButton).toBe(true);
-    expect((out.behaviour as Record<string, unknown>).enableSolutionsButton).toBe(true);
+    // legacy keys cleared
+    expect(out.behaviour).toBeUndefined();
   });
 
   it("output passes the discriminated-union schema", () => {

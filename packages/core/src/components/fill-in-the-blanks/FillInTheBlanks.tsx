@@ -1,6 +1,7 @@
 import { useEffect, useId, useMemo, useState } from "react";
 import { parseClozeText, type FillInTheBlanksConfig } from "@kukui/schemas";
 import type { ActivityProps } from "../../types.js";
+import { resolveScoring } from "../../scoring.js";
 import "./FillInTheBlanks.css";
 
 type Stage = "answering" | "submitted";
@@ -88,9 +89,10 @@ export function FillInTheBlanks({
 
   const caseSensitive = config.behaviour?.caseSensitive ?? false;
   const acceptSpellingErrors = config.behaviour?.acceptSpellingErrors ?? false;
-  const singlePoint = config.behaviour?.singlePoint ?? false;
-  const enableRetry = config.behaviour?.enableRetry ?? false;
-  const showSolutionsButton = config.behaviour?.showSolutionsButton ?? false;
+  const scoring = useMemo(() => resolveScoring(config, { mode: "points" }), [config]);
+  const singlePoint = scoring.mode === "all-or-nothing";
+  const enableRetry = scoring.enableRetry;
+  const showSolutionsButton = scoring.enableSolutionsButton;
 
   const ui = config.ui ?? {};
   const checkLabel = ui.checkAnswerButton ?? "Check";

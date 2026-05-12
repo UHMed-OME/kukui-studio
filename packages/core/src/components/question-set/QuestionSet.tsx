@@ -7,6 +7,7 @@ import {
   type FillInTheBlanksConfig,
 } from "@kukui/schemas";
 import type { ActivityProps, ScoreState } from "../../types.js";
+import { resolveScoring } from "../../scoring.js";
 import { MultipleChoice } from "../multiple-choice/index.js";
 import { FillInTheBlanks } from "../fill-in-the-blanks/index.js";
 import "./QuestionSet.css";
@@ -88,7 +89,8 @@ export function QuestionSet({
 
   const total = validated.length;
   const answeredCount = Object.keys(state.scores).length;
-  const passPct = config.passPercentage ?? 50;
+  const scoring = useMemo(() => resolveScoring(config, { mode: "points", passPercentage: 50 }), [config]);
+  const passPct = scoring.passPercentage;
 
   const goPrev = () =>
     setState((s) => ({ ...s, current: Math.max(0, s.current - 1) }));
@@ -204,7 +206,7 @@ export function QuestionSet({
             {ui.nextQuestionButton ?? "Next"}
           </button>
           {submitted ? (
-            config.behaviour?.enableRetry ? (
+            scoring.enableRetry ? (
               <button type="button" className="kukui-qs__primary" onClick={tryAgain}>
                 {tryAgainLabel}
               </button>

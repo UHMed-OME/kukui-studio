@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useId, useMemo, useReducer } from "react";
 import type { DragAndDropConfig } from "@kukui/schemas";
 import type { ActivityProps } from "../../types.js";
+import { resolveScoring } from "../../scoring.js";
 import { DragLayer } from "./DragLayer.js";
 import { TapLayer } from "./TapLayer.js";
 import {
@@ -101,16 +102,18 @@ export function DragAndDrop({
     [],
   );
 
+  const scoring = useMemo(() => resolveScoring(config, { mode: "points" }), [config]);
+  const isSinglePoint = scoring.mode === "all-or-nothing";
+
   const onCheck = useCallback(() => {
     if (state.stage !== "answering") return;
     const total = config.draggables.length;
     const correct = Object.entries(state.placement).filter(([id, zid]) =>
       isCorrect(id, zid, config),
     ).length;
-    const singlePoint = config.behaviour?.singlePoint ?? false;
-    const max = singlePoint ? 1 : total;
+    const max = isSinglePoint ? 1 : total;
     const allRight = correct === total;
-    const raw = singlePoint ? (allRight ? 1 : 0) : correct;
+    const raw = isSinglePoint ? (allRight ? 1 : 0) : correct;
     // Snapshot the state we're about to commit to so the suspend
     // payload matches what the LMS thinks the final score is.
     const next: State = { ...state, stage: "submitted", attempts: state.attempts + 1 };
@@ -121,7 +124,7 @@ export function DragAndDrop({
       success: allRight,
       suspendData: JSON.stringify(next),
     });
-  }, [state, config, onSubmit]);
+  }, [state, config, isSinglePoint, onSubmit]);
 
   const onTryAgain = useCallback(() => {
     dispatch({ type: "try-again", initial: initial(config) });

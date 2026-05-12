@@ -2,6 +2,7 @@ import { useEffect, useId, useMemo, useState } from "react";
 import type { MatchingPairsConfig } from "@kukui/schemas/matching-pairs";
 import type { ActivityProps } from "../../types.js";
 import { SafeHtml } from "../../safe-html.js";
+import { resolveScoring } from "../../scoring.js";
 import "./MatchingPairs.css";
 
 type Stage = "answering" | "submitted";
@@ -164,10 +165,12 @@ export function MatchingPairs({
     [state.connections],
   );
 
+  const scoring = useMemo(() => resolveScoring(config, { mode: "points" }), [config]);
+
   const submit = () => {
     if (submitted || !allConnected) return;
     const total = config.pairs.length;
-    const singlePoint = config.behaviour?.singlePoint ?? false;
+    const singlePoint = scoring.mode === "all-or-nothing";
     const allRight = correctCount === total;
     const raw = singlePoint ? (allRight ? 1 : 0) : correctCount;
     const max = singlePoint ? 1 : total;
@@ -337,7 +340,7 @@ export function MatchingPairs({
               <output className="kukui-mp__score">
                 {correctCount} / {config.pairs.length}
               </output>
-              {config.behaviour?.enableRetry ? (
+              {scoring.enableRetry ? (
                 <button type="button" className="kukui-mp__secondary" onClick={tryAgain}>
                   {tryAgainLabel}
                 </button>

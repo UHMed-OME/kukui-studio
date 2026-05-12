@@ -1,7 +1,7 @@
 import { useEffect, useId, useMemo, useState } from "react";
 import type { HighlightTextConfig } from "@kukui/schemas/highlight-text";
 import type { ActivityProps } from "../../types.js";
-import { bandMessage, percentage, scoreSelection } from "../../scoring.js";
+import { bandMessage, percentage, resolveScoring, scoreSelection } from "../../scoring.js";
 import { SafeHtml } from "../../safe-html.js";
 import "./HighlightText.css";
 
@@ -74,15 +74,18 @@ export function HighlightText({
     [state.selected, idToIndex],
   );
 
+  const scoring = useMemo(() => resolveScoring(config, { mode: "points" }), [config]);
+  const isSinglePoint = scoring.mode === "all-or-nothing";
+
   const score = useMemo(
     () =>
       scoreSelection({
         selectedIndices: new Set(selectedIdxs),
         correctIndices,
         totalAnswers: config.tokens.length,
-        singlePoint: config.behaviour?.singlePoint,
+        singlePoint: isSinglePoint,
       }),
-    [selectedIdxs, correctIndices, config.tokens.length, config.behaviour?.singlePoint],
+    [selectedIdxs, correctIndices, config.tokens.length, isSinglePoint],
   );
 
   const submit = () => {
@@ -102,7 +105,7 @@ export function HighlightText({
 
   const submitted = state.stage === "submitted";
   const pct = submitted ? percentage(score) : 0;
-  const banner = submitted ? bandMessage(config.overallFeedback, pct) : null;
+  const banner = submitted ? bandMessage(scoring.bands, pct) : null;
 
   return (
     <div className="kukui-ht">
@@ -195,7 +198,7 @@ export function HighlightText({
                 {score.raw} / {score.max}
                 {banner ? <span className="kukui-ht__band"> — {banner}</span> : null}
               </output>
-              {config.behaviour?.enableRetry ? (
+              {scoring.enableRetry ? (
                 <button type="button" className="kukui-ht__secondary" onClick={tryAgain}>
                   {tryAgainLabel}
                 </button>

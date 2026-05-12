@@ -107,72 +107,40 @@ export function migrateToScoring(config: unknown, kind?: string): unknown {
     scoring = next;
   }
 
-  // Dual-write: keep the legacy fields populated alongside the new
-  // `scoring` block. Activity runtimes still read the legacy fields,
-  // and rewriting every runtime in one shipping cycle is unsafe — the
-  // duplication is acceptable as a staged migration while runtimes
-  // are converted to `resolveScoring()` one at a time. See the spec:
-  //   docs/superpowers/specs/2026-05-12-scoring-tab-design.md
-  return syncLegacyFields({ ...config, scoring }, scoring);
+  // Clean cut: legacy fields are stripped from their old homes. Every
+  // activity runtime reads via `resolveScoring(config)` (from
+  // @kukui/core/scoring), which prefers the `scoring` block when present
+  // and gracefully falls back to legacy fields if it sees old-shape
+  // input. So we keep the migrator authoritative for new-shape output
+  // and the runtime tolerant for old-shape input.
+  const out: AnyConfig = { ...config, scoring };
+  const cleanedBehaviour = isPlainObject(out.behaviour) ? { ...out.behaviour } : null;
+  if (cleanedBehaviour) {
+    delete cleanedBehaviour.singlePoint;
+    delete cleanedBehaviour.enableRetry;
+    delete cleanedBehaviour.enableSolutionsButton;
+    delete cleanedBehaviour.showSolutionsButton;
+    if (Object.keys(cleanedBehaviour).length > 0) {
+      out.behaviour = cleanedBehaviour;
+    } else {
+      delete out.behaviour;
+    }
+  }
+  delete out.passPercentage;
+  delete out.overallFeedback;
+  return out;
 }
 
 /**
- * Mirrors the active `scoring` block into the pre-Scoring-tab field
- * locations so unconverted runtimes (everything that still reads
- * `config.behaviour?.singlePoint`, `config.overallFeedback`, etc.)
- * keep working without modification.
+ * @deprecated Kept exported for the Scoring tab's `withScoring` helper
+ * so it can normalize new-shape edits before the form's roundtrip,
+ * even though no legacy fields are written. After all runtimes were
+ * converted to read via `resolveScoring()` (from @kukui/core), the
+ * dual-write became unnecessary — this helper is now an identity
+ * wrapper that keeps the API stable.
  */
-export function syncLegacyFields(config: unknown, scoring: Scoring): unknown {
-  if (!isPlainObject(config)) return config;
-  const next: AnyConfig = { ...config };
-  const behaviour = isPlainObject(next.behaviour) ? { ...next.behaviour } : {};
-
-  if (scoring.mode === "all-or-nothing") {
-    behaviour.singlePoint = true;
-  } else {
-    delete behaviour.singlePoint;
-  }
-  if (scoring.mode !== "completion") {
-    if (scoring.enableSolutionsButton !== undefined) {
-      behaviour.enableSolutionsButton = scoring.enableSolutionsButton;
-      behaviour.showSolutionsButton = scoring.enableSolutionsButton;
-    } else {
-      delete behaviour.enableSolutionsButton;
-      delete behaviour.showSolutionsButton;
-    }
-  } else {
-    delete behaviour.enableSolutionsButton;
-    delete behaviour.showSolutionsButton;
-  }
-  if (scoring.enableRetry !== undefined) {
-    behaviour.enableRetry = scoring.enableRetry;
-  } else {
-    delete behaviour.enableRetry;
-  }
-
-  if (Object.keys(behaviour).length > 0) {
-    next.behaviour = behaviour;
-  } else {
-    delete next.behaviour;
-  }
-
-  if (scoring.mode === "points") {
-    if (scoring.passPercentage !== undefined) {
-      next.passPercentage = scoring.passPercentage;
-    } else {
-      delete next.passPercentage;
-    }
-    if (scoring.bands !== undefined) {
-      next.overallFeedback = scoring.bands;
-    } else {
-      delete next.overallFeedback;
-    }
-  } else {
-    delete next.passPercentage;
-    delete next.overallFeedback;
-  }
-
-  return next;
+export function syncLegacyFields(config: unknown, _scoring: Scoring): unknown {
+  return config;
 }
 
 /** Run the migrator over an unknown config of unknown kind. */
