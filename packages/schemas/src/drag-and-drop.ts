@@ -71,6 +71,16 @@ export const DragAndDropConfigSchema = z
         enableRetry: z.boolean().optional(),
         enableSolutionsButton: z.boolean().optional(),
         singlePoint: z.boolean().optional(),
+        // How the chip-to-zone interaction is driven. "drag" forces the
+        // @dnd-kit drag flow; "tap" forces the tap-to-place flow (chip →
+        // zone, two taps). "auto" (default) picks per session based on the
+        // first observed pointer type — mouse/pen → drag, touch → tap.
+        // Below 760 px width the runtime always behaves as "tap" regardless
+        // of this setting (mobile drag-on-page-scroll is hostile).
+        interaction: z.enum(["drag", "tap", "auto"]).optional(),
+        // Board aspect ratio. Authors with portrait-shaped reference art
+        // can pick 4/3 or 1/1; default 16/10 matches the existing layout.
+        aspectRatio: z.enum(["16/10", "4/3", "1/1"]).optional(),
       })
       .strict()
       .optional(),
