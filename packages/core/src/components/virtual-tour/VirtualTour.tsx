@@ -1,7 +1,8 @@
 import { Suspense, useEffect, useId, useMemo, useRef, useState } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { Html, useGLTF } from "@react-three/drei";
+import { useGLTF } from "@react-three/drei";
 import * as THREE from "three";
+import { HotspotPin } from "../_shared/HotspotPin.js";
 import type { VirtualTourConfig } from "@kukui/schemas";
 import type { ActivityProps } from "../../types.js";
 import { SafeHtml } from "../../safe-html.js";
@@ -119,7 +120,12 @@ export function VirtualTour({
           {config.title}
         </HeadingTag>
 
-        <VirtualTourScene config={config} disabled={submitted} onVisit={visit} />
+        <VirtualTourScene
+          config={config}
+          disabled={submitted}
+          visited={new Set(state.visited)}
+          onVisit={visit}
+        />
 
         <fieldset className="kukui-vt__fallback" disabled={submitted}>
           <legend className="kukui-vt__fallback-legend">Points of interest</legend>
@@ -220,10 +226,12 @@ export function VirtualTour({
 function VirtualTourScene({
   config,
   disabled,
+  visited,
   onVisit,
 }: {
   config: VirtualTourConfig;
   disabled: boolean;
+  visited: Set<string>;
   onVisit: (id: string) => void;
 }) {
   const hasWebGL =
@@ -241,6 +249,11 @@ function VirtualTourScene({
 
   const spawn = config.scene.spawn?.position ?? { x: 0, y: 1.6, z: 3 };
   const movementSpeed = config.movement?.speed ?? 3;
+  // The model is the occluder for each pin's per-frame raycast — pins
+  // show `.is-behind` styling when their anchor is round a corner /
+  // behind a wall, so the learner can still see where unvisited points
+  // are without losing depth information.
+  const sceneRef = useRef<THREE.Object3D | null>(null);
 
   return (
     <div className="kukui-vt__canvas-wrap">
@@ -252,44 +265,22 @@ function VirtualTourScene({
         <directionalLight position={[5, 8, 4]} intensity={0.9} />
         <directionalLight position={[-4, 3, -3]} intensity={0.4} />
         <Suspense fallback={null}>
-          <TourModel src={config.scene.src} />
+          <TourModel src={config.scene.src} sceneRef={sceneRef} />
         </Suspense>
         <FirstPersonRig speed={movementSpeed} />
         <DragLookControls />
-        {config.overlays.map((o) => (
-          <mesh
+        {config.overlays.map((o, i) => (
+          <HotspotPin
             key={o.id}
-            position={[o.position.x, o.position.y, o.position.z]}
-            onClick={(ev) => {
-              ev.stopPropagation();
-              if (!disabled) onVisit(o.id);
-            }}
-          >
-            <sphereGeometry args={[0.3, 24, 24]} />
-            <meshStandardMaterial
-              color={tokens.primary}
-              emissive={tokens.primary}
-              emissiveIntensity={0.5}
-            />
-            <Html center distanceFactor={6} style={{ pointerEvents: "none" }}>
-              <div
-                aria-hidden="true"
-                style={{
-                  background: tokens.primary,
-                  color: "#ffffff",
-                  fontWeight: 700,
-                  fontSize: 12,
-                  padding: "4px 8px",
-                  borderRadius: 999,
-                  whiteSpace: "nowrap",
-                  border: "2px solid #ffffff",
-                  transform: "translateY(-180%)",
-                }}
-              >
-                {o.title ?? o.id}
-              </div>
-            </Html>
-          </mesh>
+            position={o.position}
+            number={i + 1}
+            label={o.title ?? o.id}
+            kind={visited.has(o.id) ? "reveal" : "default"}
+            disabled={disabled}
+            onClick={() => onVisit(o.id)}
+            occluders={[sceneRef.current]}
+            ariaLabel={`Overlay ${i + 1}: ${o.title ?? o.id}`}
+          />
         ))}
       </Canvas>
     </div>
@@ -453,8 +444,20 @@ function DragLookControls() {
   return null;
 }
 
-function TourModel({ src }: { src: string }) {
+function TourModel({
+  src,
+  sceneRef,
+}: {
+  src: string;
+  sceneRef?: React.MutableRefObject<THREE.Object3D | null>;
+}) {
   const { scene } = useGLTF(src);
+  useEffect(() => {
+    if (sceneRef) sceneRef.current = scene;
+    return () => {
+      if (sceneRef) sceneRef.current = null;
+    };
+  }, [scene, sceneRef]);
   return <primitive object={scene} />;
 }
 
