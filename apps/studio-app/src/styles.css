@@ -2303,39 +2303,6 @@ button {
   border-color: var(--color-primary);
 }
 
-.ks-edit-dnd__chip-row-image {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-xs);
-  font-size: var(--font-size-meta);
-}
-
-.ks-edit-dnd__chip-row-thumb {
-  width: 32px;
-  height: 32px;
-  object-fit: contain;
-  border-radius: var(--radius-sm);
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-}
-
-.ks-edit-dnd__chip-row-image-add,
-.ks-edit-dnd__chip-row-image-clear {
-  font-size: var(--font-size-meta);
-  color: var(--color-primary);
-  background: var(--color-primary-soft);
-  border: 1px solid transparent;
-  border-radius: var(--radius-sm);
-  padding: 2px 8px;
-  cursor: pointer;
-}
-
-.ks-edit-dnd__chip-row-image-clear {
-  border-style: solid;
-  color: var(--color-text-secondary);
-  border-color: var(--color-border);
-}
-
 .ks-edit-dnd__chip-row-delete {
   align-self: start;
   background: transparent;
@@ -4293,4 +4260,311 @@ html[data-theme="glass"] .kukui-studio-footer {
 
 .ks-h3d-editor__delete:hover {
   background: rgb(195 65 50 / 0.08);
+}
+
+/* ---------- Scoring tab ---------------------------------------------- */
+
+.ks-scoring-root {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2xl, 24px);
+  padding: var(--spacing-2xl, 24px);
+  max-width: 760px;
+}
+
+.ks-scoring-empty-state {
+  padding: var(--spacing-2xl, 24px);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-meta);
+}
+
+.ks-scoring-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md, 12px);
+  padding-bottom: var(--spacing-xl, 20px);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.ks-scoring-section:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.ks-scoring-section-title {
+  margin: 0;
+  font-size: var(--font-size-prompt, 16px);
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+.ks-scoring-section-title-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--spacing-md, 12px);
+}
+
+.ks-scoring-help {
+  margin: 0;
+  font-size: var(--font-size-meta);
+  color: var(--color-text-secondary);
+  line-height: 1.5;
+}
+
+.ks-scoring-modes {
+  border: none;
+  margin: 0;
+  padding: 0;
+}
+
+.ks-scoring-mode-option {
+  display: grid;
+  grid-template-columns: 22px 1fr;
+  gap: var(--spacing-sm);
+  align-items: start;
+  padding: var(--spacing-sm) var(--spacing-md);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  margin-bottom: var(--spacing-sm);
+}
+
+.ks-scoring-mode-option:has(input:checked) {
+  background: var(--color-primary-soft);
+  border-color: var(--color-primary);
+}
+
+.ks-scoring-mode-option input {
+  margin-top: 4px;
+}
+
+.ks-scoring-mode-option strong {
+  display: block;
+  margin-bottom: 2px;
+  color: var(--color-text-primary);
+}
+
+.ks-scoring-mode-option p {
+  margin: 0;
+  font-size: var(--font-size-meta);
+  color: var(--color-text-secondary);
+  line-height: 1.5;
+}
+
+.ks-scoring-threshold-value {
+  font-weight: 700;
+  color: var(--color-primary);
+  font-size: var(--font-size-prompt, 16px);
+}
+
+.ks-scoring-threshold-row {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-lg, 16px);
+  flex-wrap: wrap;
+}
+
+.ks-scoring-threshold-input {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs, 4px);
+  font-size: var(--font-size-meta);
+  color: var(--color-text-secondary);
+}
+
+.ks-scoring-threshold-input input {
+  width: 64px;
+  padding: 4px 8px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+}
+
+.ks-scoring-checkbox {
+  display: grid;
+  grid-template-columns: 22px 1fr;
+  gap: var(--spacing-sm);
+  align-items: start;
+  font-size: var(--font-size-meta);
+  color: var(--color-text-secondary);
+  line-height: 1.5;
+}
+
+.ks-scoring-checkbox input {
+  margin-top: 4px;
+}
+
+.ks-scoring-checkbox strong {
+  color: var(--color-text-primary);
+}
+
+.ks-scoring-empty {
+  margin: 0;
+  padding: var(--spacing-md);
+  background: var(--color-tip-bg, #f2f0e8);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-meta);
+  color: var(--color-text-secondary);
+}
+
+.ks-scoring-bands {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.ks-scoring-band {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  grid-template-rows: auto auto;
+  gap: var(--spacing-sm);
+  align-items: center;
+  padding: var(--spacing-sm);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+}
+
+.ks-scoring-band-range {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: var(--font-size-meta);
+}
+
+.ks-scoring-band-range input {
+  width: 56px;
+  padding: 4px 6px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  text-align: right;
+}
+
+.ks-scoring-band-message {
+  padding: 6px 10px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  font: inherit;
+}
+
+.ks-scoring-band-remove {
+  width: 28px;
+  height: 28px;
+  border: none;
+  background: transparent;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.ks-scoring-band-remove:hover {
+  color: #c34132;
+}
+
+.ks-scoring-band-warn {
+  grid-column: 1 / -1;
+  margin: 0;
+  font-size: var(--font-size-meta);
+  color: #c34132;
+}
+
+.ks-scoring-band-add {
+  align-self: flex-start;
+  padding: 6px 12px;
+  border: 1px dashed var(--color-primary);
+  background: transparent;
+  border-radius: var(--radius-sm);
+  color: var(--color-primary);
+  cursor: pointer;
+  font: inherit;
+}
+
+.ks-scoring-preview {
+  background: var(--color-tip-bg, #f2f0e8);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-lg);
+  border: 1px solid var(--color-border);
+}
+
+.ks-scoring-preview-sim {
+  display: grid;
+  grid-template-columns: max-content 1fr 60px;
+  gap: var(--spacing-md);
+  align-items: center;
+  font-size: var(--font-size-meta);
+  color: var(--color-text-secondary);
+  margin-bottom: var(--spacing-md);
+}
+
+.ks-scoring-preview-sim output {
+  font-weight: 700;
+  color: var(--color-primary);
+  text-align: right;
+}
+
+.ks-scoring-preview-row {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 4px var(--spacing-md);
+  margin: 0;
+}
+
+.ks-scoring-preview-row > div {
+  display: contents;
+}
+
+.ks-scoring-preview-row dt {
+  font-size: var(--font-size-meta);
+  color: var(--color-text-secondary);
+}
+
+.ks-scoring-preview-row dd {
+  margin: 0;
+  font-size: var(--font-size-answer, 15px);
+}
+
+.ks-scoring-status {
+  text-transform: uppercase;
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  padding: 2px 8px;
+  border-radius: 999px;
+}
+
+.ks-scoring-status--passed {
+  background: var(--color-success-soft, #d8ecdc);
+  color: var(--color-success, #2e6e41);
+}
+
+.ks-scoring-status--failed {
+  background: var(--color-error-soft, #f5d6d2);
+  color: var(--color-error, #c34132);
+}
+
+.ks-scoring-status--completed {
+  background: var(--color-primary-soft);
+  color: var(--color-primary);
+}
+
+.ks-scoring-preview-scorm {
+  margin-top: var(--spacing-md);
+  font-size: var(--font-size-meta);
+}
+
+.ks-scoring-preview-scorm summary {
+  cursor: pointer;
+  color: var(--color-text-secondary);
+}
+
+.ks-scoring-preview-scorm pre {
+  margin: var(--spacing-sm) 0 0;
+  padding: var(--spacing-sm);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-family-mono, monospace);
+  font-size: 12px;
+  overflow-x: auto;
 }

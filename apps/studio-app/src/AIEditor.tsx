@@ -1,5 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { SchemaRegistry, type SchemaRegistryKey } from "@kukui/schemas";
+import {
+  SchemaRegistry,
+  type SchemaRegistryKey,
+  migrateToScoring,
+} from "@kukui/schemas";
 import {
   callStructured,
   ChatCompletionsError,
@@ -290,9 +294,15 @@ export function AIEditor({
   const finalizeProposal = (
     activeMode: Mode,
     baseline: unknown,
-    proposed: unknown,
+    proposedRaw: unknown,
     raw: string,
   ) => {
+    // Normalize the LLM's output to the new scoring shape. The model
+    // tends to produce the pre-Scoring-tab shape (singlePoint etc.)
+    // because the samples it was prompted with use the old shape; the
+    // migrator runs idempotently so already-new-shape output passes
+    // through unchanged.
+    const proposed = migrateToScoring(proposedRaw, kind);
     const summary = summariseChanges(baseline, proposed);
     const ratio = changeRatio(baseline, proposed);
     if (activeMode === "edit" && ratio >= DESTRUCTIVE_THRESHOLD) {

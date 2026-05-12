@@ -205,6 +205,31 @@ export function InstructorConsole({
           </div>
         </section>
 
+        <section aria-labelledby="trust-heading" className="live-section">
+          <h2 id="trust-heading" className="live-section__heading">
+            How this room is secured
+          </h2>
+          <ul className="live-trust-list">
+            <li>
+              <strong>No central server.</strong> Vote / response data flows
+              peer-to-peer over WebRTC. Public Nostr relays only see when peers
+              come and go (presence metadata) — they don't see the answers.
+            </li>
+            <li>
+              <strong>Host controls.</strong> Only your browser tab — the one
+              opened with the admin key — can advance phases. Students see your
+              changes but can't drive them from their tab.
+            </li>
+            <li>
+              <strong>Don't use for graded high-stakes work.</strong> This is a
+              classroom-engagement tool: any peer in the mesh can technically
+              post to any field, and we don't cryptographically authenticate
+              individual responses. Use it for polls, temperature checks, and
+              discussion prompts — not exam grading.
+            </li>
+          </ul>
+        </section>
+
         <div className="live-actions" style={{ marginTop: 24 }}>
           <button type="button" className="live-btn live-btn--ghost" onClick={onLeave}>
             Leave room

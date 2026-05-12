@@ -161,9 +161,12 @@ function isLiveActivity(kind: ActivityKind): boolean {
  * "Test in Kukui Live" launcher. Emits two URL variants:
  *
  *   - **Instructor URL**: `?config=…&adminKey=…` — auto-claims host role
- *     because the URL's adminKey matches `config.live.adminKey`.
- *   - **Student URL**: `?config=…` only — joins as a student. Safe to
- *     share with anyone, since it can't unlock host controls.
+ *     because the URL's adminKey matches `config.live.adminKey`. The
+ *     embedded config still includes the admin key so the runtime can
+ *     verify the match client-side.
+ *   - **Student URL**: `?config=…` only, with `live.adminKey` stripped
+ *     from the encoded config so it can't be decoded back to an
+ *     instructor URL. Safe to share with anyone.
  *
  * Both URLs open in a new tab pointed at `VITE_LIVE_URL` (defaults to
  * `../live-mode/` — works once both apps are co-deployed; in dev the
@@ -199,7 +202,13 @@ function LiveTestLauncher({
 
   const buildUrl = (asInstructor: boolean): string => {
     try {
-      const json = JSON.stringify(config);
+      // P0 hardening: the student URL must never carry the admin key, even
+      // base64-encoded inside `config`. Stripping `live.adminKey` before
+      // encoding stops a student from decoding the URL and reconstructing
+      // an instructor URL. The instructor URL still passes the admin key
+      // out-of-band via the `adminKey` query param so host claim works.
+      const sanitized = asInstructor ? config : stripAdminKey(config);
+      const json = JSON.stringify(sanitized);
       const b64 = toBase64Url(json);
       const params = new URLSearchParams({ activity: kind, config: b64 });
       if (asInstructor && adminKey) params.set("adminKey", adminKey);
@@ -237,7 +246,7 @@ function LiveTestLauncher({
    * Replaces the join + admin keys with freshly-generated random
    * values. Calls onChange so the form re-renders + the new keys are
    * what the launcher URLs encode on the next click. Memorable join
-   * keys (adj-noun-NN, 6.4M combinations) read nicely if the
+   * keys (`adj-noun-NNNN`, ~16M combinations) read nicely if the
    * instructor ever says them out loud; admin keys are 16 hex chars
    * (64-bit entropy — enough to deter casual brute-forcing during a
    * class session).
@@ -342,6 +351,22 @@ function LiveTestLauncher({
   );
 }
 
+/**
+ * Returns a shallow clone of `config` with `live.adminKey` removed. Any
+ * student-facing surface that round-trips the config (URL, QR code, copy
+ * link, etc.) MUST run through this — otherwise the admin key leaks in
+ * cleartext-decodable form.
+ */
+function stripAdminKey(config: unknown): unknown {
+  if (!config || typeof config !== "object") return config;
+  const obj = config as Record<string, unknown>;
+  const live = obj.live;
+  if (!live || typeof live !== "object") return config;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { adminKey: _stripped, ...liveWithoutAdmin } = live as Record<string, unknown>;
+  return { ...obj, live: liveWithoutAdmin };
+}
+
 /** Base64url (RFC 4648 §5) — `+` → `-`, `/` → `_`, no padding. URL-safe. */
 function toBase64Url(input: string): string {
   const bytes = new TextEncoder().encode(input);
@@ -351,51 +376,33 @@ function toBase64Url(input: string): string {
 }
 
 const ADJECTIVES = [
-  "bright",
-  "calm",
-  "clever",
-  "fierce",
-  "happy",
-  "lucky",
-  "merry",
-  "quiet",
-  "swift",
-  "wild",
-  "kind",
-  "bold",
-  "warm",
-  "sharp",
-  "noble",
+  "amber", "blue", "bold", "brave", "bright", "calm", "clear", "clever",
+  "coral", "crisp", "fierce", "gentle", "happy", "jade", "kind", "lively",
+  "lucky", "merry", "mint", "noble", "olive", "peach", "polar", "quiet",
+  "rapid", "rosy", "ruby", "sage", "sharp", "silver", "snowy", "stellar",
+  "sunny", "swift", "teal", "tidy", "warm", "wild", "witty", "zesty",
 ];
 
 const NOUNS = [
-  "badger",
-  "cougar",
-  "dolphin",
-  "eagle",
-  "falcon",
-  "fox",
-  "lion",
-  "owl",
-  "tiger",
-  "wolf",
-  "otter",
-  "heron",
-  "raven",
-  "hawk",
-  "lynx",
+  "badger", "bear", "cedar", "cougar", "crane", "dolphin", "eagle", "elk",
+  "falcon", "ferret", "fox", "gecko", "hawk", "heron", "ibis", "iguana",
+  "jaguar", "kestrel", "koi", "lemur", "lion", "lynx", "marlin", "mongoose",
+  "moose", "newt", "otter", "owl", "panda", "puffin", "quokka", "raven",
+  "robin", "salmon", "sparrow", "tiger", "turtle", "vulture", "whale", "wolf",
 ];
 
 /**
- * Memorable join key: `adj-noun-NN`. ~6.4M combinations is plenty for
- * "different classroom rooms don't collide" at the scale of a single
- * institution.
+ * Memorable join key: `adj-noun-NNNN`. 40 × 40 × 10000 ≈ 16M combinations
+ * (~24 bits). Brute-forcing a *specific* room across a 50-min lecture
+ * window at ~100 req/s would take ~2 days even with no rate limiting —
+ * well outside the threat model for a classroom poll. Still typeable for
+ * a student copying off a slide.
  */
 function randomJoinKey(): string {
   const pickFrom = (arr: readonly string[]): string =>
     arr[Math.floor(Math.random() * arr.length)] as string;
-  const n = Math.floor(Math.random() * 100);
-  return `${pickFrom(ADJECTIVES)}-${pickFrom(NOUNS)}-${n.toString().padStart(2, "0")}`;
+  const n = Math.floor(Math.random() * 10000);
+  return `${pickFrom(ADJECTIVES)}-${pickFrom(NOUNS)}-${n.toString().padStart(4, "0")}`;
 }
 
 /** Admin key: 16 hex chars (64-bit entropy from crypto.getRandomValues). */

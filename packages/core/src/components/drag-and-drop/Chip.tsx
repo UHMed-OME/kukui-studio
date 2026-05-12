@@ -94,13 +94,6 @@ export function Chip({
       style={style}
       {...dragProps}
     >
-      {chip.image?.src ? (
-        <img
-          src={chip.image.src}
-          alt={chip.image.alt}
-          className="kukui-dnd__chip-image"
-        />
-      ) : null}
       <span className="kukui-dnd__chip-label">{chip.label}</span>
       {locked && location === "placed" ? (
         <span className="kukui-dnd__chip-icon" aria-hidden="true">

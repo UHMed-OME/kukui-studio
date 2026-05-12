@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { ScoringSchema } from "./scoring.js";
 import { SAFE_MEDIA_URL } from "./url.js";
 
 const versionRe = /^\d+\.\d+(\.\d+)?$/;
@@ -37,16 +38,6 @@ export const DragAndDropConfigSchema = z
           .object({
             id: z.string().min(1),
             label: z.string().min(1),
-            // Optional per-chip image. If src is provided, alt is required —
-            // the label can describe it, but a screen reader still needs an
-            // accessible name for the <img> itself.
-            image: z
-              .object({
-                src: SAFE_MEDIA_URL,
-                alt: z.string().min(1),
-              })
-              .strict()
-              .optional(),
             correctZones: z.array(z.string()).min(1),
             feedback: z.string().optional(),
           })
@@ -92,6 +83,7 @@ export const DragAndDropConfigSchema = z
       })
       .strict()
       .optional(),
+    scoring: ScoringSchema.optional(),
   })
   .strict();
 

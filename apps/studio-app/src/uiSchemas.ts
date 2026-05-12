@@ -45,15 +45,13 @@ const AUTHOR = f(
   "Your name. Shown in the small credit line at the bottom of the activity.",
 );
 
-const BEHAVIOUR_RETRY = f("Allow retry", "Show a Try Again button after the learner submits.");
-const BEHAVIOUR_SHOW_SOLUTION = f(
-  "Allow Show Solution",
-  "Lets the learner reveal the correct answers after submitting.",
-);
-const BEHAVIOUR_SINGLEPOINT = f(
-  "All-or-nothing scoring",
-  "When on, the activity is graded 1/1 only when fully correct. Otherwise partial credit.",
-);
+// After the Scoring tab landed, retry / show-solution / single-point all
+// live there. The constants below are kept as `HIDDEN` so the legacy
+// schema fields don't render in the Editor form — they're owned by the
+// Scoring tab now.
+const BEHAVIOUR_RETRY = HIDDEN;
+const BEHAVIOUR_SHOW_SOLUTION = HIDDEN;
+const BEHAVIOUR_SINGLEPOINT = HIDDEN;
 
 /**
  * Shared uiSchema fragment for the `live` section of every live
@@ -135,15 +133,7 @@ export const UI_SCHEMAS: Record<ActivityKind, Record<string, unknown>> = {
       showSolutionButton: f("'Show Solution' button text", "Defaults to 'Show solution'."),
       tryAgainButton: f("'Try Again' button text", "Defaults to 'Try again'."),
     },
-    overallFeedback: {
-      "ui:title": "Overall feedback bands",
-      "ui:help": "Per-score-range message. The band whose range contains the learner's final score is shown.",
-      items: {
-        from: f("From (%)", "Lower bound of this band, inclusive."),
-        to: f("To (%)", "Upper bound of this band, inclusive."),
-        message: f("Message", "What the learner sees if their final score falls in this band."),
-      },
-    },
+    overallFeedback: HIDDEN,
   },
 
   "fill-in-the-blanks": {
@@ -287,10 +277,7 @@ export const UI_SCHEMAS: Record<ActivityKind, Record<string, unknown>> = {
         ),
       },
     },
-    passPercentage: f(
-      "Pass threshold (%)",
-      "Default 50. Aggregated weighted percent must reach this for the set to count as passed.",
-    ),
+    passPercentage: HIDDEN,
     behaviour: {
       "ui:title": "Activity behaviour",
       randomQuestions: f("Randomize question order", "Shuffle question order each time the set loads."),
@@ -492,7 +479,7 @@ export const UI_SCHEMAS: Record<ActivityKind, Record<string, unknown>> = {
     },
     behaviour: {
       "ui:title": "Activity behaviour",
-      enableRetry: f("Allow retry", "Allow the learner to restart the tour after completing."),
+      enableRetry: HIDDEN,
     },
     ui: {
       "ui:title": "Button label overrides",
@@ -742,15 +729,7 @@ export const UI_SCHEMAS: Record<ActivityKind, Record<string, unknown>> = {
       checkAnswerButton: f("'Check' button text"),
       tryAgainButton: f("'Try Again' button text"),
     },
-    overallFeedback: {
-      "ui:title": "Overall feedback bands",
-      "ui:help": "Per-score-range message shown after submit.",
-      items: {
-        from: f("From (%)"),
-        to: f("To (%)"),
-        message: f("Message"),
-      },
-    },
+    overallFeedback: HIDDEN,
   },
 
   flashcards: {
@@ -995,10 +974,7 @@ export const UI_SCHEMAS: Record<ActivityKind, Record<string, unknown>> = {
     behaviour: {
       "ui:title": "Activity behaviour",
       enableRetry: BEHAVIOUR_RETRY,
-      passPercentage: f(
-        "Pass threshold (%)",
-        "Default 50. Aggregated percent across required interactions must reach this for the video to count as passed.",
-      ),
+      passPercentage: HIDDEN,
     },
     ui: {
       "ui:title": "Button label overrides",
@@ -1079,15 +1055,7 @@ export const UI_SCHEMAS: Record<ActivityKind, Record<string, unknown>> = {
       checkAnswerButton: f("'Check' button text"),
       tryAgainButton: f("'Try Again' button text"),
     },
-    overallFeedback: {
-      "ui:title": "Overall feedback bands",
-      "ui:help": "Per-score-range message. The band whose range contains the learner's final score is shown.",
-      items: {
-        from: f("From (%)", "Lower bound of this band, inclusive."),
-        to: f("To (%)", "Upper bound of this band, inclusive."),
-        message: f("Message"),
-      },
-    },
+    overallFeedback: HIDDEN,
   },
 
   "ddx-tree": {

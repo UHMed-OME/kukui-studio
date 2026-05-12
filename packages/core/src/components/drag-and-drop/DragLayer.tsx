@@ -64,13 +64,6 @@ export function DragLayer(props: DragLayerProps) {
                 className="kukui-dnd__chip kukui-dnd__chip--ghost"
                 aria-hidden="true"
               >
-                {draggablesById[activeId]?.image?.src ? (
-                  <img
-                    src={draggablesById[activeId]!.image!.src}
-                    alt=""
-                    className="kukui-dnd__chip-image"
-                  />
-                ) : null}
                 <span className="kukui-dnd__chip-label">
                   {draggablesById[activeId]?.label ?? ""}
                 </span>

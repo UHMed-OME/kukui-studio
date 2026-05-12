@@ -7,11 +7,16 @@ import {
   type KeyboardEvent as ReactKeyboardEvent,
 } from "react";
 import { type ActivityKind, PLANNED_ACTIVITY_KINDS } from "@kukui/core";
-import { SchemaRegistry, type SchemaRegistryKey } from "@kukui/schemas";
+import {
+  SchemaRegistry,
+  type SchemaRegistryKey,
+  migrateToScoring,
+} from "@kukui/schemas";
 import type { ErrorSchema } from "@rjsf/utils";
 import type { ZodError } from "zod";
 import { EditorForm } from "./EditorForm.js";
 import { JsonEditor } from "./JsonEditor.js";
+import { ScoringTab, isScoringApplicable } from "./ScoringTab/index.js";
 import { Preview, type PreviewMode } from "./Preview.js";
 import { hasEditor } from "./EditCanvas/index.js";
 import { ConfirmDialog } from "./ConfirmDialog.js";
@@ -38,7 +43,7 @@ import { downloadScormZip } from "./scormDownload.js";
 import { importFromFile } from "./scormImport.js";
 import { slug } from "./util/slug.js";
 
-type Tab = "form" | "json" | "ai";
+type Tab = "form" | "scoring" | "json" | "ai";
 
 /**
  * Studio promotes activities the LMS can't do natively. Quiz-style
@@ -180,6 +185,14 @@ export function App() {
   useEffect(() => {
     setPreviewMode(hasEditor(kind) ? "edit" : "live");
   }, [kind]);
+
+  // If the author is on the Scoring tab and switches to a Live activity
+  // (no scoring tab for those), bounce back to Editor.
+  useEffect(() => {
+    if (tab === "scoring" && !isScoringApplicable(kind)) {
+      setTab("form");
+    }
+  }, [kind, tab]);
 
   // Keep ?activity= in sync so refreshes preserve choice.
   useEffect(() => {
@@ -357,7 +370,7 @@ export function App() {
       return;
     }
     setKind(result.kind);
-    setValue(result.config);
+    setValue(migrateToScoring(result.config, result.kind));
     setIsDirty(true);
     setAsyncStatus({
       kind: "success",
@@ -660,6 +673,20 @@ export function App() {
               >
                 Editor
               </button>
+              {isScoringApplicable(kind) ? (
+                <button
+                  type="button"
+                  className={[
+                    "kukui-studio-subtab",
+                    tab === "scoring" ? "is-active" : "",
+                  ]
+                    .filter(Boolean)
+                    .join(" ")}
+                  onClick={() => setTab("scoring")}
+                >
+                  Scoring
+                </button>
+              ) : null}
               <button
                 type="button"
                 className={[
@@ -726,6 +753,8 @@ export function App() {
                 onChange={markDirty}
                 extraErrors={extraErrors}
               />
+            ) : tab === "scoring" ? (
+              <ScoringTab kind={kind} value={value} onChange={markDirty} />
             ) : tab === "json" ? (
               <JsonEditor value={value} onChange={markDirty} />
             ) : (

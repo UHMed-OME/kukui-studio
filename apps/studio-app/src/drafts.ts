@@ -10,6 +10,8 @@
  *  - JSON.parse failures swallowed (returns null), so a corrupted entry
  *    never blows up app boot
  */
+import { migrateToScoring } from "@kukui/schemas";
+
 const PREFIX = "kukui:studio:draft:";
 const MAX_DRAFT_BYTES = 2 * 1024 * 1024;
 
@@ -21,7 +23,9 @@ export function loadDraft(kind: string): unknown | null {
       console.warn(`[kukui:studio] draft for ${kind} exceeds ${MAX_DRAFT_BYTES} bytes; ignoring.`);
       return null;
     }
-    return JSON.parse(raw);
+    const parsed = JSON.parse(raw);
+    // Run the scoring-shape migrator on every load so old drafts work.
+    return migrateToScoring(parsed, kind);
   } catch {
     return null;
   }

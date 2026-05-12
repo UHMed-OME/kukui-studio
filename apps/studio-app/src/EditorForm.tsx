@@ -83,6 +83,8 @@ export function EditorForm({
       _comment: { "ui:widget": "hidden" },
       version: { "ui:widget": "hidden" },
       $schema: { "ui:widget": "hidden" },
+      // `scoring` is owned by the Scoring tab; never show it in the Editor.
+      scoring: { "ui:widget": "hidden" },
       ...UI_SCHEMAS[kind],
     }),
     [kind],

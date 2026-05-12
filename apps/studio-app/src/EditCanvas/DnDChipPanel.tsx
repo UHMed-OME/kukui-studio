@@ -1,4 +1,4 @@
-import { useState, type ChangeEvent } from "react";
+import { useState } from "react";
 import type { DragAndDropConfig } from "@kukui/schemas";
 import { chipColor } from "./DnDLinkOverlay.js";
 
@@ -6,8 +6,7 @@ import { chipColor } from "./DnDLinkOverlay.js";
  * Side-panel chip authoring UI.
  *
  * Each row shows: drag-handle dot (color = chipColor(id)), label
- * (editable inline), optional image thumbnail (upload via file picker
- * or paste-a-URL), and a chip-multi-select "Linked to" picker that
+ * (editable inline), and a chip-multi-select "Linked to" picker that
  * writes to correctZones.
  *
  * Selecting a row sets `selectedChipId` on the parent — the link
@@ -88,32 +87,6 @@ export function DnDChipPanel({
     updateChip(chipId, { correctZones: next });
   };
 
-  const handleImageUpload = (chipId: string) => (e: ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => {
-      if (typeof reader.result === "string") {
-        updateChip(chipId, {
-          image: { src: reader.result, alt: file.name },
-        });
-      }
-    };
-    reader.readAsDataURL(file);
-    e.target.value = "";
-  };
-
-  const clearImage = (chipId: string) => {
-    const chip = config.draggables.find((d) => d.id === chipId);
-    if (!chip) return;
-    // omit image from the patch object — we want to delete it.
-    const { image: _image, ...rest } = chip;
-    onChange({
-      ...config,
-      draggables: config.draggables.map((d) => (d.id === chipId ? rest : d)),
-    });
-  };
-
   const handleDragStart =
     (chipId: string) =>
     (e: React.DragEvent<HTMLLIElement>): void => {
@@ -168,35 +141,6 @@ export function DnDChipPanel({
                   aria-label={`Chip ${chip.id} label`}
                   onFocus={() => onSelectChip(chip.id)}
                 />
-                <div className="ks-edit-dnd__chip-row-image">
-                  {chip.image?.src ? (
-                    <>
-                      <img
-                        src={chip.image.src}
-                        alt={chip.image.alt}
-                        className="ks-edit-dnd__chip-row-thumb"
-                      />
-                      <button
-                        type="button"
-                        className="ks-edit-dnd__chip-row-image-clear"
-                        onClick={() => clearImage(chip.id)}
-                        aria-label={`Remove image from ${chip.label}`}
-                      >
-                        Remove image
-                      </button>
-                    </>
-                  ) : (
-                    <label className="ks-edit-dnd__chip-row-image-add">
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={handleImageUpload(chip.id)}
-                        style={{ display: "none" }}
-                      />
-                      <span>+ Image</span>
-                    </label>
-                  )}
-                </div>
                 <ZoneRefPicker
                   zones={config.dropZones}
                   selectedZoneIds={chip.correctZones}

@@ -215,6 +215,21 @@ button {
   font-weight: 700;
 }
 
+.live-trust-list {
+  margin: 0;
+  padding-left: 1.1em;
+  font-size: var(--font-size-meta);
+  color: var(--color-text-secondary);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  line-height: 1.5;
+}
+
+.live-trust-list strong {
+  color: var(--color-text-primary);
+}
+
 /* Phase track: the lobby → question → reveal → discussion → ended chip
    row. Mirrors the presence-chip pattern so theming overrides apply
    uniformly. */

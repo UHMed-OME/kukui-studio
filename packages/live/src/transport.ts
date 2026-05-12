@@ -80,31 +80,34 @@ const JOIN_BY_BACKEND: Record<SignalingBackend, JoinFn> = {
 /**
  * Curated default relay URLs.
  *
- * Why we don't fall through to Trystero's built-in defaults: a couple
- * of public Nostr relays in the wild return HTTP 401 + `WWW-
- * Authenticate: Basic` during the WebSocket upgrade handshake — which
- * triggers the browser's native password prompt before the JS fetch
- * error path can catch it. That's user-facing noise we can't suppress
- * from JavaScript, so we explicitly avoid those relays.
+ * Why we don't fall through to Trystero's built-in defaults: several
+ * public relays in the wild return HTTP 401 + `WWW-Authenticate:
+ * Basic` (or another challenge that Chrome treats as a credential
+ * request) during the WebSocket upgrade handshake. That triggers
+ * Chrome's native sign-in / save-password dialog before the JS fetch
+ * error path can catch it — there is no way to suppress those prompts
+ * from page JavaScript. We explicitly avoid those relays.
  *
  * The list below is curated to relays that:
  *   1. Are publicly accessible (no auth challenge on /, no token gate)
  *   2. Have a track record of stability for browser WebSocket clients
  *   3. Don't slow-walk the upgrade with TLS shenanigans
  *
+ * Kept deliberately *short* — just the most reliable public endpoints,
+ * because every relay in this list is opened on page load and even one
+ * misbehaving relay can prompt the user.
+ *
  * Authors can still override via `options.relayUrls` for institutional
  * proxies. If everyone in a room agrees on the same custom list, the
  * mesh forms there instead.
  */
 const DEFAULT_NOSTR_RELAYS: readonly string[] = [
-  "wss://relay.nostr.band",
-  "wss://nostr.fmt.wiz.biz",
-  "wss://nostr-pub.wellorder.net",
   "wss://relay.damus.io",
+  "wss://relay.nostr.band",
+  "wss://nos.lol",
 ];
 
 const DEFAULT_MQTT_RELAYS: readonly string[] = [
-  "wss://broker.hivemq.com:8884/mqtt",
   "wss://test.mosquitto.org:8081",
 ];
 

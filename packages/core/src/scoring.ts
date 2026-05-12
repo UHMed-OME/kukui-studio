@@ -1,4 +1,64 @@
+import type { Scoring } from "@kukui/schemas";
 import type { ScoreBand, ScoreState } from "./types.js";
+
+/**
+ * Effective scoring view for an activity runtime. Reads `config.scoring`
+ * when present (new shape after Scoring-tab migration), and falls back to
+ * legacy `behaviour.singlePoint` + root `passPercentage` + root
+ * `overallFeedback` (old shape) so existing fixtures + samples that
+ * haven't been re-saved through Studio still play correctly.
+ *
+ * Activities call this once per render with the relevant slice of their
+ * config; the resolved view is the single source of truth for retry /
+ * show-solution / scoring-mode logic in the component.
+ */
+export type ResolvedScoring = {
+  mode: "points" | "all-or-nothing" | "completion";
+  passPercentage: number;
+  bands: readonly ScoreBand[] | undefined;
+  enableRetry: boolean;
+  enableSolutionsButton: boolean;
+};
+
+export function resolveScoring(
+  source: {
+    scoring?: Scoring;
+    behaviour?: {
+      singlePoint?: boolean;
+      enableRetry?: boolean;
+      enableSolutionsButton?: boolean;
+      showSolutionsButton?: boolean;
+    };
+    passPercentage?: number;
+    overallFeedback?: readonly ScoreBand[];
+  },
+  defaults: { mode?: ResolvedScoring["mode"]; passPercentage?: number } = {},
+): ResolvedScoring {
+  const defaultMode = defaults.mode ?? "points";
+  const defaultPass = defaults.passPercentage ?? 50;
+  const s = source.scoring;
+  if (s) {
+    const enableRetry = s.enableRetry ?? true;
+    const enableSolutionsButton =
+      s.mode === "completion" ? false : s.enableSolutionsButton ?? false;
+    const passPercentage =
+      s.mode === "points" ? s.passPercentage ?? defaultPass : 100;
+    const bands = s.mode === "points" ? s.bands : undefined;
+    return { mode: s.mode, passPercentage, bands, enableRetry, enableSolutionsButton };
+  }
+  const b = source.behaviour ?? {};
+  const enableRetry = b.enableRetry ?? true;
+  const enableSolutionsButton =
+    b.enableSolutionsButton ?? b.showSolutionsButton ?? false;
+  const mode: ResolvedScoring["mode"] = b.singlePoint ? "all-or-nothing" : defaultMode;
+  return {
+    mode,
+    passPercentage: source.passPercentage ?? defaultPass,
+    bands: source.overallFeedback ?? undefined,
+    enableRetry,
+    enableSolutionsButton,
+  };
+}
 
 export function scoreSelection(args: {
   selectedIndices: ReadonlySet<number>;

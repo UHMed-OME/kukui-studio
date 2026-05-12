@@ -15,7 +15,6 @@
     {
       "id": "d-orinoco",
       "label": "Orinoco",
-      "image": { "src": "images/icons/river.png", "alt": "River icon" },
       "correctZones": ["z-orinoco"],
       "feedback": "Correct. The Orinoco drains much of Venezuela and eastern Colombia."
     },

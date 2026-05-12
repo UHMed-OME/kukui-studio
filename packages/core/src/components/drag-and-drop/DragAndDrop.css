@@ -205,13 +205,6 @@
   box-shadow: 0 0 0 3px rgb(123 67 36 / 0.25);
 }
 
-.kukui-dnd__chip-image {
-  width: 24px;
-  height: 24px;
-  object-fit: contain;
-  flex-shrink: 0;
-}
-
 .kukui-dnd__chip-label {
   white-space: nowrap;
 }
@@ -243,7 +236,11 @@
   align-items: center;
   gap: var(--spacing-xs, 4px);
   opacity: 1;
-  transform: rotate(-2deg);
+  /* No CSS transition: dnd-kit updates the inline transform on every
+   * pointermove. Transitioning transform makes the ghost lag behind the
+   * cursor by ~150ms — to the user the chip appears to drift off and
+   * "disappear" mid-drag. */
+  transition: none;
   box-shadow: 0 8px 18px rgb(0 0 0 / 0.22);
   cursor: grabbing;
   pointer-events: none;

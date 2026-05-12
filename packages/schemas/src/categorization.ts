@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { ScoringSchema } from "./scoring.js";
 
 const versionRe = /^\d+\.\d+(\.\d+)?$/;
 
@@ -46,6 +47,7 @@ export const CategorizationConfigSchema = z
       })
       .strict()
       .optional(),
+    scoring: ScoringSchema.optional(),
   })
   .strict()
   .refine(

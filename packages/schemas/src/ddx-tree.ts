@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { ScoringSchema } from "./scoring.js";
 
 const versionRe = /^\d+\.\d+(\.\d+)?$/;
 
@@ -81,6 +82,7 @@ export const DDxTreeConfigSchema = z
       })
       .strict()
       .optional(),
+    scoring: ScoringSchema.optional(),
   })
   .strict()
   .refine((cfg) => cfg.nodes.some((n) => n.id === cfg.startNodeId), {

@@ -147,3 +147,11 @@ export const SchemaRegistry = {
 } as const;
 
 export type SchemaRegistryKey = keyof typeof SchemaRegistry;
+
+export {
+  ScoringSchema,
+  SCORING_MODES,
+  type Scoring,
+  type ScoringMode,
+} from "./scoring.js";
+export { migrateToScoring, migrateUnknown, syncLegacyFields } from "./migrate.js";

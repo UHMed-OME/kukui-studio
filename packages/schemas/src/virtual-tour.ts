@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { ScoringSchema } from "./scoring.js";
 import { SAFE_MEDIA_URL } from "./url.js";
 
 const versionRe = /^\d+\.\d+(\.\d+)?$/;
@@ -86,6 +87,7 @@ export const VirtualTourConfigSchema = z
       })
       .strict()
       .optional(),
+    scoring: ScoringSchema.optional(),
   })
   .strict();
 
