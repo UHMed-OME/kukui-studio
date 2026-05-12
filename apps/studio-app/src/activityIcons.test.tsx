@@ -29,6 +29,7 @@ const STUDIO_SURFACED: readonly ActivityKind[] = [
   "reflection-prompt",
   "osce",
   "audio-recording",
+  "crossword",
 ];
 
 describe("activityIcons", () => {

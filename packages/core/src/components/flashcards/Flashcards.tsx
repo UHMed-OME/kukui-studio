@@ -131,8 +131,8 @@ export function Flashcards({
     : totalCount;
 
   const ui = config.ui ?? {};
-  const knewLabel = ui.knewItButton ?? "I knew it";
-  const didntLabel = ui.didntKnowButton ?? "I didn't know it";
+  const gotItLabel = ui.gotItButton ?? "Got it";
+  const reviewAgainLabel = ui.reviewAgainButton ?? "Review again";
   const nextLabel = ui.nextButton ?? "Next card";
 
   const flip = () => {
@@ -289,24 +289,24 @@ export function Flashcards({
                 <button
                   type="button"
                   className="kukui-fc__answer kukui-fc__answer--knew"
-                  aria-label={`${knewLabel} — mark this card as known and move on`}
+                  aria-label={`${gotItLabel} — mark this card as known and move on`}
                   onClick={() => answer("knew")}
                 >
                   <span className="kukui-fc__answer-icon" aria-hidden="true">
                     {"✓"}
                   </span>
-                  <span className="kukui-fc__answer-text">{knewLabel}</span>
+                  <span className="kukui-fc__answer-text">{gotItLabel}</span>
                 </button>
                 <button
                   type="button"
                   className="kukui-fc__answer kukui-fc__answer--didnt"
-                  aria-label={`${didntLabel} — review this card again later`}
+                  aria-label={`${reviewAgainLabel} — review this card again later`}
                   onClick={() => answer("didnt")}
                 >
                   <span className="kukui-fc__answer-icon" aria-hidden="true">
                     {"↺"}
                   </span>
-                  <span className="kukui-fc__answer-text">{didntLabel}</span>
+                  <span className="kukui-fc__answer-text">{reviewAgainLabel}</span>
                 </button>
               </>
             ) : (

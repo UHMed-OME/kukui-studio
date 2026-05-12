@@ -1,0 +1,20 @@
+{
+  "version": "1.0",
+  "title": "Cardiology crossword",
+  "prompt": "<p>Fill in the grid using the clues below. Click a clue to jump to its starting cell.</p>",
+  "entries": [
+    { "id": "aorta", "term": "AORTA", "definition": "The largest artery in the body, leaving the left ventricle." },
+    { "id": "artery", "term": "ARTERY", "definition": "Vessel that carries oxygenated blood away from the heart." },
+    { "id": "vein", "term": "VEIN", "definition": "Vessel that returns blood to the heart." },
+    { "id": "valve", "term": "VALVE", "definition": "Structure that prevents backflow between heart chambers.", "hint": "Mitral, tricuspid, aortic, pulmonary." },
+    { "id": "atrium", "term": "ATRIUM", "definition": "Upper heart chamber that receives blood." },
+    { "id": "septum", "term": "SEPTUM", "definition": "Wall dividing the left and right sides of the heart." },
+    { "id": "diastole", "term": "DIASTOLE", "definition": "Phase of the cardiac cycle when the ventricles relax and fill." },
+    { "id": "systole", "term": "SYSTOLE", "definition": "Phase of the cardiac cycle when the ventricles contract." }
+  ],
+  "behaviour": {
+    "allowReshuffle": true,
+    "allowReveal": true,
+    "showHints": true
+  }
+}

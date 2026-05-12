@@ -90,6 +90,7 @@ export default defineConfig({
         "lab-panel": resolve(__dirname, "lab-panel.html"),
         "ddx-tree": resolve(__dirname, "ddx-tree.html"),
         osce: resolve(__dirname, "osce.html"),
+        crossword: resolve(__dirname, "crossword.html"),
       },
     },
   },

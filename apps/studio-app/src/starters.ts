@@ -371,6 +371,19 @@ export const STARTERS: Record<ActivityKind, unknown> = {
     expectedOrder: ["history", "exam"],
     behaviour: { enableRetry: true },
   },
+  crossword: {
+    version: "1.0",
+    title: "Crossword",
+    prompt: "Solve the crossword using the clues below.",
+    entries: [
+      { id: "e1", term: "AORTA", definition: "Largest artery in the body" },
+      { id: "e2", term: "ARTERY", definition: "Carries oxygenated blood away from the heart" },
+      { id: "e3", term: "VEIN", definition: "Returns blood to the heart" },
+      { id: "e4", term: "VALVE", definition: "Prevents backflow between heart chambers" },
+      { id: "e5", term: "ATRIUM", definition: "Upper heart chamber that receives blood" },
+    ],
+    behaviour: { allowReveal: true, allowReshuffle: true, showHints: true },
+  },
   ...PLANNED_STARTERS,
 } as Record<ActivityKind, unknown>;
 
@@ -398,5 +411,6 @@ export const ACTIVITY_LABELS: Record<ActivityKind, string> = {
   "lab-panel": "Lab Panel Interpretation",
   "ddx-tree": "Differential Diagnosis Tree",
   osce: "OSCE Clinical Encounter",
+  crossword: "Crossword",
   ...PLANNED_LABELS,
 } as Record<ActivityKind, string>;

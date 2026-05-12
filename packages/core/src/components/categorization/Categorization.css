@@ -136,7 +136,19 @@
 }
 
 .kukui-cat__chip.is-dragging {
-  opacity: 0.6;
+  opacity: 0.35;
+}
+
+/* Ghost rendered inside <DragOverlay>: opaque chip under the cursor. */
+.kukui-cat__chip--ghost {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs, 4px);
+  opacity: 1;
+  transform: rotate(-2deg);
+  box-shadow: 0 8px 18px rgb(0 0 0 / 0.22);
+  cursor: grabbing;
+  pointer-events: none;
 }
 
 .kukui-cat__chip-icon {

@@ -45,6 +45,7 @@ export const ACTIVITY_REGISTRY: Record<BuiltActivityKind, ActivityComponent> = {
   "lab-panel": lazy(() => import("./lab-panel/index.js")),
   "ddx-tree": lazy(() => import("./ddx-tree/index.js")),
   "osce": lazy(() => import("./osce/index.js")),
+  "crossword": lazy(() => import("./crossword/index.js")),
 };
 
 /**

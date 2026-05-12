@@ -1,6 +1,7 @@
 import { useEffect, useId, useMemo, useState, type CSSProperties } from "react";
 import {
   DndContext,
+  DragOverlay,
   KeyboardSensor,
   PointerSensor,
   useDraggable,
@@ -8,6 +9,7 @@ import {
   useSensor,
   useSensors,
   type DragEndEvent,
+  type DragStartEvent,
 } from "@dnd-kit/core";
 import type { AnatomyLabelingConfig } from "@kukui/schemas";
 import type { ActivityProps } from "../../types.js";
@@ -99,7 +101,19 @@ export function AnatomyLabeling({
     });
   };
 
+  // Track the actively-dragged label so <DragOverlay> can render a ghost
+  // chip under the cursor. With the original chip leaving the tray on
+  // pickup and the target circles being small (32 px), authors otherwise
+  // lose track of *which* label is being dragged the moment it leaves the
+  // tray bounds.
+  const [activeDragId, setActiveDragId] = useState<string | null>(null);
+
+  const handleDragStart = (e: DragStartEvent) => {
+    setActiveDragId(String(e.active.id));
+  };
+
   const handleDragEnd = (e: DragEndEvent) => {
+    setActiveDragId(null);
     const labelId = String(e.active.id);
     if (!e.over) return;
     const overId = String(e.over.id);
@@ -109,6 +123,8 @@ export function AnatomyLabeling({
       placeIn(labelId, overId.slice("target:".length));
     }
   };
+
+  const handleDragCancel = () => setActiveDragId(null);
 
   const isCorrect = (labelId: string, targetId: string | null): boolean => {
     if (!targetId) return false;
@@ -185,7 +201,12 @@ export function AnatomyLabeling({
         </HeadingTag>
         <SafeHtml html={config.prompt} className="kukui-al__prompt" />
 
-        <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
+        <DndContext
+          sensors={sensors}
+          onDragStart={handleDragStart}
+          onDragEnd={handleDragEnd}
+          onDragCancel={handleDragCancel}
+        >
           <div className="kukui-al__image-wrap">
             <img
               src={config.image.src}
@@ -225,6 +246,13 @@ export function AnatomyLabeling({
               <p className="kukui-al__tray-empty">All labels placed.</p>
             ) : null}
           </Tray>
+          <DragOverlay dropAnimation={null}>
+            {activeDragId ? (
+              <span className="kukui-al__chip kukui-al__chip--ghost" aria-hidden="true">
+                {labelsById[activeDragId]?.text ?? ""}
+              </span>
+            ) : null}
+          </DragOverlay>
         </DndContext>
 
         {/* Keyboard / screen-reader fallback: each label picks a target by index. */}

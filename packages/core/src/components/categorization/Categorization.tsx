@@ -1,6 +1,7 @@
 import { useEffect, useId, useMemo, useState } from "react";
 import {
   DndContext,
+  DragOverlay,
   KeyboardSensor,
   PointerSensor,
   useDraggable,
@@ -8,6 +9,7 @@ import {
   useSensor,
   useSensors,
   type DragEndEvent,
+  type DragStartEvent,
 } from "@dnd-kit/core";
 import type { CategorizationConfig } from "@kukui/schemas";
 import type { ActivityProps } from "../../types.js";
@@ -70,7 +72,16 @@ export function Categorization({
     setState((s) => ({ ...s, placement: { ...s.placement, [itemId]: categoryId } }));
   };
 
+  // Track the actively-dragged id so <DragOverlay> can render a ghost
+  // chip under the cursor while the original stays in its tray/bin slot.
+  const [activeDragId, setActiveDragId] = useState<string | null>(null);
+
+  const handleDragStart = (e: DragStartEvent) => {
+    setActiveDragId(String(e.active.id));
+  };
+
   const handleDragEnd = (e: DragEndEvent) => {
+    setActiveDragId(null);
     const itemId = String(e.active.id);
     if (!e.over) return;
     const overId = String(e.over.id);
@@ -80,6 +91,8 @@ export function Categorization({
       placeIn(itemId, overId.slice("cat:".length));
     }
   };
+
+  const handleDragCancel = () => setActiveDragId(null);
 
   const isCorrect = (itemId: string, categoryId: string | null): boolean => {
     if (!categoryId) return false;
@@ -155,7 +168,12 @@ export function Categorization({
         </HeadingTag>
         <SafeHtml html={config.prompt} className="kukui-cat__prompt" />
 
-        <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
+        <DndContext
+          sensors={sensors}
+          onDragStart={handleDragStart}
+          onDragEnd={handleDragEnd}
+          onDragCancel={handleDragCancel}
+        >
           <Tray>
             {trayItems.map((i) => (
               <TrayItem key={i.id} itemId={i.id} text={i.text} disabled={submitted} />
@@ -194,6 +212,13 @@ export function Categorization({
               );
             })}
           </div>
+          <DragOverlay dropAnimation={null}>
+            {activeDragId ? (
+              <span className="kukui-cat__chip kukui-cat__chip--ghost" aria-hidden="true">
+                {itemsById[activeDragId]?.text ?? ""}
+              </span>
+            ) : null}
+          </DragOverlay>
         </DndContext>
 
         {/* Keyboard / screen-reader fallback: each item picks its category. */}

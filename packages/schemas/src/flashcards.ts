@@ -42,8 +42,8 @@ export const FlashcardsConfigSchema = z
       .optional(),
     ui: z
       .object({
-        knewItButton: z.string().optional(),
-        didntKnowButton: z.string().optional(),
+        gotItButton: z.string().optional(),
+        reviewAgainButton: z.string().optional(),
         nextButton: z.string().optional(),
       })
       .strict()

@@ -36,6 +36,7 @@
     "./components/lab-panel": "./src/components/lab-panel/index.ts",
     "./components/ddx-tree": "./src/components/ddx-tree/index.ts",
     "./components/osce": "./src/components/osce/index.ts",
+    "./components/crossword": "./src/components/crossword/index.ts",
     "./components/_stub": "./src/components/_stub/index.ts",
     "./components/*": "./src/components/*"
   },

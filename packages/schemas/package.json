@@ -29,6 +29,7 @@
     "./lab-panel": "./src/lab-panel.ts",
     "./ddx-tree": "./src/ddx-tree.ts",
     "./osce": "./src/osce.ts",
+    "./crossword": "./src/crossword.ts",
     "./stub": "./src/stub.ts"
   },
   "dependencies": {

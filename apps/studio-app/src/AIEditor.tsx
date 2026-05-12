@@ -191,6 +191,10 @@ const PLACEHOLDER_EXAMPLES: Partial<
     gen: "e.g. Virtual tour of an ICU bay with 4 clickable overlays — monitor, vent, IV pole, bed",
     edit: "e.g. Add a fifth overlay over the crash cart",
   },
+  crossword: {
+    gen: "e.g. 8-term crossword on cardiology vocabulary — chamber names, vessels, and conduction-system structures",
+    edit: "e.g. Replace two of the simpler terms with pathology vocabulary like 'stenosis' and 'aneurysm'",
+  },
 };
 
 function getPlaceholder(kind: SchemaRegistryKey, mode: Mode): string {
@@ -209,6 +213,7 @@ export function AIEditor({
   onChange,
   isDirty,
   onOpenSettings,
+  settingsVersion = 0,
 }: {
   kind: SchemaRegistryKey;
   value: unknown;
@@ -220,6 +225,13 @@ export function AIEditor({
    */
   isDirty: boolean;
   onOpenSettings: () => void;
+  /**
+   * Monotonically incremented by App.tsx whenever the AI settings dialog
+   * saves or clears. Forces this component to re-read settings without a
+   * page reload — fixes the "applying AI settings results in no user
+   * feedback" bug.
+   */
+  settingsVersion?: number;
 }) {
   const [settings, setSettings] = useState<AISettings>(() => loadSettings());
   const [prompt, setPrompt] = useState("");
@@ -242,11 +254,13 @@ export function AIEditor({
     onChangeRef.current = onChange;
   }, [onChange]);
 
-  // Re-read settings whenever this tab mounts — the settings dialog might
-  // have written new ones while we weren't visible.
+  // Re-read settings whenever this tab mounts, the kind switches, or the
+  // settings dialog reports a save (settingsVersion bump). Without the
+  // version dep, applying a new API key requires a page reload before the
+  // AI Assist UI flips out of the empty state (issue #1).
   useEffect(() => {
     setSettings(loadSettings());
-  }, [kind]);
+  }, [kind, settingsVersion]);
 
   const usable = hasUsableSettings(settings);
 

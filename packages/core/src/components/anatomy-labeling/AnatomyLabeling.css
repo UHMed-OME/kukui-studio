@@ -167,7 +167,22 @@
 }
 
 .kukui-al__chip.is-dragging {
-  opacity: 0.6;
+  opacity: 0.35;
+}
+
+/* Ghost rendered inside <DragOverlay>: opaque label chip that follows
+ * the cursor while the original chip stays in the tray at reduced
+ * opacity. Without this, small 32 px target circles make it easy to lose
+ * track of which label is being dragged. */
+.kukui-al__chip--ghost {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs, 4px);
+  opacity: 1;
+  transform: rotate(-2deg);
+  box-shadow: 0 8px 18px rgb(0 0 0 / 0.22);
+  cursor: grabbing;
+  pointer-events: none;
 }
 
 .kukui-al__chip-icon {

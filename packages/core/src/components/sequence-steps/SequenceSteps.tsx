@@ -1,11 +1,13 @@
 import { useEffect, useId, useMemo, useState, type CSSProperties } from "react";
 import {
   DndContext,
+  DragOverlay,
   KeyboardSensor,
   PointerSensor,
   useSensor,
   useSensors,
   type DragEndEvent,
+  type DragStartEvent,
 } from "@dnd-kit/core";
 import {
   SortableContext,
@@ -132,7 +134,17 @@ export function SequenceSteps({
     setState((s) => ({ ...s, order: arrayMove(s.order, from, clamped) }));
   };
 
+  // Track the currently-dragged id so <DragOverlay> renders a ghost copy
+  // of the row right under the cursor while the original slot reserves
+  // its space at reduced opacity (no layout reflow).
+  const [activeDragId, setActiveDragId] = useState<string | null>(null);
+
+  const handleDragStart = (e: DragStartEvent) => {
+    setActiveDragId(String(e.active.id));
+  };
+
   const handleDragEnd = (e: DragEndEvent) => {
+    setActiveDragId(null);
     if (state.stage !== "answering") return;
     const activeId = String(e.active.id);
     if (!e.over) return;
@@ -145,6 +157,8 @@ export function SequenceSteps({
       return { ...s, order: arrayMove(s.order, from, to) };
     });
   };
+
+  const handleDragCancel = () => setActiveDragId(null);
 
   const correctCount = useMemo(
     () => state.order.filter((id, i) => id === correctOrder[i]).length,
@@ -185,7 +199,12 @@ export function SequenceSteps({
         </HeadingTag>
         <SafeHtml className="kukui-seq__prompt" html={config.prompt} />
 
-        <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
+        <DndContext
+          sensors={sensors}
+          onDragStart={handleDragStart}
+          onDragEnd={handleDragEnd}
+          onDragCancel={handleDragCancel}
+        >
           <SortableContext items={state.order} strategy={verticalListSortingStrategy}>
             <ol className="kukui-seq__list" aria-describedby={liveId}>
               {state.order.map((id, index) => {
@@ -211,6 +230,16 @@ export function SequenceSteps({
               })}
             </ol>
           </SortableContext>
+          <DragOverlay dropAnimation={null}>
+            {activeDragId ? (
+              <div className="kukui-seq__item kukui-seq__item--ghost" aria-hidden="true">
+                <span className="kukui-seq__index">{state.order.indexOf(activeDragId) + 1}</span>
+                <span className="kukui-seq__handle">
+                  <span className="kukui-seq__text">{stepsById[activeDragId]?.text ?? ""}</span>
+                </span>
+              </div>
+            ) : null}
+          </DragOverlay>
         </DndContext>
 
         {/* Inline-below feedback (pattern A — constant min-height, opacity fade). */}

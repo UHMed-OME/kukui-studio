@@ -235,7 +235,7 @@ export function ImageAnnotationEditor({
         ]
           .filter(Boolean)
           .join(" ")}
-        style={{ backgroundImage: config.image.src ? `url(${config.image.src})` : undefined }}
+        style={{ backgroundImage: config.image?.src ? `url(${config.image.src})` : undefined }}
         onPointerDown={startDraw}
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}

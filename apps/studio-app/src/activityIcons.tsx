@@ -266,6 +266,20 @@ function AudioRecordingIcon(props: SVGProps<SVGSVGElement>) {
   );
 }
 
+function CrosswordIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg {...baseProps} {...props}>
+      <rect x="3" y="3" width="18" height="18" rx="1.5" />
+      <line x1="3" y1="9" x2="21" y2="9" />
+      <line x1="3" y1="15" x2="21" y2="15" />
+      <line x1="9" y1="3" x2="9" y2="21" />
+      <line x1="15" y1="3" x2="15" y2="21" />
+      <rect x="3" y="9" width="6" height="6" fill="currentColor" stroke="none" opacity="0.18" />
+      <rect x="15" y="3" width="6" height="6" fill="currentColor" stroke="none" opacity="0.18" />
+    </svg>
+  );
+}
+
 type IconComponent = (props: SVGProps<SVGSVGElement>) => JSX.Element;
 
 const ICONS: Partial<Record<ActivityKind, IconComponent>> = {
@@ -289,6 +303,7 @@ const ICONS: Partial<Record<ActivityKind, IconComponent>> = {
   "reflection-prompt": ReflectionPromptIcon,
   osce: OsceIcon,
   "audio-recording": AudioRecordingIcon,
+  crossword: CrosswordIcon,
 };
 
 export function hasActivityIcon(kind: ActivityKind): boolean {

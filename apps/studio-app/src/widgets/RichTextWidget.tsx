@@ -40,6 +40,10 @@ export function RichTextWidget(props: WidgetProps) {
     extensions: [
       StarterKit.configure({
         heading: { levels: [2, 3] },
+        // StarterKit v3 bundles Link; we configure it separately below
+        // with our own openOnClick / rel / target settings, so disable
+        // the bundled copy to avoid Tiptap's duplicate-extension warning.
+        link: false,
       }),
       Image.configure({ inline: false }),
       Link.configure({

@@ -67,6 +67,7 @@ Activities are organized by Bloom's revised taxonomy — what kind of thinking t
 ### Remember — recall facts and terminology
 - **Flashcards** — Self-paced two-sided card deck with a spaced-style retry loop: cards the learner says they "didn't know" cycle back into the deck until mastered (cap of 2 retries by default). Self-rating is honor-system, so flashcards are graded as completion-only — finishing a run-through earns full credit, and a "Practice again" button lets learners reshuffle and run the deck as many times as they want without changing their grade.
 - **Matching Pairs** — Click an item on the left, then its match on the right. Right column shuffles on load (configurable). On submit, wrong rows show "Correct match: X" so the learner sees the pairing.
+- **Crossword** — Author provides a list of `{ term, definition }` entries; the runtime randomly lays out a connected crossword grid from those entries with seeded determinism (same seed = same grid on resume; "New layout" reshuffles). Scoring is per-cell; "Reveal letter" / "Reveal word" affordances cost the revealed cells.
 
 ### Understand — identify, explain, classify
 - **Image Hotspots** — Pick the correct region of an image. Single-correct (use 3D Hotspots for spatial work). Includes a keyboard fallback list of named regions for AT users.

@@ -48,7 +48,7 @@ describe("Flashcards", () => {
     // Front-only "Reveal answer" CTA — back-side answer buttons not shown.
     expect(screen.getByRole("button", { name: /reveal answer/i })).toBeInTheDocument();
     expect(
-      screen.queryByRole("button", { name: /^I knew it/i }),
+      screen.queryByRole("button", { name: /^Got it/i }),
     ).not.toBeInTheDocument();
   });
 
@@ -59,23 +59,23 @@ describe("Flashcards", () => {
     const card = getCard();
     expect(card.getAttribute("aria-pressed")).toBe("true");
     expect(card.getAttribute("aria-label")).toMatch(/back side/i);
-    expect(screen.getByRole("button", { name: /^I knew it/i })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /^I didn't know it/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /^Got it/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /^Review again/i })).toBeInTheDocument();
   });
 
-  it("'I knew it' advances to the next card and updates the knew-count", async () => {
+  it("'Got it' advances to the next card and updates the knew-count", async () => {
     const user = userEvent.setup();
     render(<Flashcards config={cfg} onSubmit={vi.fn()} />);
     // Flip card 1, mark "knew it" → should advance to card 2 on the front side.
     await user.click(getCard());
-    await user.click(screen.getByRole("button", { name: /^I knew it/i }));
+    await user.click(screen.getByRole("button", { name: /^Got it/i }));
     const card = getCard();
     expect(card.getAttribute("aria-label")).toMatch(/card 2 of 3/i);
     expect(card.getAttribute("aria-label")).toMatch(/front side/i);
     expect(screen.getByText("1/3 mastered")).toBeInTheDocument();
   });
 
-  it("'I didn't know it' re-queues the card to the back of the deck", async () => {
+  it("'Review again' re-queues the card to the back of the deck", async () => {
     const user = userEvent.setup();
     render(<Flashcards config={cfg} onSubmit={vi.fn()} />);
 
@@ -91,15 +91,15 @@ describe("Flashcards", () => {
     expect(currentFront()).toMatch(/^H/);
     // Card 1 (H): didn't know it → re-queued to tail.
     await user.click(getCard());
-    await user.click(screen.getByRole("button", { name: /^I didn't know it/i }));
+    await user.click(screen.getByRole("button", { name: /^Review again/i }));
     expect(currentFront()).toMatch(/^O/); // moved to card 2 (O)
     // Card 2 (O): knew it.
     await user.click(getCard());
-    await user.click(screen.getByRole("button", { name: /^I knew it/i }));
+    await user.click(screen.getByRole("button", { name: /^Got it/i }));
     expect(currentFront()).toMatch(/^Na/); // moved to card 3 (Na)
     // Card 3 (Na): knew it.
     await user.click(getCard());
-    await user.click(screen.getByRole("button", { name: /^I knew it/i }));
+    await user.click(screen.getByRole("button", { name: /^Got it/i }));
     // The H card should have come back around (re-queued).
     expect(currentFront()).toMatch(/^H/);
   });
@@ -110,7 +110,7 @@ describe("Flashcards", () => {
     render(<Flashcards config={cfg} onSubmit={onSubmit} />);
     for (let i = 0; i < 3; i += 1) {
       await user.click(getCard());
-      await user.click(screen.getByRole("button", { name: /^I knew it/i }));
+      await user.click(screen.getByRole("button", { name: /^Got it/i }));
     }
     expect(onSubmit).toHaveBeenCalledTimes(1);
     // Flashcards are completion-only — gradebook gets 100% regardless of
@@ -131,7 +131,7 @@ describe("Flashcards", () => {
     // forces completion on the third pass without ever marking it known.
     for (let i = 0; i < 3; i += 1) {
       await user.click(getCard());
-      await user.click(screen.getByRole("button", { name: /^I didn't know it/i }));
+      await user.click(screen.getByRole("button", { name: /^Review again/i }));
     }
     expect(onSubmit).toHaveBeenCalledTimes(1);
     expect(onSubmit.mock.calls[0]?.[0]).toMatchObject({
@@ -146,7 +146,7 @@ describe("Flashcards", () => {
     const onSubmit = vi.fn();
     render(<Flashcards config={cfgSingle} onSubmit={onSubmit} />);
     await user.click(getCard());
-    await user.click(screen.getByRole("button", { name: /^I knew it/i }));
+    await user.click(screen.getByRole("button", { name: /^Got it/i }));
     expect(onSubmit).toHaveBeenCalledTimes(1);
 
     // Summary visible with the Practice again CTA.
@@ -159,7 +159,7 @@ describe("Flashcards", () => {
 
     // Running through again submits another completion — same 1/1 payload.
     await user.click(getCard());
-    await user.click(screen.getByRole("button", { name: /^I knew it/i }));
+    await user.click(screen.getByRole("button", { name: /^Got it/i }));
     expect(onSubmit).toHaveBeenCalledTimes(2);
     expect(onSubmit.mock.calls[1]?.[0]).toMatchObject({
       raw: 1,
@@ -178,7 +178,7 @@ describe("Flashcards", () => {
     const afterFlip = onPersist.mock.calls.at(-1)?.[0] as string;
     expect(afterFlip).toMatch(/"flipped":true/);
     onPersist.mockClear();
-    await user.click(screen.getByRole("button", { name: /^I knew it/i }));
+    await user.click(screen.getByRole("button", { name: /^Got it/i }));
     expect(onPersist).toHaveBeenCalled();
     const afterAnswer = onPersist.mock.calls.at(-1)?.[0] as string;
     // After answering, the next card is shown unflipped.

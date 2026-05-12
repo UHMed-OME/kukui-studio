@@ -59,6 +59,7 @@ const BLOOM_BY_KIND: Partial<Record<ActivityKind, BloomLevel>> = {
   // Remember — recall facts, terminology
   flashcards: "remember",
   "matching-pairs": "remember",
+  crossword: "remember",
   // Understand — identify, explain, classify
   "hotspot-2d": "understand",
   "anatomy-labeling": "understand",
@@ -155,6 +156,9 @@ export function App() {
   const [confirmReset, setConfirmReset] = useState(false);
   const [showPrivacy, setShowPrivacy] = useState(false);
   const [showAISettings, setShowAISettings] = useState(false);
+  // Bumped whenever AI settings are saved/cleared, so AIEditor re-reads
+  // them without requiring a page reload (issue #1).
+  const [aiSettingsVersion, setAiSettingsVersion] = useState(0);
   // On narrow viewports the editor + preview panels can't both fit, so we
   // hide one or the other. Desktop CSS ignores this — both panels show.
   const [mobilePanel, setMobilePanel] = useState<"edit" | "preview">("edit");
@@ -710,6 +714,7 @@ export function App() {
                 onChange={markDirty}
                 isDirty={isDirty}
                 onOpenSettings={() => setShowAISettings(true)}
+                settingsVersion={aiSettingsVersion}
               />
             )}
           </div>
@@ -869,6 +874,7 @@ export function App() {
       <AISettingsDialog
         open={showAISettings}
         onClose={() => setShowAISettings(false)}
+        onSaved={() => setAiSettingsVersion((v) => v + 1)}
       />
     </div>
   );

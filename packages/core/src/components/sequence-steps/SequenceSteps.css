@@ -58,7 +58,20 @@
 }
 
 .kukui-seq__item.is-dragging {
-  opacity: 0.6;
+  opacity: 0.35;
+}
+
+/* Ghost rendered inside <DragOverlay>: opaque copy that follows the
+ * cursor while the original placeholder reserves its slot in the list. */
+.kukui-seq__item--ghost {
+  background: var(--color-surface, #ffffff);
+  border: 1px solid var(--color-border, #dad2c6);
+  border-radius: var(--radius-md, 8px);
+  box-shadow: 0 8px 18px rgb(0 0 0 / 0.22);
+  transform: rotate(-0.6deg);
+  pointer-events: none;
+  cursor: grabbing;
+  padding: var(--spacing-sm, 8px) var(--spacing-md, 12px);
 }
 
 .kukui-seq__item.is-correct {

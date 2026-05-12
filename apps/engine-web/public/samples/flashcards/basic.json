@@ -36,10 +36,5 @@
   ],
   "behaviour": {
     "shuffle": false
-  },
-  "ui": {
-    "knewItButton": "I knew it",
-    "didntKnowButton": "I didn't know it",
-    "nextButton": "Reveal answer"
   }
 }

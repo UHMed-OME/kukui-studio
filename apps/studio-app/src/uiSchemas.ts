@@ -736,9 +736,9 @@ export const UI_SCHEMAS: Record<ActivityKind, Record<string, unknown>> = {
     },
     ui: {
       "ui:title": "Button label overrides",
-      knewItButton: f("'I knew it' button text"),
-      didntKnowButton: f("'I didn't know it' button text"),
-      nextButton: f("'Next' button text"),
+      gotItButton: f("'Got it' button text", "Label shown after the learner flips a card and remembered the answer."),
+      reviewAgainButton: f("'Review again' button text", "Label shown after the learner flips a card and wants to revisit it."),
+      nextButton: f("'Reveal answer' / next button text"),
     },
   },
 
@@ -1119,6 +1119,59 @@ export const UI_SCHEMAS: Record<ActivityKind, Record<string, unknown>> = {
     ui: {
       "ui:title": "Button label overrides",
       submitButtonLabel: f("'Submit' button text"),
+    },
+  },
+
+  crossword: {
+    ...COMMON,
+    "ui:order": ["title", "prompt", "entries", "behaviour", "ui", "*"],
+    title: TITLE,
+    author: AUTHOR,
+    prompt: f(
+      "Prompt",
+      "Optional. Shown above the puzzle — frame the topic or give solving instructions.",
+      { "ui:widget": "textarea", "ui:options": { rows: 2 } },
+    ),
+    entries: {
+      "ui:title": "Terms & definitions",
+      "ui:help":
+        "Each entry is one word in the crossword paired with the clue learners see. Terms must be 2–32 A–Z letters (no spaces or punctuation). Add at least 2 entries; aim for 6–12 for a satisfying puzzle.",
+      items: {
+        id: HIDDEN,
+        term: f(
+          "Term (answer)",
+          "The word learners must fill in. Letters only (A–Z). Case is ignored — it always renders in upper case.",
+        ),
+        definition: f("Definition (clue)", "The clue shown in the Across/Down list."),
+        hint: f(
+          "Hint (optional)",
+          "Surfaces when the learner selects this clue, if hints are enabled.",
+        ),
+      },
+    },
+    behaviour: {
+      "ui:title": "Activity behaviour",
+      enableRetry: BEHAVIOUR_RETRY,
+      allowReshuffle: f(
+        "Allow 'New layout'",
+        "Let the learner regenerate the grid for a fresh arrangement of the same terms.",
+      ),
+      allowReveal: f(
+        "Allow 'Reveal letter / word'",
+        "Reveal buttons fill in the answer; revealed cells don't count toward the grade.",
+      ),
+      showHints: f(
+        "Show hint affordance",
+        "Renders a hint banner for the active clue when its entry has a hint.",
+      ),
+    },
+    ui: {
+      "ui:title": "Button label overrides",
+      checkButton: f("'Check' button text"),
+      revealLetterButton: f("'Reveal letter' button text"),
+      revealWordButton: f("'Reveal word' button text"),
+      reshuffleButton: f("'New layout' button text"),
+      submitButton: f("'Submit' button text"),
     },
   },
 

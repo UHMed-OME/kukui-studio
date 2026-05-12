@@ -1,6 +1,7 @@
 import { useEffect, useId, useMemo, useState, type CSSProperties } from "react";
 import {
   DndContext,
+  DragOverlay,
   KeyboardSensor,
   PointerSensor,
   useDraggable,
@@ -8,6 +9,7 @@ import {
   useSensor,
   useSensors,
   type DragEndEvent,
+  type DragStartEvent,
 } from "@dnd-kit/core";
 import type { DragAndDropConfig } from "@kukui/schemas";
 import type { ActivityProps } from "../../types.js";
@@ -76,7 +78,18 @@ export function DragAndDrop({
     setState((s) => ({ ...s, placement: { ...s.placement, [draggableId]: zoneId } }));
   };
 
+  // Track the currently-dragged id so <DragOverlay> can render a ghost
+  // copy of the chip directly under the cursor. Without an overlay the
+  // pointer sits to the side of the chip's actual DOM position, which
+  // confuses learners when the chip is small or partially off-screen.
+  const [activeDragId, setActiveDragId] = useState<string | null>(null);
+
+  const handleDragStart = (e: DragStartEvent) => {
+    setActiveDragId(String(e.active.id));
+  };
+
   const handleDragEnd = (e: DragEndEvent) => {
+    setActiveDragId(null);
     const draggableId = String(e.active.id);
     if (e.over) {
       const overId = String(e.over.id);
@@ -87,6 +100,8 @@ export function DragAndDrop({
       }
     }
   };
+
+  const handleDragCancel = () => setActiveDragId(null);
 
   const isCorrect = (draggableId: string, zoneId: string | null): boolean => {
     if (!zoneId) return false;
@@ -141,7 +156,12 @@ export function DragAndDrop({
         <HeadingTag id={headingId} className="kukui-dnd__title">
           {config.title}
         </HeadingTag>
-        <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
+        <DndContext
+          sensors={sensors}
+          onDragStart={handleDragStart}
+          onDragEnd={handleDragEnd}
+          onDragCancel={handleDragCancel}
+        >
           <div className="kukui-dnd__layout">
             <div
               className="kukui-dnd__board"
@@ -190,6 +210,16 @@ export function DragAndDrop({
               ) : null}
             </Tray>
           </div>
+          <DragOverlay dropAnimation={null}>
+            {activeDragId ? (
+              <span
+                className="kukui-dnd__chip kukui-dnd__chip--ghost"
+                aria-hidden="true"
+              >
+                {draggablesById[activeDragId]?.label ?? ""}
+              </span>
+            ) : null}
+          </DragOverlay>
         </DndContext>
 
         {/* Keyboard / screen-reader fallback: select draggable → select zone */}

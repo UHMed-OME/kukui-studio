@@ -123,7 +123,21 @@
 }
 
 .kukui-dnd__chip.is-dragging {
-  opacity: 0.6;
+  opacity: 0.35;
+}
+
+/* Ghost rendered inside <DragOverlay>: full-opacity copy of the chip that
+ * follows the cursor while the original stays in place at reduced
+ * opacity. Slight shadow + rotate sells "lifted off the page". */
+.kukui-dnd__chip--ghost {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs, 4px);
+  opacity: 1;
+  transform: rotate(-2deg);
+  box-shadow: 0 8px 18px rgb(0 0 0 / 0.22);
+  cursor: grabbing;
+  pointer-events: none;
 }
 
 .kukui-dnd__chip-icon {
