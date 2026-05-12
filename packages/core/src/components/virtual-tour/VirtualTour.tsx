@@ -63,15 +63,28 @@ export function VirtualTour({
     [config.completion?.requiredOverlayIds, config.overlays],
   );
 
+  // Remember the element that had focus when the overlay opened so we
+  // can return focus to it on close — keyboard users would otherwise
+  // lose their place in the overlay-list every time they dismiss.
+  const lastFocusRef = useRef<HTMLElement | null>(null);
+
   const visit = (overlayId: string) => {
     if (state.stage === "submitted") return;
+    if (typeof document !== "undefined" && document.activeElement instanceof HTMLElement) {
+      lastFocusRef.current = document.activeElement;
+    }
     setState((s) => {
       const visited = s.visited.includes(overlayId) ? s.visited : [...s.visited, overlayId];
       return { ...s, visited, openOverlayId: overlayId };
     });
   };
 
-  const closeOverlay = () => setState((s) => ({ ...s, openOverlayId: null }));
+  const closeOverlay = () => {
+    setState((s) => ({ ...s, openOverlayId: null }));
+    // Defer the focus restore so React commits the close first and the
+    // close button isn't still the active element.
+    queueMicrotask(() => lastFocusRef.current?.focus?.());
+  };
 
   // Focus the close button on overlay open and wire Escape-to-close.
   useEffect(() => {
@@ -123,6 +136,7 @@ export function VirtualTour({
         <VirtualTourScene
           config={config}
           disabled={submitted}
+          overlayOpen={state.openOverlayId !== null}
           visited={new Set(state.visited)}
           onVisit={visit}
         />
@@ -157,7 +171,7 @@ export function VirtualTour({
         </fieldset>
 
         {openOverlay ? (
-          <div className="kukui-vt__overlay" role="dialog" aria-modal="false" aria-labelledby="vt-overlay-title">
+          <div className="kukui-vt__overlay" role="dialog" aria-labelledby="vt-overlay-title">
             <header className="kukui-vt__overlay-header">
               <h2 id="vt-overlay-title" className="kukui-vt__overlay-title">
                 {openOverlay.title ?? openOverlay.id}
@@ -226,18 +240,25 @@ export function VirtualTour({
 function VirtualTourScene({
   config,
   disabled,
+  overlayOpen,
   visited,
   onVisit,
 }: {
   config: VirtualTourConfig;
   disabled: boolean;
+  overlayOpen: boolean;
   visited: Set<string>;
   onVisit: (id: string) => void;
 }) {
+  // Probe both webgl and webgl2 — Safari with strict privacy settings
+  // can return null for "webgl" but still have webgl2 available.
   const hasWebGL =
     typeof window !== "undefined" &&
     typeof window.WebGLRenderingContext !== "undefined" &&
-    !!document.createElement("canvas").getContext("webgl");
+    (() => {
+      const c = document.createElement("canvas");
+      return !!(c.getContext("webgl2") || c.getContext("webgl"));
+    })();
 
   if (!hasWebGL) {
     return (
@@ -267,7 +288,7 @@ function VirtualTourScene({
         <Suspense fallback={null}>
           <TourModel src={config.scene.src} sceneRef={sceneRef} />
         </Suspense>
-        <FirstPersonRig speed={movementSpeed} />
+        <FirstPersonRig speed={movementSpeed} enabled={!disabled && !overlayOpen} />
         <DragLookControls />
         {config.overlays.map((o, i) => (
           <HotspotPin
@@ -294,11 +315,19 @@ function VirtualTourScene({
  * sits — keyboard users still need PointerLock to be active to see the
  * camera move with the look direction.
  */
-function FirstPersonRig({ speed }: { speed: number }) {
+function FirstPersonRig({ speed, enabled }: { speed: number; enabled: boolean }) {
   const { camera } = useThree();
   const keys = useRef<Record<string, boolean>>({});
 
   useEffect(() => {
+    // When disabled (e.g., the overlay dialog is open or the activity is
+    // submitted), drop the window listeners entirely. Without this guard,
+    // arrow keys would simultaneously scroll the overlay and move the
+    // 3D camera in the background.
+    if (!enabled) {
+      keys.current = {};
+      return;
+    }
     const map: Record<string, string> = {
       w: "forward",
       W: "forward",
@@ -330,7 +359,7 @@ function FirstPersonRig({ speed }: { speed: number }) {
       window.removeEventListener("keydown", down);
       window.removeEventListener("keyup", up);
     };
-  }, []);
+  }, [enabled]);
 
   const forwardVec = useMemo(() => new THREE.Vector3(), []);
   const rightVec = useMemo(() => new THREE.Vector3(), []);

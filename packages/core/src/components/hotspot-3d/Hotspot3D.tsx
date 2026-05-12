@@ -207,10 +207,17 @@ function Hotspot3DScene({
   submitted: boolean;
   onPick: (id: string) => void;
 }) {
+  // Probe both webgl and webgl2 — Safari with strict privacy settings
+  // can return null for "webgl" but still have webgl2 available, and
+  // probing only the legacy context falls into the text fallback for a
+  // non-trivial Safari audience that otherwise renders fine.
   const hasWebGL =
     typeof window !== "undefined" &&
     typeof window.WebGLRenderingContext !== "undefined" &&
-    !!document.createElement("canvas").getContext("webgl");
+    (() => {
+      const c = document.createElement("canvas");
+      return !!(c.getContext("webgl2") || c.getContext("webgl"));
+    })();
 
   if (!hasWebGL) {
     return (

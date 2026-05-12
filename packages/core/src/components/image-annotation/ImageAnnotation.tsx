@@ -127,8 +127,18 @@ export function ImageAnnotation({
 
   useEffect(() => {
     if (!onPersist) return;
-    onPersist(JSON.stringify({ shapes: state.shapes }));
-  }, [state.shapes, onPersist]);
+    // Persist `submitted` + `attempts` too. Without these, a learner who
+    // submits and then resumes from SCORM lands back in the unsubmitted
+    // state with their shapes restored — they can keep drawing and
+    // re-submit, which silently corrupts the grade.
+    onPersist(
+      JSON.stringify({
+        shapes: state.shapes,
+        submitted: state.submitted,
+        attempts: state.attempts,
+      }),
+    );
+  }, [state.shapes, state.submitted, state.attempts, onPersist]);
 
   const nextId = () => `s${++idCounterRef.current}`;
 
@@ -569,7 +579,11 @@ function computeIoU(
 function parseSuspend(s: string | undefined): State | null {
   if (!s) return null;
   try {
-    const parsed = JSON.parse(s) as { shapes?: unknown };
+    const parsed = JSON.parse(s) as {
+      shapes?: unknown;
+      submitted?: unknown;
+      attempts?: unknown;
+    };
     if (!parsed || !Array.isArray(parsed.shapes)) return null;
     const shapes: AnnotationShape[] = [];
     for (const raw of parsed.shapes) {
@@ -586,8 +600,8 @@ function parseSuspend(s: string | undefined): State | null {
     return {
       shapes,
       tool: "rectangle",
-      submitted: false,
-      attempts: 0,
+      submitted: parsed.submitted === true,
+      attempts: typeof parsed.attempts === "number" ? parsed.attempts : 0,
     };
   } catch {
     return null;

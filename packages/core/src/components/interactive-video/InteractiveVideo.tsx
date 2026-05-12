@@ -148,12 +148,16 @@ export function InteractiveVideo({
     }
   };
 
-  const finish = () => {
-    if (state.stage !== "watching") return;
-    const scores = Object.values(state.resolvedInteractions);
+  // Internal: compute + emit the SCORM payload from a known-good snapshot
+  // of state. Callers pass the snapshot explicitly so the auto-finish path
+  // can use the just-committed state from recordScore's setState callback
+  // — avoids a closure window where `state` could be one render behind the
+  // latest `resolvedInteractions`.
+  const submitFrom = (snapshot: State) => {
+    const scores = Object.values(snapshot.resolvedInteractions);
     const passPct = config.behaviour?.passPercentage ?? 50;
     const aggregated = aggregate(scores, passPct);
-    const next: State = { ...state, stage: "submitted" };
+    const next: State = { ...snapshot, stage: "submitted" };
     setState(next);
     onSubmit({
       raw: aggregated.raw,
@@ -163,6 +167,11 @@ export function InteractiveVideo({
     });
   };
 
+  const finish = () => {
+    if (state.stage !== "watching") return;
+    submitFrom(state);
+  };
+
   const allRequiredResolved = useMemo(() => {
     const required = validated.filter((v) => v.required);
     if (required.length === 0) return false;
@@ -170,12 +179,14 @@ export function InteractiveVideo({
   }, [validated, state.resolvedInteractions]);
 
   // Auto-finish when every required interaction has been resolved.
+  // Depends on `state` directly so the snapshot passed to submitFrom is
+  // always the same render's state — never a render-behind closure copy.
   useEffect(() => {
     if (state.stage !== "watching") return;
     if (!allRequiredResolved) return;
-    finish();
+    submitFrom(state);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [allRequiredResolved]);
+  }, [allRequiredResolved, state]);
 
   const handleTimeUpdate = () => {
     const v = videoRef.current;

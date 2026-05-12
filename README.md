@@ -218,4 +218,4 @@ MIT — see [LICENSE](LICENSE). Use it, fork it, sell consulting on top of it. I
 
 ## Acknowledgements
 
-Built at UH JABSOM's Office of Medical Education. Designed from scratch around a clean schema-driven authoring model and modern in-browser editing, with WCAG 2.2 AA conformance from day 1.
+Built at the John A. Burns School of Medicine’s Office of Medical Education. Designed from scratch around a clean schema-driven authoring model and modern in-browser editing, with WCAG 2.2 AA conformance from day 1.

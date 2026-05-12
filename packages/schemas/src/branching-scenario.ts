@@ -5,7 +5,9 @@ const versionRe = /^\d+\.\d+(\.\d+)?$/;
 
 const Outcome = z
   .object({
-    score: z.number(),
+    // 0..1 — the runtime emits this as raw with max=1 for SCORM, so
+    // out-of-range values would yield unpredictable LMS behavior.
+    score: z.number().min(0).max(1),
     success: z.boolean(),
     message: z.string().optional(),
   })

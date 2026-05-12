@@ -125,7 +125,12 @@ export function QuestionSet({
     });
   };
 
-  const tryAgain = () => setState(initial);
+  const tryAgain = () =>
+    // Bump `attempts` instead of resetting to 0 so the body div's
+    // `${index}-${attempts}` key changes — child activities (MC / FITB)
+    // hold their own selection state, so remounting via key is the
+    // only way to clear their previous answer.
+    setState({ ...initial, attempts: state.attempts + 1 });
 
   if (validated.length === 0) {
     return (
@@ -160,7 +165,11 @@ export function QuestionSet({
         </header>
 
         {current ? (
-          <div className="kukui-qs__body" key={current.index}>
+          // key includes attempts so Try Again actually remounts the
+          // child — otherwise the embedded activity keeps its prior
+          // selection (its own useReducer state survives the parent's
+          // state reset).
+          <div className="kukui-qs__body" key={`${current.index}-${state.attempts}`}>
             {current.type === "multipleChoice" ? (
               <MultipleChoice
                 config={current.config}

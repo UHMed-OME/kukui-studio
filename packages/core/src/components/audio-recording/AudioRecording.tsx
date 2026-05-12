@@ -308,19 +308,42 @@ export function AudioRecording({
   const submit = useCallback(async () => {
     if (state.stage !== "reviewing") return;
     if (state.durationSeconds < minSeconds) return;
-    // Resolve the blob from the object URL — fetch() handles `blob:` schemes.
-    // Note: the resulting data URL is base64-encoded audio. For long takes
-    // this can be tens of KB; SCORM 1.2 caps suspend_data at 4096 chars.
-    // Authors should keep `maxDurationSeconds` short for SCORM-bound deploys.
-    // Same v0 trade-off as the FileUploadWidget approach.
+    // SCORM 1.2 caps `cmi.suspend_data` at 4096 chars. The bridge LZ-
+    // compresses before write, but base64-encoded audio is high-entropy
+    // and barely compresses, so any recording longer than ~5 seconds
+    // overflows the cap — silently truncated by the LMS, corrupt on
+    // resume. We persist a metadata-only suspend record (so grade
+    // integrity survives) and only include the audio bytes when they
+    // fit comfortably under the cap. Short recordings round-trip;
+    // longer ones submit cleanly but aren't replayable after a resume.
+    const SUSPEND_BUDGET_CHARS = 3500;
     try {
       const resp = await fetch(state.blobUrl ?? "");
       const blob = await resp.blob();
       const audioDataUrl = await blobToDataUrl(blob);
-      const suspendData = JSON.stringify({
+      const withAudio = JSON.stringify({
         audioDataUrl,
         durationSeconds: state.durationSeconds,
+        submitted: true,
       });
+      const fitsBudget = withAudio.length <= SUSPEND_BUDGET_CHARS;
+      const suspendData = fitsBudget
+        ? withAudio
+        : JSON.stringify({
+            durationSeconds: state.durationSeconds,
+            submitted: true,
+            // Persisted recording omitted: data URL exceeded the SCORM
+            // 1.2 suspend_data budget. The submit still scores success.
+            audioOmitted: true,
+          });
+      if (!fitsBudget) {
+        // eslint-disable-next-line no-console
+        console.info(
+          `[kukui:audio-recording] Recording too large to persist in SCORM ` +
+            `suspend_data (${withAudio.length} chars > ${SUSPEND_BUDGET_CHARS} budget). ` +
+            `Grade submitted as completed; recording will not replay on resume.`,
+        );
+      }
       setState((s) => ({ ...s, stage: "submitted" }));
       onSubmit({ raw: 1, max: 1, success: true, suspendData });
     } catch (err) {

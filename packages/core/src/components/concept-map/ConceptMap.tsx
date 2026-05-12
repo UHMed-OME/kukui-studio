@@ -302,13 +302,28 @@ export function ConceptMap({
   const onAddNodeClick = () => {
     if (submitted) return;
     if (config.behaviour?.allowFreeText) {
-      // eslint-disable-next-line no-alert
-      const label = window.prompt("Node label:");
-      if (label) addFreeTextNode(label);
+      // Inline modal rather than window.prompt() — some SCORM hosts
+      // (notably D2L Brightspace's sandboxed iframe) block native
+      // prompts silently, returning null and giving the learner no
+      // feedback that the action did nothing.
+      setFreeTextDraft("");
+      setFreeTextOpen(true);
     } else {
       // No free text: nudge focus to the palette area.
       paletteListRef.current?.querySelector("button")?.focus();
     }
+  };
+
+  const submitFreeText = () => {
+    const label = freeTextDraft.trim();
+    if (label) addFreeTextNode(label);
+    setFreeTextOpen(false);
+    setFreeTextDraft("");
+  };
+
+  const cancelFreeText = () => {
+    setFreeTextOpen(false);
+    setFreeTextDraft("");
   };
 
   const onToggleEdgeMode = () => {
@@ -336,6 +351,14 @@ export function ConceptMap({
   // the user lifts pointer over the canvas, we place at that location.
   const [pendingPalette, setPendingPalette] = useState<string | null>(null);
   const paletteListRef = useRef<HTMLDivElement>(null);
+  // Inline "Add free-text node" modal — replaces window.prompt(), which
+  // some SCORM hosts (Brightspace sandboxed iframes) block silently.
+  const [freeTextOpen, setFreeTextOpen] = useState(false);
+  const [freeTextDraft, setFreeTextDraft] = useState("");
+  const freeTextInputRef = useRef<HTMLInputElement>(null);
+  useEffect(() => {
+    if (freeTextOpen) freeTextInputRef.current?.focus();
+  }, [freeTextOpen]);
 
   const onPalettePointerDown = (paletteId: string) => () => {
     if (submitted) return;
@@ -685,6 +708,59 @@ export function ConceptMap({
           )}
         </div>
       </article>
+      {freeTextOpen ? (
+        <div
+          className="kukui-cm__modal-backdrop"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Add free-text node"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) cancelFreeText();
+          }}
+        >
+          <div className="kukui-cm__modal">
+            <label className="kukui-cm__modal-label" htmlFor="kukui-cm-free-text">
+              Node label
+            </label>
+            <input
+              ref={freeTextInputRef}
+              id="kukui-cm-free-text"
+              type="text"
+              className="kukui-cm__modal-input"
+              value={freeTextDraft}
+              onChange={(e) => setFreeTextDraft(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  submitFreeText();
+                } else if (e.key === "Escape") {
+                  e.preventDefault();
+                  cancelFreeText();
+                }
+              }}
+              maxLength={120}
+              placeholder="e.g. Photosynthesis"
+            />
+            <div className="kukui-cm__modal-actions">
+              <button
+                type="button"
+                className="kukui-cm__secondary"
+                onClick={cancelFreeText}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                className="kukui-cm__primary"
+                onClick={submitFreeText}
+                disabled={!freeTextDraft.trim()}
+              >
+                Add node
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }

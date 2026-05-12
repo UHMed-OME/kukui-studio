@@ -997,7 +997,10 @@ export const UI_SCHEMAS: Record<ActivityKind, Record<string, unknown>> = {
       caption: f("Caption"),
     },
     minSeconds: f("Minimum seconds", "Optional. Submit disabled until met."),
-    maxSeconds: f("Maximum seconds", "Optional. Recording auto-stops at this length."),
+    maxSeconds: f(
+      "Maximum seconds",
+      "Optional. Recording auto-stops at this length. Note: SCORM 1.2 can only persist short clips (~5 seconds) across resume — longer recordings still submit and grade as completed, but won't replay if the learner returns to the activity.",
+    ),
     behaviour: {
       "ui:title": "Activity behaviour",
       enableRetry: BEHAVIOUR_RETRY,

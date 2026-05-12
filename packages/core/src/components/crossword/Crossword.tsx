@@ -364,6 +364,7 @@ export function Crossword({
     // Force a final check so any pending letters get a colour.
     const nextStatuses: Record<string, CellStatus> = { ...state.statuses };
     let raw = 0;
+    let revealedCount = 0;
     for (const k of cellIndex.active) {
       const [rs, cs] = k.split(",");
       const r = Number(rs);
@@ -379,12 +380,17 @@ export function Crossword({
           raw += 1;
         } else {
           nextStatuses[k] = "revealed";
+          revealedCount += 1;
         }
       } else if (given) {
         nextStatuses[k] = "incorrect";
       }
     }
-    const max = totalActiveCells;
+    // Revealed cells are subtracted from the denominator too — otherwise a
+    // learner who fully solves a puzzle after using "Reveal word" still
+    // reports raw < max and `success: false`. Convention: revealed cells
+    // are "outside the grade" rather than "automatically wrong."
+    const max = totalActiveCells - revealedCount;
     const nextState: State = { ...state, statuses: nextStatuses, submitted: true };
     setState(nextState);
     onSubmit({
