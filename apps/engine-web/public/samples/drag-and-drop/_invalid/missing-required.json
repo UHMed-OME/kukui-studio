@@ -1,8 +1,10 @@
 {
-  "_comment": "INTENTIONALLY INVALID: 'draggables' must have at least 1 item (.min(1)). Background is now optional so omitting it is legal — but draggables and dropZones still need at least one entry each.",
+  "_comment": "INTENTIONALLY INVALID: every draggable must have an `id`. Empty arrays are allowed now (transient authoring state); this fixture instead omits the required `id` on the chip so the schema still rejects it.",
   "version": "1.0",
   "title": "Label the parts of a plant cell",
-  "draggables": [],
+  "draggables": [
+    { "label": "Nucleus", "correctZones": ["z-nucleus"] }
+  ],
   "dropZones": [
     {
       "id": "z-nucleus",

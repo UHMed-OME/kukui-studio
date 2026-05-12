@@ -32,18 +32,25 @@ export const DragAndDropConfigSchema = z
       })
       .strict()
       .optional(),
+    // `draggables` and `correctZones` are allowed to be empty so that
+    // an author who just hit Reset or is in the middle of restructuring
+    // (delete-all, re-add) doesn't trip a hard schema rejection that
+    // hides the activity preview. The Studio chip panel surfaces an
+    // inline warning when a chip has no `correctZones`; the runtime
+    // treats such a chip as "never correct" (it'll always score wrong
+    // wherever placed). Same idea for dropZones — an empty board is a
+    // legitimate transient state during authoring.
     draggables: z
       .array(
         z
           .object({
             id: z.string().min(1),
             label: z.string().min(1),
-            correctZones: z.array(z.string()).min(1),
+            correctZones: z.array(z.string()),
             feedback: z.string().optional(),
           })
           .strict(),
-      )
-      .min(1),
+      ),
     dropZones: z
       .array(
         z
@@ -55,8 +62,7 @@ export const DragAndDropConfigSchema = z
             showLabel: z.boolean().optional(),
           })
           .strict(),
-      )
-      .min(1),
+      ),
     behaviour: z
       .object({
         enableRetry: z.boolean().optional(),

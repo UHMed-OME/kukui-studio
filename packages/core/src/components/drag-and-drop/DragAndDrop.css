@@ -235,6 +235,10 @@
   display: inline-flex;
   align-items: center;
   gap: var(--spacing-xs, 4px);
+  /* Force intrinsic width so the ghost is never 0-width in the
+   * DragOverlay's positioning container. Without this, span-as-ghost
+   * could collapse and the user sees nothing during drag. */
+  width: max-content;
   opacity: 1;
   /* No CSS transition: dnd-kit updates the inline transform on every
    * pointermove. Transitioning transform makes the ghost lag behind the
@@ -244,6 +248,9 @@
   box-shadow: 0 8px 18px rgb(0 0 0 / 0.22);
   cursor: grabbing;
   pointer-events: none;
+  /* Disabled button must still display as the active chip in DragOverlay. */
+  -webkit-appearance: none;
+  appearance: none;
 }
 
 .kukui-dnd__chip-icon {

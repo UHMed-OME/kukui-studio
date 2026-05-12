@@ -60,14 +60,20 @@ export function DragLayer(props: DragLayerProps) {
         trailingSlot={
           <DragOverlay dropAnimation={null}>
             {activeId ? (
-              <span
+              // Mirror the original chip's DOM exactly (button + label) so
+              // the ghost has the same intrinsic sizing as the source. A
+              // `<span>` here was collapsing to ~0 width in some flex
+              // contexts, making the chip look like it vanished during drag.
+              <button
+                type="button"
+                disabled
                 className="kukui-dnd__chip kukui-dnd__chip--ghost"
                 aria-hidden="true"
               >
                 <span className="kukui-dnd__chip-label">
                   {draggablesById[activeId]?.label ?? ""}
                 </span>
-              </span>
+              </button>
             ) : null}
           </DragOverlay>
         }
