@@ -197,7 +197,11 @@ button {
    common desktop widths. */
 /* Brand block — left edge aligns with the sidebar's content padding
    (12px from page edge), but width flows freely so the meta strip
-   stays on one line. No column constraint = no cramming. */
+   stays on one line. No column constraint = no cramming.
+   Rendered as a Link so the wordmark routes back to the landing
+   page — `text-decoration: none` keeps the underline off, and
+   `color: inherit` keeps the headline using the brand colour rather
+   than the default link blue. */
 .kukui-studio-brand {
   flex: 0 1 auto;
   min-width: 0;
@@ -205,6 +209,14 @@ button {
   flex-direction: row;
   align-items: center;
   gap: 14px;
+  text-decoration: none;
+  color: inherit;
+}
+
+.kukui-studio-brand:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 4px;
+  border-radius: var(--radius-md);
 }
 
 .kukui-studio-brand-text {

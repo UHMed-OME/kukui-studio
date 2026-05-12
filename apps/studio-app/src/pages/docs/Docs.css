@@ -67,6 +67,27 @@
   min-width: 0;
 }
 
+/* Pages that don't have a sidebar (Privacy, etc.) opt into single-
+ * column layout. Overrides the grid to a centered reading column at
+ * the same width docs body text uses, so policy prose breathes. */
+.kukui-docs__main--single {
+  grid-template-columns: minmax(0, 720px);
+  justify-content: center;
+}
+
+.kukui-docs__content--single h1 {
+  margin: 0 0 var(--spacing-md);
+  font-family: var(--font-family-display);
+  font-size: 38px;
+  font-weight: 500;
+  line-height: 1.1;
+  letter-spacing: -0.015em;
+}
+
+.kukui-docs__content--single h2 {
+  margin: 40px 0 12px;
+}
+
 /* ---------- Index page ---------- */
 
 .kukui-docs__index h1 {

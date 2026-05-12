@@ -1,15 +1,19 @@
 import { useEffect, useRef, useState } from "react";
 import type { AISettings } from "../ai/settings.js";
 import { AIPane } from "./panes/AIPane.js";
-import { PrivacyPane } from "./panes/PrivacyPane.js";
 import { AboutPane } from "./panes/AboutPane.js";
 import "./SettingsDialog.css";
 
-export type SettingsPane = "ai" | "privacy" | "about";
+/**
+ * Privacy is intentionally NOT a pane here — long prose-y content
+ * doesn't fit comfortably in the dialog's narrow column. The footer's
+ * "Privacy & data" link routes to the standalone `/privacy` page
+ * instead.
+ */
+export type SettingsPane = "ai" | "about";
 
 const PANES: Array<{ id: SettingsPane; label: string }> = [
   { id: "ai", label: "AI Assist" },
-  { id: "privacy", label: "Privacy & data" },
   { id: "about", label: "About" },
 ];
 
@@ -95,7 +99,6 @@ export function SettingsDialog({
           </nav>
           <div className="ks-settings-dialog__pane">
             {pane === "ai" ? <AIPane onSaved={onAISaved} /> : null}
-            {pane === "privacy" ? <PrivacyPane /> : null}
             {pane === "about" ? <AboutPane /> : null}
           </div>
         </div>

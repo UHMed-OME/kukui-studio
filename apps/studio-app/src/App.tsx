@@ -418,7 +418,11 @@ export function App() {
   return (
     <div className="kukui-studio-shell">
       <header className="kukui-studio-header">
-        <div className="kukui-studio-brand">
+        <Link
+          to="/"
+          className="kukui-studio-brand"
+          aria-label="Kukui Studio — home"
+        >
           <img
             className="kukui-studio-logo"
             src={`${import.meta.env.BASE_URL}kukui-logo.svg`}
@@ -442,7 +446,7 @@ export function App() {
               </span>
             </h1>
           </div>
-        </div>
+        </Link>
         <div className="kukui-studio-toolbar">
           <input
             ref={fileInputRef}
@@ -866,13 +870,9 @@ export function App() {
           <span aria-hidden="true" className="kukui-studio-footer__sep">
             ·
           </span>
-          <button
-            type="button"
-            className="kukui-studio-footer__btn"
-            onClick={() => setSettingsPane("privacy")}
-          >
+          <Link to="/privacy" className="kukui-studio-footer__link">
             Privacy &amp; data
-          </button>
+          </Link>
           <span aria-hidden="true" className="kukui-studio-footer__sep">
             ·
           </span>

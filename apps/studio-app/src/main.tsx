@@ -9,6 +9,7 @@ import { DocsIndex } from "./pages/docs/DocsIndex.js";
 import { DocPage } from "./pages/docs/DocPage.js";
 import { BlogIndex } from "./pages/blog/BlogIndex.js";
 import { BlogPost } from "./pages/blog/BlogPost.js";
+import { Privacy } from "./pages/Privacy.js";
 import { ChunkErrorBoundary } from "./pages/shared/ChunkErrorBoundary.js";
 import "./styles.css";
 
@@ -73,6 +74,7 @@ createRoot(root).render(
           </Route>
           <Route path="/blog" element={<BlogIndex />} />
           <Route path="/blog/:slug" element={<BlogPost />} />
+          <Route path="/privacy" element={<Privacy />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </ChunkErrorBoundary>
