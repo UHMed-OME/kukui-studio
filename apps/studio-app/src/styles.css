@@ -223,33 +223,55 @@ button {
   margin-top: -2px;
 }
 
-/* Brand wordmark — "Kukui Studio" set as one confident serif lockup.
-   The pronunciation moves down into the metadata strip below so it
-   stops fragmenting the headline into 4 chunks. */
+/* Brand wordmark — headword + italic phonetic on top line, "STUDIO"
+   tracked sans caps below as a sub-label. The typeface contrast
+   (serif headword + sans subhead) does the brand work; no separate
+   tagline needed in the header since the footer already carries the
+   "Interactive learning activities…" copy. */
 .kukui-studio-title {
   margin: 0;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 10px;
   font-family: var(--font-family-display);
-  font-size: 30px;
   font-weight: 500;
   color: var(--color-text-primary);
   line-height: 1;
   letter-spacing: -0.015em;
 }
 
-.kukui-studio-subtitle__pronunciation {
+.kukui-studio-title__word {
+  font-size: 32px;
+}
+
+.kukui-studio-title__pronunciation {
   font-family: var(--font-family-display);
   font-style: italic;
   font-weight: 400;
+  font-size: 16px;
   color: var(--color-text-muted);
+  letter-spacing: 0;
   white-space: nowrap;
 }
 
+/* "STUDIO" eyebrow under the wordmark — tracked sans caps, sized to
+   roughly the width of "Kukui" so the two lines optically anchor each
+   other. Letter-spacing chosen to land STUDIO under the K…i span of
+   the headword rather than running short or wide. */
+.kukui-studio-eyebrow {
+  margin: 2px 0 0;
+  font-family: var(--font-family-sans);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.34em;
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+}
+
+/* Legacy subtitle — kept as a safety net for any non-App.tsx call
+   sites; no longer used by the header. */
 .kukui-studio-subtitle {
   margin: 0;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: 0 6px;
   font-size: var(--font-size-meta);
   color: var(--color-text-muted);
   text-wrap: balance;
