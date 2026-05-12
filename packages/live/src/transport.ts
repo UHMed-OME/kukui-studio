@@ -77,6 +77,42 @@ const JOIN_BY_BACKEND: Record<SignalingBackend, JoinFn> = {
   mqtt: joinMqtt,
 };
 
+/**
+ * Curated default relay URLs.
+ *
+ * Why we don't fall through to Trystero's built-in defaults: a couple
+ * of public Nostr relays in the wild return HTTP 401 + `WWW-
+ * Authenticate: Basic` during the WebSocket upgrade handshake — which
+ * triggers the browser's native password prompt before the JS fetch
+ * error path can catch it. That's user-facing noise we can't suppress
+ * from JavaScript, so we explicitly avoid those relays.
+ *
+ * The list below is curated to relays that:
+ *   1. Are publicly accessible (no auth challenge on /, no token gate)
+ *   2. Have a track record of stability for browser WebSocket clients
+ *   3. Don't slow-walk the upgrade with TLS shenanigans
+ *
+ * Authors can still override via `options.relayUrls` for institutional
+ * proxies. If everyone in a room agrees on the same custom list, the
+ * mesh forms there instead.
+ */
+const DEFAULT_NOSTR_RELAYS: readonly string[] = [
+  "wss://relay.nostr.band",
+  "wss://nostr.fmt.wiz.biz",
+  "wss://nostr-pub.wellorder.net",
+  "wss://relay.damus.io",
+];
+
+const DEFAULT_MQTT_RELAYS: readonly string[] = [
+  "wss://broker.hivemq.com:8884/mqtt",
+  "wss://test.mosquitto.org:8081",
+];
+
+const DEFAULT_RELAYS_BY_BACKEND: Record<SignalingBackend, readonly string[]> = {
+  nostr: DEFAULT_NOSTR_RELAYS,
+  mqtt: DEFAULT_MQTT_RELAYS,
+};
+
 function realRoomFactory(
   code: string,
   options: TransportOptions,
@@ -90,12 +126,17 @@ function realRoomFactory(
     );
   }
   const appId = options.appId ?? "kukui-live";
+  // Pass an explicit relayUrls list so Trystero never falls back to its
+  // bundled default — one of those relays triggers a browser password
+  // prompt during WS upgrade. Author-supplied options.relayUrls wins.
+  const relayUrls =
+    options.relayUrls && options.relayUrls.length > 0
+      ? options.relayUrls
+      : [...DEFAULT_RELAYS_BY_BACKEND[backend]];
   const room: TrysteroRoom = joinFn(
     {
       appId,
-      ...(options.relayUrls && options.relayUrls.length > 0
-        ? { relayUrls: options.relayUrls }
-        : {}),
+      relayUrls,
       ...(options.turn?.url
         ? {
             rtcConfig: {
