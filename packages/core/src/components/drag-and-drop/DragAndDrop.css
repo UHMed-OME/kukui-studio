@@ -1,7 +1,11 @@
 /*
  * Drag and Drop — board with absolutely-positioned drop zones over a
- * background image; tray of draggables to the side; keyboard fallback
- * (select-driven) below. Layout-stable: zone borders are constant 2 px.
+ * background image; tray of chips alongside. The keyboard fallback
+ * (legacy <select>-based UI) is gone — keyboard support is first-class
+ * in the tap-to-place flow.
+ *
+ * The .kukui-dnd--mode-drag / .kukui-dnd--mode-tap variants exist for
+ * styling tweaks that need to differ; right now they mostly share styles.
  */
 
 .kukui-dnd {
@@ -32,9 +36,12 @@
   gap: var(--spacing-lg, 16px);
 }
 
-@media (max-width: 720px) {
+@media (max-width: 760px) {
   .kukui-dnd__layout {
     grid-template-columns: 1fr;
+    /* Leave room for the sticky bottom-sheet tray so the last bit
+     * of board content isn't covered. */
+    padding-bottom: 96px;
   }
 }
 
@@ -50,9 +57,6 @@
   overflow: hidden;
 }
 
-/* Image-less stage: the drop zones do the visual work (text-table /
- * labelled-bin layouts). Add a faint grid so the author + learner can
- * see they're on a structured canvas, not floating chips. */
 .kukui-dnd__board--no-image {
   background-image:
     linear-gradient(to right, rgb(0 0 0 / 0.05) 1px, transparent 1px),
@@ -60,6 +64,7 @@
   background-size: 10% 10%;
 }
 
+/* Zones are <button> elements — reset the native button look. */
 .kukui-dnd__zone {
   position: absolute;
   border: 2px dashed var(--color-border-hover, #bbae9a);
@@ -71,11 +76,53 @@
   gap: var(--spacing-xs, 4px);
   padding: var(--spacing-xs, 4px);
   background: rgb(255 255 255 / 0.55);
+  color: var(--color-text-primary);
+  cursor: pointer;
+  font: inherit;
   transition: background-color 150ms ease;
+}
+
+.kukui-dnd__zone:disabled {
+  cursor: default;
 }
 
 .kukui-dnd__zone.is-over {
   background: var(--color-primary-soft);
+}
+
+.kukui-dnd__zone.is-awaiting {
+  background: var(--color-primary-soft);
+  border-color: var(--color-primary);
+  animation: kukui-dnd-pulse 1.5s ease-in-out infinite;
+}
+
+.kukui-dnd__zone:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+@keyframes kukui-dnd-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgb(123 67 36 / 0.35); }
+  50% { box-shadow: 0 0 0 4px rgb(123 67 36 / 0.05); }
+}
+
+.kukui-dnd__zone-label {
+  font-size: var(--font-size-meta, 13px);
+  font-weight: 700;
+  color: var(--color-text-secondary);
+}
+
+.kukui-dnd__zone-cta {
+  position: absolute;
+  inset: auto auto 4px 50%;
+  transform: translateX(-50%);
+  font-size: var(--font-size-meta, 13px);
+  font-weight: 700;
+  color: var(--color-primary);
+  background: var(--color-surface);
+  padding: 2px 8px;
+  border-radius: var(--radius-sm, 4px);
+  pointer-events: none;
 }
 
 .kukui-dnd__tray {
@@ -89,8 +136,26 @@
   border-radius: var(--radius-md, 8px);
 }
 
-.kukui-dnd__tray.is-over {
-  background: var(--color-primary-soft);
+@media (max-width: 760px) {
+  .kukui-dnd__tray {
+    /* Bottom-sheet tray on mobile: sticky, single-row, scrollable.
+     * Sits above the activity actions, taking ~80 px. */
+    position: sticky;
+    bottom: 0;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    min-height: auto;
+    height: 80px;
+    align-items: center;
+    margin-top: var(--spacing-md, 12px);
+    z-index: 5;
+    box-shadow: 0 -4px 12px rgb(0 0 0 / 0.1);
+  }
+
+  .kukui-dnd__tray .kukui-dnd__chip {
+    flex: 0 0 auto;
+  }
 }
 
 .kukui-dnd__tray-empty {
@@ -112,10 +177,41 @@
   display: inline-flex;
   align-items: center;
   gap: var(--spacing-xs, 4px);
+  transition:
+    transform 150ms ease,
+    background-color 150ms ease,
+    box-shadow 150ms ease;
+}
+
+.kukui-dnd--mode-tap .kukui-dnd__chip {
+  cursor: pointer;
 }
 
 .kukui-dnd__chip:hover:not(:disabled) {
   background: var(--color-primary-soft);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgb(0 0 0 / 0.08);
+}
+
+.kukui-dnd__chip:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.kukui-dnd__chip.is-selected {
+  background: var(--color-primary-soft);
+  box-shadow: 0 0 0 3px rgb(123 67 36 / 0.25);
+}
+
+.kukui-dnd__chip-image {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.kukui-dnd__chip-label {
+  white-space: nowrap;
 }
 
 .kukui-dnd__chip.is-placed {
@@ -132,20 +228,14 @@
   background: var(--color-error-soft);
 }
 
-/* While being dragged, the original chip is fully hidden — the
- * <DragOverlay> ghost renders the visible copy under the cursor. Keeping
- * the original mounted (opacity 0 instead of display: none) reserves
- * its slot in the tray/zone so the surrounding layout doesn't reflow.
- * Don't add `pointer-events: none` here — dnd-kit relies on
- * `setPointerCapture` on the original element to keep tracking the
- * gesture; blocking pointer events stalls the drag mid-move. */
+/* While being dragged, the original chip is invisible — DragOverlay
+ * renders the visible copy under the cursor. Keeping the original
+ * mounted (opacity 0 instead of display: none) preserves its layout
+ * slot so surrounding chips don't reflow. */
 .kukui-dnd__chip.is-dragging {
   opacity: 0;
 }
 
-/* Ghost rendered inside <DragOverlay>: full-opacity copy of the chip that
- * follows the cursor while the original stays in place at reduced
- * opacity. Slight shadow + rotate sells "lifted off the page". */
 .kukui-dnd__chip--ghost {
   display: inline-flex;
   align-items: center;
@@ -222,49 +312,6 @@
   border: 2px solid var(--color-primary);
 }
 
-.kukui-dnd__fallback {
-  margin-top: var(--spacing-xl, 20px);
-  padding: var(--spacing-md, 12px) var(--spacing-lg, 16px);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md, 8px);
-  background: var(--color-tip-bg, #f2f0e8);
-}
-
-.kukui-dnd__fallback-legend {
-  font-size: var(--font-size-meta, 13px);
-  font-weight: 700;
-  color: var(--color-text-secondary);
-  padding: 0 var(--spacing-xs, 4px);
-}
-
-.kukui-dnd__fallback-list {
-  list-style: none;
-  margin: var(--spacing-sm, 8px) 0 0;
-  padding: 0;
-  display: grid;
-  gap: var(--spacing-sm, 8px);
-}
-
-.kukui-dnd__fallback-row {
-  display: grid;
-  grid-template-columns: minmax(120px, 1fr) 2fr;
-  gap: var(--spacing-md, 12px);
-  align-items: center;
-}
-
-.kukui-dnd__fallback-label {
-  font-size: var(--font-size-answer, 15px);
-}
-
-.kukui-dnd__fallback-select {
-  min-height: 44px;
-  padding: 4px 10px;
-  border: 2px solid var(--color-border);
-  border-radius: var(--radius-md, 8px);
-  background: var(--color-surface);
-  font-size: var(--font-size-answer, 15px);
-}
-
 .kukui-dnd__summary {
   margin: var(--spacing-md, 12px) 0;
 }
@@ -305,9 +352,30 @@
   color: var(--color-text-secondary);
 }
 
+/* Screen-reader-only announcer (TapLayer's aria-live region). */
+.kukui-dnd__sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  border: 0;
+  white-space: nowrap;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .kukui-dnd__feedback,
-  .kukui-dnd__zone {
+  .kukui-dnd__zone,
+  .kukui-dnd__chip {
     transition: none;
+  }
+  .kukui-dnd__zone.is-awaiting {
+    animation: none;
+  }
+  .kukui-dnd__chip:hover:not(:disabled) {
+    transform: none;
   }
 }

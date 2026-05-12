@@ -47,6 +47,10 @@ export function useInteractionMode(
     // no absolute override.
     if (override === "drag" || override === "tap") return;
     if (typeof window === "undefined") return;
+    // jsdom and some embedded WebViews don't implement matchMedia.
+    // Without it we just skip the live resize listener — initial
+    // compute() above still handles the static viewport check.
+    if (typeof window.matchMedia !== "function") return;
     const mq = window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT_PX - 1}px)`);
     const onChange = () => setMode(compute());
     mq.addEventListener("change", onChange);

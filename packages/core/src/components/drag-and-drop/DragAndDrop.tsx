@@ -1,30 +1,31 @@
-import { useEffect, useId, useMemo, useState, type CSSProperties } from "react";
-import {
-  DndContext,
-  DragOverlay,
-  KeyboardSensor,
-  PointerSensor,
-  useDraggable,
-  useDroppable,
-  useSensor,
-  useSensors,
-  type DragEndEvent,
-  type DragStartEvent,
-} from "@dnd-kit/core";
+import { useCallback, useEffect, useId, useMemo, useReducer } from "react";
 import type { DragAndDropConfig } from "@kukui/schemas";
 import type { ActivityProps } from "../../types.js";
+import { DragLayer } from "./DragLayer.js";
+import { TapLayer } from "./TapLayer.js";
+import {
+  initial,
+  isCorrect,
+  parseSuspend,
+  reducer as baseReducer,
+  solutionAssignment,
+  type Action,
+  type State,
+} from "./state.js";
+import { useInteractionMode } from "./useInteractionMode.js";
 import "./DragAndDrop.css";
 
-type Stage = "answering" | "submitted";
-
-/** Map of draggableId → zoneId or null (still in tray). */
-type Placement = Record<string, string | null>;
-
-type State = {
-  stage: Stage;
-  placement: Placement;
-  attempts: number;
-};
+/**
+ * Top-level Drag-and-Drop activity. Owns the state machine; delegates
+ * presentation to either DragLayer (mouse / pen / keyboard via dnd-kit
+ * KeyboardSensor) or TapLayer (touch / tap-to-place + aria-live).
+ *
+ * Both layers dispatch the same actions to the reducer — there is one
+ * source of truth for placement.
+ *
+ * Author override (`behaviour.interaction`) wins over auto-detection;
+ * below 760 px the runtime always uses TapLayer regardless of override.
+ */
 
 export function DragAndDrop({
   config,
@@ -35,453 +36,132 @@ export function DragAndDrop({
 }: ActivityProps<DragAndDropConfig>) {
   const HeadingTag = `h${headingLevel}` as "h1" | "h2" | "h3";
   const headingId = useId();
-  const initial = useMemo<State>(
-    () => ({
-      stage: "answering",
-      placement: Object.fromEntries(config.draggables.map((d) => [d.id, null])),
-      attempts: 0,
-    }),
-    [config.draggables],
+
+  // Reducer needs the config for capacity / chip / zone lookups —
+  // wrap baseReducer with a closure so React sees a 2-arg reducer.
+  const reducer = useCallback(
+    (state: State, action: Action) => baseReducer(state, action, config),
+    [config],
   );
 
-  const [state, setState] = useState<State>(() => parseSuspend(suspendData, config) ?? initial);
+  const [state, dispatch] = useReducer(
+    reducer,
+    undefined,
+    () => parseSuspend(suspendData, config) ?? initial(config),
+  );
 
-  // Reset local state when `config` changes externally (Studio Preview edit,
-  // AI Accept, draft load, etc.). Reference equality on the `config` prop —
-  // engine context loads JSON once and never mutates the ref, so this only
-  // fires in Studio Preview. Replaces the now-removed JSON.stringify(value)
-  // remount key.
+  // Rehydrate when config changes (Studio Preview edit, draft load).
   useEffect(() => {
-    setState(parseSuspend(suspendData, config) ?? initial);
+    dispatch({
+      type: "rehydrate",
+      state: parseSuspend(suspendData, config) ?? initial(config),
+    });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [config]);
 
-  const sensors = useSensors(useSensor(PointerSensor), useSensor(KeyboardSensor));
-
+  // Persist on every state change.
   useEffect(() => {
     if (!onPersist) return;
     onPersist(JSON.stringify(state));
   }, [state, onPersist]);
 
-  const placeIn = (draggableId: string, zoneId: string | null) => {
-    if (state.stage !== "answering") return;
-    // Honour zone capacity (default 1).
-    if (zoneId) {
-      const zone = config.dropZones.find((z) => z.id === zoneId);
-      if (!zone) return;
-      const cap = zone.capacity ?? 1;
-      const already = Object.entries(state.placement).filter(
-        ([id, zid]) => zid === zoneId && id !== draggableId,
-      );
-      if (already.length >= cap) return;
-    }
-    setState((s) => ({ ...s, placement: { ...s.placement, [draggableId]: zoneId } }));
-  };
+  const mode = useInteractionMode(config.behaviour?.interaction);
 
-  // Track the currently-dragged id so <DragOverlay> can render a ghost
-  // copy of the chip directly under the cursor. Without an overlay the
-  // pointer sits to the side of the chip's actual DOM position, which
-  // confuses learners when the chip is small or partially off-screen.
-  const [activeDragId, setActiveDragId] = useState<string | null>(null);
+  // Unified place callback — both DragLayer (drag-end) and Zone (tap)
+  // dispatch through here.
+  const onPlace = useCallback(
+    (chipId: string, zoneId: string | null) => {
+      dispatch({ type: "place", chipId, zoneId });
+    },
+    [],
+  );
 
-  const handleDragStart = (e: DragStartEvent) => {
-    setActiveDragId(String(e.active.id));
-  };
+  const onSelectChip = useCallback((id: string) => {
+    dispatch({ type: "select-chip", id });
+  }, []);
 
-  const handleDragEnd = (e: DragEndEvent) => {
-    setActiveDragId(null);
-    const draggableId = String(e.active.id);
-    if (e.over) {
-      const overId = String(e.over.id);
-      if (overId === "tray") {
-        placeIn(draggableId, null);
-      } else if (overId.startsWith("zone:")) {
-        placeIn(draggableId, overId.slice("zone:".length));
-      }
-    }
-  };
+  // Zone tap places the currently-selected chip (if any).
+  const onTapZone = useCallback(
+    (zoneId: string) => {
+      if (!state.selectedChipId) return;
+      dispatch({ type: "place", chipId: state.selectedChipId, zoneId });
+    },
+    [state.selectedChipId],
+  );
 
-  const handleDragCancel = () => setActiveDragId(null);
+  // Tap on a placed chip lifts it back to the tray and selects it.
+  const onLiftFromZone = useCallback(
+    (chipId: string) => {
+      dispatch({ type: "place", chipId, zoneId: null });
+      // Then arm it for re-placement, so a touch user can move it
+      // straight to a new zone without an extra tap.
+      // (Reducer ignores select-chip when stage !== "answering"; that's fine.)
+      dispatch({ type: "select-chip", id: chipId });
+    },
+    [],
+  );
 
-  const isCorrect = (draggableId: string, zoneId: string | null): boolean => {
-    if (!zoneId) return false;
-    const draggable = config.draggables.find((d) => d.id === draggableId);
-    if (!draggable) return false;
-    return draggable.correctZones.includes(zoneId);
-  };
-
-  const submit = () => {
+  const onCheck = useCallback(() => {
     if (state.stage !== "answering") return;
     const total = config.draggables.length;
-    const correct = Object.entries(state.placement).filter(([id, zid]) => isCorrect(id, zid))
-      .length;
+    const correct = Object.entries(state.placement).filter(([id, zid]) =>
+      isCorrect(id, zid, config),
+    ).length;
     const singlePoint = config.behaviour?.singlePoint ?? false;
     const max = singlePoint ? 1 : total;
     const allRight = correct === total;
     const raw = singlePoint ? (allRight ? 1 : 0) : correct;
+    // Snapshot the state we're about to commit to so the suspend
+    // payload matches what the LMS thinks the final score is.
     const next: State = { ...state, stage: "submitted", attempts: state.attempts + 1 };
-    setState(next);
-    onSubmit({ raw, max, success: allRight, suspendData: JSON.stringify(next) });
+    dispatch({ type: "submit" });
+    onSubmit({
+      raw,
+      max,
+      success: allRight,
+      suspendData: JSON.stringify(next),
+    });
+  }, [state, config, onSubmit]);
+
+  const onTryAgain = useCallback(() => {
+    dispatch({ type: "try-again", initial: initial(config) });
+  }, [config]);
+
+  const assignment = useMemo(() => solutionAssignment(config), [config]);
+  const onShowSolution = useCallback(() => {
+    dispatch({ type: "show-solution", assignment });
+  }, [assignment]);
+
+  const callbacks = {
+    onSelectChip,
+    onTapZone,
+    onLiftFromZone,
+    onCheck,
+    onTryAgain,
+    onShowSolution,
   };
 
-  const tryAgain = () => setState(initial);
-
-  const ui = config.ui ?? {};
-  const checkLabel = ui.checkAnswerButton ?? "Check";
-  const tryAgainLabel = ui.tryAgainButton ?? "Try again";
-
-  const submitted = state.stage === "submitted";
-  const allPlaced = Object.values(state.placement).every((z) => z !== null);
-
-  // Group placements by zone for rendering.
-  const draggablesById = useMemo(
-    () => Object.fromEntries(config.draggables.map((d) => [d.id, d])),
-    [config.draggables],
-  );
-
-  const zoneOccupants = useMemo(() => {
-    const map = new Map<string, string[]>();
-    for (const z of config.dropZones) map.set(z.id, []);
-    for (const [dragId, zid] of Object.entries(state.placement)) {
-      if (zid) map.get(zid)?.push(dragId);
-    }
-    return map;
-  }, [config.dropZones, state.placement]);
-
-  const trayItems = config.draggables.filter((d) => state.placement[d.id] === null);
-
-  return (
-    <div className="kukui-dnd">
-      <article className="kukui-dnd__card" aria-labelledby={headingId}>
-        <HeadingTag id={headingId} className="kukui-dnd__title">
-          {config.title}
-        </HeadingTag>
-        <DndContext
-          sensors={sensors}
-          onDragStart={handleDragStart}
-          onDragEnd={handleDragEnd}
-          onDragCancel={handleDragCancel}
-        >
-          <div className="kukui-dnd__layout">
-            <div
-              className={[
-                "kukui-dnd__board",
-                config.background?.src ? "" : "kukui-dnd__board--no-image",
-              ]
-                .filter(Boolean)
-                .join(" ")}
-              style={
-                config.background?.src
-                  ? { backgroundImage: `url(${config.background.src})` }
-                  : undefined
-              }
-              role={config.background?.src ? "img" : "group"}
-              // Don't fall back to the activity title — that would just have
-              // assistive tech read the title twice. Empty alt here means
-              // sighted-keyboard users still see the visual; AT users rely on
-              // the fallback list below for the activity's full structure.
-              aria-label={config.background?.alt ?? ""}
-            >
-              {config.dropZones.map((zone) => {
-                const occupants = zoneOccupants.get(zone.id) ?? [];
-                const style: CSSProperties = {
-                  left: `${zone.rect.x * 100}%`,
-                  top: `${zone.rect.y * 100}%`,
-                  width: `${zone.rect.w * 100}%`,
-                  height: `${zone.rect.h * 100}%`,
-                };
-                return (
-                  <Zone key={zone.id} zoneId={zone.id} style={style} label={zone.label}>
-                    {occupants.map((dragId) => {
-                      const d = draggablesById[dragId];
-                      if (!d) return null;
-                      const correct = isCorrect(dragId, zone.id);
-                      return (
-                        <PlacedDraggable
-                          key={dragId}
-                          dragId={dragId}
-                          label={d.label}
-                          submitted={submitted}
-                          correct={correct}
-                        />
-                      );
-                    })}
-                  </Zone>
-                );
-              })}
-            </div>
-            <Tray>
-              {trayItems.map((d) => (
-                <TrayDraggable key={d.id} dragId={d.id} label={d.label} disabled={submitted} />
-              ))}
-              {trayItems.length === 0 ? (
-                <p className="kukui-dnd__tray-empty">All draggables placed.</p>
-              ) : null}
-            </Tray>
-          </div>
-          <DragOverlay dropAnimation={null}>
-            {activeDragId ? (
-              <span
-                className="kukui-dnd__chip kukui-dnd__chip--ghost"
-                aria-hidden="true"
-              >
-                {draggablesById[activeDragId]?.label ?? ""}
-              </span>
-            ) : null}
-          </DragOverlay>
-        </DndContext>
-
-        {/* Keyboard / screen-reader fallback: select draggable → select zone */}
-        <FallbackList
-          draggables={config.draggables}
-          dropZones={config.dropZones}
-          placement={state.placement}
-          submitted={submitted}
-          onPlace={placeIn}
-        />
-
-        <div
-          className={["kukui-dnd__feedback", submitted ? "is-visible" : ""]
-            .filter(Boolean)
-            .join(" ")}
-          role="status"
-          aria-live="polite"
-        >
-          {submitted
-            ? `${
-                Object.entries(state.placement).filter(([id, zid]) => isCorrect(id, zid)).length
-              } of ${config.draggables.length} correctly placed.`
-            : ""}
-        </div>
-
-        {submitted ? (
-          <section
-            className="kukui-dnd__summary"
-            aria-label="Per-draggable summary"
-          >
-            <ul className="kukui-dnd__summary-list">
-              {config.draggables.map((d) => {
-                const zid = state.placement[d.id] ?? null;
-                const correct = isCorrect(d.id, zid);
-                return (
-                  <li key={d.id} className="kukui-dnd__summary-item">
-                    <span
-                      className="kukui-dnd__summary-icon"
-                      aria-hidden="true"
-                    >
-                      {correct ? "✓" : "✗"}
-                    </span>
-                    <span className="kukui-dnd__summary-name">{d.label}</span>
-                    {d.feedback ? (
-                      <span className="kukui-dnd__summary-feedback">
-                        {d.feedback}
-                      </span>
-                    ) : null}
-                  </li>
-                );
-              })}
-            </ul>
-          </section>
-        ) : null}
-
-        <div className="kukui-dnd__actions">
-          {submitted ? (
-            config.behaviour?.enableRetry ? (
-              <button type="button" className="kukui-dnd__secondary" onClick={tryAgain}>
-                {tryAgainLabel}
-              </button>
-            ) : null
-          ) : (
-            <button
-              type="button"
-              className="kukui-dnd__primary"
-              disabled={!allPlaced}
-              onClick={submit}
-            >
-              {checkLabel}
-            </button>
-          )}
-        </div>
-      </article>
-    </div>
-  );
-}
-
-function Tray({ children }: { children: React.ReactNode }) {
-  const { setNodeRef, isOver } = useDroppable({ id: "tray" });
-  return (
-    <div
-      ref={setNodeRef}
-      className={["kukui-dnd__tray", isOver ? "is-over" : ""].filter(Boolean).join(" ")}
-      aria-label="Tray of unplaced draggables"
-    >
-      {children}
-    </div>
-  );
-}
-
-function Zone({
-  zoneId,
-  style,
-  label,
-  children,
-}: {
-  zoneId: string;
-  style: CSSProperties;
-  label?: string;
-  children: React.ReactNode;
-}) {
-  const { setNodeRef, isOver } = useDroppable({ id: `zone:${zoneId}` });
-  return (
-    <div
-      ref={setNodeRef}
-      className={["kukui-dnd__zone", isOver ? "is-over" : ""].filter(Boolean).join(" ")}
-      style={style}
-      aria-label={label ?? zoneId}
-    >
-      {children}
-    </div>
-  );
-}
-
-function TrayDraggable({
-  dragId,
-  label,
-  disabled,
-}: {
-  dragId: string;
-  label: string;
-  disabled: boolean;
-}) {
-  const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
-    id: dragId,
-    disabled,
-  });
-  return (
-    <button
-      ref={setNodeRef}
-      type="button"
-      className={["kukui-dnd__chip", isDragging ? "is-dragging" : ""]
-        .filter(Boolean)
-        .join(" ")}
-      disabled={disabled}
-      {...listeners}
-      {...attributes}
-    >
-      {label}
-    </button>
-  );
-}
-
-function PlacedDraggable({
-  dragId,
-  label,
-  submitted,
-  correct,
-}: {
-  dragId: string;
-  label: string;
-  submitted: boolean;
-  correct: boolean;
-}) {
-  const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
-    id: dragId,
-    disabled: submitted,
-  });
-  return (
-    <button
-      ref={setNodeRef}
-      type="button"
-      className={[
-        "kukui-dnd__chip",
-        "is-placed",
-        submitted && correct ? "is-correct" : "",
-        submitted && !correct ? "is-incorrect" : "",
-        isDragging ? "is-dragging" : "",
-      ]
-        .filter(Boolean)
-        .join(" ")}
-      disabled={submitted}
-      {...listeners}
-      {...attributes}
-    >
-      <span>{label}</span>
-      {submitted ? (
-        <span className="kukui-dnd__chip-icon" aria-hidden="true">
-          {correct ? "✓" : "✗"}
-        </span>
-      ) : null}
-    </button>
-  );
-}
-
-function FallbackList({
-  draggables,
-  dropZones,
-  placement,
-  submitted,
-  onPlace,
-}: {
-  draggables: DragAndDropConfig["draggables"];
-  dropZones: DragAndDropConfig["dropZones"];
-  placement: Placement;
-  submitted: boolean;
-  onPlace: (dragId: string, zoneId: string | null) => void;
-}) {
-  return (
-    <fieldset className="kukui-dnd__fallback" disabled={submitted}>
-      <legend className="kukui-dnd__fallback-legend">
-        Keyboard placement (alternative to drag-and-drop)
-      </legend>
-      <ul className="kukui-dnd__fallback-list">
-        {draggables.map((d) => (
-          <li key={d.id} className="kukui-dnd__fallback-row">
-            <label htmlFor={`fb-${d.id}`} className="kukui-dnd__fallback-label">
-              {d.label}
-            </label>
-            <select
-              id={`fb-${d.id}`}
-              className="kukui-dnd__fallback-select"
-              value={placement[d.id] ?? ""}
-              onChange={(e) => onPlace(d.id, e.target.value || null)}
-              disabled={submitted}
-            >
-              <option value="">— Tray —</option>
-              {dropZones.map((z) => (
-                <option key={z.id} value={z.id}>
-                  {z.label ?? z.id}
-                </option>
-              ))}
-            </select>
-          </li>
-        ))}
-      </ul>
-    </fieldset>
-  );
-}
-
-function parseSuspend(
-  s: string | undefined,
-  config: DragAndDropConfig,
-): State | null {
-  if (!s) return null;
-  try {
-    const parsed = JSON.parse(s) as Partial<State>;
-    if (parsed && parsed.placement && typeof parsed.attempts === "number") {
-      // Validate placement keys against current config draggables.
-      const placement: Placement = {};
-      for (const d of config.draggables) {
-        const v = (parsed.placement as Placement)[d.id];
-        placement[d.id] = typeof v === "string" || v === null ? v : null;
-      }
-      return {
-        stage: parsed.stage === "submitted" ? "submitted" : "answering",
-        placement,
-        attempts: parsed.attempts,
-      };
-    }
-  } catch {
-    /* noop */
+  if (mode === "drag") {
+    return (
+      <DragLayer
+        config={config}
+        state={state}
+        mode="drag"
+        headingId={headingId}
+        HeadingTag={HeadingTag}
+        callbacks={callbacks}
+        onPlace={onPlace}
+      />
+    );
   }
-  return null;
+  return (
+    <TapLayer
+      config={config}
+      state={state}
+      mode="tap"
+      headingId={headingId}
+      HeadingTag={HeadingTag}
+      callbacks={callbacks}
+    />
+  );
 }
