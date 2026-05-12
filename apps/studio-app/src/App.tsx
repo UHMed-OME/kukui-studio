@@ -127,7 +127,10 @@ export function App() {
     if (fromUrl && STUDIO_ALL.includes(fromUrl as ActivityKind)) {
       return fromUrl as ActivityKind;
     }
-    return "drag-and-drop";
+    // Flashcards is the lowest-friction default: no media to upload, no
+    // canvas placements, and a familiar mental model (front/back cards)
+    // that lets a first-time author start typing immediately.
+    return "flashcards";
   });
   const [value, setValue] = useState<unknown>(() => loadDraft(kind) ?? STARTERS[kind]);
   // Whether `value` has diverged from STARTERS[kind] for the current
