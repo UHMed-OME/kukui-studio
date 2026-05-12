@@ -2029,6 +2029,267 @@ button {
   font-size: var(--font-size-meta);
 }
 
+/* ---------- DnD editor — side panel + link overlay ----------
+   Adds chip authoring alongside the existing zone-geometry canvas.
+   Layout: canvas on the left, ~280 px chip panel on the right. */
+
+.ks-edit-dnd__layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 280px;
+  gap: var(--spacing-md);
+  align-items: start;
+}
+
+@media (max-width: 900px) {
+  .ks-edit-dnd__layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+.ks-edit-dnd__link-overlay {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.ks-edit-dnd__zone.is-drop-target {
+  outline: 3px solid var(--color-success);
+  outline-offset: 2px;
+}
+
+.ks-edit-dnd__panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-md);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+}
+
+.ks-edit-dnd__panel-header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.ks-edit-dnd__panel-title {
+  margin: 0;
+  font-size: var(--font-size-meta);
+  font-weight: 700;
+  color: var(--color-text-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.ks-edit-dnd__panel-help {
+  margin: 0;
+  font-size: var(--font-size-meta);
+  color: var(--color-text-secondary);
+}
+
+.ks-edit-dnd__chip-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  max-height: 480px;
+  overflow-y: auto;
+}
+
+.ks-edit-dnd__chip-row {
+  display: grid;
+  grid-template-columns: 14px 1fr 20px;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-sm);
+  background: var(--color-tip-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  cursor: grab;
+  transition:
+    background-color 140ms ease,
+    border-color 140ms ease,
+    box-shadow 140ms ease;
+}
+
+.ks-edit-dnd__chip-row.is-selected {
+  background: var(--color-primary-soft);
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 2px rgb(123 67 36 / 0.18);
+}
+
+.ks-edit-dnd__chip-row.is-zone-target {
+  border-color: var(--color-success);
+  background: var(--color-success-soft);
+}
+
+.ks-edit-dnd__chip-row.is-warning {
+  border-color: var(--color-error);
+}
+
+.ks-edit-dnd__chip-row[draggable="true"] {
+  user-select: none;
+}
+
+.ks-edit-dnd__chip-row-handle {
+  align-self: start;
+  width: 14px;
+  height: 14px;
+  border: 2px solid #ffffff;
+  border-radius: 50%;
+  cursor: pointer;
+  margin-top: 6px;
+  padding: 0;
+}
+
+.ks-edit-dnd__chip-row-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  min-width: 0;
+}
+
+.ks-edit-dnd__chip-label-input {
+  padding: 4px 6px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-answer);
+  color: var(--color-text-primary);
+}
+
+.ks-edit-dnd__chip-label-input:focus {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 1px;
+  border-color: var(--color-primary);
+}
+
+.ks-edit-dnd__chip-row-image {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  font-size: var(--font-size-meta);
+}
+
+.ks-edit-dnd__chip-row-thumb {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+}
+
+.ks-edit-dnd__chip-row-image-add,
+.ks-edit-dnd__chip-row-image-clear {
+  font-size: var(--font-size-meta);
+  color: var(--color-primary);
+  background: none;
+  border: 1px dashed var(--color-primary);
+  border-radius: var(--radius-sm);
+  padding: 2px 8px;
+  cursor: pointer;
+}
+
+.ks-edit-dnd__chip-row-image-clear {
+  border-style: solid;
+  color: var(--color-text-secondary);
+  border-color: var(--color-border);
+}
+
+.ks-edit-dnd__chip-row-delete {
+  align-self: start;
+  background: transparent;
+  color: var(--color-text-secondary);
+  border: none;
+  font-size: 16px;
+  font-weight: 700;
+  padding: 0;
+  cursor: pointer;
+  margin-top: 4px;
+}
+
+.ks-edit-dnd__chip-row-delete:hover {
+  color: var(--color-error);
+}
+
+.ks-edit-dnd__chip-row-warning {
+  margin: 0;
+  font-size: var(--font-size-meta);
+  color: var(--color-error);
+}
+
+.ks-edit-dnd__zone-picker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.ks-edit-dnd__zone-picker-empty {
+  margin: 0;
+  font-size: var(--font-size-meta);
+  color: var(--color-text-secondary);
+  font-style: italic;
+}
+
+.ks-edit-dnd__zone-pill {
+  font-size: var(--font-size-meta);
+  padding: 2px 8px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition:
+    background-color 120ms ease,
+    border-color 120ms ease,
+    color 120ms ease;
+}
+
+.ks-edit-dnd__zone-pill.is-on {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: #ffffff;
+}
+
+.ks-edit-dnd__chip-add {
+  display: flex;
+  gap: var(--spacing-xs);
+  padding-top: var(--spacing-sm);
+  border-top: 1px solid var(--color-border);
+}
+
+.ks-edit-dnd__chip-add-input {
+  flex: 1;
+  min-width: 0;
+  padding: 6px 8px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-answer);
+}
+
+.ks-edit-dnd__chip-add-btn {
+  padding: 6px 10px;
+  background: var(--color-primary);
+  color: #ffffff;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-meta);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.ks-edit-dnd__chip-add-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
 /* ---------- Shared 2D placement editor surface ----------
    Image-backed canvas used by Hotspot 2D, Anatomy Labeling, and Image
    Annotation. Mirrors the DnD board chrome; element-specific styling lives
