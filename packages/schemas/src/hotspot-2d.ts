@@ -20,14 +20,17 @@ export const Hotspot2DConfigSchema = z
     title: z.string().min(1),
     author: z.string().optional(),
     prompt: z.string().min(1),
+    // Image is optional at the schema level: an author can save a draft
+    // before picking an image, and the runtime renders an "add an image"
+    // empty state. When set, both `src` and `alt` are required — alt is
+    // the image's accessible name + the keyboard fallback list anchor.
     image: z
       .object({
         src: SAFE_MEDIA_URL,
-        // Required for AT — the keyboard/region-list fallback also surfaces
-        // it as the image's accessible name.
         alt: z.string().min(1),
       })
-      .strict(),
+      .strict()
+      .optional(),
     hotspots: z
       .array(
         z

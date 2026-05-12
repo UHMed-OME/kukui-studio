@@ -200,7 +200,7 @@ export function AnatomyLabelingEditor({
       <div
         ref={boardRef}
         className="ks-edit-canvas__board is-dropping"
-        style={{ backgroundImage: config.image.src ? `url(${config.image.src})` : undefined }}
+        style={{ backgroundImage: config.image?.src ? `url(${config.image.src})` : undefined }}
         onPointerDown={startBoardDown}
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}

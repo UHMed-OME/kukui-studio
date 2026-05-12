@@ -294,12 +294,19 @@ export function ImageAnnotation({
         </div>
 
         <div className="kukui-ia__canvas">
-          <img
-            src={config.image.src}
-            alt={config.image.alt ?? ""}
-            className="kukui-ia__image"
-            draggable={false}
-          />
+          {config.image ? (
+            <img
+              src={config.image.src}
+              alt={config.image.alt ?? ""}
+              className="kukui-ia__image"
+              draggable={false}
+            />
+          ) : (
+            <div className="kukui-ia__empty" role="status">
+              <strong>Add an image to annotate.</strong>
+              <span>Open the Editor tab and pick an image. Until then, the annotation tools are inert.</span>
+            </div>
+          )}
           <svg
             ref={svgRef}
             className={[

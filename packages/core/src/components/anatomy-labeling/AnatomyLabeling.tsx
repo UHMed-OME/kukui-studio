@@ -208,12 +208,19 @@ export function AnatomyLabeling({
           onDragCancel={handleDragCancel}
         >
           <div className="kukui-al__image-wrap">
-            <img
-              src={config.image.src}
-              alt={config.image.alt ?? ""}
-              className="kukui-al__image"
-              draggable={false}
-            />
+            {config.image ? (
+              <img
+                src={config.image.src}
+                alt={config.image.alt ?? ""}
+                className="kukui-al__image"
+                draggable={false}
+              />
+            ) : (
+              <div className="kukui-al__empty" role="status">
+                <strong>Add an image to label.</strong>
+                <span>Open the Editor tab and pick a diagram for learners to annotate.</span>
+              </div>
+            )}
             {config.targets.map((t) => {
               const occupantId = occupantByTarget[t.id];
               const occupant = occupantId ? labelsById[occupantId] : undefined;

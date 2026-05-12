@@ -24,15 +24,16 @@ export const AnatomyLabelingConfigSchema = z
     author: z.string().optional(),
     /** Author prompt rendered via SafeHtml. */
     prompt: z.string().min(1),
+    // Image is optional at the schema level — runtime renders an
+    // "add an image" empty state when missing. When present, both `src`
+    // and `alt` are required: alt is the description SR learners hear.
     image: z
       .object({
         src: SAFE_MEDIA_URL,
-        // Required so screen-reader learners get a description of the diagram.
-        // Authors who genuinely have a decorative-only image (rare for this
-        // activity) can pass a brief explanation of what's being labeled.
         alt: z.string().min(1),
       })
-      .strict(),
+      .strict()
+      .optional(),
     labels: z
       .array(
         z

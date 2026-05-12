@@ -270,13 +270,62 @@ export function DnDEditor({
     setSelectedId((cur) => (cur === zoneId ? null : zoneId));
   };
 
+  const uploadBackground = (file: File) => {
+    if (!file.type.startsWith("image/")) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      if (typeof reader.result !== "string") return;
+      onChange({
+        ...config,
+        background: {
+          src: reader.result,
+          alt: config.background?.alt ?? "Background image",
+        },
+      });
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const clearBackground = () => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { background: _stripped, ...rest } = config;
+    onChange(rest);
+  };
+
   return (
     <div className="ks-edit-dnd">
-      <p className="ks-edit-dnd__hint">
-        Drag on the background to draw a zone. Click a zone to select; drag to move, corner
-        handle to resize, ✕ or <kbd>Delete</kbd> to remove. Right-click a zone for stacking
-        options. Drag a chip from the side panel onto a zone to link them.
-      </p>
+      <div className="ks-edit-dnd__toolbar">
+        <p className="ks-edit-dnd__hint">
+          Drag on the background to draw a zone. Click a zone to select; drag to move, corner
+          handle to resize, ✕ or <kbd>Delete</kbd> to remove. Right-click a zone for stacking
+          options. Drag a chip from the side panel onto a zone to link them.
+        </p>
+        <div className="ks-edit-dnd__bg-controls">
+          <label className="ks-edit-dnd__bg-upload">
+            <input
+              type="file"
+              accept="image/*"
+              onChange={(e) => {
+                const f = e.target.files?.[0];
+                if (f) uploadBackground(f);
+                e.target.value = "";
+              }}
+              hidden
+            />
+            <span>{config.background?.src ? "Replace background image" : "Upload background image"}</span>
+          </label>
+          {config.background?.src ? (
+            <button
+              type="button"
+              className="ks-edit-dnd__bg-clear"
+              onClick={clearBackground}
+              title="Remove the background image — the activity will run on a plain stage"
+            >
+              Clear background
+            </button>
+          ) : null}
+        </div>
+      </div>
       <div className="ks-edit-dnd__layout">
         <div
           ref={boardRef}

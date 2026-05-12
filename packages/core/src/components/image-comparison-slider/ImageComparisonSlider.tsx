@@ -180,64 +180,71 @@ export function ImageComparisonSlider({
         </HeadingTag>
         <SafeHtml className="kukui-ics__prompt" html={config.prompt} />
 
-        <div
-          ref={wrapperRef}
-          className="kukui-ics__stage"
-          onClick={onWrapperClick}
-        >
-          {/* "After" image — full size, sits behind. Visible on the right of the seam. */}
-          <img
-            className="kukui-ics__img kukui-ics__img--after"
-            src={config.after.src}
-            alt={config.after.alt ?? ""}
-            draggable={false}
-          />
-          {/* "Before" image — clipped to the area left of the seam. */}
-          <img
-            className="kukui-ics__img kukui-ics__img--before"
-            src={config.before.src}
-            alt={config.before.alt ?? ""}
-            draggable={false}
-            style={beforeStyle}
-          />
-
+        {config.before && config.after ? (
           <div
-            className="kukui-ics__seam-line"
-            style={seamLineStyle}
-            aria-hidden="true"
-          />
-
-          <button
-            type="button"
-            role="slider"
-            aria-label="Comparison seam"
-            aria-valuemin={0}
-            aria-valuemax={100}
-            aria-valuenow={pct}
-            aria-valuetext={`${pct}%`}
-            aria-orientation="horizontal"
-            className="kukui-ics__seam"
-            style={seamStyle}
-            disabled={state.done}
-            onPointerDown={onSeamPointerDown}
-            onPointerMove={onSeamPointerMove}
-            onPointerUp={releaseDrag}
-            onPointerCancel={releaseDrag}
-            onKeyDown={onSeamKeyDown}
+            ref={wrapperRef}
+            className="kukui-ics__stage"
+            onClick={onWrapperClick}
           >
-            <span className="kukui-ics__seam-grip" aria-hidden="true">
-              <span className="kukui-ics__seam-arrow">‹</span>
-              <span className="kukui-ics__seam-arrow">›</span>
-            </span>
-          </button>
+            {/* "After" image — full size, sits behind. Visible on the right of the seam. */}
+            <img
+              className="kukui-ics__img kukui-ics__img--after"
+              src={config.after.src}
+              alt={config.after.alt ?? ""}
+              draggable={false}
+            />
+            {/* "Before" image — clipped to the area left of the seam. */}
+            <img
+              className="kukui-ics__img kukui-ics__img--before"
+              src={config.before.src}
+              alt={config.before.alt ?? ""}
+              draggable={false}
+              style={beforeStyle}
+            />
 
-          <div className="kukui-ics__caption kukui-ics__caption--before" aria-hidden="true">
-            {config.before.caption ?? "Before"}
+            <div
+              className="kukui-ics__seam-line"
+              style={seamLineStyle}
+              aria-hidden="true"
+            />
+
+            <button
+              type="button"
+              role="slider"
+              aria-label="Comparison seam"
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-valuenow={pct}
+              aria-valuetext={`${pct}%`}
+              aria-orientation="horizontal"
+              className="kukui-ics__seam"
+              style={seamStyle}
+              disabled={state.done}
+              onPointerDown={onSeamPointerDown}
+              onPointerMove={onSeamPointerMove}
+              onPointerUp={releaseDrag}
+              onPointerCancel={releaseDrag}
+              onKeyDown={onSeamKeyDown}
+            >
+              <span className="kukui-ics__seam-grip" aria-hidden="true">
+                <span className="kukui-ics__seam-arrow">‹</span>
+                <span className="kukui-ics__seam-arrow">›</span>
+              </span>
+            </button>
+
+            <div className="kukui-ics__caption kukui-ics__caption--before" aria-hidden="true">
+              {config.before.caption ?? "Before"}
+            </div>
+            <div className="kukui-ics__caption kukui-ics__caption--after" aria-hidden="true">
+              {config.after.caption ?? "After"}
+            </div>
           </div>
-          <div className="kukui-ics__caption kukui-ics__caption--after" aria-hidden="true">
-            {config.after.caption ?? "After"}
+        ) : (
+          <div className="kukui-ics__empty" role="status">
+            <strong>Add a Before and an After image to enable this activity.</strong>
+            <span>Open the Editor tab and upload (or paste a URL for) each image.</span>
           </div>
-        </div>
+        )}
 
         {config.prompts && config.prompts.length > 0 ? (
           <ul className="kukui-ics__prompts" aria-label="Checkpoint questions">

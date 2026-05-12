@@ -94,13 +94,20 @@ export function Hotspot2D({
         <SafeHtml className="kukui-h2d__prompt" html={config.prompt} />
 
         <div className="kukui-h2d__image-wrap">
-          <img
-            src={config.image.src}
-            alt={config.image.alt ?? ""}
-            className="kukui-h2d__image"
-            draggable={false}
-          />
-          {showMarkers
+          {config.image ? (
+            <img
+              src={config.image.src}
+              alt={config.image.alt ?? ""}
+              className="kukui-h2d__image"
+              draggable={false}
+            />
+          ) : (
+            <div className="kukui-h2d__empty" role="status">
+              <strong>Add an image to enable this activity.</strong>
+              <span>Open the Editor tab and pick an image to mark up.</span>
+            </div>
+          )}
+          {showMarkers && config.image
             ? config.hotspots.map((h) => {
                 const isSelected = h.id === state.selectedHotspotId;
                 const isCorrect = submitted && isSelected && h.correct;

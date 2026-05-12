@@ -20,12 +20,16 @@ export const ImageAnnotationConfigSchema = z
     title: z.string().min(1),
     author: z.string().optional(),
     prompt: z.string().min(1),
+    // Image is optional at the schema level — without one the runtime
+    // shows an "add an image" empty state instead of an annotatable
+    // canvas. When set, both `src` and `alt` are required.
     image: z
       .object({
         src: SAFE_MEDIA_URL,
         alt: z.string().min(1),
       })
-      .strict(),
+      .strict()
+      .optional(),
     tools: z
       .object({
         rectangle: z.boolean().optional(),

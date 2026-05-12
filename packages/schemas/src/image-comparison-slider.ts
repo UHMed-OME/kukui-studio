@@ -26,8 +26,11 @@ export const ImageComparisonSliderConfigSchema = z
     author: z.string().optional(),
     /** HTML prompt rendered above the comparison surface. */
     prompt: z.string().min(1),
-    before: ImageSchema,
-    after: ImageSchema,
+    // Both images are optional at the schema level — runtime renders an
+    // "add a before / after image" empty state when missing. Slider works
+    // as soon as both are set.
+    before: ImageSchema.optional(),
+    after: ImageSchema.optional(),
     /** Initial seam position 0..1 (0 = full "after", 1 = full "before"). Default 0.5. */
     initialPosition: z.number().min(0).max(1).optional(),
     /**

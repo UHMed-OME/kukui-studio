@@ -207,3 +207,28 @@
   font-size: var(--font-size-answer, 15px);
   font-weight: 700;
 }
+
+/* Empty state when no image is set — author hasn't uploaded one yet. */
+.kukui-h2d__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 240px;
+  padding: var(--spacing-2xl, 24px);
+  border: 2px dashed var(--color-border, #dad2c6);
+  border-radius: var(--radius-md, 8px);
+  background: var(--color-tip-bg, #f2f0e8);
+  text-align: center;
+  color: var(--color-text-secondary, #6b6357);
+}
+
+.kukui-h2d__empty strong {
+  color: var(--color-text-primary, #2a241d);
+  font-size: var(--font-size-prompt, 16px);
+}
+
+.kukui-h2d__empty span {
+  font-size: var(--font-size-meta, 13px);
+}
