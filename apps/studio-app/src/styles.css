@@ -1152,20 +1152,18 @@ button {
 }
 
 .ks-object--root > .ks-field > .ks-object {
-  background: var(--color-surface-alt);
-  border: 1px solid var(--color-border);
+  background: color-mix(in oklab, var(--color-surface-alt) 70%, transparent);
+  border: 1px solid transparent;
   border-radius: var(--radius-md);
   padding: var(--spacing-lg);
 }
 
 .ks-object__title {
-  margin: 0 0 4px;
+  margin: 0 0 var(--spacing-md);
   font-size: var(--font-size-subtitle);
-  font-weight: 700;
+  font-weight: 600;
   color: var(--color-text-primary);
-  border-bottom: 2px solid var(--color-border);
-  padding-bottom: 6px;
-  margin-bottom: var(--spacing-md);
+  letter-spacing: -0.005em;
 }
 
 /* Advanced (collapsible) section. Renders a <details>/<summary> with
@@ -1196,8 +1194,7 @@ button {
 }
 
 .ks-object--advanced[open] .ks-object__title--summary {
-  border-bottom: 2px solid var(--color-border);
-  padding-bottom: 6px;
+  padding-bottom: var(--spacing-sm);
   margin-bottom: var(--spacing-md);
 }
 
@@ -1236,10 +1233,10 @@ button {
 .rjsf label {
   display: block;
   font-size: var(--font-size-meta);
-  font-weight: 700;
-  color: var(--color-text-primary);
+  font-weight: 600;
+  color: var(--color-text-secondary);
   margin-bottom: 6px;
-  letter-spacing: 0.01em;
+  letter-spacing: 0;
 }
 
 /* Inline checkbox label override */
@@ -1260,29 +1257,23 @@ button {
 .rjsf select,
 .rjsf textarea {
   width: 100%;
-  min-height: 44px;
-  padding: 10px 12px;
-  border: 1px solid var(--color-border);
+  min-height: 38px;
+  padding: 8px 12px;
+  border: 1px solid color-mix(in oklab, var(--color-border) 70%, transparent);
   border-radius: var(--radius-md);
   background: var(--color-surface);
   color: var(--color-text-primary);
-  font-size: var(--font-size-answer);
+  font-size: var(--font-size-caption);
   font-family: inherit;
-  transition: border-color 120ms ease, background-color 120ms ease;
-}
-
-.rjsf input:hover:not(:disabled),
-.rjsf select:hover:not(:disabled),
-.rjsf textarea:hover:not(:disabled) {
-  border-color: var(--color-border-hover);
+  transition: border-color 120ms ease, box-shadow 120ms ease;
 }
 
 .rjsf input:focus-visible,
 .rjsf select:focus-visible,
 .rjsf textarea:focus-visible {
-  outline: 2px solid var(--color-primary);
-  outline-offset: 2px;
+  outline: none;
   border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--color-primary-soft);
 }
 
 .rjsf textarea {
