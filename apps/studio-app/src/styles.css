@@ -223,16 +223,16 @@ button {
   margin-top: -2px;
 }
 
-/* Brand wordmark — headword + italic phonetic on top line, "STUDIO"
-   tracked sans caps below as a sub-label. The typeface contrast
-   (serif headword + sans subhead) does the brand work; no separate
-   tagline needed in the header since the footer already carries the
-   "Interactive learning activities…" copy. */
+/* Brand wordmark — a two-line lockup ("Kukui" / "STUDIO") with the
+   italic pronunciation as a sibling on the right, baseline-aligned to
+   the headword. The lockup column auto-sizes to "Kukui"'s width, so
+   STUDIO centers under just the headword regardless of how long the
+   pronunciation runs alongside it. */
 .kukui-studio-title {
   margin: 0;
   display: inline-flex;
-  align-items: baseline;
-  gap: 10px;
+  align-items: center;
+  gap: 12px;
   font-family: var(--font-family-display);
   font-weight: 500;
   color: var(--color-text-primary);
@@ -240,32 +240,47 @@ button {
   letter-spacing: -0.015em;
 }
 
+.kukui-studio-title__lockup {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
 .kukui-studio-title__word {
-  font-size: 32px;
+  font-size: 34px;
+  line-height: 1;
+  display: block;
+}
+
+/* "STUDIO" subhead sits centered under "Kukui" because both are
+   children of __lockup with align-items: center. Letter-spacing is
+   tuned so the rendered width approximately matches "Kukui" itself. */
+.kukui-studio-title__sub {
+  font-family: var(--font-family-sans);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.32em;
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  line-height: 1;
+  /* Letter-spacing pushes the last glyph's right edge past its own
+     bounding box; pull text-indent back so the optical center matches
+     the headword's. */
+  text-indent: 0.32em;
 }
 
 .kukui-studio-title__pronunciation {
   font-family: var(--font-family-display);
   font-style: italic;
   font-weight: 400;
-  font-size: 16px;
+  font-size: 15px;
   color: var(--color-text-muted);
   letter-spacing: 0;
   white-space: nowrap;
-}
-
-/* "STUDIO" eyebrow under the wordmark — tracked sans caps, sized to
-   roughly the width of "Kukui" so the two lines optically anchor each
-   other. Letter-spacing chosen to land STUDIO under the K…i span of
-   the headword rather than running short or wide. */
-.kukui-studio-eyebrow {
-  margin: 2px 0 0;
-  font-family: var(--font-family-sans);
-  font-size: 13px;
-  font-weight: 600;
-  letter-spacing: 0.34em;
-  color: var(--color-text-secondary);
-  text-transform: uppercase;
+  /* Optical baseline-align with the headword, not the lockup's center. */
+  align-self: flex-start;
+  margin-top: 7px;
 }
 
 /* Legacy subtitle — kept as a safety net for any non-App.tsx call

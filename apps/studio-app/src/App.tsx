@@ -414,7 +414,10 @@ export function App() {
           />
           <div className="kukui-studio-brand-text">
             <h1 className="kukui-studio-title">
-              <span className="kukui-studio-title__word">Kukui</span>
+              <span className="kukui-studio-title__lockup">
+                <span className="kukui-studio-title__word">Kukui</span>
+                <span className="kukui-studio-title__sub">Studio</span>
+              </span>
               <span
                 className="kukui-studio-title__pronunciation"
                 aria-label="pronounced koo-KOO-ee"
@@ -422,7 +425,6 @@ export function App() {
                 /koo-KOO-ee/
               </span>
             </h1>
-            <p className="kukui-studio-eyebrow">Studio</p>
           </div>
         </div>
         <div className="kukui-studio-toolbar">
