@@ -1,0 +1,126 @@
+.ks-settings-dialog {
+  display: flex;
+  flex-direction: column;
+  width: min(820px, 92vw);
+  max-height: 88vh;
+  padding: 0;
+}
+
+.ks-settings-dialog__header {
+  padding: var(--spacing-xl) var(--spacing-2xl) var(--spacing-md);
+  border-bottom: 1px solid color-mix(in oklab, var(--color-border) 50%, transparent);
+}
+
+.ks-settings-dialog__body {
+  display: grid;
+  grid-template-columns: 180px 1fr;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.ks-settings-dialog__nav {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--spacing-md) var(--spacing-md);
+  border-right: 1px solid color-mix(in oklab, var(--color-border) 50%, transparent);
+  overflow-y: auto;
+}
+
+.ks-settings-dialog__tab {
+  text-align: left;
+  padding: 8px 12px;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  font: inherit;
+  font-size: 14px;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: background-color 120ms ease, color 120ms ease;
+}
+
+.ks-settings-dialog__tab:hover {
+  background: color-mix(in oklab, var(--color-text-primary) 5%, transparent);
+  color: var(--color-text-primary);
+}
+
+.ks-settings-dialog__tab.is-active {
+  background: var(--color-primary-soft);
+  color: var(--color-primary);
+  font-weight: 600;
+}
+
+.ks-settings-dialog__pane {
+  padding: var(--spacing-xl) var(--spacing-2xl);
+  overflow-y: auto;
+}
+
+.ks-settings-dialog__footer {
+  display: flex;
+  justify-content: flex-end;
+  padding: var(--spacing-md) var(--spacing-2xl);
+  border-top: 1px solid color-mix(in oklab, var(--color-border) 50%, transparent);
+}
+
+.ks-settings-pane__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--spacing-sm);
+  margin-top: var(--spacing-xl);
+  padding-top: var(--spacing-md);
+  border-top: 1px solid color-mix(in oklab, var(--color-border) 40%, transparent);
+}
+
+.ks-settings-pane--prose p,
+.ks-settings-pane--prose li {
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--color-text-primary);
+}
+
+.ks-settings-pane--prose p {
+  margin: 0 0 var(--spacing-md);
+}
+
+.ks-settings-pane--prose p:last-child {
+  margin-bottom: 0;
+}
+
+.ks-settings-pane--prose code {
+  font-family: var(--font-family-mono);
+  font-size: 12px;
+  padding: 1px 5px;
+  background: var(--color-tip-bg);
+  border-radius: 4px;
+}
+
+.ks-settings-pane--prose a {
+  color: var(--color-primary);
+  text-decoration: none;
+}
+
+.ks-settings-pane--prose a:hover {
+  text-decoration: underline;
+}
+
+.ks-settings-pane__links {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+@media (max-width: 640px) {
+  .ks-settings-dialog__body {
+    grid-template-columns: 1fr;
+  }
+  .ks-settings-dialog__nav {
+    flex-direction: row;
+    flex-wrap: wrap;
+    border-right: 0;
+    border-bottom: 1px solid color-mix(in oklab, var(--color-border) 50%, transparent);
+  }
+}

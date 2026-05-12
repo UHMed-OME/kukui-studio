@@ -9,6 +9,7 @@ import { DocsIndex } from "./pages/docs/DocsIndex.js";
 import { DocPage } from "./pages/docs/DocPage.js";
 import { BlogIndex } from "./pages/blog/BlogIndex.js";
 import { BlogPost } from "./pages/blog/BlogPost.js";
+import { ChunkErrorBoundary } from "./pages/shared/ChunkErrorBoundary.js";
 import "./styles.css";
 
 initTheme();
@@ -62,17 +63,19 @@ if (!root) throw new Error("#root not found");
 createRoot(root).render(
   <StrictMode>
     <BrowserRouter basename={import.meta.env.BASE_URL.replace(/\/$/, "")}>
-      <Routes>
-        <Route path="/" element={<Landing />} />
-        <Route path="/studio" element={<App />} />
-        <Route path="/docs" element={<DocsLayout />}>
-          <Route index element={<DocsIndex />} />
-          <Route path=":slug" element={<DocPage />} />
-        </Route>
-        <Route path="/blog" element={<BlogIndex />} />
-        <Route path="/blog/:slug" element={<BlogPost />} />
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
+      <ChunkErrorBoundary>
+        <Routes>
+          <Route path="/" element={<Landing />} />
+          <Route path="/studio" element={<App />} />
+          <Route path="/docs" element={<DocsLayout />}>
+            <Route index element={<DocsIndex />} />
+            <Route path=":slug" element={<DocPage />} />
+          </Route>
+          <Route path="/blog" element={<BlogIndex />} />
+          <Route path="/blog/:slug" element={<BlogPost />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </ChunkErrorBoundary>
     </BrowserRouter>
   </StrictMode>,
 );

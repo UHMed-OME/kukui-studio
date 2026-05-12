@@ -21,7 +21,7 @@ import { ScoringTab, isScoringApplicable } from "./ScoringTab/index.js";
 import { Preview, type PreviewMode } from "./Preview.js";
 import { hasEditor } from "./EditCanvas/index.js";
 import { ConfirmDialog } from "./ConfirmDialog.js";
-import { AISettingsDialog } from "./AISettingsDialog.js";
+import { SettingsDialog, type SettingsPane } from "./settings/SettingsDialog.js";
 import { AIEditor } from "./AIEditor.js";
 import { Tooltip } from "./Tooltip.js";
 import { AsyncStatusStrip, type AsyncStatus } from "./AsyncStatusStrip.js";
@@ -170,8 +170,7 @@ export function App() {
    */
   const [asyncStatus, setAsyncStatus] = useState<AsyncStatus | null>(null);
   const [confirmReset, setConfirmReset] = useState(false);
-  const [showPrivacy, setShowPrivacy] = useState(false);
-  const [showAISettings, setShowAISettings] = useState(false);
+  const [settingsPane, setSettingsPane] = useState<SettingsPane | null>(null);
   // Bumped whenever AI settings are saved/cleared, so AIEditor re-reads
   // them without requiring a page reload (issue #1).
   const [aiSettingsVersion, setAiSettingsVersion] = useState(0);
@@ -764,7 +763,7 @@ export function App() {
                 value={value}
                 onChange={markDirty}
                 isDirty={isDirty}
-                onOpenSettings={() => setShowAISettings(true)}
+                onOpenSettings={() => setSettingsPane("ai")}
                 settingsVersion={aiSettingsVersion}
               />
             )}
@@ -870,7 +869,7 @@ export function App() {
           <button
             type="button"
             className="kukui-studio-footer__btn"
-            onClick={() => setShowPrivacy(true)}
+            onClick={() => setSettingsPane("privacy")}
           >
             Privacy &amp; data
           </button>
@@ -880,9 +879,9 @@ export function App() {
           <button
             type="button"
             className="kukui-studio-footer__icon-btn"
-            onClick={() => setShowAISettings(true)}
-            aria-label="AI Assist settings"
-            title="AI Assist settings"
+            onClick={() => setSettingsPane("ai")}
+            aria-label="Settings"
+            title="Settings"
           >
             <GearIcon />
           </button>
@@ -912,20 +911,11 @@ export function App() {
         onCancel={() => setConfirmReset(false)}
       />
 
-      <ConfirmDialog
-        open={showPrivacy}
-        title="Privacy & data"
-        message="Kukui Studio runs entirely in your browser. Drafts auto-save to your local browser storage (localStorage) and never leave your device. We don't operate any backend, don't set analytics cookies, and don't transmit form data anywhere. When you click Download, the SCORM zip is generated client-side; what happens after upload is between you and your LMS. SCORM activities packaged by Studio post grades only to the LMS that hosts them (D2L Brightspace, Canvas, Moodle, etc.) — same channel any LMS-hosted activity uses. If you enable AI Assist, requests go directly from your browser to whatever LLM endpoint you configured (OpenAI, Groq, your institution's internal proxy, etc.). Kukui Studio never sees or proxies the request. Your API key and base URL are stored in your browser only (localStorage or sessionStorage — your choice in the settings dialog). The activity JSON you're working on, plus your prompt, are sent to the endpoint you picked; the response comes back to your browser only. Your provider's data-handling policies apply to that traffic — pick a provider whose policies match your institution's rules."
-        confirmLabel="OK"
-        hideCancel
-        onConfirm={() => setShowPrivacy(false)}
-        onCancel={() => setShowPrivacy(false)}
-      />
-
-      <AISettingsDialog
-        open={showAISettings}
-        onClose={() => setShowAISettings(false)}
-        onSaved={() => setAiSettingsVersion((v) => v + 1)}
+      <SettingsDialog
+        open={settingsPane !== null}
+        initialPane={settingsPane ?? "ai"}
+        onClose={() => setSettingsPane(null)}
+        onAISaved={() => setAiSettingsVersion((v) => v + 1)}
       />
     </div>
   );
