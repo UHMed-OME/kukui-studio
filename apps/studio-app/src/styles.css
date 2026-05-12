@@ -182,7 +182,10 @@ button {
   align-items: center;
   justify-content: space-between;
   gap: var(--spacing-lg);
-  padding: var(--spacing-lg) var(--spacing-2xl);
+  /* Left padding matches the sidebar's content padding so the brand
+     block aligns visually with the sidebar's content column below. */
+  padding: var(--spacing-lg) var(--spacing-2xl) var(--spacing-lg)
+    var(--spacing-md);
   border-bottom: 1px solid var(--color-border);
   background: var(--color-surface);
 }
@@ -192,51 +195,52 @@ button {
    the text block's vertical centre, no manual indents. Shrinks before
    the toolbar wraps so the header reads as one horizontal band on
    common desktop widths. */
+/* Brand block fits within the sidebar's column width (220px) so its
+   left edge + visual mass aligns with the sidebar column beneath it.
+   Logo and wordmark sit on row 1; the meta strip (STUDIO / /pron/ /
+   descriptor) stacks vertically below and naturally wraps inside the
+   constrained width. */
 .kukui-studio-brand {
-  flex: 0 1 auto;
+  flex: 0 0 auto;
   min-width: 0;
-  max-width: 640px;
+  width: 220px;
   display: flex;
   flex-direction: row;
-  /* Align the logo to the top of the type column, not the center of
-     the whole stack. The wordmark sits on top, subtitle below — the
-     logo's optical center then lines up with "Kukui" itself. */
   align-items: flex-start;
-  gap: 14px;
+  gap: 12px;
 }
 
 .kukui-studio-brand-text {
   display: flex;
   flex-direction: column;
   min-width: 0;
-  gap: 4px;
+  gap: 8px;
+  flex: 1 1 auto;
 }
 
 .kukui-studio-logo {
-  width: 52px;
-  height: 52px;
+  width: 40px;
+  height: 40px;
   flex-shrink: 0;
   display: block;
-  /* Optical nudge: the candlenut silhouette is bottom-heavy, so its
-     bounding box reads slightly low against a tall serif. Pull it up
-     2px to line its visual center with the wordmark's cap-line. */
-  margin-top: -2px;
+  margin-top: 2px;
 }
 
-/* Brand wordmark — grid layout solves the two competing alignment
-   needs: pronunciation must baseline-align with "Kukui", AND "STUDIO"
-   must center under just "Kukui" (not under the whole row).
-   Two-row, two-column grid:
-     [Kukui]    [pronunciation]
-     [STUDIO ]   .
-   STUDIO lives in the Kukui column only and self-centers there. */
+/* Brand wordmark — option B layout: brand block constrained to the
+   sidebar column width (220px), so the meta strip can't fit one
+   horizontal line and stacks instead.
+     Row 1:  Kukui                ← headword
+     Row 2:  STUDIO               ← product label, tracked sans caps
+     Row 3:  /koo-KOO-ee/         ← phonetic, italic serif
+     Row 4:  Interactive learning ← descriptor, wraps within column
+             activities for…
+   No mid-dot separators since items are on their own lines. */
 .kukui-studio-title {
   margin: 0;
-  display: inline-grid;
-  grid-template-columns: max-content max-content;
-  align-items: baseline;
-  column-gap: 12px;
-  row-gap: 4px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
   font-family: var(--font-family-display);
   font-weight: 500;
   color: var(--color-text-primary);
@@ -245,64 +249,44 @@ button {
 }
 
 .kukui-studio-title__word {
-  grid-column: 1;
-  grid-row: 1;
-  font-size: 34px;
+  font-size: 30px;
   line-height: 1;
+}
+
+.kukui-studio-title__meta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.kukui-studio-title__sub {
+  font-family: var(--font-family-sans);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  text-indent: 0.22em;
+  line-height: 1.4;
 }
 
 .kukui-studio-title__pronunciation {
-  grid-column: 2;
-  grid-row: 1;
   font-family: var(--font-family-display);
   font-style: italic;
   font-weight: 400;
-  font-size: 16px;
+  font-size: 13px;
   color: var(--color-text-muted);
   letter-spacing: 0;
-  white-space: nowrap;
+  line-height: 1.2;
 }
 
-/* "STUDIO" occupies the second row, but only the Kukui column —
-   justify-self: center horizontally centers it under "Kukui". */
-.kukui-studio-title__sub {
-  grid-column: 1;
-  grid-row: 2;
-  justify-self: center;
-  font-family: var(--font-family-sans);
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.32em;
-  color: var(--color-text-secondary);
-  text-transform: uppercase;
-  line-height: 1;
-  /* Letter-spacing pushes the last glyph's right edge past its bounds;
-     a matching text-indent pulls visual center back onto Kukui's. */
-  text-indent: 0.32em;
-}
-
-/* Tagline lives in row 2 column 2, baseline-aligned with STUDIO. The
-   leading mid-dot reads it as continuous with STUDIO — like
-   "STUDIO · descriptor" rather than a separate paragraph. Restoring
-   this turns the brand block into a balanced 2x2 grid: wordmark up
-   top, meta strip across the bottom. */
 .kukui-studio-title__tagline {
-  grid-column: 2;
-  grid-row: 2;
   font-family: var(--font-family-sans);
-  font-size: var(--font-size-meta);
+  font-size: 12px;
   font-weight: 400;
   letter-spacing: 0;
   color: var(--color-text-muted);
-  text-transform: none;
-  white-space: nowrap;
-}
-
-.kukui-studio-title__tagline::before {
-  content: "·";
-  margin-right: 8px;
-  color: var(--color-text-muted);
-  opacity: 0.7;
+  line-height: 1.35;
 }
 
 /* Legacy subtitle — kept as a safety net for any non-App.tsx call
@@ -3212,7 +3196,14 @@ html[data-theme="glass"] .kukui-theme-toggle {
   line-height: 1.5;
 }
 
+/* Footer "Kukui Studio" reprises the header wordmark — same serif
+   face, lighter weight, slightly larger optical size so it reads as a
+   small editorial echo rather than a bold sans-serif paragraph lead. */
 .kukui-studio-footer__about strong {
+  font-family: var(--font-family-display);
+  font-weight: 500;
+  font-size: 15px;
+  letter-spacing: -0.005em;
   color: var(--color-text-primary);
 }
 

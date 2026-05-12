@@ -415,15 +415,17 @@ export function App() {
           <div className="kukui-studio-brand-text">
             <h1 className="kukui-studio-title">
               <span className="kukui-studio-title__word">Kukui</span>
-              <span
-                className="kukui-studio-title__pronunciation"
-                aria-label="pronounced koo-KOO-ee"
-              >
-                /koo-KOO-ee/
-              </span>
-              <span className="kukui-studio-title__sub">Studio</span>
-              <span className="kukui-studio-title__tagline">
-                Interactive learning activities for Lamakū and other LMS.
+              <span className="kukui-studio-title__meta">
+                <span className="kukui-studio-title__sub">Studio</span>
+                <span
+                  className="kukui-studio-title__pronunciation"
+                  aria-label="pronounced koo-KOO-ee"
+                >
+                  /koo-KOO-ee/
+                </span>
+                <span className="kukui-studio-title__tagline">
+                  Interactive learning activities for Lamakū and other LMS.
+                </span>
               </span>
             </h1>
           </div>
