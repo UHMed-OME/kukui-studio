@@ -422,6 +422,9 @@ export function App() {
                 /koo-KOO-ee/
               </span>
               <span className="kukui-studio-title__sub">Studio</span>
+              <span className="kukui-studio-title__tagline">
+                Interactive learning activities for Lamakū and other LMS.
+              </span>
             </h1>
           </div>
         </div>

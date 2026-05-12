@@ -281,6 +281,30 @@ button {
   text-indent: 0.32em;
 }
 
+/* Tagline lives in row 2 column 2, baseline-aligned with STUDIO. The
+   leading mid-dot reads it as continuous with STUDIO — like
+   "STUDIO · descriptor" rather than a separate paragraph. Restoring
+   this turns the brand block into a balanced 2x2 grid: wordmark up
+   top, meta strip across the bottom. */
+.kukui-studio-title__tagline {
+  grid-column: 2;
+  grid-row: 2;
+  font-family: var(--font-family-sans);
+  font-size: var(--font-size-meta);
+  font-weight: 400;
+  letter-spacing: 0;
+  color: var(--color-text-muted);
+  text-transform: none;
+  white-space: nowrap;
+}
+
+.kukui-studio-title__tagline::before {
+  content: "·";
+  margin-right: 8px;
+  color: var(--color-text-muted);
+  opacity: 0.7;
+}
+
 /* Legacy subtitle — kept as a safety net for any non-App.tsx call
    sites; no longer used by the header. */
 .kukui-studio-subtitle {
