@@ -1,10 +1,3 @@
-/*
- * Landing page — the public-facing homepage at "/". Long-form editorial
- * layout (hero, value props, catalog, how-it-works, dev section). Uses
- * the same design tokens as Studio chrome so the visual language carries
- * over to /studio without a jarring transition.
- */
-
 .kukui-landing {
   min-height: 100%;
   display: flex;

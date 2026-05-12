@@ -1,13 +1,8 @@
 /**
- * Shared markdown loader for docs and blog. Reads .md files at build
- * time via Vite's import.meta.glob (?raw), parses YAML-ish frontmatter,
- * and returns {meta, body} entries. The loader runs once at module
- * eval and is shared by every page that imports from here.
- *
- * Why hand-roll the frontmatter parser instead of gray-matter:
- * gray-matter uses Node's Buffer and js-yaml, both of which bloat the
- * browser bundle. Our frontmatter is shallow (key: value pairs of
- * strings, numbers, or ISO dates), so 20 lines of code suffice.
+ * Loader scale note: import.meta.glob runs with `eager: true`, which
+ * inlines every .md body into the main bundle. Fine at the current
+ * scale (~7 files, ~70KB). When this site has 50+ posts, drop `eager`
+ * and lazy-load per route — the change is localized to this file.
  */
 
 export type DocMeta = {

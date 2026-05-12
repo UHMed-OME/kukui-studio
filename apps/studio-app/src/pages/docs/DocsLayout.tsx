@@ -7,7 +7,7 @@ export function DocsLayout() {
   const { pathname } = useLocation();
   return (
     <div className="kukui-docs">
-      <LandingTopNav active="docs" />
+      <LandingTopNav />
       <main className="kukui-docs__main">
         <aside className="kukui-docs__sidebar" aria-label="Documentation">
           <h2 className="kukui-docs__sidebar-title">Documentation</h2>

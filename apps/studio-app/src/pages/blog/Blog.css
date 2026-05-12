@@ -1,8 +1,3 @@
-/*
- * Blog pages — single-column editorial layout for posts. Shares the
- * top nav with Landing and Docs.
- */
-
 .kukui-blog {
   min-height: 100%;
   display: flex;

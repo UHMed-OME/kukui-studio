@@ -1,9 +1,3 @@
-/*
- * Docs pages — two-column layout (sticky sidebar nav + content area).
- * Shares the top nav with Landing so the brand identity carries
- * across /, /docs, and /blog uniformly.
- */
-
 .kukui-docs {
   min-height: 100%;
   display: flex;

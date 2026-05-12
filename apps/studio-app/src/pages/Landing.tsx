@@ -5,6 +5,7 @@ import { ActivityIcon } from "../activityIcons.js";
 import { ACTIVITY_LABELS } from "../starters.js";
 import { DownloadIcon, PlayIcon } from "../icons.js";
 import { LandingTopNav } from "./shared/LandingTopNav.js";
+import { BrandWordmark } from "./shared/BrandWordmark.js";
 import "./Landing.css";
 
 const SHOWCASE: ReadonlyArray<{ kind: ActivityKind; blurb: string }> = [
@@ -177,18 +178,7 @@ export function Landing() {
       <footer className="kukui-landing__footer">
         <div className="kukui-landing__footer-top">
           <div className="kukui-landing__footer-brand">
-            <Link to="/" className="kukui-landing__brand" aria-label="Kukui Studio">
-              <img
-                className="kukui-landing__brand-logo"
-                src={`${import.meta.env.BASE_URL}kukui-logo.svg`}
-                alt=""
-                aria-hidden="true"
-              />
-              <span className="kukui-landing__brand-stack">
-                <span className="kukui-landing__brand-word">Kukui</span>
-                <span className="kukui-landing__brand-tag">Studio</span>
-              </span>
-            </Link>
+            <BrandWordmark />
             <p className="kukui-landing__footer-blurb">
               Open-source interactive learning activities for any LMS.
             </p>
