@@ -1,0 +1,647 @@
+/*
+ * Landing page — the public-facing homepage at "/". Long-form editorial
+ * layout (hero, value props, catalog, how-it-works, dev section). Uses
+ * the same design tokens as Studio chrome so the visual language carries
+ * over to /studio without a jarring transition.
+ */
+
+.kukui-landing {
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  color: var(--color-text-primary);
+}
+
+/* ---------- Top nav ---------- */
+
+.kukui-landing__nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--spacing-lg) var(--spacing-2xl);
+  gap: var(--spacing-md);
+}
+
+.kukui-landing__brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--color-text-primary);
+  text-decoration: none;
+}
+
+.kukui-landing__brand-logo {
+  width: 40px;
+  height: 40px;
+  display: block;
+  margin-top: -1px;
+}
+
+.kukui-landing__brand-stack {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  line-height: 1;
+}
+
+.kukui-landing__brand-word {
+  font-family: var(--font-family-display);
+  font-size: 24px;
+  font-weight: 500;
+  letter-spacing: -0.015em;
+  line-height: 1;
+}
+
+.kukui-landing__brand-tag {
+  font-family: var(--font-family-sans);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-indent: 0.22em;
+  text-transform: uppercase;
+  color: var(--color-text-secondary);
+  line-height: 1.2;
+}
+
+.kukui-landing__nav-links {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-lg);
+}
+
+.kukui-landing__nav-links a {
+  color: var(--color-text-secondary);
+  text-decoration: none;
+  font-size: var(--font-size-meta);
+  font-weight: 500;
+  transition: color 120ms ease;
+}
+
+.kukui-landing__nav-links a:hover {
+  color: var(--color-text-primary);
+}
+
+.kukui-landing__nav-links .kukui-landing__cta-secondary {
+  border: 1px solid var(--color-primary);
+  border-radius: var(--radius-md);
+  padding: 8px 14px;
+  color: var(--color-primary);
+  font-weight: 600;
+}
+
+.kukui-landing__nav-links .kukui-landing__cta-secondary:hover {
+  background: var(--color-primary-soft);
+}
+
+/* ---------- Hero ---------- */
+
+.kukui-landing__hero {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  align-items: center;
+  gap: var(--spacing-3xl);
+  padding: 64px var(--spacing-2xl) 96px;
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.kukui-landing__eyebrow {
+  margin: 0 0 var(--spacing-md);
+  font-family: var(--font-family-sans);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.32em;
+  text-indent: 0.32em;
+  text-transform: uppercase;
+  color: var(--color-primary);
+}
+
+.kukui-landing__headline {
+  margin: 0 0 var(--spacing-lg);
+  font-family: var(--font-family-display);
+  font-size: clamp(40px, 6vw, 64px);
+  font-weight: 500;
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  color: var(--color-text-primary);
+  text-wrap: balance;
+}
+
+.kukui-landing__lede {
+  margin: 0 0 var(--spacing-xl);
+  max-width: 540px;
+  font-size: 17px;
+  line-height: 1.55;
+  color: var(--color-text-secondary);
+  text-wrap: balance;
+}
+
+.kukui-landing__hero-ctas {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  flex-wrap: wrap;
+}
+
+.kukui-landing__cta-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 22px;
+  background: var(--color-primary);
+  color: #ffffff;
+  border-radius: var(--radius-md);
+  font-size: 15px;
+  font-weight: 600;
+  text-decoration: none;
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.12);
+  transition: background-color 160ms ease, box-shadow 160ms ease;
+}
+
+.kukui-landing__cta-primary:hover {
+  background: var(--color-primary-hover);
+  box-shadow:
+    0 6px 16px rgb(123 67 36 / 0.22),
+    inset 0 1px 0 rgb(255 255 255 / 0.15);
+}
+
+.kukui-landing__cta-primary svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* Hero secondary CTA — same shape as the nav secondary but bigger */
+.kukui-landing__hero-ctas .kukui-landing__cta-secondary {
+  display: inline-flex;
+  align-items: center;
+  padding: 12px 18px;
+  background: transparent;
+  color: var(--color-text-primary);
+  border-radius: var(--radius-md);
+  font-size: 15px;
+  font-weight: 500;
+  text-decoration: none;
+  transition: background-color 160ms ease;
+}
+
+.kukui-landing__hero-ctas .kukui-landing__cta-secondary:hover {
+  background: color-mix(in oklab, var(--color-text-primary) 6%, transparent);
+}
+
+/* ---------- Hero flashcard visual ---------- */
+
+.kukui-landing__hero-visual {
+  display: flex;
+  justify-content: center;
+  perspective: 1200px;
+}
+
+.kukui-landing__card {
+  position: relative;
+  width: min(380px, 100%);
+  aspect-ratio: 3 / 2;
+  transform-style: preserve-3d;
+  transition: transform 700ms cubic-bezier(0.45, 0.05, 0.25, 1);
+}
+
+.kukui-landing__card--back {
+  transform: rotateY(180deg);
+}
+
+.kukui-landing__card-face {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--spacing-md);
+  padding: var(--spacing-2xl);
+  background: var(--color-surface);
+  border-radius: var(--radius-card);
+  box-shadow:
+    0 18px 48px rgb(123 67 36 / 0.14),
+    0 4px 12px rgb(0 0 0 / 0.06);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.kukui-landing__card-face--back {
+  transform: rotateY(180deg);
+}
+
+.kukui-landing__card-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 12px;
+  background: var(--color-tip-bg);
+  color: var(--color-text-secondary);
+  font-family: var(--font-family-sans);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  border-radius: 999px;
+}
+
+.kukui-landing__card-text {
+  margin: 0;
+  font-family: var(--font-family-display);
+  font-size: 22px;
+  line-height: 1.3;
+  font-weight: 400;
+  color: var(--color-text-primary);
+  letter-spacing: -0.005em;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kukui-landing__card {
+    transition: none;
+  }
+}
+
+/* ---------- Section titles ---------- */
+
+.kukui-landing__section-title {
+  margin: 0 0 var(--spacing-md);
+  font-family: var(--font-family-display);
+  font-size: clamp(28px, 3.4vw, 38px);
+  font-weight: 500;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+  color: var(--color-text-primary);
+  text-wrap: balance;
+}
+
+.kukui-landing__section-lede {
+  margin: 0 0 var(--spacing-2xl);
+  max-width: 640px;
+  font-size: 15px;
+  color: var(--color-text-secondary);
+  line-height: 1.55;
+  text-wrap: balance;
+}
+
+/* ---------- Why Kukui ---------- */
+
+.kukui-landing__props {
+  padding: 64px var(--spacing-2xl);
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.kukui-landing__props-grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: var(--spacing-xl);
+}
+
+.kukui-landing__prop {
+  padding: var(--spacing-xl);
+  background: color-mix(in oklab, var(--color-surface) 60%, transparent);
+  border: 1px solid color-mix(in oklab, var(--color-border) 40%, transparent);
+  border-radius: var(--radius-md);
+}
+
+.kukui-landing__prop-title {
+  margin: 0 0 var(--spacing-sm);
+  font-family: var(--font-family-display);
+  font-size: 19px;
+  font-weight: 500;
+  color: var(--color-text-primary);
+  letter-spacing: -0.005em;
+}
+
+.kukui-landing__prop-body {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--color-text-secondary);
+}
+
+/* ---------- Activity catalog ---------- */
+
+.kukui-landing__catalog {
+  padding: 64px var(--spacing-2xl);
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.kukui-landing__catalog-grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: var(--spacing-lg);
+}
+
+.kukui-landing__catalog-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-xl);
+  background: var(--color-surface);
+  border: 1px solid color-mix(in oklab, var(--color-border) 50%, transparent);
+  border-radius: var(--radius-md);
+  transition: transform 160ms ease, box-shadow 160ms ease;
+}
+
+.kukui-landing__catalog-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgb(0 0 0 / 0.06);
+}
+
+.kukui-landing__catalog-icon {
+  width: 22px;
+  height: 22px;
+  color: var(--color-primary);
+}
+
+.kukui-landing__catalog-name {
+  margin: 0;
+  font-family: var(--font-family-display);
+  font-size: 19px;
+  font-weight: 500;
+  color: var(--color-text-primary);
+  letter-spacing: -0.005em;
+}
+
+.kukui-landing__catalog-blurb {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--color-text-secondary);
+}
+
+.kukui-landing__catalog-more {
+  margin: var(--spacing-2xl) 0 0;
+  text-align: center;
+}
+
+.kukui-landing__catalog-more a {
+  color: var(--color-primary);
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.kukui-landing__catalog-more a:hover {
+  text-decoration: underline;
+}
+
+/* ---------- How it works ---------- */
+
+.kukui-landing__how {
+  padding: 64px var(--spacing-2xl);
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.kukui-landing__how-grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--spacing-xl);
+  counter-reset: step;
+}
+
+.kukui-landing__how-step {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.kukui-landing__how-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: var(--color-primary-soft);
+  color: var(--color-primary);
+  border-radius: 50%;
+  font-family: var(--font-family-display);
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.kukui-landing__how-title {
+  margin: 0;
+  font-family: var(--font-family-display);
+  font-size: 17px;
+  font-weight: 500;
+  color: var(--color-text-primary);
+  letter-spacing: -0.005em;
+}
+
+.kukui-landing__how-body {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--color-text-secondary);
+}
+
+/* ---------- Developer section ---------- */
+
+.kukui-landing__dev {
+  padding: 64px var(--spacing-2xl);
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.kukui-landing__dev-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: var(--spacing-xl);
+}
+
+.kukui-landing__dev article {
+  padding: var(--spacing-xl);
+  background: color-mix(in oklab, var(--color-surface) 60%, transparent);
+  border: 1px solid color-mix(in oklab, var(--color-border) 40%, transparent);
+  border-radius: var(--radius-md);
+}
+
+.kukui-landing__dev h3 {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  margin: 0 0 var(--spacing-sm);
+  font-family: var(--font-family-display);
+  font-size: 19px;
+  font-weight: 500;
+  color: var(--color-text-primary);
+}
+
+.kukui-landing__dev h3 svg {
+  width: 16px;
+  height: 16px;
+  color: var(--color-primary);
+}
+
+.kukui-landing__dev p {
+  margin: 0 0 var(--spacing-md);
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--color-text-secondary);
+}
+
+.kukui-landing__dev code {
+  font-family: var(--font-family-mono);
+  font-size: 13px;
+  padding: 2px 6px;
+  background: var(--color-tip-bg);
+  border-radius: 4px;
+}
+
+.kukui-landing__dev a {
+  color: var(--color-primary);
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.kukui-landing__dev a:hover {
+  text-decoration: underline;
+}
+
+/* ---------- Footer ---------- */
+
+.kukui-landing__footer {
+  margin-top: auto;
+  padding: 48px var(--spacing-2xl) var(--spacing-2xl);
+  background: color-mix(in oklab, var(--color-surface-alt) 50%, transparent);
+  border-top: 1px solid color-mix(in oklab, var(--color-border) 50%, transparent);
+}
+
+.kukui-landing__footer-top {
+  display: grid;
+  grid-template-columns: minmax(220px, 1fr) 2fr;
+  gap: var(--spacing-2xl);
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.kukui-landing__footer-brand {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.kukui-landing__footer-blurb {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--color-text-secondary);
+  max-width: 280px;
+}
+
+.kukui-landing__footer-links {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--spacing-xl);
+}
+
+.kukui-landing__footer-links section h3 {
+  margin: 0 0 var(--spacing-md);
+  font-family: var(--font-family-sans);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-indent: 0.18em;
+  text-transform: uppercase;
+  color: var(--color-text-secondary);
+}
+
+.kukui-landing__footer-links section ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.kukui-landing__footer-links section a {
+  color: var(--color-text-primary);
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 400;
+  transition: color 120ms ease;
+}
+
+.kukui-landing__footer-links section a:hover {
+  color: var(--color-primary);
+}
+
+.kukui-landing__footer-bottom {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--spacing-md);
+  max-width: 1200px;
+  margin: 32px auto 0;
+  padding-top: var(--spacing-lg);
+  border-top: 1px solid color-mix(in oklab, var(--color-border) 40%, transparent);
+  font-size: 13px;
+  color: var(--color-text-muted);
+}
+
+.kukui-landing__footer-bottom p {
+  margin: 0;
+}
+
+.kukui-landing__footer-bottom strong {
+  font-family: var(--font-family-display);
+  font-weight: 500;
+  font-size: 14px;
+  color: var(--color-text-secondary);
+  letter-spacing: -0.005em;
+}
+
+.kukui-landing__footer-pronounce {
+  font-style: italic;
+  font-family: var(--font-family-display);
+  font-size: 13px;
+}
+
+@media (max-width: 760px) {
+  .kukui-landing__footer-top {
+    grid-template-columns: 1fr;
+  }
+  .kukui-landing__footer-links {
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  }
+}
+
+/* ---------- Narrow viewports ---------- */
+
+@media (max-width: 760px) {
+  .kukui-landing__hero {
+    grid-template-columns: 1fr;
+    padding: 32px var(--spacing-lg) 48px;
+    gap: var(--spacing-2xl);
+  }
+
+  .kukui-landing__nav,
+  .kukui-landing__props,
+  .kukui-landing__catalog,
+  .kukui-landing__how,
+  .kukui-landing__dev,
+  .kukui-landing__footer {
+    padding-left: var(--spacing-lg);
+    padding-right: var(--spacing-lg);
+  }
+}

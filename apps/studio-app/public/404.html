@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Kukui Studio</title>
+    <script>
+      // GitHub Pages SPA fallback. Pages serves this file for any URL it
+      // doesn't recognize; we stash the requested path in sessionStorage
+      // and redirect to index.html, where React Router can pick it up
+      // and navigate to the right route. Convention from
+      // https://github.com/rafgraph/spa-github-pages, simplified for our
+      // single-segment routes (/studio, /docs, /blog/...).
+      (function () {
+        var path = window.location.pathname + window.location.search + window.location.hash;
+        sessionStorage.setItem("kukui:redirect", path);
+        window.location.replace(window.location.origin + "/");
+      })();
+    </script>
+  </head>
+  <body></body>
+</html>
