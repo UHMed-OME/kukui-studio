@@ -213,74 +213,43 @@ button {
 }
 
 .kukui-studio-logo {
-  width: 44px;
-  height: 44px;
+  width: 52px;
+  height: 52px;
   flex-shrink: 0;
   display: block;
-  /* Optical nudge: the logo's silhouette has a heavier base than top,
-     so dropping it 2px aligns its visual center with "Kukui"'s
-     x-height rather than its raw bounding box. */
-  margin-top: -3px;
+  /* Optical nudge: the candlenut silhouette is bottom-heavy, so its
+     bounding box reads slightly low against a tall serif. Pull it up
+     2px to line its visual center with the wordmark's cap-line. */
+  margin-top: -2px;
 }
 
-/* Brand wordmark — single confident line. Headword in serif, italic
-   phonetic at smaller size, mid-dot separator, then the product label
-   in tracked sans caps. All baseline-aligned so the logo can sit flush
-   with the type. */
+/* Brand wordmark — "Kukui Studio" set as one confident serif lockup.
+   The pronunciation moves down into the metadata strip below so it
+   stops fragmenting the headline into 4 chunks. */
 .kukui-studio-title {
   margin: 0;
-  display: inline-flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: 0 10px;
   font-family: var(--font-family-display);
+  font-size: 30px;
   font-weight: 500;
   color: var(--color-text-primary);
   line-height: 1;
   letter-spacing: -0.015em;
 }
 
-.kukui-studio-title__word {
-  font-size: 30px;
-}
-
-.kukui-studio-title__pronunciation {
+.kukui-studio-subtitle__pronunciation {
+  font-family: var(--font-family-display);
   font-style: italic;
   font-weight: 400;
-  font-size: 16px;
   color: var(--color-text-muted);
-  letter-spacing: 0;
   white-space: nowrap;
-  /* Optical bump: italic letterforms ride slightly higher than roman
-     at the same baseline. Drop them ~1px to align with "Kukui". */
-  position: relative;
-  top: 1px;
-}
-
-.kukui-studio-title__sep {
-  font-family: var(--font-family-sans);
-  font-size: 14px;
-  font-weight: 400;
-  color: var(--color-text-muted);
-  letter-spacing: 0;
-  /* Center the mid-dot vertically against the cap-height of "Kukui". */
-  position: relative;
-  top: -4px;
-}
-
-.kukui-studio-title__studio {
-  font-family: var(--font-family-sans);
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.18em;
-  color: var(--color-text-secondary);
-  text-transform: uppercase;
-  position: relative;
-  top: -3px;
 }
 
 .kukui-studio-subtitle {
   margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0 6px;
   font-size: var(--font-size-meta);
   color: var(--color-text-muted);
   text-wrap: balance;
