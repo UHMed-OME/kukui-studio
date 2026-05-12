@@ -78,6 +78,7 @@ const PHASE_1_ACTIVITIES = [
   "ddx-tree",
   "osce",
   "crossword",
+  "straw-poll",
 ];
 
 // Slugs become path components and zip names; reject anything outside

@@ -91,6 +91,7 @@ export default defineConfig({
         "ddx-tree": resolve(__dirname, "ddx-tree.html"),
         osce: resolve(__dirname, "osce.html"),
         crossword: resolve(__dirname, "crossword.html"),
+        "straw-poll": resolve(__dirname, "straw-poll.html"),
       },
     },
   },

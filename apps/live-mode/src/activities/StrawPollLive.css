@@ -1,0 +1,236 @@
+/*
+ * Straw Poll (live) — instructor + student card surfaces. Layout-stable:
+ * the bar fill animates its width via transition; the surrounding row
+ * height stays constant so a growing tally doesn't reflow the choice
+ * list below.
+ */
+
+.live-card--wide {
+  max-width: 880px;
+}
+
+.kukui-sp-live__prompt-card {
+  margin-bottom: var(--spacing-lg, 16px);
+  padding: var(--spacing-md, 12px) var(--spacing-lg, 16px);
+  background: color-mix(in srgb, var(--color-tip-bg, #f2f0e8) 70%, transparent);
+  border-left: 3px solid var(--color-accent, #b69b5d);
+  border-radius: var(--radius-sm, 6px);
+}
+
+.kukui-sp-live__prompt {
+  margin: 0;
+  font-size: var(--font-size-prompt, 16px);
+  line-height: 1.5;
+  color: var(--color-text-primary, #1c1e20);
+}
+
+.kukui-sp-live__choices {
+  border: 0;
+  padding: 0;
+  margin: 0 0 var(--spacing-lg, 16px);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm, 8px);
+}
+
+.kukui-sp-live__choice-btn {
+  display: grid;
+  grid-template-columns: 44px 1fr auto;
+  align-items: center;
+  gap: var(--spacing-md, 12px);
+  min-height: 64px;
+  padding: var(--spacing-sm, 8px) var(--spacing-md, 12px);
+  background: var(--color-surface, #ffffff);
+  border: 2px solid var(--color-border, #dad2c6);
+  border-radius: var(--radius-md, 8px);
+  text-align: left;
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+}
+
+.kukui-sp-live__choice-btn:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--color-tip-bg, #f2f0e8) 60%, #ffffff);
+}
+
+.kukui-sp-live__choice-btn:disabled {
+  cursor: default;
+  opacity: 0.75;
+}
+
+.kukui-sp-live__choice-btn.is-selected {
+  border-color: var(--color-accent, #b69b5d);
+  background: color-mix(in srgb, var(--color-accent, #b69b5d) 14%, var(--color-surface, #ffffff));
+}
+
+.kukui-sp-live__choice-marker {
+  width: 44px;
+  height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-tip-bg, #f2f0e8);
+  border-radius: 999px;
+  font-weight: 700;
+}
+
+.kukui-sp-live__choice-btn.is-selected .kukui-sp-live__choice-marker {
+  background: var(--color-accent, #b69b5d);
+  color: #ffffff;
+}
+
+.kukui-sp-live__choice-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.kukui-sp-live__choice-label {
+  font-size: var(--font-size-body, 15px);
+  font-weight: 600;
+}
+
+.kukui-sp-live__choice-desc {
+  font-size: var(--font-size-caption, 14px);
+  color: var(--color-text-secondary, #606069);
+}
+
+.kukui-sp-live__choice-tick {
+  font-size: 22px;
+  color: var(--color-accent, #b69b5d);
+  font-weight: 700;
+}
+
+.kukui-sp-live__hint {
+  margin: 0 0 var(--spacing-lg, 16px);
+  padding: var(--spacing-sm, 8px) var(--spacing-md, 12px);
+  background: color-mix(in srgb, #2e6e41 10%, var(--color-surface, #ffffff));
+  border-left: 3px solid #2e6e41;
+  border-radius: var(--radius-sm, 6px);
+  font-size: var(--font-size-caption, 14px);
+  color: var(--color-text-primary, #1c1e20);
+}
+
+.kukui-sp-live__status {
+  margin: 0 0 var(--spacing-lg, 16px);
+  padding: var(--spacing-md, 12px) var(--spacing-lg, 16px);
+  background: var(--color-tip-bg, #f2f0e8);
+  border: 1px solid var(--color-border, #dad2c6);
+  border-radius: var(--radius-sm, 6px);
+  font-size: var(--font-size-body, 15px);
+  color: var(--color-text-primary, #1c1e20);
+  text-align: center;
+}
+
+.kukui-sp-live__tally {
+  margin-bottom: var(--spacing-lg, 16px);
+}
+
+.kukui-sp-live__tally-heading {
+  margin: 0 0 var(--spacing-sm, 8px);
+  font-size: var(--font-size-body, 15px);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-text-secondary, #606069);
+}
+
+.kukui-sp-live__bars {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm, 8px);
+}
+
+.kukui-sp-live__bar-row {
+  display: grid;
+  grid-template-columns: 32px 1fr auto;
+  gap: var(--spacing-md, 12px);
+  align-items: center;
+}
+
+.kukui-sp-live__bar-letter {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: var(--color-tip-bg, #f2f0e8);
+  border-radius: 999px;
+  font-weight: 700;
+  color: var(--color-text-primary, #1c1e20);
+  font-size: var(--font-size-caption, 14px);
+}
+
+.kukui-sp-live__bar-body {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.kukui-sp-live__bar-label {
+  display: flex;
+  gap: var(--spacing-xs, 4px);
+  align-items: baseline;
+  font-size: var(--font-size-body, 15px);
+  color: var(--color-text-primary, #1c1e20);
+  font-weight: 500;
+}
+
+.kukui-sp-live__bar-yours {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  padding: 2px 6px;
+  border-radius: 999px;
+  background: var(--color-accent, #b69b5d);
+  color: #ffffff;
+}
+
+.kukui-sp-live__bar-track {
+  position: relative;
+  height: 16px;
+  background: var(--color-tip-bg, #f2f0e8);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.kukui-sp-live__bar-fill {
+  height: 100%;
+  background: color-mix(in srgb, var(--color-accent, #b69b5d) 70%, #ffffff);
+  border-radius: 999px;
+  transition: width 220ms ease;
+}
+
+.kukui-sp-live__bar-track.is-revealed .kukui-sp-live__bar-fill {
+  background: var(--color-accent, #b69b5d);
+}
+
+.kukui-sp-live__bar-count {
+  font-variant-numeric: tabular-nums;
+  font-size: var(--font-size-body, 15px);
+  font-weight: 700;
+  color: var(--color-text-primary, #1c1e20);
+}
+
+.kukui-sp-live__bar-pct {
+  font-weight: 500;
+  color: var(--color-text-secondary, #606069);
+}
+
+.kukui-sp-live__controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-sm, 8px);
+  margin-top: var(--spacing-lg, 16px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kukui-sp-live__bar-fill {
+    transition: none;
+  }
+}

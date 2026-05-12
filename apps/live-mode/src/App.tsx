@@ -1,7 +1,28 @@
 import { useEffect, useRef, useState } from "react";
 import { joinLiveRoom, deriveRoomCode, type LiveRoomHandle } from "@kukui/live";
 import type { Presence } from "@kukui/live";
+import type { ActivityKind } from "@kukui/core";
 import { LiveHost } from "./LiveHost.js";
+
+/**
+ * Activity kinds that have a real Live runtime today. Anything not in
+ * this list falls through to the generic InstructorConsole /
+ * StudentParticipant shell, which is fine for diagnostics but isn't a
+ * usable activity. Adding a new live activity = add it here + add a
+ * dispatch branch in LiveHost.
+ */
+const LIVE_ACTIVITIES: { kind: ActivityKind; label: string; sampleUrl: string }[] = [
+  {
+    kind: "straw-poll",
+    label: "Straw Poll",
+    sampleUrl: "/samples/straw-poll/basic.json",
+  },
+  {
+    kind: "multiple-choice",
+    label: "Multiple Choice (demo shell)",
+    sampleUrl: "/samples/multiple-choice/basic.json",
+  },
+];
 
 /**
  * Kukui Live — M1 shell.
@@ -17,6 +38,18 @@ export function App() {
   const [code, setCode] = useState("");
   const [name, setName] = useState("");
   const [role, setRole] = useState<"instructor" | "student">("student");
+  // The activity choice doubles as both "what kind to host" and "what
+  // sample to auto-load". URL ?activity=<kind> is honoured so an
+  // instructor can paste a deeplink that already names the activity.
+  const [activityKind, setActivityKind] = useState<ActivityKind>(() => {
+    const params = new URLSearchParams(
+      typeof window !== "undefined" ? window.location.search : "",
+    );
+    const fromUrl = params.get("activity");
+    return (LIVE_ACTIVITIES.find((a) => a.kind === fromUrl)?.kind ??
+      LIVE_ACTIVITIES[0]?.kind ??
+      "straw-poll") as ActivityKind;
+  });
   const [room, setRoom] = useState<LiveRoomHandle | null>(null);
   const [presence, setPresence] = useState<Map<string, Presence>>(new Map());
   const [error, setError] = useState<string | null>(null);
@@ -40,6 +73,14 @@ export function App() {
       });
       handle.setPresence({ name: name.trim(), role });
       setRoom(handle);
+      // For the activities with a real Live runtime, auto-load the
+      // sample so both instructor and students see the same JSON the
+      // moment they enter the room. The shell activities (multiple-
+      // choice diagnostic) still rely on the manual "Load demo" button.
+      const sample = LIVE_ACTIVITIES.find((a) => a.kind === activityKind);
+      if (sample && activityKind === "straw-poll") {
+        setConfigUrl(sample.sampleUrl);
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not join room.");
     }
@@ -73,14 +114,17 @@ export function App() {
   };
 
   if (room) {
+    const sample =
+      LIVE_ACTIVITIES.find((a) => a.kind === activityKind)?.sampleUrl ??
+      "/samples/multiple-choice/basic.json";
     return (
       <LiveHost
-        kind="multiple-choice"
+        kind={activityKind}
         configUrl={configUrl}
         room={room}
         presence={presence}
         role={role}
-        onLoadDemo={() => setConfigUrl("/samples/multiple-choice/basic.json")}
+        onLoadDemo={() => setConfigUrl(sample)}
         onLeave={handleLeave}
       />
     );
@@ -136,6 +180,26 @@ export function App() {
           >
             <option value="student">Student</option>
             <option value="instructor">Instructor</option>
+          </select>
+        </div>
+        <div className="live-field">
+          <label htmlFor="activity">Activity</label>
+          <select
+            id="activity"
+            value={activityKind}
+            onChange={(e) => setActivityKind(e.target.value as ActivityKind)}
+            style={{
+              minHeight: 44,
+              padding: "10px 12px",
+              border: "2px solid var(--color-border)",
+              borderRadius: 8,
+            }}
+          >
+            {LIVE_ACTIVITIES.map((a) => (
+              <option key={a.kind} value={a.kind}>
+                {a.label}
+              </option>
+            ))}
           </select>
         </div>
         {error ? (

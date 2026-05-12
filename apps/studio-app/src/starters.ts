@@ -371,6 +371,22 @@ export const STARTERS: Record<ActivityKind, unknown> = {
     expectedOrder: ["history", "exam"],
     behaviour: { enableRetry: true },
   },
+  "straw-poll": {
+    version: "1.0",
+    title: "Pulse check",
+    prompt: "How confident do you feel about today's material?",
+    choices: [
+      { id: "very", label: "Very confident — could teach it back" },
+      { id: "mostly", label: "Mostly — minor gaps" },
+      { id: "shaky", label: "Shaky — need to review" },
+      { id: "lost", label: "Lost — need a re-teach" },
+    ],
+    behaviour: {
+      showLiveResultsToStudents: true,
+      allowChangeVote: true,
+      showIndividualVotes: false,
+    },
+  },
   crossword: {
     version: "1.0",
     title: "Crossword",
@@ -416,5 +432,6 @@ export const ACTIVITY_LABELS: Record<ActivityKind, string> = {
   "ddx-tree": "Differential Diagnosis Tree",
   osce: "OSCE Clinical Encounter",
   crossword: "Crossword",
+  "straw-poll": "Straw Poll (Live)",
   ...PLANNED_LABELS,
 } as Record<ActivityKind, string>;

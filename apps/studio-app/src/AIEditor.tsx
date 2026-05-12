@@ -195,6 +195,10 @@ const PLACEHOLDER_EXAMPLES: Partial<
     gen: "e.g. 8-term crossword on cardiology vocabulary — chamber names, vessels, and conduction-system structures",
     edit: "e.g. Replace two of the simpler terms with pathology vocabulary like 'stenosis' and 'aneurysm'",
   },
+  "straw-poll": {
+    gen: "e.g. End-of-lecture confidence check with 4 levels from 'could teach it back' to 'need a re-teach'",
+    edit: "e.g. Replace the middle two options with more specific gap descriptors",
+  },
 };
 
 function getPlaceholder(kind: SchemaRegistryKey, mode: Mode): string {

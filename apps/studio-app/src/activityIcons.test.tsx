@@ -30,6 +30,7 @@ const STUDIO_SURFACED: readonly ActivityKind[] = [
   "osce",
   "audio-recording",
   "crossword",
+  "straw-poll",
 ];
 
 describe("activityIcons", () => {

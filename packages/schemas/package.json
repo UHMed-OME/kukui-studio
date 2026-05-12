@@ -30,6 +30,7 @@
     "./ddx-tree": "./src/ddx-tree.ts",
     "./osce": "./src/osce.ts",
     "./crossword": "./src/crossword.ts",
+    "./straw-poll": "./src/straw-poll.ts",
     "./stub": "./src/stub.ts"
   },
   "dependencies": {

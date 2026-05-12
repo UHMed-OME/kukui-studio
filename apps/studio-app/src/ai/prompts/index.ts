@@ -21,6 +21,7 @@ import { PROMPT as HIGHLIGHT_TEXT } from "./per-kind/highlight-text.js";
 import { PROMPT as LAB_PANEL } from "./per-kind/lab-panel.js";
 import { PROMPT as OSCE } from "./per-kind/osce.js";
 import { PROMPT as CROSSWORD } from "./per-kind/crossword.js";
+import { PROMPT as STRAW_POLL } from "./per-kind/straw-poll.js";
 import { PROMPT as DEFAULT } from "./per-kind/default.js";
 
 const PER_KIND: Partial<Record<SchemaRegistryKey, string>> = {
@@ -37,6 +38,7 @@ const PER_KIND: Partial<Record<SchemaRegistryKey, string>> = {
   "lab-panel": LAB_PANEL,
   osce: OSCE,
   crossword: CROSSWORD,
+  "straw-poll": STRAW_POLL,
 };
 
 export function systemPromptFor(kind: SchemaRegistryKey): string {

@@ -81,6 +81,7 @@ const BLOOM_BY_KIND: Partial<Record<ActivityKind, BloomLevel>> = {
   "ddx-tree": "evaluate",
   "reflection-prompt": "evaluate",
   osce: "evaluate",
+  "straw-poll": "evaluate",
   // Create — produce original work
   "audio-recording": "create",
 };

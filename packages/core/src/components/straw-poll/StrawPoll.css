@@ -1,0 +1,117 @@
+/*
+ * Straw Poll — read-only engine/preview view. The interactive Live
+ * version lives in apps/live-mode/src/activities/StrawPollLive.tsx;
+ * this file styles only the static "what this poll looks like" card.
+ */
+
+.kukui-sp {
+  width: 100%;
+  max-width: 720px;
+  margin: 0 auto;
+  padding: var(--spacing-3xl, 28px);
+  background: var(--color-surface, #ffffff);
+  border: 1px solid var(--color-border, #dad2c6);
+  border-radius: var(--radius-card, 12px);
+}
+
+.kukui-sp__badge {
+  display: inline-block;
+  padding: 4px 10px;
+  background: color-mix(in srgb, var(--color-accent, #b69b5d) 18%, transparent);
+  border: 1px solid var(--color-accent, #b69b5d);
+  border-radius: 999px;
+  font-size: var(--font-size-meta, 13px);
+  font-weight: 700;
+  color: var(--color-text-primary, #1c1e20);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.kukui-sp__title {
+  margin: var(--spacing-md, 12px) 0 var(--spacing-sm, 8px);
+  font-size: var(--font-size-title, 24px);
+  font-weight: 700;
+  color: var(--color-text-primary, #1c1e20);
+}
+
+.kukui-sp__prompt {
+  margin: 0 0 var(--spacing-lg, 16px);
+  font-size: var(--font-size-prompt, 16px);
+  line-height: 1.5;
+  color: var(--color-text-primary, #1c1e20);
+}
+
+.kukui-sp__hint {
+  margin: 0 0 var(--spacing-lg, 16px);
+  padding: var(--spacing-sm, 8px) var(--spacing-md, 12px);
+  background: color-mix(in srgb, var(--color-tip-bg, #f2f0e8) 70%, transparent);
+  border-left: 3px solid var(--color-accent, #b69b5d);
+  border-radius: var(--radius-sm, 6px);
+  font-size: var(--font-size-caption, 14px);
+  color: var(--color-text-secondary, #606069);
+}
+
+.kukui-sp__choices {
+  list-style: none;
+  margin: 0 0 var(--spacing-lg, 16px);
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm, 8px);
+}
+
+.kukui-sp__choice {
+  display: grid;
+  grid-template-columns: 44px 1fr;
+  gap: var(--spacing-md, 12px);
+  align-items: start;
+  padding: var(--spacing-md, 12px);
+  background: var(--color-surface, #ffffff);
+  border: 2px solid var(--color-border, #dad2c6);
+  border-radius: var(--radius-md, 8px);
+}
+
+.kukui-sp__choice-marker {
+  width: 44px;
+  height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-tip-bg, #f2f0e8);
+  border-radius: 999px;
+  font-weight: 700;
+  color: var(--color-text-primary, #1c1e20);
+}
+
+.kukui-sp__choice-body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.kukui-sp__choice-label {
+  font-size: var(--font-size-body, 15px);
+  font-weight: 600;
+  color: var(--color-text-primary, #1c1e20);
+}
+
+.kukui-sp__choice-desc {
+  font-size: var(--font-size-caption, 14px);
+  color: var(--color-text-secondary, #606069);
+}
+
+.kukui-sp__complete {
+  min-height: 44px;
+  padding: 0 var(--spacing-lg, 16px);
+  background: var(--color-accent, #b69b5d);
+  border: 1px solid var(--color-accent, #b69b5d);
+  border-radius: var(--radius-sm, 6px);
+  font-size: var(--font-size-body, 15px);
+  font-weight: 600;
+  color: #ffffff;
+  cursor: pointer;
+}
+
+.kukui-sp__complete:hover {
+  background: color-mix(in srgb, var(--color-accent, #b69b5d) 85%, #000000);
+}

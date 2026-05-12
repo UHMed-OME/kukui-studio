@@ -1,0 +1,16 @@
+{
+  "version": "1.0",
+  "title": "After-lecture pulse check",
+  "prompt": "How comfortable are you with today's material on cardiac conduction?",
+  "choices": [
+    { "id": "very", "label": "Very comfortable — could teach it back" },
+    { "id": "mostly", "label": "Mostly — minor gaps" },
+    { "id": "shaky", "label": "Shaky — need to review" },
+    { "id": "lost", "label": "Lost — need a re-teach" }
+  ],
+  "behaviour": {
+    "showLiveResultsToStudents": true,
+    "allowChangeVote": true,
+    "showIndividualVotes": false
+  }
+}

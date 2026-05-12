@@ -5,10 +5,11 @@ import {
   loadContent,
   type ActivityKind,
 } from "@kukui/core";
-import { SchemaRegistry, type SchemaRegistryKey } from "@kukui/schemas";
+import { SchemaRegistry, type SchemaRegistryKey, type StrawPollConfig } from "@kukui/schemas";
 import type { LiveRoomHandle, Presence } from "@kukui/live";
 import { InstructorConsole, type ConfigSummary } from "./InstructorConsole.js";
 import { StudentParticipant } from "./StudentParticipant.js";
+import { StrawPollLive } from "./activities/StrawPollLive.js";
 
 export type LiveHostProps = {
   /** Activity kind to host. Must be a key in `SchemaRegistry`. */
@@ -159,6 +160,22 @@ export function LiveHost({
   }
 
   const hasDemoLoaded = loadState.status === "ready";
+
+  // Activity-specific live runtimes plug in here. Straw Poll is the
+  // first; future activities (TBL Round, Live Timeline) add their own
+  // dispatch branch. The generic Instructor/Student split below is the
+  // shell for kinds that don't yet have a bespoke live runtime.
+  if (kind === "straw-poll" && loadState.status === "ready") {
+    return (
+      <StrawPollLive
+        room={room}
+        presence={presence}
+        role={role}
+        config={loadState.config as StrawPollConfig}
+        onLeave={onLeave}
+      />
+    );
+  }
 
   if (role === "instructor") {
     return (

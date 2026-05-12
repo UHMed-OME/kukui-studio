@@ -68,6 +68,7 @@ export { LabPanelConfigSchema, type LabPanelConfig } from "./lab-panel.js";
 export { DDxTreeConfigSchema, type DDxTreeConfig } from "./ddx-tree.js";
 export { OSCEConfigSchema, type OSCEConfig } from "./osce.js";
 export { CrosswordConfigSchema, type CrosswordConfig } from "./crossword.js";
+export { StrawPollConfigSchema, type StrawPollConfig } from "./straw-poll.js";
 export { StubConfigSchema, type StubConfig } from "./stub.js";
 
 import { MultipleChoiceConfigSchema } from "./multiple-choice.js";
@@ -94,6 +95,7 @@ import { LabPanelConfigSchema } from "./lab-panel.js";
 import { DDxTreeConfigSchema } from "./ddx-tree.js";
 import { OSCEConfigSchema } from "./osce.js";
 import { CrosswordConfigSchema } from "./crossword.js";
+import { StrawPollConfigSchema } from "./straw-poll.js";
 
 /**
  * Map of activity-kind → Zod schema. Keys match `ActivityKind` in
@@ -126,6 +128,7 @@ export const SchemaRegistry = {
   "ddx-tree": DDxTreeConfigSchema,
   osce: OSCEConfigSchema,
   crossword: CrosswordConfigSchema,
+  "straw-poll": StrawPollConfigSchema,
 } as const;
 
 export type SchemaRegistryKey = keyof typeof SchemaRegistry;

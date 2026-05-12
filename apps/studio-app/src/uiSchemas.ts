@@ -1122,6 +1122,55 @@ export const UI_SCHEMAS: Record<ActivityKind, Record<string, unknown>> = {
     },
   },
 
+  "straw-poll": {
+    ...COMMON,
+    "ui:order": ["title", "prompt", "choices", "behaviour", "ui", "*"],
+    title: TITLE,
+    author: AUTHOR,
+    prompt: f(
+      "Poll prompt",
+      "The question the instructor projects and students answer. Keep it short — straw polls are temperature checks, not essay prompts.",
+      { "ui:widget": "textarea", "ui:options": { rows: 2 } },
+    ),
+    choices: {
+      "ui:title": "Choices",
+      "ui:help":
+        "2–8 options. Each choice gets a button on the student view and a bar in the live tally; long labels wrap to the second line, so keep them brief.",
+      items: {
+        id: HIDDEN,
+        label: f("Choice label", "Shown to students and as the bar label in the tally."),
+        description: f(
+          "Choice description (optional)",
+          "Brief hint under the label — useful when the label is a single word that needs context.",
+        ),
+      },
+    },
+    behaviour: {
+      "ui:title": "Activity behaviour",
+      showLiveResultsToStudents: f(
+        "Show live counts to students after they vote",
+        "Default on. Turn off for high-stakes polls where seeing others' answers would bias the response — the tally then only appears at reveal.",
+      ),
+      allowChangeVote: f(
+        "Allow students to change their vote",
+        "Default on. Each student's latest tap wins. Turn off to lock the first vote in.",
+      ),
+      showIndividualVotes: f(
+        "Show individual votes to the instructor",
+        "Default off (aggregate only). Enabling this lists each voter and their pick — use only when the poll is openly attributed.",
+      ),
+    },
+    ui: {
+      "ui:title": "Button label overrides",
+      openPollButton: f("'Open poll' button text"),
+      closePollButton: f("'Close & reveal' button text"),
+      revealButton: f("'Reveal' button text"),
+      resetButton: f("'Reset' button text"),
+      submitVoteButton: f("'Submit vote' button text"),
+      changeVoteButton: f("'Change vote' button text"),
+    },
+  },
+
   crossword: {
     ...COMMON,
     "ui:order": ["title", "prompt", "entries", "behaviour", "ui", "*"],
