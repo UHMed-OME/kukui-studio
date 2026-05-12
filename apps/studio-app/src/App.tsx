@@ -32,7 +32,7 @@ import {
   XIcon,
 } from "./icons.js";
 import { ActivityIcon } from "./activityIcons.js";
-import { ACTIVITY_LABELS, STARTERS } from "./starters.js";
+import { ACTIVITY_LABELS, STARTERS, ensureFreshKeys } from "./starters.js";
 import { clearDraft, debouncedSaver, loadDraft, saveDraft } from "./drafts.js";
 import { downloadScormZip } from "./scormDownload.js";
 import { importFromFile } from "./scormImport.js";
@@ -132,7 +132,9 @@ export function App() {
     // that lets a first-time author start typing immediately.
     return "flashcards";
   });
-  const [value, setValue] = useState<unknown>(() => loadDraft(kind) ?? STARTERS[kind]);
+  const [value, setValue] = useState<unknown>(() =>
+    ensureFreshKeys(kind, loadDraft(kind) ?? STARTERS[kind]),
+  );
   // Whether `value` has diverged from STARTERS[kind] for the current
   // activity. Flipped true on any form/json/preview/AI edit, on draft
   // hydration when the draft differs, and on import. Resets to false
@@ -187,7 +189,7 @@ export function App() {
   // definition dirty (otherwise it wouldn't have been saved).
   useEffect(() => {
     const draft = loadDraft(kind);
-    setValue(draft ?? STARTERS[kind]);
+    setValue(ensureFreshKeys(kind, draft ?? STARTERS[kind]));
     setIsDirty(draft != null);
   }, [kind]);
 
@@ -294,7 +296,7 @@ export function App() {
 
   const confirmResetNow = () => {
     clearDraft(kind);
-    setValue(STARTERS[kind]);
+    setValue(ensureFreshKeys(kind, STARTERS[kind]));
     setIsDirty(false);
     setConfirmReset(false);
     flash("Reset.");

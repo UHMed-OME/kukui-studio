@@ -387,12 +387,12 @@ export const STARTERS: Record<ActivityKind, unknown> = {
       showIndividualVotes: false,
     },
     live: {
-      // Author should rotate these per session — placeholder values
-      // make the form valid and the activity launchable from Studio
-      // immediately, but anyone reading them on GitHub can claim host
-      // in your room. Treat them like default API keys: replace.
-      joinKey: "pulse-check-classroom",
-      adminKey: "change-me-before-class",
+      // Keys intentionally left empty here — `ensureFreshKeys` fills
+      // them in with fresh randoms whenever this starter is applied
+      // (new draft, Reset, or kind switch), so two authors never
+      // ship with the same admin key by accident.
+      joinKey: "",
+      adminKey: "",
       signaling: "nostr",
     },
   },
@@ -444,3 +444,60 @@ export const ACTIVITY_LABELS: Record<ActivityKind, string> = {
   "straw-poll": "Straw Poll (Live)",
   ...PLANNED_LABELS,
 } as Record<ActivityKind, string>;
+
+/**
+ * Memorable join key: `adj-noun-NN`. ~6.4M combinations is plenty so
+ * two simultaneous classroom rooms don't collide at the scale of a
+ * single institution. Words chosen to read cleanly when an instructor
+ * says them out loud.
+ */
+function randomJoinKey(): string {
+  const adjs = [
+    "bright", "calm", "clever", "fierce", "happy", "lucky", "merry",
+    "quiet", "swift", "wild", "kind", "bold", "warm", "sharp", "noble",
+  ];
+  const nouns = [
+    "badger", "cougar", "dolphin", "eagle", "falcon", "fox", "lion",
+    "owl", "tiger", "wolf", "otter", "heron", "raven", "hawk", "lynx",
+  ];
+  const pick = (arr: readonly string[]): string =>
+    arr[Math.floor(Math.random() * arr.length)] as string;
+  const n = Math.floor(Math.random() * 100).toString().padStart(2, "0");
+  return `${pick(adjs)}-${pick(nouns)}-${n}`;
+}
+
+/** Admin key: 16 hex chars (64-bit entropy from crypto.getRandomValues). */
+function randomAdminKey(): string {
+  const bytes = new Uint8Array(8);
+  crypto.getRandomValues(bytes);
+  return Array.from(bytes).map((b) => b.toString(16).padStart(2, "0")).join("");
+}
+
+/**
+ * Fill in any missing live-activity keys with freshly-generated
+ * randoms. Called on every fresh starter application (new draft,
+ * Reset, kind switch) and on every draft load so two authors never
+ * accidentally ship with the same admin key. Existing non-empty keys
+ * are preserved.
+ */
+export function ensureFreshKeys(kind: ActivityKind, value: unknown): unknown {
+  if (kind !== "straw-poll") return value;
+  if (!value || typeof value !== "object") return value;
+  const obj = value as Record<string, unknown>;
+  const live = (obj.live && typeof obj.live === "object"
+    ? obj.live
+    : {}) as Record<string, unknown>;
+  const joinKey =
+    typeof live.joinKey === "string" && live.joinKey.length > 0
+      ? live.joinKey
+      : randomJoinKey();
+  const adminKey =
+    typeof live.adminKey === "string" && live.adminKey.length > 0
+      ? live.adminKey
+      : randomAdminKey();
+  if (joinKey === live.joinKey && adminKey === live.adminKey) return value;
+  return {
+    ...obj,
+    live: { ...live, joinKey, adminKey },
+  };
+}

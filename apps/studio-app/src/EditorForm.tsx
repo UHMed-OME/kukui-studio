@@ -12,6 +12,7 @@ import { ObjectFieldTemplate } from "./templates/ObjectFieldTemplate.js";
 import { FieldTemplate } from "./templates/FieldTemplate.js";
 import { FileUploadWidget } from "./widgets/FileUploadWidget.js";
 import { NodeSelectWidget } from "./widgets/NodeSelectWidget.js";
+import { PasswordCopyWidget } from "./widgets/PasswordCopyWidget.js";
 
 // Lazy-loaded — Tiptap + StarterKit + linkify is ~90-120 KB gz and only
 // renders when the active activity has at least one `ui:widget: "html"`
@@ -108,6 +109,7 @@ export function EditorForm({
             html: RichTextWidget,
             file: FileUploadWidget,
             nodeSelect: NodeSelectWidget,
+            passwordCopy: PasswordCopyWidget,
           }}
           formContext={{ formData: value }}
         />

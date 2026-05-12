@@ -1175,25 +1175,33 @@ export const UI_SCHEMAS: Record<ActivityKind, Record<string, unknown>> = {
       changeVoteButton: f("'Change vote' button text"),
     },
     live: {
-      "ui:title": "Live session settings",
+      "ui:title": "Live session keys",
+      // The keys are top-level concerns (the author needs to copy them
+      // out to share with students / paste into an LMS launch URL), so
+      // keep the live section expanded. Per-field "advanced" treatment
+      // for signaling + relayUrls below — those are real opt-in
+      // overrides most authors never touch.
+      "ui:options": { advanced: false },
       "ui:help":
-        "Settings the running activity uses to join the right room and grant host privileges. Set the join + admin keys before sharing the activity; pick a signaling backend only if Nostr is blocked on your network.",
+        "Auto-generated when you start a new draft or hit Reset. Tap Show to read the values; tap Copy to put them on your clipboard. Replace if you want a specific room name.",
       "ui:order": ["joinKey", "adminKey", "signaling", "relayUrls"],
       joinKey: f(
         "Join key (public)",
-        "Any string — hashed to derive the room id. Everyone whose copy of this activity has the same join key lands in the same mesh. Safe to share with students.",
+        "Hashed to derive the room id. Same key in two copies of this activity = same mesh. Safe to share with students; this is what they need to enter the room.",
+        { "ui:widget": "passwordCopy", "ui:options": { copyHint: "Copy join key" } },
       ),
       adminKey: f(
         "Admin key (private)",
-        "Secret that unlocks host controls. The Studio 'Launch as instructor' button passes this in the URL; in the LMS, the instructor enters it via the lock icon in the activity. Keep this off the syllabus.",
+        "Secret that unlocks host controls. The 'Launch instructor view' button embeds this in the URL; in an LMS deploy, the instructor enters it via the lock icon in the activity. Keep off the syllabus.",
+        { "ui:widget": "passwordCopy", "ui:options": { copyHint: "Copy admin key" } },
       ),
       signaling: f(
-        "Signaling backend",
+        "Signaling backend (advanced)",
         "Nostr (default) is federated WebSocket signaling — usually permitted on edu networks. MQTT is the fallback if Nostr is blocked.",
       ),
       relayUrls: f(
-        "Pinned relay URLs (optional)",
-        "Optional list of relay/broker URLs to use instead of Trystero's defaults. Use this to pin the activity to relays you've verified work on your institution's network.",
+        "Pinned relay URLs (advanced, optional)",
+        "Optional list of relay/broker URLs to use instead of Trystero's defaults. Pin to relays you've verified work on your institution's network.",
       ),
     },
   },

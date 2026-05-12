@@ -1000,6 +1000,56 @@ button {
   font-family: var(--font-family-mono);
 }
 
+/* Password-style key field: hidden by default with Show + Copy
+ * affordances. Used for live-activity join + admin keys so they stay
+ * top-of-form (the instructor reads them out + copies to clipboard)
+ * without revealing the admin key to passers-by on a screen-share. */
+.ks-password-field {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 6px;
+  align-items: stretch;
+}
+
+.ks-password-field__input {
+  min-height: 44px;
+  padding: 8px 12px;
+  border: 2px solid var(--color-border, #dad2c6);
+  border-radius: var(--radius-sm, 6px);
+  background: var(--color-surface, #ffffff);
+  font: inherit;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  color: var(--color-text-primary, #1c1e20);
+  letter-spacing: 0.04em;
+}
+
+.ks-password-field__input:focus-visible {
+  outline: 2px solid var(--color-primary, #7b4324);
+  outline-offset: 1px;
+}
+
+.ks-password-field__btn {
+  min-height: 44px;
+  min-width: 64px;
+  padding: 0 12px;
+  background: var(--color-surface, #ffffff);
+  border: 1px solid var(--color-border, #dad2c6);
+  border-radius: var(--radius-sm, 6px);
+  font: inherit;
+  font-size: 13px;
+  color: var(--color-text-primary, #1c1e20);
+  cursor: pointer;
+}
+
+.ks-password-field__btn:hover:not(:disabled) {
+  background: var(--color-tip-bg, #f2f0e8);
+}
+
+.ks-password-field__btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
 /* Non-blocking banner shown above the last-valid preview when the form
  * has unresolved errors. Author keeps seeing the activity as it was
  * before the broken edit instead of going dark. */
