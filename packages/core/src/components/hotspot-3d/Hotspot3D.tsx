@@ -1,5 +1,5 @@
 import { Suspense, useEffect, useId, useMemo, useRef, useState } from "react";
-import { Canvas } from "@react-three/fiber";
+import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { OrbitControls, useGLTF } from "@react-three/drei";
 import * as THREE from "three";
 import type { Hotspot3DConfig } from "@kukui/schemas";
@@ -189,8 +189,59 @@ export function Hotspot3D({
             </button>
           ) : null}
         </div>
+
+        {config.model.attribution ? (
+          <ModelAttribution attribution={config.model.attribution} />
+        ) : null}
       </article>
     </div>
+  );
+}
+
+/**
+ * Creative-Commons-style credit line for the 3D model. Always rendered
+ * when `model.attribution` is present, regardless of license — most CC
+ * variants require attribution (CC0 doesn't but a courtesy credit
+ * remains good practice). License name + URL link out to the canonical
+ * license page if `licenseUrl` is set.
+ */
+function ModelAttribution({
+  attribution,
+}: {
+  attribution: NonNullable<Hotspot3DConfig["model"]["attribution"]>;
+}) {
+  const { author, authorUrl, sourceUrl, license, licenseUrl } = attribution;
+  return (
+    <footer className="kukui-h3d__attribution">
+      <span>Model by </span>
+      {authorUrl ? (
+        <a href={authorUrl} target="_blank" rel="noopener noreferrer">
+          {author}
+        </a>
+      ) : (
+        <span>{author}</span>
+      )}
+      {sourceUrl ? (
+        <>
+          <span> · </span>
+          <a href={sourceUrl} target="_blank" rel="noopener noreferrer">
+            View original
+          </a>
+        </>
+      ) : null}
+      {license ? (
+        <>
+          <span> · </span>
+          {licenseUrl ? (
+            <a href={licenseUrl} target="_blank" rel="noopener noreferrer">
+              {license}
+            </a>
+          ) : (
+            <span>{license}</span>
+          )}
+        </>
+      ) : null}
+    </footer>
   );
 }
 
@@ -230,32 +281,37 @@ function Hotspot3DScene({
   const showMarkers = config.behaviour?.showHotspotMarkers ?? true;
   const allowOrbit = config.behaviour?.allowOrbit ?? true;
   const cameraCfg = config.camera ?? {};
+  const modelScale = config.model.scale ?? 1;
   // The model is the only meaningful occluder. Pins raycast against it
   // each frame to decide whether to render the "behind" style.
   const modelRef = useRef<THREE.Object3D | null>(null);
 
-  // Initial camera position: prefer an explicit camera.initialPosition
-  // (added when the author clicks "Save current view" in the editor),
-  // otherwise fall back to the legacy "distance only" path.
+  // Camera: honor the author's pinned view if present; otherwise
+  // FrameToModel below auto-fits to the model's bounding box on first
+  // frame. Placeholder position keeps R3F happy until the fit lands.
+  const hasPinnedView = Boolean(cameraCfg.initialPosition);
   const initialPos: [number, number, number] = cameraCfg.initialPosition
     ? [
         cameraCfg.initialPosition.x,
         cameraCfg.initialPosition.y,
         cameraCfg.initialPosition.z,
       ]
-    : [0, 0.05, cameraCfg.initialDistance ?? 0.6];
+    : [0, 0, 1];
 
   return (
     <div className="kukui-h3d__canvas-wrap">
-      <Canvas camera={{ position: initialPos, fov: 35 }}>
+      <Canvas camera={{ position: initialPos, fov: 35, near: 0.001, far: 1000 }}>
         <ambientLight intensity={0.6} />
         <directionalLight position={[3, 5, 4]} intensity={1.0} />
         <directionalLight position={[-3, 2, -2]} intensity={0.4} />
         <Suspense fallback={null}>
-          <Model src={config.model.src} scale={config.model.scale ?? 1} sceneRef={modelRef} />
+          <Model src={config.model.src} scale={modelScale} sceneRef={modelRef} />
         </Suspense>
-        {showMarkers
-          ? config.hotspots.map((h, i) => {
+        {/* Pins live inside a scaled group so positions are interpreted
+            in model-local space — matches the editor's storage format. */}
+        {showMarkers ? (
+          <group scale={modelScale}>
+            {config.hotspots.map((h, i) => {
               const isSelected = selectedHotspotId === h.id;
               const kind = submitted
                 ? isSelected
@@ -281,8 +337,9 @@ function Hotspot3DScene({
                   ariaLabel={`Hotspot ${i + 1}: ${h.label ?? h.id}`}
                 />
               );
-            })
-          : null}
+            })}
+          </group>
+        ) : null}
         {allowOrbit ? (
           <OrbitControls
             enablePan={false}
@@ -293,11 +350,61 @@ function Hotspot3DScene({
             ]}
             minDistance={cameraCfg.minDistance}
             maxDistance={cameraCfg.maxDistance}
+            makeDefault
           />
+        ) : null}
+        {!hasPinnedView ? (
+          <FrameToModel modelRef={modelRef} />
         ) : null}
       </Canvas>
     </div>
   );
+}
+
+/**
+ * One-shot bounding-box fit. After the GLB loads, frames the camera
+ * around the model with comfortable headroom and points the orbit
+ * controls at its center. Subsequent frames noop so the learner can
+ * orbit freely after the initial fit.
+ */
+function FrameToModel({
+  modelRef,
+}: {
+  modelRef: React.MutableRefObject<THREE.Object3D | null>;
+}) {
+  const { camera, controls } = useThree() as {
+    camera: THREE.PerspectiveCamera;
+    controls: { target: THREE.Vector3; update?: () => void } | null;
+  };
+  const framedRef = useRef(false);
+  useFrame(() => {
+    if (framedRef.current) return;
+    const model = modelRef.current;
+    if (!model) return;
+    model.updateWorldMatrix(true, true);
+    const box = new THREE.Box3().setFromObject(model);
+    if (box.isEmpty()) return;
+    const size = box.getSize(new THREE.Vector3());
+    const center = box.getCenter(new THREE.Vector3());
+    const maxDim = Math.max(size.x, size.y, size.z);
+    if (maxDim === 0) return;
+    const fovRad = (camera.fov * Math.PI) / 180;
+    const distance = (maxDim / 2 / Math.tan(fovRad / 2)) * 1.6;
+    camera.position.set(
+      center.x + distance * 0.4,
+      center.y + distance * 0.25,
+      center.z + distance,
+    );
+    camera.near = distance / 100;
+    camera.far = distance * 100;
+    camera.updateProjectionMatrix();
+    if (controls?.target) {
+      controls.target.copy(center);
+      controls.update?.();
+    }
+    framedRef.current = true;
+  });
+  return null;
 }
 
 function Model({

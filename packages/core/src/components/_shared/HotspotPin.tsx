@@ -34,6 +34,7 @@ export function HotspotPin({
   kind = "default",
   disabled,
   onClick,
+  onPointerDown,
   occluders,
   ariaLabel,
 }: {
@@ -43,6 +44,13 @@ export function HotspotPin({
   kind?: HotspotPinKind;
   disabled?: boolean;
   onClick?: () => void;
+  /**
+   * Optional pointerdown — used by editor surfaces (Hotspot3DEditor)
+   * to start a drag-to-reposition gesture. The editor takes over from
+   * here with document-level pointermove + raycast. Activity runtime
+   * doesn't pass this; pins behave as plain buttons.
+   */
+  onPointerDown?: () => void;
   occluders?: ReadonlyArray<THREE.Object3D | null | undefined>;
   ariaLabel?: string;
 }) {
@@ -105,6 +113,14 @@ export function HotspotPin({
           onClick={(e) => {
             e.stopPropagation();
             if (!disabled) onClick?.();
+          }}
+          onPointerDown={(e) => {
+            if (disabled || !onPointerDown) return;
+            e.stopPropagation();
+            // Don't preventDefault — that would block the button's
+            // focus/click behavior the editor still wants for a simple
+            // click that doesn't move.
+            onPointerDown();
           }}
           className={[
             "kukui-pin",

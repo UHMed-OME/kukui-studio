@@ -1,9 +1,14 @@
-import { Suspense, useEffect, useMemo, useRef, useState } from "react";
+import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Canvas, useFrame, useThree, type ThreeEvent } from "@react-three/fiber";
 import { OrbitControls, useGLTF } from "@react-three/drei";
 import * as THREE from "three";
 import type { Hotspot3DConfig } from "@kukui/schemas";
 import { HotspotPin } from "@kukui/core/components/_shared/HotspotPin";
+import {
+  isSketchfabUrl,
+  lookupSketchfabModel,
+  type ModelAttribution,
+} from "./sketchfabAttribution.js";
 
 type Hotspot = Hotspot3DConfig["hotspots"][number];
 
@@ -21,16 +26,22 @@ const newHotspotId = (existing: string[]): string => {
 };
 
 /**
- * Visual editor for 3D Hotspot Identification — Sketchfab-style pins.
+ * Visual editor for 3D Hotspot Identification.
  *
- * Hotspots render as numbered HTML pins (`<HotspotPin>`) projected on
- * top of the canvas, never z-occluded by GLB geometry. Clicking a pin
- * selects it; clicking the model relocates the selected pin, otherwise
- * drops a new one. Click empty canvas to deselect.
+ * Hotspots render as numbered HTML pins inside a `<group scale>` that
+ * mirrors the model's transform, so positions stored in config are in
+ * **model-local space** — the same space the runtime uses. Clicking a
+ * pin selects it; clicking the model relocates the selected pin,
+ * otherwise drops a new one. Click empty canvas to deselect.
  *
- * "Save current view" snapshots the OrbitControls camera position +
- * target into `config.camera.initialPosition` / `config.camera.target`
- * so the runtime opens at the same view the author was framing.
+ * Pin drag: pointerdown on the selected pin starts a drag; pointer
+ * moves over the model raycast against `modelRef.current` and update
+ * the pin's position live. Pointerup commits.
+ *
+ * Camera framing: when the author hasn't pinned a view yet
+ * (`camera.initialPosition` unset), we auto-fit the camera to the
+ * model's bounding box on first load. "Save current view" snapshots
+ * the live OrbitControls state so the runtime opens identically.
  */
 export function Hotspot3DEditor({
   config,
@@ -40,24 +51,35 @@ export function Hotspot3DEditor({
   onChange: (next: Hotspot3DConfig) => void;
 }) {
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [draggingId, setDraggingId] = useState<string | null>(null);
   const hotspots = config.hotspots ?? [];
   const selectedHotspot = useMemo(
     () => hotspots.find((h) => h.id === selectedId) ?? null,
     [hotspots, selectedId],
   );
+  const modelScale = config.model.scale ?? 1;
 
-  const writeHotspots = (next: Hotspot[]) => {
-    onChange({ ...config, hotspots: next });
-  };
+  const writeHotspots = useCallback(
+    (next: Hotspot[]) => {
+      onChange({ ...config, hotspots: next });
+    },
+    [config, onChange],
+  );
 
-  // Refs shared between the Canvas-internal helper and the side-panel
-  // button. The probe writes the live camera state every frame; the
-  // Save-view button reads the latest values on click.
+  // Refs shared between Canvas-internal probes and the side-panel
+  // button. The probe writes the live camera + canvas + raycaster
+  // state every frame; outside-canvas handlers read on demand.
   const modelRef = useRef<THREE.Object3D | null>(null);
   const cameraStateRef = useRef<{
     position: THREE.Vector3;
     target: THREE.Vector3;
   }>({ position: new THREE.Vector3(), target: new THREE.Vector3() });
+  const canvasRef = useRef<HTMLDivElement>(null);
+  const r3fRef = useRef<{
+    camera: THREE.Camera | null;
+    gl: THREE.WebGLRenderer | null;
+  }>({ camera: null, gl: null });
+  const raycasterRef = useRef<THREE.Raycaster>(new THREE.Raycaster());
 
   const handleModelClick = (point: { x: number; y: number; z: number }) => {
     const rounded = r3(point);
@@ -78,6 +100,54 @@ export function Hotspot3DEditor({
     writeHotspots([...hotspots, next]);
     setSelectedId(id);
   };
+
+  /**
+   * Drag handler: while a pin is being dragged, document pointermove
+   * events raycast against the model and update the pin's position in
+   * real time. Document pointerup ends the drag.
+   *
+   * We can't use R3F's onPointerMove on the model because the HTML pin
+   * captures the pointer once mousedown lands on it — the pointer
+   * events stay on the document, not the canvas. So we replicate R3F's
+   * raycast manually using the cached camera + canvas refs.
+   */
+  useEffect(() => {
+    if (!draggingId) return;
+    const canvas = canvasRef.current?.querySelector("canvas") as HTMLCanvasElement | null;
+    const camera = r3fRef.current.camera;
+    const model = modelRef.current;
+    if (!canvas || !camera || !model) return;
+
+    const onPointerMove = (e: PointerEvent) => {
+      const rect = canvas.getBoundingClientRect();
+      const ndcX = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+      const ndcY = -(((e.clientY - rect.top) / rect.height) * 2 - 1);
+      raycasterRef.current.setFromCamera(new THREE.Vector2(ndcX, ndcY), camera);
+      const hits = raycasterRef.current.intersectObject(model, true);
+      if (hits.length === 0) return;
+      const hit = hits[0];
+      if (!hit) return;
+      const local = {
+        x: hit.point.x / modelScale,
+        y: hit.point.y / modelScale,
+        z: hit.point.z / modelScale,
+      };
+      const rounded = r3(local);
+      writeHotspots(
+        hotspots.map((h) => (h.id === draggingId ? { ...h, position: rounded } : h)),
+      );
+    };
+    const stop = () => setDraggingId(null);
+
+    window.addEventListener("pointermove", onPointerMove);
+    window.addEventListener("pointerup", stop);
+    window.addEventListener("pointercancel", stop);
+    return () => {
+      window.removeEventListener("pointermove", onPointerMove);
+      window.removeEventListener("pointerup", stop);
+      window.removeEventListener("pointercancel", stop);
+    };
+  }, [draggingId, hotspots, modelScale, writeHotspots]);
 
   const updateSelected = (patch: Partial<Hotspot>) => {
     if (!selectedHotspot) return;
@@ -106,19 +176,23 @@ export function Hotspot3DEditor({
   };
 
   const cameraCfg = config.camera ?? {};
+  const hasPinnedView = Boolean(cameraCfg.initialPosition);
+  // When the author has pinned a view, honor it exactly. Otherwise,
+  // mount the camera at a placeholder; the FrameToModel helper below
+  // re-fits to the model's bounding box once the GLB loads.
   const initialPos: [number, number, number] = cameraCfg.initialPosition
     ? [
         cameraCfg.initialPosition.x,
         cameraCfg.initialPosition.y,
         cameraCfg.initialPosition.z,
       ]
-    : [0, 0.05, cameraCfg.initialDistance ?? 0.6];
+    : [0, 0, 1];
 
   return (
     <div className="ks-h3d-editor">
-      <div className="ks-h3d-editor__viewport">
+      <div className="ks-h3d-editor__viewport" ref={canvasRef}>
         <Canvas
-          camera={{ position: initialPos, fov: 35 }}
+          camera={{ position: initialPos, fov: 35, near: 0.001, far: 1000 }}
           onPointerMissed={() => setSelectedId(null)}
         >
           <ambientLight intensity={0.6} />
@@ -127,29 +201,37 @@ export function Hotspot3DEditor({
           <Suspense fallback={null}>
             <ClickableModel
               src={config.model.src}
-              scale={config.model.scale ?? 1}
+              scale={modelScale}
               onPlace={handleModelClick}
               sceneRef={modelRef}
             />
           </Suspense>
-          {hotspots.map((h, i) => (
-            <HotspotPin
-              key={h.id}
-              position={h.position}
-              number={i + 1}
-              label={h.label ?? h.id}
-              kind={
-                selectedId === h.id
-                  ? "selected"
-                  : h.correct
-                    ? "correct"
-                    : "default"
-              }
-              onClick={() => setSelectedId(h.id)}
-              occluders={[modelRef.current]}
-              ariaLabel={`Hotspot ${i + 1}: ${h.label ?? h.id}`}
-            />
-          ))}
+          {/* Pins live inside the scaled group so positions are interpreted
+              in model-local space — same as the runtime. */}
+          <group scale={modelScale}>
+            {hotspots.map((h, i) => (
+              <HotspotPin
+                key={h.id}
+                position={h.position}
+                number={i + 1}
+                label={h.label ?? h.id}
+                kind={
+                  selectedId === h.id
+                    ? "selected"
+                    : h.correct
+                      ? "correct"
+                      : "default"
+                }
+                onClick={() => setSelectedId(h.id)}
+                onPointerDown={() => {
+                  setSelectedId(h.id);
+                  setDraggingId(h.id);
+                }}
+                occluders={[modelRef.current]}
+                ariaLabel={`Hotspot ${i + 1}: ${h.label ?? h.id}`}
+              />
+            ))}
+          </group>
           <OrbitControls
             enablePan={false}
             target={[
@@ -159,14 +241,21 @@ export function Hotspot3DEditor({
             ]}
             minDistance={cameraCfg.minDistance}
             maxDistance={cameraCfg.maxDistance}
+            makeDefault
           />
-          <CameraStateProbe stateRef={cameraStateRef} />
+          <CameraStateProbe
+            stateRef={cameraStateRef}
+            r3fRef={r3fRef}
+          />
+          {!hasPinnedView ? (
+            <FrameToModel modelRef={modelRef} scale={modelScale} />
+          ) : null}
         </Canvas>
         <p className="ks-h3d-editor__hint">
-          Drag to orbit ·{" "}
+          Drag to orbit.{" "}
           {selectedId
-            ? "Click anywhere on the model to MOVE the selected pin · Click empty space to deselect"
-            : "Click the model to drop a new pin · Click a pin to select it"}
+            ? "Drag the pin (or click the model) to move it. Click empty space to deselect."
+            : "Click the model to drop a pin. Click a pin to select it."}
         </p>
       </div>
 
@@ -212,6 +301,8 @@ export function Hotspot3DEditor({
             ))}
           </ul>
         )}
+
+        <SketchfabAttributionPanel config={config} onChange={onChange} />
 
         {selectedHotspot ? (
           <div className="ks-h3d-editor__fields">
@@ -263,11 +354,10 @@ export function Hotspot3DEditor({
 }
 
 /**
- * The GLB renders as a `<primitive>` whose pointer events fire on the
- * surface hit by the cursor. We capture that point in world space and
- * undo the global `scale` so the hotspot config stores positions in
- * the model's own coordinate space (matches the runtime's `scale`
- * passthrough).
+ * Click target on the GLB. `ev.point` is the world-space mesh hit;
+ * dividing by `scale` converts back to model-local space so the
+ * stored position is independent of any future scale changes the
+ * author makes.
  */
 function ClickableModel({
   src,
@@ -301,23 +391,216 @@ function ClickableModel({
 }
 
 /**
- * In-Canvas helper that copies the current camera position + controls
- * target into a parent-supplied ref every frame. The Save-view button
- * outside the canvas reads the ref on click — no events, no
- * prop-drilling state through the R3F boundary.
+ * One-shot camera framer. After the GLB loads, computes the model's
+ * world-space bounding box (after scale is applied) and positions the
+ * camera at a distance that frames it with comfortable headroom.
+ * Skips on every subsequent frame so the author can orbit freely.
+ */
+function FrameToModel({
+  modelRef,
+  scale,
+}: {
+  modelRef: React.MutableRefObject<THREE.Object3D | null>;
+  scale: number;
+}) {
+  const { camera, controls } = useThree() as {
+    camera: THREE.PerspectiveCamera;
+    controls: { target: THREE.Vector3; update?: () => void } | null;
+  };
+  const framedRef = useRef(false);
+  useFrame(() => {
+    if (framedRef.current) return;
+    const model = modelRef.current;
+    if (!model) return;
+    // Make sure transforms are up-to-date before measuring.
+    model.updateWorldMatrix(true, true);
+    const box = new THREE.Box3().setFromObject(model);
+    if (box.isEmpty()) return;
+    const size = box.getSize(new THREE.Vector3());
+    const center = box.getCenter(new THREE.Vector3());
+    const maxDim = Math.max(size.x, size.y, size.z);
+    if (maxDim === 0) return;
+    const fovRad = (camera.fov * Math.PI) / 180;
+    // Distance that fits the bounding sphere with ~1.5× padding so the
+    // model doesn't kiss the viewport edges.
+    const distance = (maxDim / 2 / Math.tan(fovRad / 2)) * 1.6;
+    camera.position.set(
+      center.x + distance * 0.4,
+      center.y + distance * 0.25,
+      center.z + distance,
+    );
+    camera.near = distance / 100;
+    camera.far = distance * 100;
+    camera.updateProjectionMatrix();
+    if (controls?.target) {
+      controls.target.copy(center);
+      controls.update?.();
+    }
+    framedRef.current = true;
+    // Silence unused-import lint at the file-level.
+    void scale;
+  });
+  return null;
+}
+
+/**
+ * Sketchfab source + attribution helper. Authors paste a Sketchfab
+ * model page URL; we fetch the public metadata, validate the license
+ * is Creative Commons, and stash the attribution in
+ * `config.model.attribution`. The runtime renders it in a footer
+ * line under the activity (handled in Hotspot3D.tsx).
+ *
+ * Does not fetch the .glb itself — Sketchfab gates downloads behind
+ * OAuth even for CC models. Authors download from Sketchfab manually
+ * and paste the resulting URL into `model.src` (or upload).
+ */
+function SketchfabAttributionPanel({
+  config,
+  onChange,
+}: {
+  config: Hotspot3DConfig;
+  onChange: (next: Hotspot3DConfig) => void;
+}) {
+  const attribution = config.model.attribution;
+  const [draftUrl, setDraftUrl] = useState("");
+  const [status, setStatus] = useState<
+    { kind: "idle" } | { kind: "loading" } | { kind: "error"; msg: string }
+  >({ kind: "idle" });
+
+  const writeAttribution = (attr: ModelAttribution | undefined) => {
+    onChange({
+      ...config,
+      model: { ...config.model, attribution: attr },
+    });
+  };
+
+  const onLookup = async () => {
+    const url = draftUrl.trim();
+    if (!url) return;
+    if (!isSketchfabUrl(url)) {
+      setStatus({
+        kind: "error",
+        msg: "Not a Sketchfab URL — paste the model's page URL.",
+      });
+      return;
+    }
+    setStatus({ kind: "loading" });
+    const res = await lookupSketchfabModel(url);
+    if (!res.ok) {
+      setStatus({ kind: "error", msg: res.error });
+      return;
+    }
+    writeAttribution(res.attribution);
+    setDraftUrl("");
+    setStatus({ kind: "idle" });
+  };
+
+  return (
+    <section className="ks-h3d-editor__attribution">
+      <h4>Model source &amp; attribution</h4>
+      {attribution ? (
+        <div className="ks-h3d-editor__attribution-current">
+          <p>
+            <strong>Model by </strong>
+            {attribution.authorUrl ? (
+              <a
+                href={attribution.authorUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                {attribution.author}
+              </a>
+            ) : (
+              attribution.author
+            )}
+            {attribution.license ? <> · {attribution.license}</> : null}
+          </p>
+          {attribution.sourceUrl ? (
+            <p>
+              <a
+                href={attribution.sourceUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                View original →
+              </a>
+            </p>
+          ) : null}
+          <button
+            type="button"
+            className="ks-h3d-editor__delete"
+            onClick={() => writeAttribution(undefined)}
+          >
+            Remove attribution
+          </button>
+        </div>
+      ) : (
+        <p className="ks-h3d-editor__attribution-hint">
+          Paste a Sketchfab model URL to auto-fill author + license.
+          Model must be Creative Commons; download the .glb from
+          Sketchfab manually and use its URL in the Model section above.
+        </p>
+      )}
+      <label className="ks-h3d-editor__field">
+        <span>Sketchfab URL</span>
+        <input
+          type="url"
+          value={draftUrl}
+          placeholder="https://sketchfab.com/3d-models/…"
+          onChange={(e) => {
+            setDraftUrl(e.target.value);
+            if (status.kind === "error") setStatus({ kind: "idle" });
+          }}
+        />
+      </label>
+      <button
+        type="button"
+        className="ks-h3d-editor__save-view"
+        onClick={onLookup}
+        disabled={status.kind === "loading" || !draftUrl.trim()}
+      >
+        {status.kind === "loading" ? "Fetching…" : "Fetch attribution"}
+      </button>
+      {status.kind === "error" ? (
+        <p className="ks-h3d-editor__attribution-error" role="alert">
+          {status.msg}
+        </p>
+      ) : null}
+    </section>
+  );
+}
+
+/**
+ * In-Canvas helper that copies the live camera position + controls
+ * target into a parent-supplied ref every frame, and exposes the
+ * camera + renderer for the parent's document-level drag handler.
  */
 function CameraStateProbe({
   stateRef,
+  r3fRef,
 }: {
   stateRef: React.MutableRefObject<{
     position: THREE.Vector3;
     target: THREE.Vector3;
   }>;
+  r3fRef: React.MutableRefObject<{
+    camera: THREE.Camera | null;
+    gl: THREE.WebGLRenderer | null;
+  }>;
 }) {
-  const { camera, controls } = useThree() as {
+  const { camera, controls, gl } = useThree() as {
     camera: THREE.Camera;
     controls: { target?: THREE.Vector3 } | null;
+    gl: THREE.WebGLRenderer;
   };
+  useEffect(() => {
+    r3fRef.current.camera = camera;
+    r3fRef.current.gl = gl;
+    return () => {
+      r3fRef.current.camera = null;
+      r3fRef.current.gl = null;
+    };
+  }, [camera, gl, r3fRef]);
   useFrame(() => {
     stateRef.current.position.copy(camera.position);
     if (controls?.target) {

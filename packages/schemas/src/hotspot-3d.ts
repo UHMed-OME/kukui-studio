@@ -18,6 +18,22 @@ export const Hotspot3DConfigSchema = z
       .object({
         src: SAFE_MEDIA_URL,
         scale: z.number().positive().optional(),
+        /**
+         * Creative Commons / Sketchfab attribution. Rendered in the
+         * activity footer when present. Authors who paste a Sketchfab
+         * URL into the editor's "Source URL" field get this auto-
+         * populated from the Sketchfab public API.
+         */
+        attribution: z
+          .object({
+            author: z.string().min(1),
+            authorUrl: z.string().url().optional(),
+            sourceUrl: z.string().url().optional(),
+            license: z.string().min(1).optional(),
+            licenseUrl: z.string().url().optional(),
+          })
+          .strict()
+          .optional(),
       })
       .strict(),
     camera: z

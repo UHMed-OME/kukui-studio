@@ -4695,15 +4695,19 @@ html[data-theme="glass"] .kukui-studio-footer {
 .ks-h3d-editor__hint {
   position: absolute;
   bottom: 8px;
-  left: 50%;
-  transform: translateX(-50%);
-  margin: 0;
-  padding: 4px 10px;
-  background: rgb(28 30 32 / 0.78);
+  /* Inset from both edges instead of centering on a nowrap line —
+     the centered + nowrap combo clipped the hint on narrow viewports. */
+  left: 12px;
+  right: 12px;
+  margin: 0 auto;
+  max-width: max-content;
+  padding: 6px 12px;
+  background: rgb(28 30 32 / 0.82);
   color: #ffffff;
   font-size: var(--font-size-meta);
+  line-height: 1.35;
   border-radius: var(--radius-sm);
-  white-space: nowrap;
+  text-align: center;
   pointer-events: none;
 }
 
@@ -4870,6 +4874,60 @@ html[data-theme="glass"] .kukui-studio-footer {
 
 .ks-h3d-editor__delete:hover {
   background: rgb(195 65 50 / 0.08);
+}
+
+.ks-h3d-editor__attribution {
+  margin-top: var(--spacing-lg);
+  padding-top: var(--spacing-md);
+  border-top: 1px solid color-mix(in oklab, var(--color-border) 50%, transparent);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.ks-h3d-editor__attribution h4 {
+  margin: 0;
+  font-family: var(--font-family-display);
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--color-text-primary);
+  letter-spacing: -0.005em;
+}
+
+.ks-h3d-editor__attribution-current {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: var(--spacing-sm) var(--spacing-md);
+  background: var(--color-tip-bg);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-meta);
+}
+
+.ks-h3d-editor__attribution-current p {
+  margin: 0;
+}
+
+.ks-h3d-editor__attribution-current a {
+  color: var(--color-primary);
+  text-decoration: none;
+}
+
+.ks-h3d-editor__attribution-current a:hover {
+  text-decoration: underline;
+}
+
+.ks-h3d-editor__attribution-hint {
+  margin: 0;
+  font-size: var(--font-size-meta);
+  color: var(--color-text-muted);
+  line-height: 1.5;
+}
+
+.ks-h3d-editor__attribution-error {
+  margin: 0;
+  font-size: var(--font-size-meta);
+  color: var(--color-error);
 }
 
 /* ---------- Scoring tab ---------------------------------------------- */
