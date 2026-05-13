@@ -49,7 +49,7 @@ html[data-color-scheme="light"] .kukui-landing {
 .kukui-landing__brand-stack {
   display: inline-flex;
   flex-direction: column;
-  align-items: flex-start;
+  align-items: center;
   gap: 2px;
   line-height: 1;
 }
@@ -621,9 +621,11 @@ html[data-color-scheme="light"] .kukui-landing {
 
 
 .kukui-landing__footer-pronounce {
+  margin: 0;
   font-style: italic;
   font-family: var(--font-family-display);
   font-size: 13px;
+  color: var(--color-text-muted);
 }
 
 @media (max-width: 760px) {

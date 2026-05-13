@@ -473,10 +473,10 @@ button {
   align-items: center;
   justify-content: space-between;
   gap: var(--spacing-lg);
-  /* Left padding matches the sidebar's content padding so the brand
-     block aligns visually with the sidebar's content column below. */
-  padding: var(--spacing-lg) var(--spacing-2xl) var(--spacing-lg)
-    var(--spacing-md);
+  /* Symmetric padding so the wordmark sits in the same screen position
+     as the landing top nav — navigating between Landing and Studio
+     keeps the brand visually stationary. */
+  padding: var(--spacing-lg) var(--spacing-2xl);
   border-bottom: 1px solid var(--color-border);
   background: var(--color-surface);
 }
@@ -730,6 +730,24 @@ button {
   background: transparent;
   color: var(--color-text-secondary);
   border: 1px solid transparent;
+}
+
+/* Icon-only square button (undo/redo). Matches secondary visuals
+   but drops the label-sized padding so the icon sits tight. */
+.kukui-studio-btn--icon {
+  background: transparent;
+  color: var(--color-text-secondary);
+  border: 1px solid transparent;
+  padding: 6px;
+  min-width: 38px;
+}
+.kukui-studio-btn--icon:hover:not(:disabled) {
+  background: color-mix(in oklab, var(--color-primary) 8%, transparent);
+  color: var(--color-primary);
+}
+.kukui-studio-btn--icon:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
 }
 
 .kukui-studio-btn--ghost:hover {

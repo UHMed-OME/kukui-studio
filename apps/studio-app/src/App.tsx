@@ -33,8 +33,10 @@ import {
   KukuiGlyphIcon,
   PencilIcon,
   PlayIcon,
+  RedoIcon,
   SaveIcon,
   SearchIcon,
+  UndoIcon,
   UploadIcon,
   XIcon,
 } from "./icons.js";
@@ -44,7 +46,8 @@ import { clearDraft, debouncedSaver, loadDraft, saveDraft } from "./drafts.js";
 import { downloadScormZip } from "./scormDownload.js";
 import { importFromFile } from "./scormImport.js";
 import { slug } from "./util/slug.js";
-import { useResolvedColorScheme } from "./pages/shared/useColorScheme.js";
+import { BrandWordmark } from "./pages/shared/BrandWordmark.js";
+import { useHistory } from "./hooks/useHistory.js";
 
 type Tab = "form" | "scoring" | "json" | "ai";
 
@@ -133,7 +136,6 @@ const STUDIO_PLANNED: readonly ActivityKind[] = PLANNED_ACTIVITY_KINDS;
 const STUDIO_ALL: readonly ActivityKind[] = [...STUDIO_AVAILABLE, ...STUDIO_PLANNED];
 
 export function App() {
-  const colorScheme = useResolvedColorScheme();
   const [kind, setKind] = useState<ActivityKind>(() => {
     const params = new URLSearchParams(window.location.search);
     const fromUrl = params.get("activity");
@@ -145,9 +147,11 @@ export function App() {
     // that lets a first-time author start typing immediately.
     return "flashcards";
   });
-  const [value, setValue] = useState<unknown>(() =>
-    ensureFreshKeys(kind, loadDraft(kind) ?? STARTERS[kind]),
+  const history = useHistory<unknown>(
+    () => ensureFreshKeys(kind, loadDraft(kind) ?? STARTERS[kind]),
   );
+  const value = history.value;
+  const setValue = history.setValue;
   // Whether `value` has diverged from STARTERS[kind] for the current
   // activity. Flipped true on any form/json/preview/AI edit, on draft
   // hydration when the draft differs, and on import. Resets to false
@@ -207,11 +211,14 @@ export function App() {
 
   // Hydrate from draft when kind changes. Dirty-state tracks whether the
   // restored value differs from the starter — a stored draft is by
-  // definition dirty (otherwise it wouldn't have been saved).
+  // definition dirty (otherwise it wouldn't have been saved). Resets the
+  // undo history because undoing past a kind switch would produce config
+  // shaped for the wrong activity.
   useEffect(() => {
     const draft = loadDraft(kind);
-    setValue(ensureFreshKeys(kind, draft ?? STARTERS[kind]));
+    history.reset(ensureFreshKeys(kind, draft ?? STARTERS[kind]));
     setIsDirty(draft != null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [kind]);
 
   // Debounced auto-save per kind.
@@ -281,6 +288,35 @@ export function App() {
     return () => clearTimeout(t);
   }, [asyncStatus]);
 
+  // Cmd/Ctrl+Z to undo, Cmd/Ctrl+Shift+Z (or Ctrl+Y) to redo. Skipped
+  // when focus is inside a text input or contenteditable so the
+  // browser's native text undo still works while typing labels, JSON,
+  // prompts, etc. The Studio's "global" undo therefore only fires when
+  // the user is interacting with the canvas / form chrome, which is
+  // when they actually want config-level undo.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const mod = e.metaKey || e.ctrlKey;
+      if (!mod) return;
+      const target = e.target as HTMLElement | null;
+      const isEditable =
+        target instanceof HTMLInputElement ||
+        target instanceof HTMLTextAreaElement ||
+        target?.isContentEditable === true;
+      if (isEditable) return;
+      const key = e.key.toLowerCase();
+      if (key === "z" && !e.shiftKey) {
+        e.preventDefault();
+        history.undo();
+      } else if ((key === "z" && e.shiftKey) || key === "y") {
+        e.preventDefault();
+        history.redo();
+      }
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [history]);
+
   const downloadJson = () => {
     if (!validation.success) {
       flash("Fix the highlighted validation errors first.");
@@ -317,7 +353,7 @@ export function App() {
 
   const confirmResetNow = () => {
     clearDraft(kind);
-    setValue(ensureFreshKeys(kind, STARTERS[kind]));
+    history.reset(ensureFreshKeys(kind, STARTERS[kind]));
     setIsDirty(false);
     setConfirmReset(false);
     flash("Reset.");
@@ -374,7 +410,7 @@ export function App() {
       return;
     }
     setKind(result.kind);
-    setValue(migrateToScoring(result.config, result.kind));
+    history.reset(migrateToScoring(result.config, result.kind));
     setIsDirty(true);
     setAsyncStatus({
       kind: "success",
@@ -422,37 +458,7 @@ export function App() {
   return (
     <div className="kukui-studio-shell">
       <header className="kukui-studio-header">
-        <Link
-          to="/"
-          className="kukui-studio-brand"
-          aria-label="Kukui Studio — home"
-        >
-          <img
-            className="kukui-studio-logo"
-            src={`${import.meta.env.BASE_URL}${
-              colorScheme === "dark" ? "kukui-logo-dark.svg" : "kukui-logo.svg"
-            }`}
-            alt=""
-            aria-hidden="true"
-          />
-          <div className="kukui-studio-brand-text">
-            <h1 className="kukui-studio-title">
-              <span className="kukui-studio-title__word">Kukui</span>
-              <span className="kukui-studio-title__meta">
-                <span className="kukui-studio-title__sub">Studio</span>
-                <span
-                  className="kukui-studio-title__pronunciation"
-                  aria-label="pronounced koo-KOO-ee"
-                >
-                  /koo-KOO-ee/
-                </span>
-                <span className="kukui-studio-title__tagline">
-                  Interactive learning activities for Lamakū and other LMS.
-                </span>
-              </span>
-            </h1>
-          </div>
-        </Link>
+        <BrandWordmark />
         <div className="kukui-studio-toolbar">
           <input
             ref={fileInputRef}
@@ -462,6 +468,26 @@ export function App() {
             style={{ display: "none" }}
             aria-hidden="true"
           />
+          <button
+            type="button"
+            onClick={history.undo}
+            disabled={!history.canUndo}
+            className="kukui-studio-btn kukui-studio-btn--icon"
+            aria-label="Undo"
+            title="Undo (⌘Z)"
+          >
+            <UndoIcon />
+          </button>
+          <button
+            type="button"
+            onClick={history.redo}
+            disabled={!history.canRedo}
+            className="kukui-studio-btn kukui-studio-btn--icon"
+            aria-label="Redo"
+            title="Redo (⇧⌘Z)"
+          >
+            <RedoIcon />
+          </button>
           <button
             type="button"
             onClick={sessionSave}

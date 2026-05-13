@@ -179,8 +179,14 @@ export function Landing() {
         <div className="kukui-landing__footer-top">
           <div className="kukui-landing__footer-brand">
             <BrandWordmark />
+            <p
+              className="kukui-landing__footer-pronounce"
+              aria-label="pronounced koo-KOO-ee"
+            >
+              <em>Kukui</em> · /koo-KOO-ee/
+            </p>
             <p className="kukui-landing__footer-blurb">
-              Open-source interactive learning activities for any LMS.
+              Open interactive learning activities for any LMS.
             </p>
           </div>
 
@@ -250,9 +256,6 @@ export function Landing() {
 
         <div className="kukui-landing__footer-bottom">
           <p>© Kukui Studio · MIT-licensed open source</p>
-          <p className="kukui-landing__footer-pronounce">
-            <em>Kukui</em> · /koo-KOO-ee/
-          </p>
         </div>
       </footer>
     </div>

@@ -28,6 +28,24 @@ export function PencilIcon(props: SVGProps<SVGSVGElement>) {
   );
 }
 
+export function UndoIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg {...baseProps} {...props}>
+      <path d="M3 7v6h6" />
+      <path d="M21 17a9 9 0 0 0-15.5-6.3L3 13" />
+    </svg>
+  );
+}
+
+export function RedoIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg {...baseProps} {...props}>
+      <path d="M21 7v6h-6" />
+      <path d="M3 17a9 9 0 0 1 15.5-6.3L21 13" />
+    </svg>
+  );
+}
+
 export function PlayIcon(props: SVGProps<SVGSVGElement>) {
   return (
     <svg {...baseProps} {...props}>
