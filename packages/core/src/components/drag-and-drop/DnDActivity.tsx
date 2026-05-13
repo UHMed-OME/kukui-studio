@@ -1,10 +1,20 @@
 import { useId, useMemo, type CSSProperties, type ReactNode } from "react";
 import type { DragAndDropConfig } from "@kukui/schemas";
 import { resolveScoring } from "../../scoring.js";
+import { SafeHtml } from "../../safe-html.js";
 import { Chip } from "./Chip.js";
 import { Zone } from "./Zone.js";
 import type { State } from "./state.js";
 import { isCorrect } from "./state.js";
+
+/**
+ * Fallback prompt when an author hasn't supplied one. Picked to match
+ * the actual activity flow: drag the labels, hit Check. The phrasing
+ * leans on a verb ("Drag") and an end-condition ("then Check") so the
+ * learner has a clear pair of actions without scanning the toolbar.
+ */
+const DEFAULT_PROMPT =
+  "Drag each label to its matching drop zone, then tap Check to score your answers.";
 
 /**
  * Pure presentational layer. Reads `state` and `config`, renders board +
@@ -46,6 +56,7 @@ export function DnDActivity({
   announcerSlot,
 }: DnDActivityProps) {
   const layoutId = useId();
+  const promptId = useId();
   const trayDomId = `${layoutId}-tray`;
 
   const draggablesById = useMemo(
@@ -100,10 +111,20 @@ export function DnDActivity({
         .filter(Boolean)
         .join(" ")}
     >
-      <article className="kukui-dnd__card" aria-labelledby={headingId}>
+      <article
+        className="kukui-dnd__card"
+        aria-labelledby={headingId}
+        aria-describedby={promptId}
+      >
         <HeadingTag id={headingId} className="kukui-dnd__title">
           {config.title}
         </HeadingTag>
+        <div id={promptId}>
+          <SafeHtml
+            html={config.prompt && config.prompt.trim().length > 0 ? config.prompt : DEFAULT_PROMPT}
+            className="kukui-dnd__prompt"
+          />
+        </div>
         {announcerSlot}
         <div className="kukui-dnd__layout">
           <div

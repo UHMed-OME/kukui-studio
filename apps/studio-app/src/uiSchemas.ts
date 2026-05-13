@@ -170,9 +170,14 @@ export const UI_SCHEMAS: Record<ActivityKind, Record<string, unknown>> = {
 
   "drag-and-drop": {
     ...COMMON,
-    "ui:order": ["title", "background", "draggables", "dropZones", "behaviour", "ui", "*"],
+    "ui:order": ["title", "prompt", "background", "draggables", "dropZones", "behaviour", "ui", "*"],
     title: TITLE,
     author: AUTHOR,
+    prompt: f(
+      "Instructions",
+      "One-line direction shown below the title — what the learner should do. Leave blank to use the built-in default (\"Drag each label to its matching drop zone, then tap Check…\").",
+      { "ui:widget": "html", "ui:options": { rows: 2 } },
+    ),
     background: {
       "ui:title": "Background image (optional)",
       "ui:help":

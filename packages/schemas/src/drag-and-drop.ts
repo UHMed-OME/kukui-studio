@@ -20,6 +20,11 @@ export const DragAndDropConfigSchema = z
     version: z.string().regex(versionRe),
     title: z.string().min(1),
     author: z.string().optional(),
+    // Short instruction rendered below the title, e.g.
+    // "Drag each label to its matching zone, then check your work."
+    // Optional so older fixtures keep validating; the runtime falls
+    // back to a sensible default when missing.
+    prompt: z.string().optional(),
     // Optional background image. When omitted, the activity renders a
     // plain stage (16:10 aspect-ratio neutral canvas) so authors can
     // build "text table" / labelled-zone puzzles where drop zones do

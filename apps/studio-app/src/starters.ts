@@ -51,6 +51,7 @@ export const STARTERS: Record<ActivityKind, unknown> = {
   "drag-and-drop": {
     version: "1.0",
     title: "Drag and Drop",
+    prompt: "Drag each label to its matching drop zone, then tap Check to score your answers.",
     background: {
       src: PLACEHOLDER_IMAGE,
       alt: "Replace this placeholder with a description of your background image",
