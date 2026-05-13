@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import type { AISettings } from "../ai/settings.js";
 import { AIPane } from "./panes/AIPane.js";
 import { AboutPane } from "./panes/AboutPane.js";
+import { AppearancePane } from "./panes/AppearancePane.js";
 import "./SettingsDialog.css";
 
 /**
@@ -10,9 +11,10 @@ import "./SettingsDialog.css";
  * "Privacy & data" link routes to the standalone `/privacy` page
  * instead.
  */
-export type SettingsPane = "ai" | "about";
+export type SettingsPane = "appearance" | "ai" | "about";
 
 const PANES: Array<{ id: SettingsPane; label: string }> = [
+  { id: "appearance", label: "Appearance" },
   { id: "ai", label: "AI Assist" },
   { id: "about", label: "About" },
 ];
@@ -98,6 +100,7 @@ export function SettingsDialog({
             ))}
           </nav>
           <div className="ks-settings-dialog__pane">
+            {pane === "appearance" ? <AppearancePane /> : null}
             {pane === "ai" ? <AIPane onSaved={onAISaved} /> : null}
             {pane === "about" ? <AboutPane /> : null}
           </div>

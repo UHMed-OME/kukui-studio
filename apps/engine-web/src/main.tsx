@@ -1,8 +1,11 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { ActivityHost, type ActivityKind } from "@kukui/core/activity-host";
+import { initColorScheme } from "@kukui/core";
 import { safeConfigParam } from "./safeConfigParam.js";
 import "./styles.css";
+
+initColorScheme();
 
 const root = document.getElementById("root");
 if (!root) throw new Error("#root not found");

@@ -35,14 +35,21 @@
 }
 
 @theme {
-  --color-bg: #fcf8f2;
+  /* Stone palette — neutral off-white surfaces with kukui brown reserved
+     for accents. Replaced 2026-05-11 from the original cream-and-brown
+     palette: editor chrome felt too warm for long authoring sessions, and
+     the tinted-card pattern fought the content. Brown still appears on:
+     selected option borders, primary text accents (threshold readout),
+     and the gradebook status pill. Dark-mode variants override below via
+     html[data-color-scheme="dark"]. */
+  --color-bg: #fafaf9;
   --color-surface: #ffffff;
-  --color-surface-alt: #faf6ee;
-  --color-text-primary: #1c1e20;
-  --color-text-secondary: #606069;
-  --color-text-muted: #6e6e76;
-  --color-border: #dad2c6;
-  --color-border-hover: #bbae9a;
+  --color-surface-alt: #f5f5f4;
+  --color-text-primary: #1c1917;
+  --color-text-secondary: #57534e;
+  --color-text-muted: #68625d;
+  --color-border: #e7e5e4;
+  --color-border-hover: #d6d3d1;
   --color-primary: #7b4324;
   --color-primary-hover: #9b5830;
   --color-primary-soft: rgb(123 67 36 / 0.07);
@@ -50,7 +57,7 @@
   --color-success-soft: rgb(46 110 65 / 0.1);
   --color-error: #c34132;
   --color-error-soft: rgb(195 65 50 / 0.08);
-  --color-tip-bg: #f2f0e8;
+  --color-tip-bg: #f5f5f4;
   --color-canvas-3d: #0b0b10;
 
   --spacing-xs: 4px;
@@ -92,6 +99,51 @@
   --bloom-analyze: #7a5680; /* dusty plum */
   --bloom-evaluate: #2e6e41; /* kalo (matches --color-success) */
   --bloom-create: #7b4324; /* kukui (matches --color-primary) */
+}
+
+/* Dark mode — selected by `html[data-color-scheme="dark"]`, set in JS by
+   colorScheme.ts based on the user's stored preference (system / light /
+   dark) resolved against prefers-color-scheme. Surfaces are stone-800/900;
+   the brown, kalo green, and coral red are lightened so they clear AA on
+   dark surfaces. Bloom hues get a parallel set of lighter values so the
+   indicator dots stay legible. */
+html[data-color-scheme="dark"] {
+  --color-bg: #1c1917;
+  --color-surface: #292524;
+  --color-surface-alt: #1c1917;
+  --color-text-primary: #fafaf9;
+  --color-text-secondary: #d6d3d1;
+  --color-text-muted: #a8a29e;
+  --color-border: #44403c;
+  --color-border-hover: #57534e;
+  --color-primary: #d39872;
+  --color-primary-hover: #e6b693;
+  --color-primary-soft: rgb(211 152 114 / 0.14);
+  --color-success: #86c79a;
+  --color-success-soft: rgb(134 199 154 / 0.16);
+  --color-error: #ed9183;
+  --color-error-soft: rgb(237 145 131 / 0.14);
+  --color-tip-bg: #292524;
+  --color-canvas-3d: #000000;
+
+  --bloom-remember: #e0a64a;
+  --bloom-understand: #8fb87b;
+  --bloom-apply: #d68559;
+  --bloom-analyze: #ad8eb3;
+  --bloom-evaluate: #86c79a;
+  --bloom-create: #d39872;
+}
+
+/* Status-pill backgrounds in dark mode. The light-mode fallbacks
+   (#d8ecdc, #f5d6d2) hard-code light tints, so we re-declare them as
+   stronger soft mixes that pass AA against the lightened pill text. */
+html[data-color-scheme="dark"] .ks-scoring-status--passed {
+  background: rgb(134 199 154 / 0.18);
+  color: var(--color-success);
+}
+html[data-color-scheme="dark"] .ks-scoring-status--failed {
+  background: rgb(237 145 131 / 0.18);
+  color: var(--color-error);
 }
 
 /* Bloom-level themed surfaces. Anything inside a [data-bloom=…] subtree

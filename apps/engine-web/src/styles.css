@@ -1,14 +1,16 @@
 @import "tailwindcss";
 
 @theme {
-  /* Color tokens — mirror docs/design-system.md */
-  --color-bg: #fcf8f2;
+  /* Stone palette — neutral off-white; mirrors studio-app and
+     docs/design-system.md. Updated 2026-05-11 from the original cream
+     palette. Dark variants below. */
+  --color-bg: #fafaf9;
   --color-surface: #ffffff;
-  --color-text-primary: #1c1e20;
-  --color-text-secondary: #606069;
-  --color-text-muted: #6e6e76;
-  --color-border: #dad2c6;
-  --color-border-hover: #bbae9a;
+  --color-text-primary: #1c1917;
+  --color-text-secondary: #57534e;
+  --color-text-muted: #68625d;
+  --color-border: #e7e5e4;
+  --color-border-hover: #d6d3d1;
   --color-primary: #7b4324;
   --color-primary-hover: #9b5830;
   --color-primary-soft: rgb(123 67 36 / 0.07);
@@ -16,7 +18,7 @@
   --color-success-soft: rgb(46 110 65 / 0.1);
   --color-error: #c34132;
   --color-error-soft: rgb(195 65 50 / 0.08);
-  --color-tip-bg: #f2f0e8;
+  --color-tip-bg: #f5f5f4;
   --color-canvas-3d: #0b0b10;
 
   /* Spacing scale */
@@ -54,6 +56,30 @@
      to keep the typographic intent. */
   --font-family-display: "Iowan Old Style", "Apple Garamond", Baskerville,
     "Times New Roman", "Source Serif Pro", serif;
+}
+
+/* Dark mode — engine bundles ship inside SCORM and run in the LMS's
+   iframe, so we can't show a settings UI here. Instead, follow the host
+   system's prefers-color-scheme automatically. Studio's localStorage
+   preference doesn't reach the engine (different origin once unzipped),
+   which is the right behavior: each context picks its own scheme. */
+html[data-color-scheme="dark"] {
+  --color-bg: #1c1917;
+  --color-surface: #292524;
+  --color-text-primary: #fafaf9;
+  --color-text-secondary: #d6d3d1;
+  --color-text-muted: #a8a29e;
+  --color-border: #44403c;
+  --color-border-hover: #57534e;
+  --color-primary: #d39872;
+  --color-primary-hover: #e6b693;
+  --color-primary-soft: rgb(211 152 114 / 0.14);
+  --color-success: #86c79a;
+  --color-success-soft: rgb(134 199 154 / 0.16);
+  --color-error: #ed9183;
+  --color-error-soft: rgb(237 145 131 / 0.14);
+  --color-tip-bg: #292524;
+  --color-canvas-3d: #000000;
 }
 
 /*

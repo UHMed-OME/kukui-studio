@@ -113,6 +113,68 @@
   gap: 6px;
 }
 
+.ks-appearance-options {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  border: 0;
+  padding: 0;
+  margin: 0;
+}
+
+.ks-appearance-option {
+  display: grid;
+  grid-template-columns: 22px 1fr;
+  gap: var(--spacing-sm);
+  align-items: start;
+  padding: var(--spacing-sm) var(--spacing-md);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: background-color 120ms ease, border-color 120ms ease;
+}
+
+.ks-appearance-option:hover {
+  border-color: var(--color-border-hover);
+}
+
+.ks-appearance-option.is-active {
+  background: var(--color-primary-soft);
+  border-color: var(--color-primary);
+}
+
+.ks-appearance-option input {
+  margin-top: 4px;
+}
+
+.ks-appearance-option__body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.ks-appearance-option__body strong {
+  color: var(--color-text-primary);
+  font-size: 14px;
+}
+
+.ks-appearance-option__desc {
+  color: var(--color-text-secondary);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.ks-appearance-resolved {
+  margin: var(--spacing-md) 0 0;
+  font-size: 13px;
+  color: var(--color-text-secondary);
+}
+
+.ks-appearance-resolved strong {
+  color: var(--color-text-primary);
+  text-transform: capitalize;
+}
+
 @media (max-width: 640px) {
   .ks-settings-dialog__body {
     grid-template-columns: 1fr;

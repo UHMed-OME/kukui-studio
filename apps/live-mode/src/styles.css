@@ -1,13 +1,15 @@
 @import "tailwindcss";
 
 @theme {
-  --color-bg: #fcf8f2;
+  /* Stone palette — mirrors studio-app + engine-web. Updated 2026-05-11
+     from the original cream palette; dark variants below. */
+  --color-bg: #fafaf9;
   --color-surface: #ffffff;
-  --color-surface-alt: #faf6ee;
-  --color-text-primary: #1c1e20;
-  --color-text-secondary: #606069;
-  --color-border: #dad2c6;
-  --color-border-hover: #bbae9a;
+  --color-surface-alt: #f5f5f4;
+  --color-text-primary: #1c1917;
+  --color-text-secondary: #57534e;
+  --color-border: #e7e5e4;
+  --color-border-hover: #d6d3d1;
   --color-primary: #7b4324;
   --color-primary-hover: #9b5830;
   --color-primary-soft: rgb(123 67 36 / 0.07);
@@ -15,7 +17,7 @@
   --color-success-soft: rgb(46 110 65 / 0.1);
   --color-error: #c34132;
   --color-error-soft: rgb(195 65 50 / 0.08);
-  --color-tip-bg: #f2f0e8;
+  --color-tip-bg: #f5f5f4;
 
   --spacing-xs: 4px;
   --spacing-sm: 8px;
@@ -36,6 +38,27 @@
 
   --font-family-sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Helvetica, Arial,
     sans-serif;
+}
+
+/* Dark mode — Live runs in a learner's browser tab via the join code;
+   follow the host OS theme by default. Operators landing on the
+   classroom URL also pick up dark automatically. */
+html[data-color-scheme="dark"] {
+  --color-bg: #1c1917;
+  --color-surface: #292524;
+  --color-surface-alt: #1c1917;
+  --color-text-primary: #fafaf9;
+  --color-text-secondary: #d6d3d1;
+  --color-border: #44403c;
+  --color-border-hover: #57534e;
+  --color-primary: #d39872;
+  --color-primary-hover: #e6b693;
+  --color-primary-soft: rgb(211 152 114 / 0.14);
+  --color-success: #86c79a;
+  --color-success-soft: rgb(134 199 154 / 0.16);
+  --color-error: #ed9183;
+  --color-error-soft: rgb(237 145 131 / 0.14);
+  --color-tip-bg: #292524;
 }
 
 html,

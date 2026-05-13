@@ -1,7 +1,7 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
-import { initTheme } from "@kukui/core";
+import { initColorScheme, initTheme } from "@kukui/core";
 import { App } from "./App.js";
 import { Landing } from "./pages/Landing.js";
 import { DocsLayout } from "./pages/docs/DocsLayout.js";
@@ -14,6 +14,7 @@ import { ChunkErrorBoundary, reloadBypassingCache } from "./pages/shared/ChunkEr
 import "./styles.css";
 
 initTheme();
+initColorScheme();
 
 // Recover from stale-cache chunk-load failures.
 // After a Pages deploy, the user's cached index.html may still point to
