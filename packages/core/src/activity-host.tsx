@@ -5,6 +5,7 @@ import { getScormDriver } from "./scorm.js";
 import type { ActivityKind, BuiltActivityKind, ScoreState } from "./types.js";
 import { ACTIVITY_REGISTRY, StubActivityLazy } from "./components/registry.js";
 import { PLANNED_ACTIVITY_KINDS } from "./planned.js";
+import { applyColorScheme } from "./colorScheme.js";
 
 export type { ActivityKind };
 
@@ -32,7 +33,17 @@ export function ActivityHost({ kind, configUrl, loader = loadContent }: Activity
     }
     loader(configUrl, schema)
       .then((config) => {
-        if (!cancelled) setState({ status: "ready", config });
+        if (cancelled) return;
+        // Apply author-pinned theme from the validated config. "auto" or
+        // missing → no override; initColorScheme has already wired the
+        // OS-follow path. "light" / "dark" → override regardless of OS
+        // or stored preference. The learner has no in-engine toggle, so
+        // this pin sticks for the session.
+        const theme = (config as { appearance?: { theme?: string } })?.appearance?.theme;
+        if (theme === "light" || theme === "dark") {
+          applyColorScheme(theme);
+        }
+        setState({ status: "ready", config });
       })
       .catch((err: unknown) => {
         if (cancelled) return;

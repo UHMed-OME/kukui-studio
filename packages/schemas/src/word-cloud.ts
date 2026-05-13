@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { AppearanceSchema } from "./appearance.js";
 
 const versionRe = /^\d+\.\d+(\.\d+)?$/;
 
@@ -48,6 +49,7 @@ export const WordCloudConfigSchema = z
       })
       .strict()
       .optional(),
+    appearance: AppearanceSchema.optional(),
   })
   .strict();
 

@@ -154,4 +154,5 @@ export {
   type Scoring,
   type ScoringMode,
 } from "./scoring.js";
+export { AppearanceSchema, type Appearance } from "./appearance.js";
 export { migrateToScoring, migrateUnknown, syncLegacyFields } from "./migrate.js";

@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { ScoringSchema } from "./scoring.js";
+import { AppearanceSchema } from "./appearance.js";
 
 const versionRe = /^\d+\.\d+(\.\d+)?$/;
 
@@ -47,6 +48,7 @@ export const MatchingPairsConfigSchema = z
       .strict()
       .optional(),
     scoring: ScoringSchema.optional(),
+    appearance: AppearanceSchema.optional(),
   })
   .strict();
 

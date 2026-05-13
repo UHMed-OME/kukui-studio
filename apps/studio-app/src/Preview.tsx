@@ -124,17 +124,28 @@ export function Preview({
   const Stub = StubActivityLazy as any;
   const Component = ACTIVITY_REGISTRY[kind as keyof typeof ACTIVITY_REGISTRY];
 
+  // If the author pinned a theme on the activity, scope the preview
+  // subtree to it via [data-color-scheme] so what the author sees here
+  // matches what the learner will see in the SCORM engine. "auto" or
+  // missing → no override (the preview inherits Studio's current
+  // scheme, which approximates the learner's OS-follow default).
+  const pinned = (config as { appearance?: { theme?: string } })?.appearance?.theme;
+  const previewScheme: "light" | "dark" | undefined =
+    pinned === "light" || pinned === "dark" ? pinned : undefined;
+
   return (
-    <Suspense fallback={<PreviewLoading />}>
-      {isPlanned || !Component ? (
-        <Stub config={config} kind={kind as never} onSubmit={noop} />
-      ) : (
-        <Component config={config} onSubmit={noop} />
-      )}
-      {isLiveActivity(kind) ? (
-        <LiveTestLauncher kind={kind} config={config} onChange={onChange} />
-      ) : null}
-    </Suspense>
+    <div data-color-scheme={previewScheme} className="kukui-studio-preview-host">
+      <Suspense fallback={<PreviewLoading />}>
+        {isPlanned || !Component ? (
+          <Stub config={config} kind={kind as never} onSubmit={noop} />
+        ) : (
+          <Component config={config} onSubmit={noop} />
+        )}
+        {isLiveActivity(kind) ? (
+          <LiveTestLauncher kind={kind} config={config} onChange={onChange} />
+        ) : null}
+      </Suspense>
+    </div>
   );
 }
 

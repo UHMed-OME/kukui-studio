@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { ScoringSchema } from "./scoring.js";
+import { AppearanceSchema } from "./appearance.js";
 
 const versionRe = /^\d+\.\d+(\.\d+)?$/;
 
@@ -74,6 +75,7 @@ export const HighlightTextConfigSchema = z
       .optional(),
     overallFeedback: z.array(ScoreBand).optional(),
     scoring: ScoringSchema.optional(),
+    appearance: AppearanceSchema.optional(),
   })
   .strict();
 

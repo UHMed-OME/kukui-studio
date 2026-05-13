@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { ScoringSchema } from "./scoring.js";
+import { AppearanceSchema } from "./appearance.js";
 import { SAFE_MEDIA_URL } from "./url.js";
 
 const versionRe = /^\d+\.\d+(\.\d+)?$/;
@@ -45,6 +46,7 @@ export const InteractiveVideoConfigSchema = z
       .strict()
       .optional(),
     scoring: ScoringSchema.optional(),
+    appearance: AppearanceSchema.optional(),
   })
   .strict();
 

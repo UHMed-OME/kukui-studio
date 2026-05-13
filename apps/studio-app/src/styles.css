@@ -101,13 +101,16 @@
   --bloom-create: #7b4324; /* kukui (matches --color-primary) */
 }
 
-/* Dark mode — selected by `html[data-color-scheme="dark"]`, set in JS by
-   colorScheme.ts based on the user's stored preference (system / light /
-   dark) resolved against prefers-color-scheme. Surfaces are stone-800/900;
-   the brown, kalo green, and coral red are lightened so they clear AA on
-   dark surfaces. Bloom hues get a parallel set of lighter values so the
+/* Dark mode — selected by `[data-color-scheme="dark"]` (at <html> for
+   the global toggle, or on a nested wrapper like the Studio Preview
+   pane to render that subtree dark even when Studio itself is light).
+   Set on <html> by colorScheme.ts based on the user's stored
+   preference (system / light / dark) resolved against
+   prefers-color-scheme. Surfaces are stone-800/900; the brown, kalo
+   green, and coral red are lightened so they clear AA on dark
+   surfaces. Bloom hues get a parallel set of lighter values so the
    indicator dots stay legible. */
-html[data-color-scheme="dark"] {
+[data-color-scheme="dark"] {
   --color-bg: #1c1917;
   --color-surface: #292524;
   --color-surface-alt: #1c1917;
@@ -137,13 +140,44 @@ html[data-color-scheme="dark"] {
 /* Status-pill backgrounds in dark mode. The light-mode fallbacks
    (#d8ecdc, #f5d6d2) hard-code light tints, so we re-declare them as
    stronger soft mixes that pass AA against the lightened pill text. */
-html[data-color-scheme="dark"] .ks-scoring-status--passed {
+[data-color-scheme="dark"] .ks-scoring-status--passed {
   background: rgb(134 199 154 / 0.18);
   color: var(--color-success);
 }
-html[data-color-scheme="dark"] .ks-scoring-status--failed {
+[data-color-scheme="dark"] .ks-scoring-status--failed {
   background: rgb(237 145 131 / 0.18);
   color: var(--color-error);
+}
+
+/* Light mode — explicit declarations so a nested wrapper can revert
+   a dark Studio subtree to light tokens (used by Preview when the
+   activity's author has pinned appearance.theme to "light"). Mirrors
+   the @theme defaults at :root. */
+[data-color-scheme="light"] {
+  --color-bg: #fafaf9;
+  --color-surface: #ffffff;
+  --color-surface-alt: #f5f5f4;
+  --color-text-primary: #1c1917;
+  --color-text-secondary: #57534e;
+  --color-text-muted: #68625d;
+  --color-border: #e7e5e4;
+  --color-border-hover: #d6d3d1;
+  --color-primary: #7b4324;
+  --color-primary-hover: #9b5830;
+  --color-primary-soft: rgb(123 67 36 / 0.07);
+  --color-success: #2e6e41;
+  --color-success-soft: rgb(46 110 65 / 0.1);
+  --color-error: #c34132;
+  --color-error-soft: rgb(195 65 50 / 0.08);
+  --color-tip-bg: #f5f5f4;
+  --color-canvas-3d: #0b0b10;
+
+  --bloom-remember: #c2861c;
+  --bloom-understand: #5d8a4a;
+  --bloom-apply: #b5532a;
+  --bloom-analyze: #7a5680;
+  --bloom-evaluate: #2e6e41;
+  --bloom-create: #7b4324;
 }
 
 /* Bloom-level themed surfaces. Anything inside a [data-bloom=…] subtree
