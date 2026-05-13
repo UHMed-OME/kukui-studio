@@ -124,32 +124,24 @@ export function Preview({
   const Stub = StubActivityLazy as any;
   const Component = ACTIVITY_REGISTRY[kind as keyof typeof ACTIVITY_REGISTRY];
 
-  // If the author pinned a theme on the activity, scope the preview
-  // subtree to it via [data-color-scheme] so what the author sees here
-  // matches what the learner will see in the SCORM engine. "auto" or
-  // missing → no override (the preview inherits Studio's current
-  // scheme, which approximates the learner's OS-follow default). Any
-  // other concrete value (light/dark/high-contrast/sepia/aloha/kalo/
-  // lab/twilight/oled/print/high-contrast-dark) is passed through
-  // directly — each has a matching [data-color-scheme="<name>"] block
-  // in styles.css that re-points the token vars for this subtree.
-  const pinned = (config as { appearance?: { theme?: string } })?.appearance?.theme;
-  const previewScheme: string | undefined =
-    pinned && pinned !== "auto" ? pinned : undefined;
-
+  // The live preview deliberately follows the *editor's* color scheme
+  // (Settings → Appearance), not the activity's `appearance.theme`.
+  // Reason: authors should be able to read the editor + preview in
+  // their preferred working scheme regardless of what they're packing
+  // into the activity. `appearance.theme` only affects the SCORM
+  // output — ActivityHost applies it at engine runtime when learners
+  // open the packaged zip in the LMS.
   return (
-    <div data-color-scheme={previewScheme} className="kukui-studio-preview-host">
-      <Suspense fallback={<PreviewLoading />}>
-        {isPlanned || !Component ? (
-          <Stub config={config} kind={kind as never} onSubmit={noop} />
-        ) : (
-          <Component config={config} onSubmit={noop} />
-        )}
-        {isLiveActivity(kind) ? (
-          <LiveTestLauncher kind={kind} config={config} onChange={onChange} />
-        ) : null}
-      </Suspense>
-    </div>
+    <Suspense fallback={<PreviewLoading />}>
+      {isPlanned || !Component ? (
+        <Stub config={config} kind={kind as never} onSubmit={noop} />
+      ) : (
+        <Component config={config} onSubmit={noop} />
+      )}
+      {isLiveActivity(kind) ? (
+        <LiveTestLauncher kind={kind} config={config} onChange={onChange} />
+      ) : null}
+    </Suspense>
   );
 }
 
