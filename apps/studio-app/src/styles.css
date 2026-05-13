@@ -3252,6 +3252,94 @@ html[data-theme="glass"] .kukui-theme-toggle {
   backdrop-filter: blur(8px);
 }
 
+/* =================================================================== */
+/* THEME: glass × dark — dark variant of the glass surfaces             */
+/* =================================================================== */
+/* The glass-theme rules above hardcode warm cream surfaces (rgba over
+   white) and a cream linear-gradient body backdrop. Those bypass the
+   token overrides, so we re-declare them with dark substrates when the
+   user has picked dark mode (or system + OS dark). The aesthetic stays
+   the same — translucent layered surfaces, soft shadows, blurred backdrop
+   — but the base is dark stone instead of cream. */
+
+html[data-theme="glass"][data-color-scheme="dark"] body {
+  background:
+    radial-gradient(at 12% 8%, rgba(123, 67, 36, 0.28) 0%, transparent 48%),
+    radial-gradient(at 88% 12%, rgba(122, 86, 128, 0.24) 0%, transparent 52%),
+    radial-gradient(at 84% 88%, rgba(46, 110, 65, 0.22) 0%, transparent 56%),
+    radial-gradient(at 8% 92%, rgba(93, 138, 74, 0.18) 0%, transparent 52%),
+    linear-gradient(180deg, #1c1917 0%, #14110f 100%);
+  background-attachment: fixed;
+}
+
+html[data-theme="glass"][data-color-scheme="dark"] {
+  --color-surface-glass: rgba(28, 25, 23, 0.68);
+  --color-surface-glass-strong: rgba(28, 25, 23, 0.86);
+  --color-border-glass: rgba(255, 255, 255, 0.08);
+  --color-border-glass-deep: rgba(0, 0, 0, 0.45);
+  --shadow-glass-card: 0 12px 32px rgb(0 0 0 / 0.4), 0 2px 8px rgb(0 0 0 / 0.25);
+  --shadow-glass-pop: 0 18px 48px rgb(0 0 0 / 0.55), 0 4px 12px rgb(0 0 0 / 0.3);
+}
+
+html[data-theme="glass"][data-color-scheme="dark"] .kukui-studio-panel {
+  box-shadow:
+    var(--shadow-glass-card),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+html[data-theme="glass"][data-color-scheme="dark"] .kukui-studio-panel--preview {
+  box-shadow:
+    var(--shadow-glass-pop),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+html[data-theme="glass"][data-color-scheme="dark"] .kukui-studio-sidebar__btn:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+html[data-theme="glass"][data-color-scheme="dark"] .kukui-studio-sidebar__btn.is-active {
+  background: color-mix(in oklab, var(--bloom-color) 22%, rgba(255, 255, 255, 0.05));
+}
+
+html[data-theme="glass"][data-color-scheme="dark"] .rjsf input[type="text"],
+html[data-theme="glass"][data-color-scheme="dark"] .rjsf input[type="number"],
+html[data-theme="glass"][data-color-scheme="dark"] .rjsf input[type="url"],
+html[data-theme="glass"][data-color-scheme="dark"] .rjsf input[type="email"],
+html[data-theme="glass"][data-color-scheme="dark"] .rjsf select,
+html[data-theme="glass"][data-color-scheme="dark"] .rjsf textarea,
+html[data-theme="glass"][data-color-scheme="dark"] .ks-html,
+html[data-theme="glass"][data-color-scheme="dark"] .ks-file,
+html[data-theme="glass"][data-color-scheme="dark"] .ks-json__textarea {
+  background: rgba(0, 0, 0, 0.40);
+  border-color: rgba(255, 255, 255, 0.10);
+  color: var(--color-text-primary);
+}
+
+html[data-theme="glass"][data-color-scheme="dark"] .rjsf input:focus-visible,
+html[data-theme="glass"][data-color-scheme="dark"] .rjsf select:focus-visible,
+html[data-theme="glass"][data-color-scheme="dark"] .rjsf textarea:focus-visible {
+  background: rgba(0, 0, 0, 0.55);
+}
+
+html[data-theme="glass"][data-color-scheme="dark"] .ks-object--root > .ks-field > .ks-object {
+  background: rgba(0, 0, 0, 0.25);
+  border-color: var(--color-border-glass-deep);
+}
+
+html[data-theme="glass"][data-color-scheme="dark"] .ks-array-item {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: var(--color-border-glass-deep);
+  box-shadow: 0 2px 8px rgb(0 0 0 / 0.25);
+}
+
+html[data-theme="glass"][data-color-scheme="dark"] .ks-array-item__bar {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+html[data-theme="glass"][data-color-scheme="dark"] .kukui-theme-toggle {
+  background: rgba(255, 255, 255, 0.06);
+}
+
 /* ---------- Footer ---------- */
 
 .kukui-studio-footer {

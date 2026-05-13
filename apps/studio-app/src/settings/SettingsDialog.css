@@ -1,4 +1,6 @@
-.ks-settings-dialog {
+/* Selector matches both classes so it beats the base `.ks-dialog` rule
+   (which clamps width to 440px) regardless of stylesheet order. */
+.ks-dialog.ks-settings-dialog {
   display: flex;
   flex-direction: column;
   width: min(820px, 92vw);
@@ -13,7 +15,7 @@
 
 .ks-settings-dialog__body {
   display: grid;
-  grid-template-columns: 180px 1fr;
+  grid-template-columns: 160px 1fr;
   flex: 1 1 auto;
   min-height: 0;
 }
@@ -22,7 +24,7 @@
   display: flex;
   flex-direction: column;
   gap: 2px;
-  padding: var(--spacing-md) var(--spacing-md);
+  padding: var(--spacing-md) var(--spacing-sm);
   border-right: 1px solid color-mix(in oklab, var(--color-border) 50%, transparent);
   overflow-y: auto;
 }
@@ -175,7 +177,11 @@
   text-transform: capitalize;
 }
 
-@media (max-width: 640px) {
+/* Collapse to single-column with nav-on-top at narrower viewports so the
+   content pane doesn't get squeezed to nothing. The dialog itself is
+   `min(820px, 92vw)`, so at <760px the content column was getting
+   uncomfortably narrow with the side nav. */
+@media (max-width: 760px) {
   .ks-settings-dialog__body {
     grid-template-columns: 1fr;
   }
@@ -184,5 +190,6 @@
     flex-wrap: wrap;
     border-right: 0;
     border-bottom: 1px solid color-mix(in oklab, var(--color-border) 50%, transparent);
+    padding: var(--spacing-sm) var(--spacing-md);
   }
 }
