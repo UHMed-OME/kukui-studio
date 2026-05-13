@@ -128,10 +128,14 @@ export function Preview({
   // subtree to it via [data-color-scheme] so what the author sees here
   // matches what the learner will see in the SCORM engine. "auto" or
   // missing → no override (the preview inherits Studio's current
-  // scheme, which approximates the learner's OS-follow default).
+  // scheme, which approximates the learner's OS-follow default). Any
+  // other concrete value (light/dark/high-contrast/sepia/aloha/kalo/
+  // lab/twilight/oled/print/high-contrast-dark) is passed through
+  // directly — each has a matching [data-color-scheme="<name>"] block
+  // in styles.css that re-points the token vars for this subtree.
   const pinned = (config as { appearance?: { theme?: string } })?.appearance?.theme;
-  const previewScheme: "light" | "dark" | undefined =
-    pinned === "light" || pinned === "dark" ? pinned : undefined;
+  const previewScheme: string | undefined =
+    pinned && pinned !== "auto" ? pinned : undefined;
 
   return (
     <div data-color-scheme={previewScheme} className="kukui-studio-preview-host">
