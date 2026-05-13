@@ -17,7 +17,7 @@
  */
 export const tokens = {
   bg: "#fafaf9",
-  surface: "#ffffff",
+  surface: "#fdfbf6",
   textPrimary: "#1c1917",
   textSecondary: "#57534e",
   border: "#e7e5e4",
