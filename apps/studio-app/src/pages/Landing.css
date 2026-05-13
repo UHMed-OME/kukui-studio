@@ -1,22 +1,24 @@
 .kukui-landing {
-  /* Restore the original cream palette on the landing page only. The
-     editor surfaces (Studio app, Engine activities, Live classrooms)
-     use the neutral stone palette for calm, but the marketing/landing
-     page benefits from the warm "Hawaiian editorial publication" feel
-     — stone read too cool against the wordmark and editorial display
-     type. Dark mode is left to the global tokens (the dark stone
-     palette holds up fine on the hero). */
-  --color-bg: #fcf8f2;
-  --color-surface-alt: #faf6ee;
-  --color-tip-bg: #f2f0e8;
-  --color-border: #dad2c6;
-  --color-border-hover: #bbae9a;
-
   min-height: 100%;
   display: flex;
   flex-direction: column;
   background: var(--color-bg);
   color: var(--color-text-primary);
+}
+
+/* Restore the original cream palette on the landing page in light mode.
+   Editor surfaces (Studio, Engine, Live) use neutral stone, but the
+   marketing page benefits from the warm "Hawaiian editorial
+   publication" feel — stone reads too cool against the wordmark and
+   editorial display type. Scoped to light only so dark mode inherits
+   the global dark stone palette rather than fighting it with cream
+   tokens. */
+html[data-color-scheme="light"] .kukui-landing {
+  --color-bg: #fcf8f2;
+  --color-surface-alt: #faf6ee;
+  --color-tip-bg: #f2f0e8;
+  --color-border: #dad2c6;
+  --color-border-hover: #bbae9a;
 }
 
 /* ---------- Top nav ---------- */

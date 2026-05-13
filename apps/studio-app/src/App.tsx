@@ -43,6 +43,7 @@ import { clearDraft, debouncedSaver, loadDraft, saveDraft } from "./drafts.js";
 import { downloadScormZip } from "./scormDownload.js";
 import { importFromFile } from "./scormImport.js";
 import { slug } from "./util/slug.js";
+import { useResolvedColorScheme } from "./pages/shared/useColorScheme.js";
 
 type Tab = "form" | "scoring" | "json" | "ai";
 
@@ -131,6 +132,7 @@ const STUDIO_PLANNED: readonly ActivityKind[] = PLANNED_ACTIVITY_KINDS;
 const STUDIO_ALL: readonly ActivityKind[] = [...STUDIO_AVAILABLE, ...STUDIO_PLANNED];
 
 export function App() {
+  const colorScheme = useResolvedColorScheme();
   const [kind, setKind] = useState<ActivityKind>(() => {
     const params = new URLSearchParams(window.location.search);
     const fromUrl = params.get("activity");
@@ -425,7 +427,9 @@ export function App() {
         >
           <img
             className="kukui-studio-logo"
-            src={`${import.meta.env.BASE_URL}kukui-logo.svg`}
+            src={`${import.meta.env.BASE_URL}${
+              colorScheme === "dark" ? "kukui-logo-dark.svg" : "kukui-logo.svg"
+            }`}
             alt=""
             aria-hidden="true"
           />
