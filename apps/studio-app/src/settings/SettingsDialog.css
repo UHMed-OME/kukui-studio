@@ -60,7 +60,9 @@
 
 .ks-settings-dialog__footer {
   display: flex;
-  justify-content: flex-end;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--spacing-sm);
   padding: var(--spacing-md) var(--spacing-2xl);
   border-top: 1px solid color-mix(in oklab, var(--color-border) 50%, transparent);
 }

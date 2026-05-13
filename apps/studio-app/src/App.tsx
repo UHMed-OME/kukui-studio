@@ -22,6 +22,7 @@ import { Preview, type PreviewMode } from "./Preview.js";
 import { hasEditor } from "./EditCanvas/index.js";
 import { ConfirmDialog } from "./ConfirmDialog.js";
 import { SettingsDialog, type SettingsPane } from "./settings/SettingsDialog.js";
+import { clearAllKukuiStorage } from "./util/resetAll.js";
 import { AIEditor } from "./AIEditor.js";
 import { Tooltip } from "./Tooltip.js";
 import { AsyncStatusStrip, type AsyncStatus } from "./AsyncStatusStrip.js";
@@ -173,6 +174,7 @@ export function App() {
   const [asyncStatus, setAsyncStatus] = useState<AsyncStatus | null>(null);
   const [confirmReset, setConfirmReset] = useState(false);
   const [settingsPane, setSettingsPane] = useState<SettingsPane | null>(null);
+  const [confirmResetAll, setConfirmResetAll] = useState(false);
   // Bumped whenever AI settings are saved/cleared, so AIEditor re-reads
   // them without requiring a page reload (issue #1).
   const [aiSettingsVersion, setAiSettingsVersion] = useState(0);
@@ -883,7 +885,7 @@ export function App() {
           <button
             type="button"
             className="kukui-studio-footer__icon-btn"
-            onClick={() => setSettingsPane("ai")}
+            onClick={() => setSettingsPane("appearance")}
             aria-label="Settings"
             title="Settings"
           >
@@ -917,9 +919,26 @@ export function App() {
 
       <SettingsDialog
         open={settingsPane !== null}
-        initialPane={settingsPane ?? "ai"}
+        initialPane={settingsPane ?? "appearance"}
         onClose={() => setSettingsPane(null)}
         onAISaved={() => setAiSettingsVersion((v) => v + 1)}
+        onResetAll={() => setConfirmResetAll(true)}
+      />
+
+      <ConfirmDialog
+        open={confirmResetAll}
+        title="Reset everything?"
+        message="Clears every saved draft, your AI provider + key, and your appearance preference. Activities reset to their default starter. This can't be undone — make sure you've exported anything you want to keep first."
+        confirmLabel="Reset everything"
+        cancelLabel="Cancel"
+        destructive
+        onConfirm={() => {
+          clearAllKukuiStorage();
+          // Full reload to "/" so every in-memory consumer (drafts, AI
+          // version, color-scheme listener) re-reads from a clean slate.
+          window.location.assign("/");
+        }}
+        onCancel={() => setConfirmResetAll(false)}
       />
     </div>
   );

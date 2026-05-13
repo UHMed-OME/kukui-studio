@@ -27,14 +27,16 @@ const PANES: Array<{ id: SettingsPane; label: string }> = [
  */
 export function SettingsDialog({
   open,
-  initialPane = "ai",
+  initialPane = "appearance",
   onClose,
   onAISaved,
+  onResetAll,
 }: {
   open: boolean;
   initialPane?: SettingsPane;
   onClose: () => void;
   onAISaved?: (s: AISettings) => void;
+  onResetAll?: () => void;
 }) {
   const [pane, setPane] = useState<SettingsPane>(initialPane);
   const dialogRef = useRef<HTMLDivElement>(null);
@@ -106,6 +108,15 @@ export function SettingsDialog({
           </div>
         </div>
         <footer className="ks-settings-dialog__footer">
+          {onResetAll ? (
+            <button
+              type="button"
+              className="kukui-studio-btn kukui-studio-btn--danger kukui-studio-btn--sm"
+              onClick={onResetAll}
+            >
+              Reset all
+            </button>
+          ) : null}
           <button
             type="button"
             className="kukui-studio-btn kukui-studio-btn--ghost"
