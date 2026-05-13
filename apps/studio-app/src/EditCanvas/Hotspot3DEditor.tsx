@@ -4,11 +4,6 @@ import { OrbitControls, useGLTF } from "@react-three/drei";
 import * as THREE from "three";
 import type { Hotspot3DConfig } from "@kukui/schemas";
 import { HotspotPin } from "@kukui/core/components/_shared/HotspotPin";
-import {
-  isSketchfabUrl,
-  lookupSketchfabModel,
-  type ModelAttribution,
-} from "./sketchfabAttribution.js";
 
 type Hotspot = Hotspot3DConfig["hotspots"][number];
 
@@ -302,7 +297,7 @@ export function Hotspot3DEditor({
           </ul>
         )}
 
-        <SketchfabAttributionPanel config={config} onChange={onChange} />
+        <AttributionPanel config={config} onChange={onChange} />
 
         {selectedHotspot ? (
           <div className="ks-h3d-editor__fields">
@@ -444,17 +439,13 @@ function FrameToModel({
 }
 
 /**
- * Sketchfab source + attribution helper. Authors paste a Sketchfab
- * model page URL; we fetch the public metadata, validate the license
- * is Creative Commons, and stash the attribution in
- * `config.model.attribution`. The runtime renders it in a footer
- * line under the activity (handled in Hotspot3D.tsx).
- *
- * Does not fetch the .glb itself — Sketchfab gates downloads behind
- * OAuth even for CC models. Authors download from Sketchfab manually
- * and paste the resulting URL into `model.src` (or upload).
+ * Manual attribution form. If the author's model is CC-licensed
+ * (most "free" 3D models are), filling these fields renders a
+ * credit line in the activity footer. Works for any source — NIH
+ * 3D, Smithsonian, Sketchfab, an institution's own GitHub — since
+ * it's plain text + URL fields, not coupled to a specific API.
  */
-function SketchfabAttributionPanel({
+function AttributionPanel({
   config,
   onChange,
 }: {
@@ -462,110 +453,103 @@ function SketchfabAttributionPanel({
   onChange: (next: Hotspot3DConfig) => void;
 }) {
   const attribution = config.model.attribution;
-  const [draftUrl, setDraftUrl] = useState("");
-  const [status, setStatus] = useState<
-    { kind: "idle" } | { kind: "loading" } | { kind: "error"; msg: string }
-  >({ kind: "idle" });
+  const [expanded, setExpanded] = useState(Boolean(attribution));
 
-  const writeAttribution = (attr: ModelAttribution | undefined) => {
+  const patch = (
+    field: keyof NonNullable<Hotspot3DConfig["model"]["attribution"]>,
+    value: string,
+  ) => {
+    const trimmed = value.trim();
+    const next = { ...(attribution ?? { author: "" }), [field]: trimmed || undefined };
+    if (!next.author) {
+      // Clearing the author drops the whole attribution — the runtime
+      // requires at least an author to render a credit line.
+      onChange({ ...config, model: { ...config.model, attribution: undefined } });
+      return;
+    }
     onChange({
       ...config,
-      model: { ...config.model, attribution: attr },
+      model: { ...config.model, attribution: next },
     });
   };
 
-  const onLookup = async () => {
-    const url = draftUrl.trim();
-    if (!url) return;
-    if (!isSketchfabUrl(url)) {
-      setStatus({
-        kind: "error",
-        msg: "Not a Sketchfab URL — paste the model's page URL.",
-      });
-      return;
-    }
-    setStatus({ kind: "loading" });
-    const res = await lookupSketchfabModel(url);
-    if (!res.ok) {
-      setStatus({ kind: "error", msg: res.error });
-      return;
-    }
-    writeAttribution(res.attribution);
-    setDraftUrl("");
-    setStatus({ kind: "idle" });
-  };
+  if (!expanded) {
+    return (
+      <section className="ks-h3d-editor__attribution">
+        <button
+          type="button"
+          className="ks-h3d-editor__attribution-toggle"
+          onClick={() => setExpanded(true)}
+        >
+          {attribution
+            ? `Edit attribution (Model by ${attribution.author})`
+            : "+ Add attribution (CC license required)"}
+        </button>
+      </section>
+    );
+  }
 
   return (
     <section className="ks-h3d-editor__attribution">
-      <h4>Model source &amp; attribution</h4>
-      {attribution ? (
-        <div className="ks-h3d-editor__attribution-current">
-          <p>
-            <strong>Model by </strong>
-            {attribution.authorUrl ? (
-              <a
-                href={attribution.authorUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                {attribution.author}
-              </a>
-            ) : (
-              attribution.author
-            )}
-            {attribution.license ? <> · {attribution.license}</> : null}
-          </p>
-          {attribution.sourceUrl ? (
-            <p>
-              <a
-                href={attribution.sourceUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                View original →
-              </a>
-            </p>
-          ) : null}
-          <button
-            type="button"
-            className="ks-h3d-editor__delete"
-            onClick={() => writeAttribution(undefined)}
-          >
-            Remove attribution
-          </button>
-        </div>
-      ) : (
-        <p className="ks-h3d-editor__attribution-hint">
-          Paste a Sketchfab model URL to auto-fill author + license.
-          Model must be Creative Commons; download the .glb from
-          Sketchfab manually and use its URL in the Model section above.
-        </p>
-      )}
+      <header className="ks-h3d-editor__attribution-header">
+        <h4>Attribution</h4>
+        <button
+          type="button"
+          className="ks-h3d-editor__attribution-toggle"
+          onClick={() => setExpanded(false)}
+        >
+          Done
+        </button>
+      </header>
+      <p className="ks-h3d-editor__attribution-hint">
+        Fill in if your model is CC-licensed. The credit appears in
+        the activity footer for learners.
+      </p>
       <label className="ks-h3d-editor__field">
-        <span>Sketchfab URL</span>
+        <span>Author *</span>
         <input
-          type="url"
-          value={draftUrl}
-          placeholder="https://sketchfab.com/3d-models/…"
-          onChange={(e) => {
-            setDraftUrl(e.target.value);
-            if (status.kind === "error") setStatus({ kind: "idle" });
-          }}
+          type="text"
+          value={attribution?.author ?? ""}
+          placeholder="e.g. NIH 3D"
+          onChange={(e) => patch("author", e.target.value)}
         />
       </label>
-      <button
-        type="button"
-        className="ks-h3d-editor__save-view"
-        onClick={onLookup}
-        disabled={status.kind === "loading" || !draftUrl.trim()}
-      >
-        {status.kind === "loading" ? "Fetching…" : "Fetch attribution"}
-      </button>
-      {status.kind === "error" ? (
-        <p className="ks-h3d-editor__attribution-error" role="alert">
-          {status.msg}
-        </p>
-      ) : null}
+      <label className="ks-h3d-editor__field">
+        <span>Author URL</span>
+        <input
+          type="url"
+          value={attribution?.authorUrl ?? ""}
+          placeholder="https://…"
+          onChange={(e) => patch("authorUrl", e.target.value)}
+        />
+      </label>
+      <label className="ks-h3d-editor__field">
+        <span>Source URL</span>
+        <input
+          type="url"
+          value={attribution?.sourceUrl ?? ""}
+          placeholder="https://… (where the model is hosted)"
+          onChange={(e) => patch("sourceUrl", e.target.value)}
+        />
+      </label>
+      <label className="ks-h3d-editor__field">
+        <span>License</span>
+        <input
+          type="text"
+          value={attribution?.license ?? ""}
+          placeholder="e.g. CC BY 4.0"
+          onChange={(e) => patch("license", e.target.value)}
+        />
+      </label>
+      <label className="ks-h3d-editor__field">
+        <span>License URL</span>
+        <input
+          type="url"
+          value={attribution?.licenseUrl ?? ""}
+          placeholder="https://creativecommons.org/licenses/…"
+          onChange={(e) => patch("licenseUrl", e.target.value)}
+        />
+      </label>
     </section>
   );
 }
