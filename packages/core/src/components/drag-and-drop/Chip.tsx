@@ -1,5 +1,6 @@
 import type { CSSProperties, KeyboardEvent } from "react";
 import { useDraggable } from "@dnd-kit/core";
+import { CSS } from "@dnd-kit/utilities";
 import type { DragAndDropConfig } from "@kukui/schemas";
 
 /**
@@ -10,8 +11,12 @@ import type { DragAndDropConfig } from "@kukui/schemas";
  * modes — the difference is just whether we hand the `useDraggable`
  * listeners to it (drag) or attach onClick / onKeyDown (tap).
  *
- * In drag mode, the original button is hidden via `is-dragging` while
- * the DragOverlay ghost follows the cursor (defined in DnDActivity).
+ * In drag mode the chip itself follows the cursor — dnd-kit's
+ * `transform` value is applied to the button's inline style. This
+ * sidesteps the DragOverlay portal entirely. The overlay path had
+ * recurring "ghost invisible, can't drop" reports because the
+ * portal's positioning context could collapse the ghost to 0 width
+ * in some layouts; moving the source itself is unambiguous.
  */
 
 type ChipProps = {
@@ -49,7 +54,7 @@ export function Chip({
   // DndContext is mounted. In tap mode there is no DndContext, so the
   // hook degrades to a no-op — useDraggable handles a missing context
   // by returning null listeners.
-  const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
+  const { attributes, listeners, setNodeRef, isDragging, transform } = useDraggable({
     id: chip.id,
     disabled: locked || mode !== "drag",
   });
@@ -81,6 +86,16 @@ export function Chip({
   // Compose dnd-kit listeners only in drag mode; bare button otherwise.
   const dragProps = mode === "drag" ? { ...listeners, ...attributes } : {};
 
+  // While dragging, translate the chip so it follows the cursor. dnd-kit
+  // hands us a transform `{x, y}` derived from the pointer delta; the
+  // `CSS.Translate.toString` helper formats it as a translate3d() so we
+  // get GPU-accelerated motion. When idle, transform is null and the
+  // outer style (e.g., solutions animation) wins.
+  const dragStyle: CSSProperties =
+    mode === "drag" && transform
+      ? { transform: CSS.Translate.toString(transform), ...style }
+      : (style ?? {});
+
   return (
     <button
       ref={setNodeRef}
@@ -91,7 +106,7 @@ export function Chip({
       aria-pressed={mode === "tap" ? selected : undefined}
       onClick={handleClick}
       onKeyDown={handleKeyDown}
-      style={style}
+      style={dragStyle}
       {...dragProps}
     >
       <span className="kukui-dnd__chip-label">{chip.label}</span>

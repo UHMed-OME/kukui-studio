@@ -277,10 +277,9 @@ describe("DragAndDrop — drag regression test (DndContext + PointerSensor)", ()
       // Zones — distinguished by aria-label.
       if (lbl === "Nucleus zone") return rect(200, 0, 400, 200);
       if (lbl === "Chloroplast zone") return rect(700, 0, 100, 100);
-      // Chips and DragOverlay ghost share the same starting rect at
-      // (0, 0, 80, 40). The dnd-kit collision detection uses the
-      // overlay's rect + translate delta, so initial overlay position
-      // must equal the active draggable's position.
+      // Chips have a 80x40 starting rect. dnd-kit's collision detection
+      // uses the active draggable's rect + the pointer-delta translate
+      // (we apply the translate in-place via Chip.tsx now — no overlay).
       if (el.classList?.contains("kukui-dnd__chip")) {
         return rect(0, 0, 80, 40);
       }

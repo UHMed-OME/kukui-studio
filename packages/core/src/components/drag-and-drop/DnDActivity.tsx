@@ -32,8 +32,6 @@ export type DnDActivityProps = {
   headingId: string;
   HeadingTag: "h1" | "h2" | "h3";
   callbacks: ActivityCallbacks;
-  /** Optional extra slot at the end (DragOverlay etc.). */
-  trailingSlot?: ReactNode;
   /** Optional aria-live announcer slot. */
   announcerSlot?: ReactNode;
 };
@@ -45,7 +43,6 @@ export function DnDActivity({
   headingId,
   HeadingTag,
   callbacks,
-  trailingSlot,
   announcerSlot,
 }: DnDActivityProps) {
   const layoutId = useId();
@@ -254,7 +251,6 @@ export function DnDActivity({
             </button>
           ) : null}
         </div>
-        {trailingSlot}
       </article>
     </div>
   );

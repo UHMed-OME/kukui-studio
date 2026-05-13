@@ -179,8 +179,11 @@
   display: inline-flex;
   align-items: center;
   gap: var(--spacing-xs, 4px);
+  /* Transform is intentionally NOT transitioned: dnd-kit applies the
+   * pointer-delta translate via inline style on every pointermove, and
+   * a 150 ms transform transition makes the chip drift away from the
+   * cursor (looks like the chip "disappeared" mid-drag). */
   transition:
-    transform 150ms ease,
     background-color 150ms ease,
     box-shadow 150ms ease;
 }
@@ -223,34 +226,18 @@
   background: var(--color-error-soft);
 }
 
-/* While being dragged, the original chip is invisible — DragOverlay
- * renders the visible copy under the cursor. Keeping the original
- * mounted (opacity 0 instead of display: none) preserves its layout
- * slot so surrounding chips don't reflow. */
+/* While dragging, the chip itself follows the cursor via an inline
+ * transform set in Chip.tsx. Lift it above neighbors, switch the cursor
+ * to "grabbing", and remove the transform transition so the chip
+ * tracks pointermove without lag (a 150ms transition makes the chip
+ * appear to drift off and "disappear" between pointer updates). */
 .kukui-dnd__chip.is-dragging {
-  opacity: 0;
-}
-
-.kukui-dnd__chip--ghost {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--spacing-xs, 4px);
-  /* Force intrinsic width so the ghost is never 0-width in the
-   * DragOverlay's positioning container. Without this, span-as-ghost
-   * could collapse and the user sees nothing during drag. */
-  width: max-content;
-  opacity: 1;
-  /* No CSS transition: dnd-kit updates the inline transform on every
-   * pointermove. Transitioning transform makes the ghost lag behind the
-   * cursor by ~150ms — to the user the chip appears to drift off and
-   * "disappear" mid-drag. */
-  transition: none;
-  box-shadow: 0 8px 18px rgb(0 0 0 / 0.22);
+  z-index: 20;
   cursor: grabbing;
-  pointer-events: none;
-  /* Disabled button must still display as the active chip in DragOverlay. */
-  -webkit-appearance: none;
-  appearance: none;
+  box-shadow: 0 8px 18px rgb(0 0 0 / 0.22);
+  transition:
+    background-color 150ms ease,
+    box-shadow 150ms ease;
 }
 
 .kukui-dnd__chip-icon {
