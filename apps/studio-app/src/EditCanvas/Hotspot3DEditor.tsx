@@ -1,9 +1,22 @@
 import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Canvas, useFrame, useThree, type ThreeEvent } from "@react-three/fiber";
-import { OrbitControls, useGLTF } from "@react-three/drei";
+import { OrbitControls, Environment } from "@react-three/drei";
 import * as THREE from "three";
 import type { Hotspot3DConfig } from "@kukui/schemas";
 import { HotspotPin } from "@kukui/core/components/_shared/HotspotPin";
+import {
+  GLBErrorBoundary,
+  GLBLoadingOverlay,
+  useCompressedGLTF,
+} from "@kukui/core/components/_shared/glb-loader";
+import {
+  SketchfabViewer,
+  type SketchfabHotspot,
+} from "@kukui/core/components/_shared/SketchfabViewer";
+
+const LIGHTING_PRESETS = ["studio", "warehouse", "park", "forest", "lobby", "sunset"] as const;
+type LightingPreset = (typeof LIGHTING_PRESETS)[number];
+const DEFAULT_PRESET: LightingPreset = "studio";
 
 type Hotspot = Hotspot3DConfig["hotspots"][number];
 
@@ -18,6 +31,20 @@ const newHotspotId = (existing: string[]): string => {
   let i = existing.length + 1;
   while (existing.includes(`h-${i}`)) i += 1;
   return `h-${i}`;
+};
+
+/**
+ * Recognise a Sketchfab UID from any input shape — full Sketchfab URL,
+ * embed URL, or a bare 32-char hex string. Returns null if no UID
+ * pattern is found anywhere in the input, leaving the caller free to
+ * treat the value as a direct GLB URL instead.
+ */
+const parseSketchfabUid = (input: string): string | null => {
+  const trimmed = input.trim();
+  if (!trimmed) return null;
+  if (/^[a-f0-9]{32}$/i.test(trimmed)) return trimmed.toLowerCase();
+  const match = trimmed.match(/([a-f0-9]{32})/i);
+  return match?.[1] ? match[1].toLowerCase() : null;
 };
 
 /**
@@ -77,13 +104,14 @@ export function Hotspot3DEditor({
   const raycasterRef = useRef<THREE.Raycaster>(new THREE.Raycaster());
 
   const handleModelClick = (point: { x: number; y: number; z: number }) => {
-    const rounded = r3(point);
+    // Clicking the model while a pin is selected deselects — never
+    // repositions. Repositioning is drag-only so a stray click can't
+    // teleport a pin.
     if (selectedId) {
-      writeHotspots(
-        hotspots.map((h) => (h.id === selectedId ? { ...h, position: rounded } : h)),
-      );
+      setSelectedId(null);
       return;
     }
+    const rounded = r3(point);
     const id = newHotspotId(hotspots.map((h) => h.id));
     const next: Hotspot = {
       id,
@@ -183,23 +211,69 @@ export function Hotspot3DEditor({
       ]
     : [0, 0, 1];
 
+  const lightingPreset: LightingPreset =
+    config.lighting?.preset && LIGHTING_PRESETS.includes(config.lighting.preset as LightingPreset)
+      ? (config.lighting.preset as LightingPreset)
+      : DEFAULT_PRESET;
+
+  const sketchfabUid = config.model.sketchfabUid;
+  const sfHotspots: SketchfabHotspot[] = sketchfabUid
+    ? hotspots.map((h, i) => ({
+        id: h.id,
+        position: h.position,
+        label: h.label ?? h.id,
+        number: i + 1,
+        kind: selectedId === h.id ? "selected" : h.correct ? "correct" : "default",
+      }))
+    : [];
+
   return (
     <div className="ks-h3d-editor">
       <div className="ks-h3d-editor__viewport" ref={canvasRef}>
+        {sketchfabUid ? (
+          <>
+            <SketchfabViewer
+              uid={sketchfabUid}
+              hotspots={sfHotspots}
+              onClickModel={handleModelClick}
+              onPickHotspot={(id) => setSelectedId(id)}
+            />
+            <p className="ks-h3d-editor__hint">
+              {selectedId
+                ? "Drag the model to orbit. Click empty space or a numbered pin to deselect/select."
+                : "Click the model to drop a pin. Click a numbered pin to select it."}
+            </p>
+          </>
+        ) : (
+        <>
+        <GLBErrorBoundary
+          fallback={
+            <div className="kukui-glb-error" role="alert">
+              <strong className="kukui-glb-error__title">3D model couldn't load</strong>
+              <p className="kukui-glb-error__hint">
+                Check the URL, CORS headers, or compression format. Then update
+                the Model URL field below and try again.
+              </p>
+            </div>
+          }
+        >
         <Canvas
-          camera={{ position: initialPos, fov: 35, near: 0.001, far: 1000 }}
+          camera={{ position: initialPos, fov: 45, near: 0.001, far: 1000 }}
+          gl={{ toneMapping: THREE.ACESFilmicToneMapping, outputColorSpace: THREE.SRGBColorSpace }}
           onPointerMissed={() => setSelectedId(null)}
         >
-          <ambientLight intensity={0.6} />
-          <directionalLight position={[3, 5, 4]} intensity={1.0} />
-          <directionalLight position={[-3, 2, -2]} intensity={0.4} />
+          <Environment preset={lightingPreset} environmentIntensity={0.8} />
+          <ambientLight intensity={0.25} />
+          <directionalLight position={[3, 5, 4]} intensity={0.6} />
           <Suspense fallback={null}>
-            <ClickableModel
-              src={config.model.src}
-              scale={modelScale}
-              onPlace={handleModelClick}
-              sceneRef={modelRef}
-            />
+            {config.model.src ? (
+              <ClickableModel
+                src={config.model.src}
+                scale={modelScale}
+                onPlace={handleModelClick}
+                sceneRef={modelRef}
+              />
+            ) : null}
           </Suspense>
           {/* Pins live inside the scaled group so positions are interpreted
               in model-local space — same as the runtime. */}
@@ -246,12 +320,16 @@ export function Hotspot3DEditor({
             <FrameToModel modelRef={modelRef} scale={modelScale} />
           ) : null}
         </Canvas>
+        <GLBLoadingOverlay />
+        </GLBErrorBoundary>
         <p className="ks-h3d-editor__hint">
           Drag to orbit.{" "}
           {selectedId
-            ? "Drag the pin (or click the model) to move it. Click empty space to deselect."
+            ? "Drag the pin to move it. Click anywhere else to deselect."
             : "Click the model to drop a pin. Click a pin to select it."}
         </p>
+        </>
+        )}
       </div>
 
       <aside className="ks-h3d-editor__panel" aria-label="Hotspot list">
@@ -266,6 +344,32 @@ export function Hotspot3DEditor({
             Save current view
           </button>
         </header>
+        <ModelSourceField config={config} onChange={onChange} />
+        <label className="ks-h3d-editor__field">
+          <span>Lighting</span>
+          <select
+            value={lightingPreset}
+            disabled={Boolean(config.model.sketchfabUid)}
+            title={
+              config.model.sketchfabUid
+                ? "Sketchfab embeds use Sketchfab's own lighting"
+                : undefined
+            }
+            onChange={(e) =>
+              onChange({
+                ...config,
+                lighting: { ...(config.lighting ?? {}), preset: e.target.value as LightingPreset },
+              })
+            }
+          >
+            <option value="studio">Studio (neutral)</option>
+            <option value="warehouse">Warehouse (industrial)</option>
+            <option value="park">Park (outdoor)</option>
+            <option value="forest">Forest (warm outdoor)</option>
+            <option value="lobby">Lobby (soft tinted)</option>
+            <option value="sunset">Sunset (dramatic)</option>
+          </select>
+        </label>
         {hotspots.length === 0 ? (
           <p className="ks-h3d-editor__empty">
             No hotspots yet. Click the model on the left to drop one.
@@ -296,8 +400,6 @@ export function Hotspot3DEditor({
             ))}
           </ul>
         )}
-
-        <AttributionPanel config={config} onChange={onChange} />
 
         {selectedHotspot ? (
           <div className="ks-h3d-editor__fields">
@@ -365,7 +467,7 @@ function ClickableModel({
   onPlace: (p: { x: number; y: number; z: number }) => void;
   sceneRef?: React.MutableRefObject<THREE.Object3D | null>;
 }) {
-  const { scene } = useGLTF(src);
+  const { scene } = useCompressedGLTF(src);
   useEffect(() => {
     if (sceneRef) sceneRef.current = scene;
     return () => {
@@ -382,6 +484,74 @@ function ClickableModel({
         onPlace({ x: p.x / scale, y: p.y / scale, z: p.z / scale });
       }}
     />
+  );
+}
+
+/**
+ * Single input that accepts either a GLB URL or a Sketchfab URL/UID
+ * and routes the value into the correct schema field. Authors don't
+ * have to know which path they're on — paste a Sketchfab link and
+ * we switch to the embed; paste a .glb URL and we use the GLB path.
+ *
+ * Uses local state for the visible text so the user can type freely;
+ * commits the parsed value to the config on blur. Keeps the input
+ * in sync with external config changes (e.g. AI Accept, draft load)
+ * by deriving the displayed value from config when the input is not
+ * focused.
+ */
+function ModelSourceField({
+  config,
+  onChange,
+}: {
+  config: Hotspot3DConfig;
+  onChange: (next: Hotspot3DConfig) => void;
+}) {
+  const persistedDisplay = config.model.sketchfabUid
+    ? `https://sketchfab.com/models/${config.model.sketchfabUid}`
+    : (config.model.src ?? "");
+  const [text, setText] = useState(persistedDisplay);
+  const [focused, setFocused] = useState(false);
+  // When the config changes externally and the input isn't focused,
+  // pull the new value in so the field always shows current state.
+  useEffect(() => {
+    if (!focused) setText(persistedDisplay);
+  }, [persistedDisplay, focused]);
+
+  const commit = (raw: string) => {
+    const value = raw.trim();
+    const uid = parseSketchfabUid(value);
+    if (uid) {
+      onChange({
+        ...config,
+        model: { ...config.model, sketchfabUid: uid, src: undefined },
+      });
+    } else {
+      onChange({
+        ...config,
+        model: {
+          ...config.model,
+          src: value || undefined,
+          sketchfabUid: undefined,
+        },
+      });
+    }
+  };
+
+  return (
+    <label className="ks-h3d-editor__field">
+      <span>Model source</span>
+      <input
+        type="text"
+        placeholder="https://… (GLB URL or Sketchfab link)"
+        value={text}
+        onChange={(e) => setText(e.target.value)}
+        onFocus={() => setFocused(true)}
+        onBlur={() => {
+          setFocused(false);
+          commit(text);
+        }}
+      />
+    </label>
   );
 }
 
@@ -436,122 +606,6 @@ function FrameToModel({
     void scale;
   });
   return null;
-}
-
-/**
- * Manual attribution form. If the author's model is CC-licensed
- * (most "free" 3D models are), filling these fields renders a
- * credit line in the activity footer. Works for any source — NIH
- * 3D, Smithsonian, Sketchfab, an institution's own GitHub — since
- * it's plain text + URL fields, not coupled to a specific API.
- */
-function AttributionPanel({
-  config,
-  onChange,
-}: {
-  config: Hotspot3DConfig;
-  onChange: (next: Hotspot3DConfig) => void;
-}) {
-  const attribution = config.model.attribution;
-  const [expanded, setExpanded] = useState(Boolean(attribution));
-
-  const patch = (
-    field: keyof NonNullable<Hotspot3DConfig["model"]["attribution"]>,
-    value: string,
-  ) => {
-    const trimmed = value.trim();
-    const next = { ...(attribution ?? { author: "" }), [field]: trimmed || undefined };
-    if (!next.author) {
-      // Clearing the author drops the whole attribution — the runtime
-      // requires at least an author to render a credit line.
-      onChange({ ...config, model: { ...config.model, attribution: undefined } });
-      return;
-    }
-    onChange({
-      ...config,
-      model: { ...config.model, attribution: next },
-    });
-  };
-
-  if (!expanded) {
-    return (
-      <section className="ks-h3d-editor__attribution">
-        <button
-          type="button"
-          className="ks-h3d-editor__attribution-toggle"
-          onClick={() => setExpanded(true)}
-        >
-          {attribution
-            ? `Edit attribution (Model by ${attribution.author})`
-            : "+ Add attribution (CC license required)"}
-        </button>
-      </section>
-    );
-  }
-
-  return (
-    <section className="ks-h3d-editor__attribution">
-      <header className="ks-h3d-editor__attribution-header">
-        <h4>Attribution</h4>
-        <button
-          type="button"
-          className="ks-h3d-editor__attribution-toggle"
-          onClick={() => setExpanded(false)}
-        >
-          Done
-        </button>
-      </header>
-      <p className="ks-h3d-editor__attribution-hint">
-        Fill in if your model is CC-licensed. The credit appears in
-        the activity footer for learners.
-      </p>
-      <label className="ks-h3d-editor__field">
-        <span>Author *</span>
-        <input
-          type="text"
-          value={attribution?.author ?? ""}
-          placeholder="e.g. NIH 3D"
-          onChange={(e) => patch("author", e.target.value)}
-        />
-      </label>
-      <label className="ks-h3d-editor__field">
-        <span>Author URL</span>
-        <input
-          type="url"
-          value={attribution?.authorUrl ?? ""}
-          placeholder="https://…"
-          onChange={(e) => patch("authorUrl", e.target.value)}
-        />
-      </label>
-      <label className="ks-h3d-editor__field">
-        <span>Source URL</span>
-        <input
-          type="url"
-          value={attribution?.sourceUrl ?? ""}
-          placeholder="https://… (where the model is hosted)"
-          onChange={(e) => patch("sourceUrl", e.target.value)}
-        />
-      </label>
-      <label className="ks-h3d-editor__field">
-        <span>License</span>
-        <input
-          type="text"
-          value={attribution?.license ?? ""}
-          placeholder="e.g. CC BY 4.0"
-          onChange={(e) => patch("license", e.target.value)}
-        />
-      </label>
-      <label className="ks-h3d-editor__field">
-        <span>License URL</span>
-        <input
-          type="url"
-          value={attribution?.licenseUrl ?? ""}
-          placeholder="https://creativecommons.org/licenses/…"
-          onChange={(e) => patch("licenseUrl", e.target.value)}
-        />
-      </label>
-    </section>
-  );
 }
 
 /**

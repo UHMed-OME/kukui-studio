@@ -13,6 +13,8 @@
     "./scorm": "./src/scorm.ts",
     "./activity-host": "./src/activity-host.tsx",
     "./components/_shared/HotspotPin": "./src/components/_shared/HotspotPin.tsx",
+    "./components/_shared/glb-loader": "./src/components/_shared/glb-loader.tsx",
+    "./components/_shared/SketchfabViewer": "./src/components/_shared/SketchfabViewer.tsx",
     "./components/registry": "./src/components/registry.ts",
     "./components/multiple-choice": "./src/components/multiple-choice/index.ts",
     "./components/fill-in-the-blanks": "./src/components/fill-in-the-blanks/index.ts",
@@ -60,6 +62,7 @@
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "three": "^0.171.0",
+    "three-stdlib": "^2.36.0",
     "zod": "^4.0.0"
   },
   "devDependencies": {

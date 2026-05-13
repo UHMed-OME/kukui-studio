@@ -1,0 +1,54 @@
+.kukui-glb-loading {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background: color-mix(in oklab, var(--color-canvas-3d, #0b0b10) 60%, transparent);
+  color: var(--color-text-on-canvas, #ffffff);
+  font-size: 0.875rem;
+  pointer-events: none;
+  backdrop-filter: blur(2px);
+}
+
+.kukui-glb-loading__spinner {
+  width: 1rem;
+  height: 1rem;
+  border-radius: 50%;
+  border: 2px solid color-mix(in oklab, currentColor 30%, transparent);
+  border-top-color: currentColor;
+  animation: kukui-glb-spin 1s linear infinite;
+}
+
+@keyframes kukui-glb-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.kukui-glb-error {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 1.5rem;
+  text-align: center;
+  background: var(--color-canvas-3d, #0b0b10);
+  color: var(--color-text-on-canvas, #ffffff);
+}
+
+.kukui-glb-error__title {
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+.kukui-glb-error__hint {
+  font-size: 0.8125rem;
+  opacity: 0.8;
+  max-width: 36ch;
+  line-height: 1.4;
+}

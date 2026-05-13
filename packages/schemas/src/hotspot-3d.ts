@@ -16,13 +16,21 @@ export const Hotspot3DConfigSchema = z
     prompt: z.string().min(1),
     model: z
       .object({
-        src: SAFE_MEDIA_URL,
+        // Direct GLB/GLTF URL. Required unless `sketchfabUid` is set.
+        src: SAFE_MEDIA_URL.optional(),
+        // Sketchfab model UID (the 32-char hex from a Sketchfab URL).
+        // When set, the activity embeds Sketchfab's viewer via their
+        // Viewer API instead of loading a GLB directly — bypasses the
+        // OAuth requirement for downloading models and lets authors
+        // use any public CC model on Sketchfab.
+        sketchfabUid: z
+          .string()
+          .regex(/^[a-f0-9]{32}$/i, "Sketchfab UID must be 32 hex characters")
+          .optional(),
         scale: z.number().positive().optional(),
         /**
          * Creative Commons / Sketchfab attribution. Rendered in the
-         * activity footer when present. Authors who paste a Sketchfab
-         * URL into the editor's "Source URL" field get this auto-
-         * populated from the Sketchfab public API.
+         * activity footer when present.
          */
         attribution: z
           .object({
@@ -35,7 +43,10 @@ export const Hotspot3DConfigSchema = z
           .strict()
           .optional(),
       })
-      .strict(),
+      .strict()
+      .refine((m) => Boolean(m.src) || Boolean(m.sketchfabUid), {
+        message: "model needs either `src` (GLB URL) or `sketchfabUid`",
+      }),
     camera: z
       .object({
         mode: z.enum(["orbit"]).optional(),
@@ -71,6 +82,18 @@ export const Hotspot3DConfigSchema = z
         enableRetry: z.boolean().optional(),
         showHotspotMarkers: z.boolean().optional(),
         allowOrbit: z.boolean().optional(),
+      })
+      .strict()
+      .optional(),
+    lighting: z
+      .object({
+        // Preset names map to drei's <Environment preset> HDRIs.
+        // "studio" is the default neutral white-grey for clinical/medical
+        // models; outdoor presets warm up natural-subject models; "sunset"
+        // is more dramatic for hero shots.
+        preset: z
+          .enum(["studio", "warehouse", "park", "forest", "lobby", "sunset"])
+          .optional(),
       })
       .strict()
       .optional(),

@@ -1,12 +1,32 @@
 import { Suspense, useEffect, useId, useMemo, useRef, useState } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { OrbitControls, useGLTF } from "@react-three/drei";
+import { OrbitControls, Environment } from "@react-three/drei";
 import * as THREE from "three";
 import type { Hotspot3DConfig } from "@kukui/schemas";
 import type { ActivityProps } from "../../types.js";
 import { SafeHtml } from "../../safe-html.js";
 import { HotspotPin } from "../_shared/HotspotPin.js";
+import {
+  GLBErrorBoundary,
+  GLBLoadingOverlay,
+  useCompressedGLTF,
+} from "../_shared/glb-loader.js";
+import {
+  SketchfabViewer,
+  type SketchfabHotspot,
+} from "../_shared/SketchfabViewer.js";
 import "./Hotspot3D.css";
+
+/**
+ * Lighting presets selectable per-activity via `config.lighting.preset`.
+ * Maps to drei's <Environment preset> values. "studio" is the default
+ * — neutral white-grey reflections, works for any subject. Authors can
+ * pick "warehouse" for industrial, "park"/"forest" for outdoor warmth,
+ * "lobby" for soft tinted, or "sunset" for dramatic.
+ */
+const LIGHTING_PRESETS = ["studio", "warehouse", "park", "forest", "lobby", "sunset"] as const;
+type LightingPreset = (typeof LIGHTING_PRESETS)[number];
+const DEFAULT_PRESET: LightingPreset = "studio";
 
 type Stage = "answering" | "submitted";
 
@@ -278,10 +298,54 @@ function Hotspot3DScene({
     );
   }
 
+  // Sketchfab embed path: when the author chose a Sketchfab UID, we
+  // embed Sketchfab's viewer iframe instead of loading a GLB. The
+  // hotspot overlay (numbered HTML pins) is rendered on top by
+  // SketchfabViewer using projected screen coordinates.
+  if (config.model.sketchfabUid) {
+    const sfHotspots: SketchfabHotspot[] = config.hotspots.map((h, i) => {
+      const isSelected = selectedHotspotId === h.id;
+      const kind = submitted
+        ? isSelected
+          ? h.correct
+            ? "correct"
+            : "incorrect"
+          : h.correct
+            ? "reveal"
+            : "default"
+        : isSelected
+          ? "selected"
+          : "default";
+      return {
+        id: h.id,
+        position: h.position,
+        label: h.label ?? h.id,
+        number: i + 1,
+        kind,
+      };
+    });
+    return (
+      <div className="kukui-h3d__canvas-wrap">
+        <SketchfabViewer
+          uid={config.model.sketchfabUid}
+          hotspots={sfHotspots}
+          onPickHotspot={(id) => {
+            if (!disabled) onPick(id);
+          }}
+          showMarkers={config.behaviour?.showHotspotMarkers ?? true}
+        />
+      </div>
+    );
+  }
+
   const showMarkers = config.behaviour?.showHotspotMarkers ?? true;
   const allowOrbit = config.behaviour?.allowOrbit ?? true;
   const cameraCfg = config.camera ?? {};
   const modelScale = config.model.scale ?? 1;
+  const lightingPreset: LightingPreset =
+    config.lighting?.preset && LIGHTING_PRESETS.includes(config.lighting.preset as LightingPreset)
+      ? (config.lighting.preset as LightingPreset)
+      : DEFAULT_PRESET;
   // The model is the only meaningful occluder. Pins raycast against it
   // each frame to decide whether to render the "behind" style.
   const modelRef = useRef<THREE.Object3D | null>(null);
@@ -300,63 +364,79 @@ function Hotspot3DScene({
 
   return (
     <div className="kukui-h3d__canvas-wrap">
-      <Canvas camera={{ position: initialPos, fov: 35, near: 0.001, far: 1000 }}>
-        <ambientLight intensity={0.6} />
-        <directionalLight position={[3, 5, 4]} intensity={1.0} />
-        <directionalLight position={[-3, 2, -2]} intensity={0.4} />
-        <Suspense fallback={null}>
-          <Model src={config.model.src} scale={modelScale} sceneRef={modelRef} />
-        </Suspense>
-        {/* Pins live inside a scaled group so positions are interpreted
-            in model-local space — matches the editor's storage format. */}
-        {showMarkers ? (
-          <group scale={modelScale}>
-            {config.hotspots.map((h, i) => {
-              const isSelected = selectedHotspotId === h.id;
-              const kind = submitted
-                ? isSelected
-                  ? h.correct
-                    ? "correct"
-                    : "incorrect"
-                  : h.correct
-                    ? "reveal"
-                    : "default"
-                : isSelected
-                  ? "selected"
-                  : "default";
-              return (
-                <HotspotPin
-                  key={h.id}
-                  position={h.position}
-                  number={i + 1}
-                  label={h.label ?? h.id}
-                  kind={kind}
-                  disabled={disabled}
-                  onClick={() => onPick(h.id)}
-                  occluders={[modelRef.current]}
-                  ariaLabel={`Hotspot ${i + 1}: ${h.label ?? h.id}`}
-                />
-              );
-            })}
-          </group>
-        ) : null}
-        {allowOrbit ? (
-          <OrbitControls
-            enablePan={false}
-            target={[
-              cameraCfg.target?.x ?? 0,
-              cameraCfg.target?.y ?? 0,
-              cameraCfg.target?.z ?? 0,
-            ]}
-            minDistance={cameraCfg.minDistance}
-            maxDistance={cameraCfg.maxDistance}
-            makeDefault
-          />
-        ) : null}
-        {!hasPinnedView ? (
-          <FrameToModel modelRef={modelRef} />
-        ) : null}
-      </Canvas>
+      <GLBErrorBoundary
+        fallback={
+          <div className="kukui-glb-error" role="alert">
+            <strong className="kukui-glb-error__title">3D model couldn't load</strong>
+            <p className="kukui-glb-error__hint">
+              The file may be missing, blocked by CORS, or use an unsupported
+              compression format. Use the keyboard list below to answer.
+            </p>
+          </div>
+        }
+      >
+        <Canvas
+          camera={{ position: initialPos, fov: 45, near: 0.001, far: 1000 }}
+          gl={{ toneMapping: THREE.ACESFilmicToneMapping, outputColorSpace: THREE.SRGBColorSpace }}
+        >
+          <Environment preset={lightingPreset} environmentIntensity={0.8} />
+          <ambientLight intensity={0.25} />
+          <directionalLight position={[3, 5, 4]} intensity={0.6} />
+          <Suspense fallback={null}>
+            {config.model.src ? (
+              <Model src={config.model.src} scale={modelScale} sceneRef={modelRef} />
+            ) : null}
+          </Suspense>
+          {/* Pins live inside a scaled group so positions are interpreted
+              in model-local space — matches the editor's storage format. */}
+          {showMarkers ? (
+            <group scale={modelScale}>
+              {config.hotspots.map((h, i) => {
+                const isSelected = selectedHotspotId === h.id;
+                const kind = submitted
+                  ? isSelected
+                    ? h.correct
+                      ? "correct"
+                      : "incorrect"
+                    : h.correct
+                      ? "reveal"
+                      : "default"
+                  : isSelected
+                    ? "selected"
+                    : "default";
+                return (
+                  <HotspotPin
+                    key={h.id}
+                    position={h.position}
+                    number={i + 1}
+                    label={h.label ?? h.id}
+                    kind={kind}
+                    disabled={disabled}
+                    onClick={() => onPick(h.id)}
+                    occluders={[modelRef.current]}
+                    ariaLabel={`Hotspot ${i + 1}: ${h.label ?? h.id}`}
+                  />
+                );
+              })}
+            </group>
+          ) : null}
+          {allowOrbit ? (
+            <OrbitControls
+              enablePan={false}
+              target={[
+                cameraCfg.target?.x ?? 0,
+                cameraCfg.target?.y ?? 0,
+                cameraCfg.target?.z ?? 0,
+              ]}
+              minDistance={cameraCfg.minDistance}
+              maxDistance={cameraCfg.maxDistance}
+              makeDefault
+            />
+          ) : null}
+          {!hasPinnedView ? <FrameToModel modelRef={modelRef} /> : null}
+        </Canvas>
+        <GLBLoadingOverlay />
+      </GLBErrorBoundary>
     </div>
   );
 }
@@ -416,7 +496,7 @@ function Model({
   scale: number;
   sceneRef?: React.MutableRefObject<THREE.Object3D | null>;
 }) {
-  const { scene } = useGLTF(src);
+  const { scene } = useCompressedGLTF(src);
   useEffect(() => {
     if (sceneRef) sceneRef.current = scene;
     return () => {

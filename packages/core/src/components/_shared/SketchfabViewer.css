@@ -1,0 +1,42 @@
+.kukui-sketchfab {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background: var(--color-canvas-3d, #0b0b10);
+}
+
+.kukui-sketchfab__iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  display: block;
+}
+
+/* Overlay pins sit above the iframe. The iframe captures its own
+   pointer events for Sketchfab's orbit gesture — the pin's
+   pointer-events: auto on the button itself wins over the wrap. */
+.kukui-sketchfab__pin {
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: 5;
+  /* Position is updated every frame via inline transform. The
+     base transform here would be overridden — only here so the
+     element has a starting point before the first projection. */
+  pointer-events: auto;
+  will-change: transform, opacity;
+}
+
+.kukui-visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
