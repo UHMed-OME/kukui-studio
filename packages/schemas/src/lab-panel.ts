@@ -117,7 +117,7 @@ export const LabPanelConfigSchema = z
       .optional(),
     overallFeedback: z.array(ScoreBand).optional(),
     scoring: ScoringSchema.optional(),
-    appearance: AppearanceSchema.optional(),
+    appearance: AppearanceSchema.default({ theme: "auto" }),
   })
   .strict();
 

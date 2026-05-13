@@ -54,7 +54,7 @@ export const ConfidenceMeterConfigSchema = z
       })
       .strict()
       .optional(),
-    appearance: AppearanceSchema.optional(),
+    appearance: AppearanceSchema.default({ theme: "auto" }),
   })
   .strict();
 

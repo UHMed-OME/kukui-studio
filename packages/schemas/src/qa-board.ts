@@ -50,7 +50,7 @@ export const QABoardConfigSchema = z
       })
       .strict()
       .optional(),
-    appearance: AppearanceSchema.optional(),
+    appearance: AppearanceSchema.default({ theme: "auto" }),
   })
   .strict();
 

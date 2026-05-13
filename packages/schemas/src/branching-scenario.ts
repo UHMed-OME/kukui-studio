@@ -74,7 +74,7 @@ export const BranchingScenarioConfigSchema = z
       .strict()
       .optional(),
     scoring: ScoringSchema.optional(),
-    appearance: AppearanceSchema.optional(),
+    appearance: AppearanceSchema.default({ theme: "auto" }),
   })
   .strict()
   .refine((cfg) => cfg.nodes.some((n) => n.id === cfg.startNodeId), {

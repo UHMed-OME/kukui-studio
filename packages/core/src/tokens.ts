@@ -16,17 +16,17 @@
  * means: design-system.md → CSS @theme → here.
  */
 export const tokens = {
-  bg: "#fafaf9",
-  surface: "#fdfbf6",
-  textPrimary: "#1c1917",
-  textSecondary: "#57534e",
-  border: "#e7e5e4",
-  borderHover: "#d6d3d1",
+  bg: "#fcf8f2",
+  surface: "#ffffff",
+  textPrimary: "#1c1e20",
+  textSecondary: "#606069",
+  border: "#dad2c6",
+  borderHover: "#bbae9a",
   primary: "#7b4324",
   primaryHover: "#9b5830",
   success: "#2e6e41",
   error: "#c34132",
-  tipBg: "#f5f5f4",
+  tipBg: "#f2f0e8",
   /** 3D canvas backdrop — added 2026-05-06 for r3f scenes. */
   canvas3d: "#0b0b10",
 } as const;

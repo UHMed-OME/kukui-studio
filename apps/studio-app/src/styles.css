@@ -35,27 +35,21 @@
 }
 
 @theme {
-  /* Stone palette — neutral off-white surfaces with kukui brown reserved
-     for accents. Replaced 2026-05-11 from the original cream-and-brown
-     palette: editor chrome felt too warm for long authoring sessions, and
-     the tinted-card pattern fought the content. Brown still appears on:
-     selected option borders, primary text accents (threshold readout),
-     and the gradebook status pill. Dark-mode variants override below via
-     html[data-color-scheme="dark"].
-
-     Surface is a faintly warm off-white (#fdfbf6) instead of pure
-     #ffffff — pure white reads as "clinical glare" against the warm-
-     neutral page bg, and gives cards a hard edge. The tiny warmth
-     (≈ stone with a hint of cream) keeps the editorial feel without
-     reintroducing the heavy cream of the original palette. */
-  --color-bg: #fafaf9;
-  --color-surface: #fdfbf6;
-  --color-surface-alt: #f5f5f4;
-  --color-text-primary: #1c1917;
-  --color-text-secondary: #57534e;
-  --color-text-muted: #68625d;
-  --color-border: #e7e5e4;
-  --color-border-hover: #d6d3d1;
+  /* Cream-and-brown — the original Kukui palette. Restored 2026-05-12
+     as the light-mode default after the stone-neutral experiment felt
+     too cool against the editorial display type and kukui-nut brand.
+     Dark mode and the other schemes (high-contrast, sepia, OLED,
+     aloha, kalo, lab, twilight, print) still override via
+     [data-color-scheme="<name>"] blocks below; this @theme block is
+     the light default that those overlay on top of. */
+  --color-bg: #fcf8f2;
+  --color-surface: #ffffff;
+  --color-surface-alt: #faf6ee;
+  --color-text-primary: #1c1e20;
+  --color-text-secondary: #606069;
+  --color-text-muted: #6e6e76;
+  --color-border: #dad2c6;
+  --color-border-hover: #bbae9a;
   --color-primary: #7b4324;
   --color-primary-hover: #9b5830;
   --color-primary-soft: rgb(123 67 36 / 0.07);
@@ -63,7 +57,7 @@
   --color-success-soft: rgb(46 110 65 / 0.1);
   --color-error: #c34132;
   --color-error-soft: rgb(195 65 50 / 0.08);
-  --color-tip-bg: #f5f5f4;
+  --color-tip-bg: #f2f0e8;
   --color-canvas-3d: #0b0b10;
 
   --spacing-xs: 4px;
@@ -158,16 +152,16 @@
 /* Light mode — explicit declarations so a nested wrapper can revert
    a dark Studio subtree to light tokens (used by Preview when the
    activity's author has pinned appearance.theme to "light"). Mirrors
-   the @theme defaults at :root. */
+   the @theme cream defaults at :root. */
 [data-color-scheme="light"] {
-  --color-bg: #fafaf9;
-  --color-surface: #fdfbf6;
-  --color-surface-alt: #f5f5f4;
-  --color-text-primary: #1c1917;
-  --color-text-secondary: #57534e;
-  --color-text-muted: #68625d;
-  --color-border: #e7e5e4;
-  --color-border-hover: #d6d3d1;
+  --color-bg: #fcf8f2;
+  --color-surface: #ffffff;
+  --color-surface-alt: #faf6ee;
+  --color-text-primary: #1c1e20;
+  --color-text-secondary: #606069;
+  --color-text-muted: #6e6e76;
+  --color-border: #dad2c6;
+  --color-border-hover: #bbae9a;
   --color-primary: #7b4324;
   --color-primary-hover: #9b5830;
   --color-primary-soft: rgb(123 67 36 / 0.07);
@@ -175,7 +169,7 @@
   --color-success-soft: rgb(46 110 65 / 0.1);
   --color-error: #c34132;
   --color-error-soft: rgb(195 65 50 / 0.08);
-  --color-tip-bg: #f5f5f4;
+  --color-tip-bg: #f2f0e8;
   --color-canvas-3d: #0b0b10;
 
   --bloom-remember: #c2861c;
@@ -1430,7 +1424,11 @@ button {
 }
 
 .kukui-studio-preview {
-  background: var(--color-bg);
+  /* Stage bg sits a notch darker than --color-surface so the activity
+     card (which uses --color-surface) has visible separation from the
+     panel chrome. Was --color-bg (stone-50, #fafaf9) which was too
+     close to the card's #fdfbf6 surface — they blended. */
+  background: var(--color-surface-alt);
   padding: 0;
 }
 
@@ -3581,6 +3579,169 @@ html[data-theme="glass"][data-color-scheme="dark"] .ks-array-item__bar {
 
 html[data-theme="glass"][data-color-scheme="dark"] .kukui-theme-toggle {
   background: rgba(255, 255, 255, 0.06);
+}
+
+/* =================================================================== */
+/* Glass × non-light/dark schemes — flat-glass treatment                */
+/* =================================================================== */
+/* The glass-theme rules above hardcode cream/white substrates that
+   only make sense for the light and dark palettes (which have proper
+   glass variants). For high-contrast, sepia, OLED, print, aloha,
+   kalo, lab, twilight: re-point the glass tokens at the scheme's own
+   surface/border colors, drop the blur, and override the hardcoded
+   rgba(255,…)/rgba(252,…) cream surfaces on chrome elements so the
+   header/sidebar/footer pick up the scheme palette instead of
+   bleeding cream over it. */
+
+html[data-theme="glass"][data-color-scheme="high-contrast"],
+html[data-theme="glass"][data-color-scheme="high-contrast-dark"],
+html[data-theme="glass"][data-color-scheme="sepia"],
+html[data-theme="glass"][data-color-scheme="oled"],
+html[data-theme="glass"][data-color-scheme="print"],
+html[data-theme="glass"][data-color-scheme="aloha"],
+html[data-theme="glass"][data-color-scheme="kalo"],
+html[data-theme="glass"][data-color-scheme="lab"],
+html[data-theme="glass"][data-color-scheme="twilight"] {
+  --color-surface-glass: var(--color-surface);
+  --color-surface-glass-strong: var(--color-surface);
+  --color-border-glass: var(--color-border);
+  --color-border-glass-deep: var(--color-border);
+  --backdrop-glass: none;
+  --shadow-glass-card: 0 1px 3px rgb(0 0 0 / 0.06);
+  --shadow-glass-pop: 0 4px 12px rgb(0 0 0 / 0.10);
+}
+
+html[data-theme="glass"][data-color-scheme="high-contrast"] body,
+html[data-theme="glass"][data-color-scheme="high-contrast-dark"] body,
+html[data-theme="glass"][data-color-scheme="sepia"] body,
+html[data-theme="glass"][data-color-scheme="oled"] body,
+html[data-theme="glass"][data-color-scheme="print"] body,
+html[data-theme="glass"][data-color-scheme="aloha"] body,
+html[data-theme="glass"][data-color-scheme="kalo"] body,
+html[data-theme="glass"][data-color-scheme="lab"] body,
+html[data-theme="glass"][data-color-scheme="twilight"] body {
+  background: var(--color-bg);
+}
+
+html[data-theme="glass"][data-color-scheme="high-contrast"] .kukui-studio-header,
+html[data-theme="glass"][data-color-scheme="high-contrast"] .kukui-studio-sidebar,
+html[data-theme="glass"][data-color-scheme="high-contrast"] .kukui-studio-panel,
+html[data-theme="glass"][data-color-scheme="high-contrast-dark"] .kukui-studio-header,
+html[data-theme="glass"][data-color-scheme="high-contrast-dark"] .kukui-studio-sidebar,
+html[data-theme="glass"][data-color-scheme="high-contrast-dark"] .kukui-studio-panel,
+html[data-theme="glass"][data-color-scheme="sepia"] .kukui-studio-header,
+html[data-theme="glass"][data-color-scheme="sepia"] .kukui-studio-sidebar,
+html[data-theme="glass"][data-color-scheme="sepia"] .kukui-studio-panel,
+html[data-theme="glass"][data-color-scheme="oled"] .kukui-studio-header,
+html[data-theme="glass"][data-color-scheme="oled"] .kukui-studio-sidebar,
+html[data-theme="glass"][data-color-scheme="oled"] .kukui-studio-panel,
+html[data-theme="glass"][data-color-scheme="print"] .kukui-studio-header,
+html[data-theme="glass"][data-color-scheme="print"] .kukui-studio-sidebar,
+html[data-theme="glass"][data-color-scheme="print"] .kukui-studio-panel,
+html[data-theme="glass"][data-color-scheme="aloha"] .kukui-studio-header,
+html[data-theme="glass"][data-color-scheme="aloha"] .kukui-studio-sidebar,
+html[data-theme="glass"][data-color-scheme="aloha"] .kukui-studio-panel,
+html[data-theme="glass"][data-color-scheme="kalo"] .kukui-studio-header,
+html[data-theme="glass"][data-color-scheme="kalo"] .kukui-studio-sidebar,
+html[data-theme="glass"][data-color-scheme="kalo"] .kukui-studio-panel,
+html[data-theme="glass"][data-color-scheme="lab"] .kukui-studio-header,
+html[data-theme="glass"][data-color-scheme="lab"] .kukui-studio-sidebar,
+html[data-theme="glass"][data-color-scheme="lab"] .kukui-studio-panel,
+html[data-theme="glass"][data-color-scheme="twilight"] .kukui-studio-header,
+html[data-theme="glass"][data-color-scheme="twilight"] .kukui-studio-sidebar,
+html[data-theme="glass"][data-color-scheme="twilight"] .kukui-studio-panel {
+  background: var(--color-surface);
+  border-color: var(--color-border);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+
+/* Sidebar button hover/active surfaces are hardcoded rgba(255,255,255,…)
+   in the glass theme; replace with token-driven mixes that work on any
+   substrate. */
+html[data-theme="glass"][data-color-scheme="high-contrast"] .kukui-studio-sidebar__btn:hover,
+html[data-theme="glass"][data-color-scheme="high-contrast-dark"] .kukui-studio-sidebar__btn:hover,
+html[data-theme="glass"][data-color-scheme="sepia"] .kukui-studio-sidebar__btn:hover,
+html[data-theme="glass"][data-color-scheme="oled"] .kukui-studio-sidebar__btn:hover,
+html[data-theme="glass"][data-color-scheme="print"] .kukui-studio-sidebar__btn:hover,
+html[data-theme="glass"][data-color-scheme="aloha"] .kukui-studio-sidebar__btn:hover,
+html[data-theme="glass"][data-color-scheme="kalo"] .kukui-studio-sidebar__btn:hover,
+html[data-theme="glass"][data-color-scheme="lab"] .kukui-studio-sidebar__btn:hover,
+html[data-theme="glass"][data-color-scheme="twilight"] .kukui-studio-sidebar__btn:hover {
+  background: color-mix(in oklab, var(--color-text-primary) 8%, transparent);
+}
+
+html[data-theme="glass"][data-color-scheme="high-contrast"] .kukui-studio-sidebar__btn.is-active,
+html[data-theme="glass"][data-color-scheme="high-contrast-dark"] .kukui-studio-sidebar__btn.is-active,
+html[data-theme="glass"][data-color-scheme="sepia"] .kukui-studio-sidebar__btn.is-active,
+html[data-theme="glass"][data-color-scheme="oled"] .kukui-studio-sidebar__btn.is-active,
+html[data-theme="glass"][data-color-scheme="print"] .kukui-studio-sidebar__btn.is-active,
+html[data-theme="glass"][data-color-scheme="aloha"] .kukui-studio-sidebar__btn.is-active,
+html[data-theme="glass"][data-color-scheme="kalo"] .kukui-studio-sidebar__btn.is-active,
+html[data-theme="glass"][data-color-scheme="lab"] .kukui-studio-sidebar__btn.is-active,
+html[data-theme="glass"][data-color-scheme="twilight"] .kukui-studio-sidebar__btn.is-active {
+  background: color-mix(in oklab, var(--bloom-color, var(--color-primary)) 16%, transparent);
+}
+
+/* Form inputs and array items in glass mode use rgba(255,255,255,…)
+   which renders nearly-white on dark schemes. Flatten to scheme
+   surface tokens for non-light/dark schemes. */
+html[data-theme="glass"][data-color-scheme="high-contrast"] .rjsf input,
+html[data-theme="glass"][data-color-scheme="high-contrast"] .rjsf select,
+html[data-theme="glass"][data-color-scheme="high-contrast"] .rjsf textarea,
+html[data-theme="glass"][data-color-scheme="high-contrast-dark"] .rjsf input,
+html[data-theme="glass"][data-color-scheme="high-contrast-dark"] .rjsf select,
+html[data-theme="glass"][data-color-scheme="high-contrast-dark"] .rjsf textarea,
+html[data-theme="glass"][data-color-scheme="sepia"] .rjsf input,
+html[data-theme="glass"][data-color-scheme="sepia"] .rjsf select,
+html[data-theme="glass"][data-color-scheme="sepia"] .rjsf textarea,
+html[data-theme="glass"][data-color-scheme="oled"] .rjsf input,
+html[data-theme="glass"][data-color-scheme="oled"] .rjsf select,
+html[data-theme="glass"][data-color-scheme="oled"] .rjsf textarea,
+html[data-theme="glass"][data-color-scheme="print"] .rjsf input,
+html[data-theme="glass"][data-color-scheme="print"] .rjsf select,
+html[data-theme="glass"][data-color-scheme="print"] .rjsf textarea,
+html[data-theme="glass"][data-color-scheme="aloha"] .rjsf input,
+html[data-theme="glass"][data-color-scheme="aloha"] .rjsf select,
+html[data-theme="glass"][data-color-scheme="aloha"] .rjsf textarea,
+html[data-theme="glass"][data-color-scheme="kalo"] .rjsf input,
+html[data-theme="glass"][data-color-scheme="kalo"] .rjsf select,
+html[data-theme="glass"][data-color-scheme="kalo"] .rjsf textarea,
+html[data-theme="glass"][data-color-scheme="lab"] .rjsf input,
+html[data-theme="glass"][data-color-scheme="lab"] .rjsf select,
+html[data-theme="glass"][data-color-scheme="lab"] .rjsf textarea,
+html[data-theme="glass"][data-color-scheme="twilight"] .rjsf input,
+html[data-theme="glass"][data-color-scheme="twilight"] .rjsf select,
+html[data-theme="glass"][data-color-scheme="twilight"] .rjsf textarea,
+html[data-theme="glass"][data-color-scheme="high-contrast"] .ks-array-item,
+html[data-theme="glass"][data-color-scheme="high-contrast-dark"] .ks-array-item,
+html[data-theme="glass"][data-color-scheme="sepia"] .ks-array-item,
+html[data-theme="glass"][data-color-scheme="oled"] .ks-array-item,
+html[data-theme="glass"][data-color-scheme="print"] .ks-array-item,
+html[data-theme="glass"][data-color-scheme="aloha"] .ks-array-item,
+html[data-theme="glass"][data-color-scheme="kalo"] .ks-array-item,
+html[data-theme="glass"][data-color-scheme="lab"] .ks-array-item,
+html[data-theme="glass"][data-color-scheme="twilight"] .ks-array-item {
+  background: var(--color-surface);
+  border-color: var(--color-border);
+  color: var(--color-text-primary);
+}
+
+/* Studio footer paints a hardcoded var(--color-surface) which is fine —
+   but the original glass footer didn't override it. Belt-and-suspenders
+   override here so the footer matches the scheme's surface explicitly. */
+html[data-theme="glass"][data-color-scheme="high-contrast"] .kukui-studio-footer,
+html[data-theme="glass"][data-color-scheme="high-contrast-dark"] .kukui-studio-footer,
+html[data-theme="glass"][data-color-scheme="sepia"] .kukui-studio-footer,
+html[data-theme="glass"][data-color-scheme="oled"] .kukui-studio-footer,
+html[data-theme="glass"][data-color-scheme="print"] .kukui-studio-footer,
+html[data-theme="glass"][data-color-scheme="aloha"] .kukui-studio-footer,
+html[data-theme="glass"][data-color-scheme="kalo"] .kukui-studio-footer,
+html[data-theme="glass"][data-color-scheme="lab"] .kukui-studio-footer,
+html[data-theme="glass"][data-color-scheme="twilight"] .kukui-studio-footer {
+  background: var(--color-surface);
+  border-top-color: var(--color-border);
+  color: var(--color-text-secondary);
 }
 
 /* ---------- Footer ---------- */

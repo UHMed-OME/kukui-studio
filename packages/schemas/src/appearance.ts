@@ -43,7 +43,14 @@ export type Theme = (typeof THEME_VALUES)[number];
 
 export const AppearanceSchema = z
   .object({
-    theme: z.enum(THEME_VALUES).optional(),
+    /**
+     * Defaulted to "auto" so the editor dropdown always shows a value
+     * (rather than an empty/placeholder option), and so config consumers
+     * can read `theme` without an additional undefined check. Zod's
+     * `.default()` only kicks in when the field is absent or undefined
+     * on parse; existing JSON with `theme: "dark"` is preserved.
+     */
+    theme: z.enum(THEME_VALUES).default("auto"),
   })
   .strict();
 

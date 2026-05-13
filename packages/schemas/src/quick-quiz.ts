@@ -67,7 +67,7 @@ export const QuickQuizConfigSchema = z
       })
       .strict()
       .optional(),
-    appearance: AppearanceSchema.optional(),
+    appearance: AppearanceSchema.default({ theme: "auto" }),
   })
   .strict();
 

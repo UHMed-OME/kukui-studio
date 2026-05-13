@@ -11,10 +11,27 @@ import { type ActivityKind, PLANNED_ACTIVITY_KINDS } from "@kukui/core";
 
 const HIDDEN = { "ui:widget": "hidden" } as const;
 
+/**
+ * Shared uiSchema for the `appearance` block (theme pin). Lives in
+ * COMMON so every activity's Editor form gets a labeled "Appearance"
+ * section with the theme dropdown labeled "Color scheme" — without
+ * needing per-activity ui:order entries (the * glob picks it up).
+ */
+const APPEARANCE = {
+  "ui:title": "Appearance",
+  "ui:help":
+    "Pin a color scheme for this activity. \"Auto\" follows the learner's OS preference.",
+  theme: f(
+    "Color scheme",
+    "How the activity looks on the learner's screen. \"Auto\" lets the OS decide (light/dark); pick a specific scheme to override regardless of the learner's preference.",
+  ),
+} as const;
+
 const COMMON = {
   version: HIDDEN,
   _comment: HIDDEN,
   $schema: HIDDEN,
+  appearance: APPEARANCE,
 } as const;
 
 /** Compact builder: f(label, help, opts?) → uiSchema fragment for a leaf field. */
