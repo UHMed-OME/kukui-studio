@@ -47,6 +47,20 @@ const parseSketchfabUid = (input: string): string | null => {
   return match?.[1] ? match[1].toLowerCase() : null;
 };
 
+function Hotspot3DEditorEmpty() {
+  return (
+    <div className="ks-edit-empty">
+      <p style={{ margin: "0 0 8px", fontWeight: 700, color: "var(--color-text-primary)" }}>
+        Set a model first.
+      </p>
+      <p style={{ margin: 0 }}>
+        Enter a GLB URL or a Sketchfab UID in the <strong>Model</strong> section of the
+        form on the left, then this canvas will load so you can place hotspots.
+      </p>
+    </div>
+  );
+}
+
 /**
  * Visual editor for 3D Hotspot Identification.
  *
@@ -65,7 +79,27 @@ const parseSketchfabUid = (input: string): string | null => {
  * model's bounding box on first load. "Save current view" snapshots
  * the live OrbitControls state so the runtime opens identically.
  */
-export function Hotspot3DEditor({
+/**
+ * Outer guard: EditCanvas hands us the raw form value before Zod parses
+ * it, so any mid-edit state where `model` is missing or empty (Reset
+ * all, src cleared but Sketchfab UID not yet entered, legacy draft from
+ * before `model` was required) reaches this component. Render a
+ * placeholder so the inner editor — which assumes a non-empty model and
+ * relies on react-three-fiber hooks that can't be conditionally called —
+ * doesn't mount until the form is in a usable state.
+ */
+export function Hotspot3DEditor(props: {
+  config: Hotspot3DConfig;
+  onChange: (next: Hotspot3DConfig) => void;
+}) {
+  const model = props.config.model;
+  if (!model || (!model.src && !model.sketchfabUid)) {
+    return <Hotspot3DEditorEmpty />;
+  }
+  return <Hotspot3DEditorInner {...props} />;
+}
+
+function Hotspot3DEditorInner({
   config,
   onChange,
 }: {
