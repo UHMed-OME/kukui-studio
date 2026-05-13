@@ -35,21 +35,23 @@
 }
 
 @theme {
-  /* Cream-and-brown — the original Kukui palette. Restored 2026-05-12
-     as the light-mode default after the stone-neutral experiment felt
-     too cool against the editorial display type and kukui-nut brand.
+  /* Soft-stone cream — middle ground between the original peach-cream
+     (which read too orange) and the earlier stone-neutral experiment
+     (which read too cool). Surfaces lose ~30% of the yellow saturation
+     while staying recognizably warm; the kukui-brown accent stays
+     unchanged so the brand identity holds.
      Dark mode and the other schemes (high-contrast, sepia, OLED,
      aloha, kalo, lab, twilight, print) still override via
      [data-color-scheme="<name>"] blocks below; this @theme block is
-     the light default that those overlay on top of. */
-  --color-bg: #fcf8f2;
-  --color-surface: #ffffff;
-  --color-surface-alt: #faf6ee;
+     the light default they overlay on top of. */
+  --color-bg: #f7f5f0;
+  --color-surface: #fdfcf9;
+  --color-surface-alt: #f1eee6;
   --color-text-primary: #1c1e20;
   --color-text-secondary: #606069;
   --color-text-muted: #6e6e76;
-  --color-border: #dad2c6;
-  --color-border-hover: #bbae9a;
+  --color-border: #cfc9bc;
+  --color-border-hover: #b5ad9c;
   --color-primary: #7b4324;
   --color-primary-hover: #9b5830;
   --color-primary-soft: rgb(123 67 36 / 0.07);
@@ -57,7 +59,7 @@
   --color-success-soft: rgb(46 110 65 / 0.1);
   --color-error: #c34132;
   --color-error-soft: rgb(195 65 50 / 0.08);
-  --color-tip-bg: #f2f0e8;
+  --color-tip-bg: #ebe8de;
   --color-canvas-3d: #0b0b10;
 
   --spacing-xs: 4px;
@@ -154,14 +156,14 @@
    activity's author has pinned appearance.theme to "light"). Mirrors
    the @theme cream defaults at :root. */
 [data-color-scheme="light"] {
-  --color-bg: #fcf8f2;
-  --color-surface: #ffffff;
-  --color-surface-alt: #faf6ee;
+  --color-bg: #f7f5f0;
+  --color-surface: #fdfcf9;
+  --color-surface-alt: #f1eee6;
   --color-text-primary: #1c1e20;
   --color-text-secondary: #606069;
   --color-text-muted: #6e6e76;
-  --color-border: #dad2c6;
-  --color-border-hover: #bbae9a;
+  --color-border: #cfc9bc;
+  --color-border-hover: #b5ad9c;
   --color-primary: #7b4324;
   --color-primary-hover: #9b5830;
   --color-primary-soft: rgb(123 67 36 / 0.07);
@@ -169,7 +171,7 @@
   --color-success-soft: rgb(46 110 65 / 0.1);
   --color-error: #c34132;
   --color-error-soft: rgb(195 65 50 / 0.08);
-  --color-tip-bg: #f2f0e8;
+  --color-tip-bg: #ebe8de;
   --color-canvas-3d: #0b0b10;
 
   --bloom-remember: #c2861c;
@@ -3235,17 +3237,21 @@ button {
 /* =================================================================== */
 
 html[data-theme="glass"] body {
-  /* Four-stop ambient gradient — top-left amber (kukui-nut warmth),
-     top-right rose (sunset), bottom-right blue-grey (ocean haze),
-     bottom-left kalo-green (taro-leaf). Stronger alpha than the
-     original pass so the cream base actually reads as alive instead
-     of beige. */
+  /* Four-stop ambient gradient — kept for atmosphere but pulled down
+     from the original "warm cream gets called orange" levels:
+     - Top-left amber alpha 0.75 → 0.35, color desaturated (#FFD2A8 →
+       #F8E0C4) so it reads as soft light rather than peach wash.
+     - Linear base reaches a neutral cream (#f4f1e8) instead of the
+       previous peach (#f9e9d6); the cool bottom stops the page from
+       drifting orange in long scrolls.
+     The cooler counter-stops (blue-grey, kalo-green) get a slight
+     bump to balance the warm pair. */
   background:
-    radial-gradient(at 12% 8%, rgba(255, 210, 168, 0.75) 0%, transparent 48%),
-    radial-gradient(at 88% 12%, rgba(248, 200, 220, 0.55) 0%, transparent 52%),
+    radial-gradient(at 12% 8%, rgba(248, 224, 196, 0.40) 0%, transparent 50%),
+    radial-gradient(at 88% 12%, rgba(232, 210, 220, 0.35) 0%, transparent 52%),
     radial-gradient(at 84% 88%, rgba(196, 218, 230, 0.55) 0%, transparent 56%),
-    radial-gradient(at 8% 92%, rgba(180, 214, 175, 0.45) 0%, transparent 52%),
-    linear-gradient(180deg, #fdf6ea 0%, #f9e9d6 100%);
+    radial-gradient(at 8% 92%, rgba(190, 214, 188, 0.45) 0%, transparent 52%),
+    linear-gradient(180deg, #f8f5ee 0%, #f4f1e8 100%);
   background-attachment: fixed;
 }
 

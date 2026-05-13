@@ -92,20 +92,33 @@ export function Preview({
     }>;
     const Component = ACTIVITY_REGISTRY[kind as keyof typeof ACTIVITY_REGISTRY];
     const isPlanned = (PLANNED_ACTIVITY_KINDS as readonly string[]).includes(kind);
+    const fallbackScheme: string | undefined =
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (fallbackConfig as any)?.appearance?.theme &&
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (fallbackConfig as any).appearance.theme !== "auto"
+        ? // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          (fallbackConfig as any).appearance.theme
+        : undefined;
     return (
       <Suspense fallback={<PreviewLoading />}>
         <div className="kukui-studio-preview-stale" role="status" aria-live="polite">
           <strong>Form has unresolved errors</strong> — preview is paused at the last valid
           state. Fix the highlighted fields on the left to resume live updates.
         </div>
-        {isPlanned || !Component ? (
-          <Stub config={fallbackConfig} kind={kind as never} onSubmit={() => {}} />
-        ) : (
-          <Component config={fallbackConfig} onSubmit={() => {}} />
-        )}
-        {isLiveActivity(kind) ? (
-          <LiveTestLauncher kind={kind} config={fallbackConfig} onChange={onChange} />
-        ) : null}
+        <div
+          className="kukui-studio-preview-scheme"
+          data-color-scheme={fallbackScheme}
+        >
+          {isPlanned || !Component ? (
+            <Stub config={fallbackConfig} kind={kind as never} onSubmit={() => {}} />
+          ) : (
+            <Component config={fallbackConfig} onSubmit={() => {}} />
+          )}
+          {isLiveActivity(kind) ? (
+            <LiveTestLauncher kind={kind} config={fallbackConfig} onChange={onChange} />
+          ) : null}
+        </div>
       </Suspense>
     );
   }
@@ -124,23 +137,36 @@ export function Preview({
   const Stub = StubActivityLazy as any;
   const Component = ACTIVITY_REGISTRY[kind as keyof typeof ACTIVITY_REGISTRY];
 
-  // The live preview deliberately follows the *editor's* color scheme
-  // (Settings → Appearance), not the activity's `appearance.theme`.
-  // Reason: authors should be able to read the editor + preview in
-  // their preferred working scheme regardless of what they're packing
-  // into the activity. `appearance.theme` only affects the SCORM
-  // output — ActivityHost applies it at engine runtime when learners
-  // open the packaged zip in the LMS.
+  // If the author has pinned a specific color scheme on this activity
+  // (appearance.theme = "dark" | "sepia" | …), render the preview in
+  // that scheme so what the author configures is what they see. "auto"
+  // (or unset) falls through to the editor's scheme — that's the right
+  // default because "follow the learner's OS preference" is meaningful
+  // only inside an actual LMS context.
+  // The wrapper scopes the data-color-scheme attribute to the preview
+  // subtree only; the editor on the left keeps the author's preferred
+  // working scheme so they can read the form regardless of what
+  // they're packaging.
+  const pinnedScheme: string | undefined =
+    config?.appearance?.theme && config.appearance.theme !== "auto"
+      ? config.appearance.theme
+      : undefined;
+
   return (
     <Suspense fallback={<PreviewLoading />}>
-      {isPlanned || !Component ? (
-        <Stub config={config} kind={kind as never} onSubmit={noop} />
-      ) : (
-        <Component config={config} onSubmit={noop} />
-      )}
-      {isLiveActivity(kind) ? (
-        <LiveTestLauncher kind={kind} config={config} onChange={onChange} />
-      ) : null}
+      <div
+        className="kukui-studio-preview-scheme"
+        data-color-scheme={pinnedScheme}
+      >
+        {isPlanned || !Component ? (
+          <Stub config={config} kind={kind as never} onSubmit={noop} />
+        ) : (
+          <Component config={config} onSubmit={noop} />
+        )}
+        {isLiveActivity(kind) ? (
+          <LiveTestLauncher kind={kind} config={config} onChange={onChange} />
+        ) : null}
+      </div>
     </Suspense>
   );
 }
