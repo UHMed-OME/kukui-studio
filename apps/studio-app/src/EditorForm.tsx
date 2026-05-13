@@ -247,8 +247,18 @@ function seedDefaults(itemSchema: Record<string, unknown>): void {
       // string so the input shows up empty rather than disappearing.
       propSchema.default = "";
     } else if (type === "number" || type === "integer") {
-      // Rect-component fields get the geometric defaults; others get 0.
-      propSchema.default = RECT_DEFAULTS[name] ?? 0;
+      // Rect-component fields get the geometric defaults. For
+      // everything else, respect the schema's `minimum` if present —
+      // a default of 0 against a `min(1)` constraint immediately
+      // shows "must be >= 1" the moment the author adds the item
+      // (e.g. dropZone.capacity).
+      if (RECT_DEFAULTS[name] !== undefined) {
+        propSchema.default = RECT_DEFAULTS[name];
+      } else if (typeof propSchema.minimum === "number") {
+        propSchema.default = propSchema.minimum;
+      } else {
+        propSchema.default = 0;
+      }
     } else if (type === "boolean") {
       propSchema.default = false;
     } else if (type === "array") {

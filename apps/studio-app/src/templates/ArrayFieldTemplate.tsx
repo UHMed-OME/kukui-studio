@@ -63,14 +63,25 @@ export function ArrayFieldTemplate(props: ArrayFieldTemplateProps) {
  * row-major placement order and don't match the editor's entry order.
  *
  * Looks at a small whitelist of properties common across activity
- * kinds: `term`, `label`, `text`, `front`, `name`, `title`. Returns
- * the first non-empty string found, trimmed to 32 chars so a long
- * definition doesn't blow up the row's layout.
+ * kinds: `term`, `label`, `text`, `front`, `name`, `title`, and
+ * finally `id` as a last resort. The `id` fallback is what makes
+ * "Drop zone 1 · z-1" show in the form even when the author hasn't
+ * filled in a label yet — without it, hidden ids leave the author
+ * unable to map row 1 to the auto-generated `z-1` referenced by a
+ * draggable's `correctZones`.
  */
 function previewLabel(item: unknown): string | undefined {
   if (!item || typeof item !== "object") return undefined;
   const obj = item as Record<string, unknown>;
-  for (const key of ["term", "label", "text", "front", "name", "title"] as const) {
+  for (const key of [
+    "term",
+    "label",
+    "text",
+    "front",
+    "name",
+    "title",
+    "id",
+  ] as const) {
     const value = obj[key];
     if (typeof value === "string" && value.trim().length > 0) {
       const cleaned = value.replace(/<[^>]+>/g, "").trim();

@@ -194,7 +194,14 @@ export const UI_SCHEMAS: Record<ActivityKind, Record<string, unknown>> = {
       "ui:title": "Labels",
       "ui:help": "The labels the learner picks up and drags into zones. Each one declares which zone(s) count as correct for it.",
       items: {
-        id: HIDDEN,
+        // Surface the auto-generated id read-only so authors can map a
+        // label row to its data id in the preview / fixtures. Editing
+        // it manually risks orphaning references — lock it down.
+        id: f(
+          "ID (read-only)",
+          "Auto-generated — used to identify this label internally.",
+          { "ui:readonly": true },
+        ),
         label: f("Text", "What the learner sees on the label."),
         correctZones: f(
           "Correct zone IDs",
@@ -211,7 +218,15 @@ export const UI_SCHEMAS: Record<ActivityKind, Record<string, unknown>> = {
       "ui:title": "Drop zones",
       "ui:help": "Rectangles overlaid on the background image where labels can be dropped.",
       items: {
-        id: HIDDEN,
+        // Show the auto-generated id read-only so the author can match
+        // each row in this list to the corresponding `correctZones`
+        // entry on the label above. Editing it manually risks orphaning
+        // references; lock it down.
+        id: f(
+          "ID (read-only)",
+          "Auto-generated — referenced by labels in their `correctZones` list.",
+          { "ui:readonly": true },
+        ),
         label: f("Zone label", "Optional — shown when the zone has its label visible."),
         rect: {
           "ui:title": "Rectangle (normalized 0..1)",

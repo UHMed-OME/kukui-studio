@@ -10,7 +10,7 @@ import { DocPage } from "./pages/docs/DocPage.js";
 import { BlogIndex } from "./pages/blog/BlogIndex.js";
 import { BlogPost } from "./pages/blog/BlogPost.js";
 import { Privacy } from "./pages/Privacy.js";
-import { ChunkErrorBoundary } from "./pages/shared/ChunkErrorBoundary.js";
+import { ChunkErrorBoundary, reloadBypassingCache } from "./pages/shared/ChunkErrorBoundary.js";
 import "./styles.css";
 
 initTheme();
@@ -19,16 +19,19 @@ initTheme();
 // After a Pages deploy, the user's cached index.html may still point to
 // the previous build's chunk hashes (e.g. /assets/index-abc123.js) that
 // no longer exist. The dynamic import throws a ChunkLoadError-style
-// rejection; force a one-shot full reload so the new index.html is
-// fetched. Guarded by sessionStorage so we don't loop if the chunk
-// genuinely cannot be served.
+// rejection; force a reload that bypasses the HTTP cache so the new
+// index.html is fetched. A plain reload() reuses the cached `/` entry
+// — which is the stale one referencing the missing chunk — so the same
+// broken cycle repeats. Cache-busting via a query param sidesteps that.
+// Guarded by sessionStorage so we don't loop if the chunk genuinely
+// cannot be served.
 window.addEventListener("vite:preloadError", (event) => {
   if (sessionStorage.getItem("kukui:chunk-reload-tried") === "1") {
     return;
   }
   sessionStorage.setItem("kukui:chunk-reload-tried", "1");
   event.preventDefault();
-  window.location.reload();
+  reloadBypassingCache();
 });
 
 // Clear the chunk-reload flag a short moment after the app has booted,
@@ -47,6 +50,18 @@ const stashedPath = sessionStorage.getItem("kukui:redirect");
 if (stashedPath && stashedPath !== "/") {
   sessionStorage.removeItem("kukui:redirect");
   window.history.replaceState(null, "", stashedPath);
+}
+
+// Strip the `_kkb` cache-bust marker added by reloadBypassingCache()
+// once we've successfully booted — it served its purpose at fetch time
+// and shouldn't pollute the user's URL bar / bookmarks afterwards.
+// Runs *after* the SPA fallback restores any stashed path, so a deep
+// link that came through 404.html doesn't end up with a `_kkb` it
+// inherited from the cache-busted root.
+if (new URLSearchParams(window.location.search).has("_kkb")) {
+  const cleaned = new URL(window.location.href);
+  cleaned.searchParams.delete("_kkb");
+  window.history.replaceState(null, "", cleaned.pathname + cleaned.search + cleaned.hash);
 }
 
 // Migration shim: existing bookmarks of kukuistudio.com/?activity=X

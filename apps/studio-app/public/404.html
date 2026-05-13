@@ -11,10 +11,16 @@
       // and navigate to the right route. Convention from
       // https://github.com/rafgraph/spa-github-pages, simplified for our
       // single-segment routes (/studio, /docs, /blog/...).
+      //
+      // The `?_kkb=<ts>` query param on the redirect target is a cache
+      // buster — without it, the browser may serve a stale cached `/`
+      // whose chunk hashes no longer exist on the server (404 chain).
+      // The studio's main.tsx strips this param after boot so it doesn't
+      // leak into bookmarks.
       (function () {
         var path = window.location.pathname + window.location.search + window.location.hash;
         sessionStorage.setItem("kukui:redirect", path);
-        window.location.replace(window.location.origin + "/");
+        window.location.replace(window.location.origin + "/?_kkb=" + Date.now());
       })();
     </script>
   </head>

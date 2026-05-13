@@ -27,6 +27,20 @@ function isChunkLoadError(error: unknown): boolean {
   return CHUNK_ERROR_PATTERNS.some((p) => p.test(msg));
 }
 
+/**
+ * Replace the current URL with a cache-busted variant so the browser
+ * has to refetch `index.html`. A plain `window.location.reload()` reuses
+ * the HTTP cache entry for `/`, which is exactly the stale entry that's
+ * referencing the missing chunk hash — so the reload loads the same
+ * broken HTML and the same broken chunk URL, forever. Appending a
+ * different query string changes the cache key and forces a fresh GET.
+ */
+export function reloadBypassingCache(): void {
+  const url = new URL(window.location.href);
+  url.searchParams.set("_kkb", String(Date.now()));
+  window.location.replace(url.toString());
+}
+
 interface State {
   hasError: boolean;
 }
@@ -41,7 +55,7 @@ export class ChunkErrorBoundary extends Component<PropsWithChildren, State> {
     }
     if (sessionStorage.getItem(RELOAD_FLAG) !== "1") {
       sessionStorage.setItem(RELOAD_FLAG, "1");
-      window.location.reload();
+      reloadBypassingCache();
     }
     return { hasError: true };
   }
