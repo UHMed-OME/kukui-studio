@@ -121,7 +121,21 @@
   gap: var(--spacing-sm);
   border: 0;
   padding: 0;
-  margin: 0;
+  margin: 0 0 var(--spacing-lg);
+}
+
+.ks-appearance-options:last-of-type {
+  margin-bottom: 0;
+}
+
+.ks-appearance-group-legend {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+  padding: 0;
+  margin-bottom: var(--spacing-sm);
 }
 
 .ks-appearance-option {

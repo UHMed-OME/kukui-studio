@@ -18,9 +18,32 @@ import { z } from "zod";
  * the author picks light or dark, the learner stays there for the
  * session.
  */
+/**
+ * All concrete color schemes the engine, Studio, and Live know how to
+ * render. Each value corresponds to a `[data-color-scheme="<value>"]`
+ * CSS token block in the apps' styles.css. "auto" means no pin — the
+ * engine falls back to the learner's OS preference at boot.
+ */
+export const THEME_VALUES = [
+  "auto",
+  "light",
+  "dark",
+  "high-contrast",
+  "high-contrast-dark",
+  "sepia",
+  "oled",
+  "print",
+  "aloha",
+  "kalo",
+  "lab",
+  "twilight",
+] as const;
+
+export type Theme = (typeof THEME_VALUES)[number];
+
 export const AppearanceSchema = z
   .object({
-    theme: z.enum(["auto", "light", "dark"]).optional(),
+    theme: z.enum(THEME_VALUES).optional(),
   })
   .strict();
 

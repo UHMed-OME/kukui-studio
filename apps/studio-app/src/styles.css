@@ -186,6 +186,209 @@
   --bloom-create: #7b4324;
 }
 
+/* =================================================================== */
+/* Additional color schemes                                             */
+/* =================================================================== */
+/* Every scheme below was audited against WCAG 2.2 AA (4.5:1 for normal
+   text) or AAA (7:1 for the two high-contrast schemes). See the
+   .tmp-multi-scheme-audit.mjs at repo root if it lives — every fg/bg
+   pair within each palette clears its target.
+
+   These exist primarily as author-pinned activity themes (via
+   appearance.theme in the activity JSON), and selectively as user
+   preferences in Settings → Appearance. Each scheme is a flat token
+   override; the glass-theme blocks above only know about "dark", so
+   non-light/dark schemes render in flat mode by default (acceptable —
+   glass is editorial chrome, not a per-activity statement). */
+
+/* ---------- High-contrast (AAA) ---------- */
+[data-color-scheme="high-contrast"] {
+  --color-bg: #ffffff;
+  --color-surface: #ffffff;
+  --color-surface-alt: #fafafa;
+  --color-text-primary: #000000;
+  --color-text-secondary: #1a1a1a;
+  --color-text-muted: #2d2d2d;
+  --color-border: #000000;
+  --color-border-hover: #333333;
+  --color-primary: #5a2f17;
+  --color-primary-hover: #7a4220;
+  --color-primary-soft: rgb(90 47 23 / 0.12);
+  --color-success: #1a4d2e;
+  --color-success-soft: rgb(26 77 46 / 0.12);
+  --color-error: #8a1f1f;
+  --color-error-soft: rgb(138 31 31 / 0.12);
+  --color-tip-bg: #f5f5f4;
+  --color-canvas-3d: #000000;
+}
+
+[data-color-scheme="high-contrast-dark"] {
+  --color-bg: #000000;
+  --color-surface: #0a0a0a;
+  --color-surface-alt: #000000;
+  --color-text-primary: #ffffff;
+  --color-text-secondary: #f0f0f0;
+  --color-text-muted: #cccccc;
+  --color-border: #ffffff;
+  --color-border-hover: #cccccc;
+  --color-primary: #ffc77a;
+  --color-primary-hover: #ffd9a0;
+  --color-primary-soft: rgb(255 199 122 / 0.18);
+  --color-success: #9be0ad;
+  --color-success-soft: rgb(155 224 173 / 0.18);
+  --color-error: #ffa898;
+  --color-error-soft: rgb(255 168 152 / 0.18);
+  --color-tip-bg: #1a1a1a;
+  --color-canvas-3d: #000000;
+}
+
+/* ---------- Sepia (warm paper) ---------- */
+[data-color-scheme="sepia"] {
+  --color-bg: #f5ecd9;
+  --color-surface: #fbf4e1;
+  --color-surface-alt: #eee2c5;
+  --color-text-primary: #3b2a16;
+  --color-text-secondary: #6e5638;
+  --color-text-muted: #76583b;
+  --color-border: #d6c69a;
+  --color-border-hover: #b8a575;
+  --color-primary: #7b4324;
+  --color-primary-hover: #9b5830;
+  --color-primary-soft: rgb(123 67 36 / 0.10);
+  --color-success: #2d5e3a;
+  --color-success-soft: rgb(45 94 58 / 0.12);
+  --color-error: #a93226;
+  --color-error-soft: rgb(169 50 38 / 0.10);
+  --color-tip-bg: #eee2c5;
+  --color-canvas-3d: #1c1410;
+}
+
+/* ---------- OLED (pure-black dark) ---------- */
+[data-color-scheme="oled"] {
+  --color-bg: #000000;
+  --color-surface: #0a0a0a;
+  --color-surface-alt: #000000;
+  --color-text-primary: #fafaf9;
+  --color-text-secondary: #d6d3d1;
+  --color-text-muted: #a8a29e;
+  --color-border: #2a2a2a;
+  --color-border-hover: #3a3a3a;
+  --color-primary: #d39872;
+  --color-primary-hover: #e6b693;
+  --color-primary-soft: rgb(211 152 114 / 0.14);
+  --color-success: #86c79a;
+  --color-success-soft: rgb(134 199 154 / 0.16);
+  --color-error: #ed9183;
+  --color-error-soft: rgb(237 145 131 / 0.14);
+  --color-tip-bg: #0a0a0a;
+  --color-canvas-3d: #000000;
+}
+
+/* ---------- Print (white, decoration-stripped) ---------- */
+[data-color-scheme="print"] {
+  --color-bg: #ffffff;
+  --color-surface: #ffffff;
+  --color-surface-alt: #fafafa;
+  --color-text-primary: #000000;
+  --color-text-secondary: #404040;
+  --color-text-muted: #666666;
+  --color-border: #000000;
+  --color-border-hover: #000000;
+  --color-primary: #000000;
+  --color-primary-hover: #000000;
+  --color-primary-soft: #f5f5f5;
+  --color-success: #000000;
+  --color-success-soft: #f5f5f5;
+  --color-error: #000000;
+  --color-error-soft: #f5f5f5;
+  --color-tip-bg: #ffffff;
+  --color-canvas-3d: #ffffff;
+}
+
+/* ---------- Aloha (sunset/coral light) ---------- */
+[data-color-scheme="aloha"] {
+  --color-bg: #fef0e3;
+  --color-surface: #fef7ed;
+  --color-surface-alt: #fce0cc;
+  --color-text-primary: #3a2218;
+  --color-text-secondary: #5a3c2e;
+  --color-text-muted: #7c5a48;
+  --color-border: #e8c1a4;
+  --color-border-hover: #d6a385;
+  --color-primary: #a83a22;
+  --color-primary-hover: #c44a30;
+  --color-primary-soft: rgb(168 58 34 / 0.10);
+  --color-success: #2c5c39;
+  --color-success-soft: rgb(44 92 57 / 0.10);
+  --color-error: #8a1f1f;
+  --color-error-soft: rgb(138 31 31 / 0.10);
+  --color-tip-bg: #fce0cc;
+  --color-canvas-3d: #2a1812;
+}
+
+/* ---------- Kalo (taro-leaf dark) ---------- */
+[data-color-scheme="kalo"] {
+  --color-bg: #1c2419;
+  --color-surface: #262e23;
+  --color-surface-alt: #1c2419;
+  --color-text-primary: #f0ede2;
+  --color-text-secondary: #c8c5b8;
+  --color-text-muted: #a09e8e;
+  --color-border: #3d4738;
+  --color-border-hover: #525d4b;
+  --color-primary: #a3cc8d;
+  --color-primary-hover: #b8d9a5;
+  --color-primary-soft: rgb(163 204 141 / 0.14);
+  --color-success: #a3cc8d;
+  --color-success-soft: rgb(163 204 141 / 0.16);
+  --color-error: #e89880;
+  --color-error-soft: rgb(232 152 128 / 0.14);
+  --color-tip-bg: #262e23;
+  --color-canvas-3d: #0c1208;
+}
+
+/* ---------- Lab (clinical cool light) ---------- */
+[data-color-scheme="lab"] {
+  --color-bg: #f5f8fa;
+  --color-surface: #ffffff;
+  --color-surface-alt: #eaf0f4;
+  --color-text-primary: #0d1e2e;
+  --color-text-secondary: #3e5466;
+  --color-text-muted: #475a6b;
+  --color-border: #cdd8e0;
+  --color-border-hover: #a8b5c0;
+  --color-primary: #1e3a5f;
+  --color-primary-hover: #2a5085;
+  --color-primary-soft: rgb(30 58 95 / 0.08);
+  --color-success: #0e5c4a;
+  --color-success-soft: rgb(14 92 74 / 0.10);
+  --color-error: #a82a2a;
+  --color-error-soft: rgb(168 42 42 / 0.08);
+  --color-tip-bg: #eaf0f4;
+  --color-canvas-3d: #0a1620;
+}
+
+/* ---------- Twilight (plum dark) ---------- */
+[data-color-scheme="twilight"] {
+  --color-bg: #1a1320;
+  --color-surface: #241c2a;
+  --color-surface-alt: #1a1320;
+  --color-text-primary: #f0eaef;
+  --color-text-secondary: #cbb9d3;
+  --color-text-muted: #a397ab;
+  --color-border: #3d2f4a;
+  --color-border-hover: #524063;
+  --color-primary: #c69adb;
+  --color-primary-hover: #d6b3e4;
+  --color-primary-soft: rgb(198 154 219 / 0.14);
+  --color-success: #8fb87b;
+  --color-success-soft: rgb(143 184 123 / 0.14);
+  --color-error: #e89095;
+  --color-error-soft: rgb(232 144 149 / 0.14);
+  --color-tip-bg: #241c2a;
+  --color-canvas-3d: #0d0915;
+}
+
 /* Bloom-level themed surfaces. Anything inside a [data-bloom=…] subtree
    can read `var(--bloom-color)` — dots, active-row tints, icon hover
    colors. Falls back to text-muted so planned/uncategorized rows still

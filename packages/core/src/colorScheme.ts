@@ -12,13 +12,37 @@
  * `data-theme` and `data-color-scheme` are independent attributes.
  */
 
-export type ColorSchemePreference = "system" | "light" | "dark";
-export type ResolvedColorScheme = "light" | "dark";
+/**
+ * All schemes that can be applied directly to `<html data-color-scheme>`.
+ * Each value has a matching `[data-color-scheme="<value>"]` CSS block in
+ * the apps' styles.css. Mirror of THEME_VALUES from @kukui/schemas (sans
+ * "auto"), duplicated here to avoid a runtime dep on schemas inside core.
+ */
+const RESOLVED_SCHEMES = [
+  "light",
+  "dark",
+  "high-contrast",
+  "high-contrast-dark",
+  "sepia",
+  "oled",
+  "print",
+  "aloha",
+  "kalo",
+  "lab",
+  "twilight",
+] as const;
+
+export type ResolvedColorScheme = (typeof RESOLVED_SCHEMES)[number];
+export type ColorSchemePreference = "system" | ResolvedColorScheme;
 
 const STORAGE_KEY = "kukui:color-scheme";
 
+function isResolved(v: unknown): v is ResolvedColorScheme {
+  return (RESOLVED_SCHEMES as readonly string[]).includes(v as string);
+}
+
 function isPreference(v: unknown): v is ColorSchemePreference {
-  return v === "system" || v === "light" || v === "dark";
+  return v === "system" || isResolved(v);
 }
 
 function systemPrefersDark(): boolean {
@@ -27,8 +51,8 @@ function systemPrefersDark(): boolean {
 }
 
 export function resolveColorScheme(pref: ColorSchemePreference): ResolvedColorScheme {
-  if (pref === "light" || pref === "dark") return pref;
-  return systemPrefersDark() ? "dark" : "light";
+  if (pref === "system") return systemPrefersDark() ? "dark" : "light";
+  return pref;
 }
 
 export function getColorSchemePreference(): ColorSchemePreference {
