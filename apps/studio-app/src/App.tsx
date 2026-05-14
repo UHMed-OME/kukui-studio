@@ -106,7 +106,9 @@ const BLOOM_BY_KIND: Partial<Record<ActivityKind, BloomLevel>> = {
   "confidence-meter": "evaluate",
   "qa-board": "evaluate",
   "quick-quiz": "evaluate",
-  "isometric-chatroom": "evaluate",
+  // "isometric-chatroom": "evaluate", — hidden from the Studio sidebar
+  // while the runtime is being reworked. Kind, schema, registry, and
+  // existing configs all remain valid; this just hides the picker entry.
   "word-cloud": "remember",
   // Create — produce original work
   "audio-recording": "create",
