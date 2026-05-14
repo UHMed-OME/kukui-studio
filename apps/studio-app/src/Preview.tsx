@@ -10,6 +10,15 @@ import { EditCanvas } from "./EditCanvas/index.js";
 export type PreviewMode = "live" | "edit";
 
 /**
+ * Validation result shape — derived from SchemaRegistry's safeParse
+ * rather than imported from zod directly so we stay version-tolerant
+ * across Zod 3 / 4 (their public type exports drifted).
+ */
+export type PreviewValidation = ReturnType<
+  (typeof SchemaRegistry)[SchemaRegistryKey]["safeParse"]
+>;
+
+/**
  * Live preview pane. Validates the current draft against the matching Zod
  * schema, then renders the actual @kukui/core component if valid; on
  * failure shows the validation issues so the author can fix them inline.
@@ -26,16 +35,27 @@ export function Preview({
   value,
   mode,
   onChange,
+  validation,
 }: {
   kind: ActivityKind;
   value: unknown;
   mode: PreviewMode;
   onChange: (next: unknown) => void;
+  /**
+   * Pre-computed validation result from the parent. Authoring shells
+   * (App.tsx) already run `safeParse` on every keystroke to drive the
+   * ValidationBadge + RJSF error injection — reusing it here saves a
+   * second parse per keystroke. Optional so embedded uses can still
+   * pass `value` alone and have the Preview validate locally.
+   */
+  validation?: PreviewValidation;
 }) {
-  const result = useMemo(
-    () => SchemaRegistry[kind as SchemaRegistryKey].safeParse(value),
-    [kind, value],
+  const localValidation = useMemo(
+    () =>
+      validation ?? SchemaRegistry[kind as SchemaRegistryKey].safeParse(value),
+    [validation, kind, value],
   );
+  const result = localValidation;
 
   // Stash the last value that validated cleanly per activity kind. When
   // the author is mid-edit and the form temporarily fails validation,
@@ -71,11 +91,18 @@ export function Preview({
         <div className="kukui-studio-preview-error" role="status">
           <strong>Preview is paused — config doesn't validate yet:</strong>
           <ul>
-            {result.error.issues.slice(0, 8).map((issue, i) => (
-              <li key={i}>
-                <code>{issue.path.join(".") || "(root)"}</code> — {issue.message}
-              </li>
-            ))}
+            {(result.error.issues as ReadonlyArray<{ path: PropertyKey[]; message: string }>)
+              .slice(0, 8)
+              .map((issue, i) => (
+                <li key={i}>
+                  <code>
+                    {issue.path
+                      .map((p) => (typeof p === "symbol" ? p.toString() : String(p)))
+                      .join(".") || "(root)"}
+                  </code>{" "}
+                  — {issue.message}
+                </li>
+              ))}
           </ul>
           <p style={{ fontSize: 12, color: "var(--color-text-secondary)" }}>
             Fill in the highlighted fields on the left, then the preview reappears.

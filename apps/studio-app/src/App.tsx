@@ -1,4 +1,6 @@
 import {
+  lazy,
+  Suspense,
   useEffect,
   useMemo,
   useRef,
@@ -23,7 +25,12 @@ import { hasEditor } from "./EditCanvas/index.js";
 import { ConfirmDialog } from "./ConfirmDialog.js";
 import { SettingsDialog, type SettingsPane } from "./settings/SettingsDialog.js";
 import { clearAllKukuiStorage } from "./util/resetAll.js";
-import { AIEditor } from "./AIEditor.js";
+// AIEditor is lazy-loaded so its ~700 lines + Tiptap dependency tree
+// (~120 KB gz) don't sit in the main chunk for the majority of users
+// who never open the AI tab.
+const AIEditor = lazy(() =>
+  import("./AIEditor.js").then((m) => ({ default: m.AIEditor })),
+);
 import { Tooltip } from "./Tooltip.js";
 import { AsyncStatusStrip, type AsyncStatus } from "./AsyncStatusStrip.js";
 import { ValidationBadge } from "./ValidationBadge.js";
@@ -881,14 +888,22 @@ export function App() {
             ) : tab === "json" ? (
               <JsonEditor value={value} onChange={markDirty} />
             ) : (
-              <AIEditor
-                kind={kind as SchemaRegistryKey}
-                value={value}
-                onChange={markDirty}
-                isDirty={isDirty}
-                onOpenSettings={() => setSettingsPane("connections")}
-                settingsVersion={aiSettingsVersion}
-              />
+              <Suspense
+                fallback={
+                  <div className="kukui-studio-preview-loading" role="status">
+                    Loading AI Assist…
+                  </div>
+                }
+              >
+                <AIEditor
+                  kind={kind as SchemaRegistryKey}
+                  value={value}
+                  onChange={markDirty}
+                  isDirty={isDirty}
+                  onOpenSettings={() => setSettingsPane("connections")}
+                  settingsVersion={aiSettingsVersion}
+                />
+              </Suspense>
             )}
           </div>
         </section>
@@ -941,7 +956,13 @@ export function App() {
             />
           </div>
           <div className="kukui-studio-panel-body kukui-studio-preview">
-            <Preview kind={kind} value={value} mode={previewMode} onChange={markDirty} />
+            <Preview
+              kind={kind}
+              value={value}
+              mode={previewMode}
+              onChange={markDirty}
+              validation={validation}
+            />
           </div>
         </section>
       </main>
