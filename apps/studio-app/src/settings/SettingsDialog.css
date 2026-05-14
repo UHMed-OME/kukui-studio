@@ -76,6 +76,50 @@
   border-top: 1px solid color-mix(in oklab, var(--color-border) 40%, transparent);
 }
 
+/* Connections pane: stack of self-contained connector sections
+ * (AI Assist, Google Drive, future connectors). Each section gets a
+ * heading and visual separation; child AIPane / DriveSection keep
+ * their own internal styles untouched. */
+.ks-connections-pane {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2xl);
+}
+
+.ks-connections-section + .ks-connections-section {
+  padding-top: var(--spacing-2xl);
+  border-top: 1px solid color-mix(in oklab, var(--color-border) 40%, transparent);
+}
+
+.ks-connections-section__title {
+  margin: 0 0 var(--spacing-md);
+  font-size: var(--font-size-h3, 17px);
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.ks-connections-status {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 4px var(--spacing-md);
+  margin: var(--spacing-md) 0;
+  font-size: var(--font-size-meta);
+}
+
+.ks-connections-status > div {
+  display: contents;
+}
+
+.ks-connections-status dt {
+  color: var(--color-text-secondary);
+  font-weight: 500;
+}
+
+.ks-connections-status dd {
+  margin: 0;
+  color: var(--color-text-primary);
+}
+
 .ks-settings-pane--prose p,
 .ks-settings-pane--prose li {
   font-size: 14px;

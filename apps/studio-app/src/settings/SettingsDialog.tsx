@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import type { AISettings } from "../ai/settings.js";
-import { AIPane } from "./panes/AIPane.js";
+import { ConnectionsPane } from "./panes/ConnectionsPane.js";
 import { AboutPane } from "./panes/AboutPane.js";
 import { AppearancePane } from "./panes/AppearancePane.js";
 import "./SettingsDialog.css";
@@ -10,12 +10,16 @@ import "./SettingsDialog.css";
  * doesn't fit comfortably in the dialog's narrow column. The footer's
  * "Privacy & data" link routes to the standalone `/privacy` page
  * instead.
+ *
+ * The historical "ai" pane has folded into "connections" — every
+ * external integration (AI providers, Google Drive, future
+ * connectors) lives behind a single tab.
  */
-export type SettingsPane = "appearance" | "ai" | "about";
+export type SettingsPane = "appearance" | "connections" | "about";
 
 const PANES: Array<{ id: SettingsPane; label: string }> = [
   { id: "appearance", label: "Appearance" },
-  { id: "ai", label: "AI Assist" },
+  { id: "connections", label: "Connections" },
   { id: "about", label: "About" },
 ];
 
@@ -103,7 +107,9 @@ export function SettingsDialog({
           </nav>
           <div className="ks-settings-dialog__pane">
             {pane === "appearance" ? <AppearancePane /> : null}
-            {pane === "ai" ? <AIPane onSaved={onAISaved} /> : null}
+            {pane === "connections" ? (
+              <ConnectionsPane onAISaved={onAISaved} />
+            ) : null}
             {pane === "about" ? <AboutPane /> : null}
           </div>
         </div>

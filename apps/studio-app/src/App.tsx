@@ -886,7 +886,7 @@ export function App() {
                 value={value}
                 onChange={markDirty}
                 isDirty={isDirty}
-                onOpenSettings={() => setSettingsPane("ai")}
+                onOpenSettings={() => setSettingsPane("connections")}
                 settingsVersion={aiSettingsVersion}
               />
             )}
