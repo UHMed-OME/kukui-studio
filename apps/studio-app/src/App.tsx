@@ -880,6 +880,12 @@ export function App() {
           <span aria-hidden="true" className="kukui-studio-footer__sep">
             ·
           </span>
+          <Link to="/blog" className="kukui-studio-footer__link">
+            Blog
+          </Link>
+          <span aria-hidden="true" className="kukui-studio-footer__sep">
+            ·
+          </span>
           <a
             href="https://github.com/UHMed-OME/kukui-studio"
             target="_blank"

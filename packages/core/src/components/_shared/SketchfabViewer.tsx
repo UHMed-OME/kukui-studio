@@ -131,6 +131,12 @@ export function SketchfabViewer({
 
   const onClickModelRef = useRef(onClickModel);
   onClickModelRef.current = onClickModel;
+  // Live ref to the hotspot list so the rAF projection loop sees pins
+  // added after mount. The effect only re-runs on UID change, so without
+  // this ref the closure would iterate the initial array forever —
+  // editor pins dropped post-mount would stay invisible at left:0.
+  const hotspotsRef = useRef(hotspots);
+  hotspotsRef.current = hotspots;
 
   const setPinRef = useCallback((id: string, el: HTMLButtonElement | null) => {
     if (el) pinRefs.current.set(id, el);
@@ -171,7 +177,7 @@ export function SketchfabViewer({
         tmpCamera.aspect = rect.width / rect.height;
         tmpCamera.updateMatrixWorld();
         tmpCamera.updateProjectionMatrix();
-        for (const hot of hotspots) {
+        for (const hot of hotspotsRef.current) {
           const el = pinRefs.current.get(hot.id);
           if (!el) continue;
           tmpVec.set(hot.position.x, hot.position.y, hot.position.z);
@@ -222,6 +228,15 @@ export function SketchfabViewer({
         client.init(uid, {
           success: (api) => {
             apiRef.current = api;
+            // Start the projection loop as soon as the API is up — don't
+            // wait for `viewerready` like we used to. That event is the
+            // same one that proved unreliable for the loading overlay,
+            // and gating pin projection on it meant the overlay was
+            // permanently invisible on those models. tickProjection
+            // safely no-ops while getCameraLookAt errors, so spinning
+            // a few empty frames before the camera is ready costs
+            // nothing.
+            rafId = requestAnimationFrame(tickProjection);
             api.addEventListener("viewerready", () => {
               markReady();
               api.getFov((_err, fov) => {
@@ -232,7 +247,6 @@ export function SketchfabViewer({
                 if (!p) return;
                 onClickModelRef.current?.({ x: p[0], y: p[1], z: p[2] });
               });
-              rafId = requestAnimationFrame(tickProjection);
             });
             api.start();
           },
@@ -256,17 +270,11 @@ export function SketchfabViewer({
       iframe.removeEventListener("load", onIframeLoad);
       apiRef.current = null;
     };
-    // hotspots is read off the closure inside the rAF loop, not deps —
-    // we want a stable effect lifecycle bound to the UID, not to every
-    // hotspot edit. The rAF closure reads `hotspots` from the React
-    // ref each tick.
+    // Effect lifecycle is bound to the UID, not every hotspot edit. The
+    // rAF closure reads hotspots via `hotspotsRef.current` (set above)
+    // so new pins added post-mount get projected too.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [uid]);
-
-  // Keep the rAF-closure reference to `hotspots` fresh without
-  // tearing down the API on every edit.
-  const hotspotsRef = useRef(hotspots);
-  hotspotsRef.current = hotspots;
 
   return (
     <div className="kukui-sketchfab" ref={wrapRef}>
