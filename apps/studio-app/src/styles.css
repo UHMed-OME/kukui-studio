@@ -4861,6 +4861,124 @@ html[data-theme="glass"] .kukui-studio-footer {
   color: var(--color-text-primary);
 }
 
+.ks-model-source {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  padding: 0;
+  margin: 0;
+  border: 0;
+}
+
+.ks-model-source__legend {
+  margin: 0 0 var(--spacing-xs);
+  padding: 0;
+  font-size: var(--font-size-meta);
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.ks-model-source__help {
+  margin: 0 0 var(--spacing-xs);
+  font-size: 12px;
+  color: var(--color-text-secondary);
+}
+
+.ks-model-source__tabs {
+  display: inline-flex;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  align-self: flex-start;
+}
+
+.ks-model-source__tab {
+  min-height: 32px;
+  padding: 4px 12px;
+  background: var(--color-surface);
+  border: 0;
+  border-right: 1px solid var(--color-border);
+  font: inherit;
+  font-size: var(--font-size-meta);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+}
+
+.ks-model-source__tab:last-child {
+  border-right: 0;
+}
+
+.ks-model-source__tab.is-active {
+  background: var(--color-primary-soft);
+  color: var(--color-primary);
+  font-weight: 600;
+}
+
+.ks-model-source__body {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.ks-model-source__input {
+  min-height: 36px;
+  padding: 4px 8px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  font: inherit;
+  color: var(--color-text-primary);
+}
+
+.ks-model-source__hint {
+  margin: 0;
+  font-size: 12px;
+  color: var(--color-text-secondary);
+}
+
+.ks-model-source__hint--warn {
+  color: var(--color-error, #c34132);
+}
+
+.ks-model-source__drop {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px;
+  border: 1px dashed var(--color-border-hover, var(--color-border));
+  border-radius: var(--radius-sm);
+  background: var(--color-tip-bg);
+}
+
+.ks-model-source__drop.is-drophover {
+  border-style: solid;
+  border-color: var(--color-primary);
+  background: var(--color-primary-soft);
+}
+
+.ks-model-source__file {
+  display: none;
+}
+
+.ks-model-source__pick {
+  min-height: 32px;
+  padding: 4px 12px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  font: inherit;
+  font-size: var(--font-size-meta);
+  color: var(--color-text-primary);
+  cursor: pointer;
+  align-self: flex-start;
+}
+
+.ks-model-source__pick:hover {
+  background: var(--color-primary-soft);
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
 .ks-h3d-source__tabs {
   display: inline-flex;
   border: 1px solid var(--color-border);
