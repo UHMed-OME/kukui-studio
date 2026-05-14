@@ -14,6 +14,7 @@ export type ProviderPresetId =
   | "together"
   | "openrouter"
   | "anthropic"
+  | "gemini"
   | "azure"
   | "custom";
 
@@ -70,6 +71,14 @@ export const PRESETS: readonly ProviderPreset[] = [
     model: "claude-3-5-sonnet-latest",
     signupUrl: "https://console.anthropic.com/settings/keys",
     description: "Anthropic's OpenAI-compatible Chat Completions shim.",
+  },
+  {
+    id: "gemini",
+    label: "Google Gemini",
+    baseUrl: "https://generativelanguage.googleapis.com/v1beta/openai",
+    model: "gemini-2.5-flash",
+    signupUrl: "https://aistudio.google.com/apikey",
+    description: "Google AI Studio key — free tier with generous quota.",
   },
   {
     id: "azure",
