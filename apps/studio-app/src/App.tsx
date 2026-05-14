@@ -226,7 +226,7 @@ export function App() {
   // shaped for the wrong activity.
   useEffect(() => {
     const draft = loadDraft(kind);
-    history.reset(ensureFreshKeys(kind, draft ?? STARTERS[kind]));
+    history.reset(applySchemaDefaults(kind, ensureFreshKeys(kind, draft ?? STARTERS[kind])));
     setIsDirty(draft != null);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [kind]);
@@ -363,7 +363,7 @@ export function App() {
 
   const confirmResetNow = () => {
     clearDraft(kind);
-    history.reset(ensureFreshKeys(kind, STARTERS[kind]));
+    history.reset(applySchemaDefaults(kind, ensureFreshKeys(kind, STARTERS[kind])));
     setIsDirty(false);
     setConfirmReset(false);
     flash("Reset.");
@@ -449,7 +449,7 @@ export function App() {
         return;
       }
       setKind(result.kind);
-      history.reset(migrateToScoring(result.config, result.kind));
+      history.reset(applySchemaDefaults(result.kind, migrateToScoring(result.config, result.kind)));
       setIsDirty(true);
       setAsyncStatus({
         kind: "success",
@@ -1094,6 +1094,27 @@ export function App() {
       />
     </div>
   );
+}
+
+/**
+ * Bake Zod's schema defaults into a config value before it becomes
+ * form state. Zod's `safeParse` returns the defaults in `data` (e.g.
+ * `appearance: { theme: "auto" }`), but the form holds the unmodified
+ * input — without this normalisation step, RJSF's AJV liveValidate
+ * sees missing-but-defaulted fields as "required field missing" and
+ * flips the ValidationBadge to errors, even though Zod itself is
+ * happy. Applied at every entry point that seeds a fresh value:
+ * kind-switch mount, Reset, and import paths.
+ *
+ * On parse failure (real user-authored issue) we return the value
+ * unchanged so the editor surfaces the actual schema errors instead
+ * of swallowing them under a generic fallback.
+ */
+function applySchemaDefaults(kind: ActivityKind, value: unknown): unknown {
+  const schema = SchemaRegistry[kind as SchemaRegistryKey];
+  if (!schema) return value;
+  const parsed = schema.safeParse(value);
+  return parsed.success ? parsed.data : value;
 }
 
 /**
