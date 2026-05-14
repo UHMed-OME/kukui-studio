@@ -96,7 +96,19 @@ export function RichTextWidget(props: WidgetProps) {
       return;
     }
     if (!file.type.startsWith("image/")) {
-      window.alert("That doesn't look like an image. Pick a PNG, JPG, GIF, or SVG.");
+      window.alert("That doesn't look like an image. Pick a PNG, JPG, or GIF.");
+      return;
+    }
+    // SVG uploads are rejected: browsers execute inline <script> and
+    // event handlers (onload, onclick) inside SVG data URLs rendered
+    // via <img>. Stripping the script tags safely would require a full
+    // XML parse + scrub pass; reject is simpler + safer. Authors can
+    // host SVGs externally and paste the URL if needed — the SafeHtml
+    // renderer + SAFE_MEDIA_URL still gate those at activity render.
+    if (file.type === "image/svg+xml" || /\.svg$/i.test(file.name)) {
+      window.alert(
+        "SVG uploads aren't allowed (scripts inside SVG can run in the browser). Convert to PNG/JPG or host the SVG externally and paste the URL.",
+      );
       return;
     }
     const dataUrl = await fileToDataUrl(file);
@@ -117,6 +129,17 @@ export function RichTextWidget(props: WidgetProps) {
     if (url === null) return;
     if (url === "") {
       editor.chain().focus().extendMarkRange("link").unsetLink().run();
+      return;
+    }
+    // Block dangerous schemes at the authoring surface so a bad URL
+    // can't be saved into the activity JSON. SafeHtml's
+    // ALLOWED_URI_REGEXP also strips these at render time, but
+    // belt-and-braces keeps the stored data clean (matters for Drive
+    // export / SCORM zips that an admin might open in another tool).
+    if (/^\s*(javascript|vbscript|file|data):/i.test(url)) {
+      window.alert(
+        "That URL scheme isn't allowed. Use https://, http://, mailto:, or tel:.",
+      );
       return;
     }
     editor.chain().focus().extendMarkRange("link").setLink({ href: url }).run();

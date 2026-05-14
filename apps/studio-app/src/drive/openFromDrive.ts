@@ -120,12 +120,18 @@ export async function openJsonFromDrive(): Promise<
 > {
   // Kick off the Picker library load in parallel with the OAuth popup.
   // The popup is gated on user interaction (several seconds typical);
-  // gapi is ~25 KB and can ship while the user is consenting. Errors
-  // here are swallowed — if Picker load fails, showPicker() will
-  // surface the same error when it retries below.
-  const pickerReady = loadPicker().catch(() => {});
+  // gapi is ~25 KB and can ship while the user is consenting.
+  //
+  // Don't await here — showPicker() awaits loadPicker() internally
+  // and will surface the error to the caller's toast if the load
+  // ultimately fails. The leading void + catch are only to swallow
+  // the unhandled-rejection warning while the OAuth popup is open;
+  // showPicker's retry uses the same memoized promise/state, so a
+  // real failure still propagates.
+  void loadPicker().catch((err) => {
+    console.warn("[kukui:drive] Picker preload failed; will retry on show.", err);
+  });
   const token = await requestDriveToken();
-  await pickerReady;
   const picked = await showPicker(token);
   if (!picked) return null;
   const resp = await fetch(
