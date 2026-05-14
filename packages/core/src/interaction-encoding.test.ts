@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { truncateResponse, encodeChoice } from "./interaction-encoding.js";
+import { truncateResponse, encodeChoice, encodeMatching } from "./interaction-encoding.js";
 
 describe("truncateResponse", () => {
   it("leaves short strings unchanged", () => {
@@ -44,5 +44,30 @@ describe("encodeChoice", () => {
     expect(encodeChoice([27])).toBe("ab");
     expect(encodeChoice([51])).toBe("az");
     expect(encodeChoice([52])).toBe("ba");
+  });
+});
+
+describe("encodeMatching", () => {
+  it("joins pairs with `.` between and `,` across (SCORM 1.2 matching form)", () => {
+    expect(
+      encodeMatching([
+        { left: "1", right: "a" },
+        { left: "2", right: "b" },
+        { left: "3", right: "c" },
+      ]),
+    ).toBe("1.a,2.b,3.c");
+  });
+
+  it("emits an empty right-side for unplaced left items", () => {
+    expect(
+      encodeMatching([
+        { left: "chip-glucose", right: "" },
+        { left: "chip-insulin", right: "zone-pancreas" },
+      ]),
+    ).toBe("chip-glucose.,chip-insulin.zone-pancreas");
+  });
+
+  it("returns the empty string for an empty list", () => {
+    expect(encodeMatching([])).toBe("");
   });
 });

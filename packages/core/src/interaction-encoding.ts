@@ -36,3 +36,14 @@ export function encodeChoice(indices: readonly number[]): string {
   if (indices.length === 1) return letterFor(indices[0]!);
   return `{${indices.map(letterFor).join(",")}}`;
 }
+
+/**
+ * SCORM 1.2 §3.4.7.5 matching form: `left.right,left.right`. Unplaced
+ * left items use an empty right (`left.`). Used by drag-and-drop,
+ * matching-pairs, categorization, anatomy-labeling, concept-map, lab-panel.
+ */
+export function encodeMatching(
+  pairs: readonly { left: string; right: string }[],
+): string {
+  return pairs.map((p) => `${p.left}.${p.right}`).join(",");
+}
