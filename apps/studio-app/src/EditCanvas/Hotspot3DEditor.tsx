@@ -1,6 +1,6 @@
 import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Canvas, useFrame, useThree, type ThreeEvent } from "@react-three/fiber";
-import { OrbitControls, Environment } from "@react-three/drei";
+import { OrbitControls } from "@react-three/drei";
 import * as THREE from "three";
 import type { Hotspot3DConfig } from "@kukui/schemas";
 import { HotspotPin } from "@kukui/core/components/_shared/HotspotPin";
@@ -295,9 +295,13 @@ function Hotspot3DEditorInner({
           gl={{ toneMapping: THREE.ACESFilmicToneMapping, outputColorSpace: THREE.SRGBColorSpace }}
           onPointerMissed={() => setSelectedId(null)}
         >
-          <Environment preset={lightingPreset} environmentIntensity={0.8} />
-          <ambientLight intensity={0.25} />
-          <directionalLight position={[3, 5, 4]} intensity={0.6} />
+          {/* No drei <Environment preset> — that fetches an HDR from
+              raw.githack.com which CSP blocks (connect-src 'self').
+              Procedural lighting only; flatter shading but ships
+              fully self-contained. Match the runtime. */}
+          <ambientLight intensity={0.6} />
+          <directionalLight position={[3, 5, 4]} intensity={0.9} castShadow={false} />
+          <directionalLight position={[-3, 2, -4]} intensity={0.35} castShadow={false} />
           <Suspense fallback={null}>
             {config.model.src ? (
               <ClickableModel

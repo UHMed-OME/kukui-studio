@@ -1,48 +1,46 @@
 {
-  "_comment": "Demo fixture using Khronos's BoomBox glTF sample. Replace model.src with author-provided geometry for production.",
+  "_comment": "Demo fixture using a bundled Khronos Box placeholder (CC BY 4.0). Authors replace model.src with their own geometry for production. Local path so the activity renders inside LMS networks that block external CDNs.",
   "version": "1.0",
-  "title": "Identify parts of a portable boombox",
-  "prompt": "<p>Click the <em>tuning dial</em> on the front of the boombox.</p>",
+  "title": "Identify the top of the cube",
+  "prompt": "<p>Click the <em>top face</em> of the cube.</p>",
   "model": {
-    "src": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/main/Models/BoomBox/glTF-Binary/BoomBox.glb",
-    "scale": 50
+    "src": "samples/hotspot-3d/box.glb",
+    "scale": 1,
+    "attribution": {
+      "author": "Khronos Group",
+      "sourceUrl": "https://github.com/KhronosGroup/glTF-Sample-Assets/tree/main/Models/Box",
+      "license": "CC BY 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/"
+    }
   },
   "camera": {
     "mode": "orbit",
-    "initialDistance": 0.6
+    "initialDistance": 3
   },
   "hotspots": [
     {
-      "id": "left-speaker",
-      "label": "Left speaker",
-      "position": { "x": -0.18, "y": 0.0, "z": 0.05 },
-      "radius": 0.04,
-      "correct": false,
-      "feedback": "That is the left speaker. The tuning dial is the smaller circular control near the centre."
-    },
-    {
-      "id": "right-speaker",
-      "label": "Right speaker",
-      "position": { "x": 0.18, "y": 0.0, "z": 0.05 },
-      "radius": 0.04,
-      "correct": false,
-      "feedback": "That is the right speaker. The tuning dial is the smaller circular control near the centre."
-    },
-    {
-      "id": "tuning-dial",
-      "label": "Tuning dial",
-      "position": { "x": 0.0, "y": 0.05, "z": 0.07 },
-      "radius": 0.03,
+      "id": "top",
+      "label": "Top",
+      "position": { "x": 0, "y": 0.5, "z": 0 },
+      "radius": 0.3,
       "correct": true,
-      "feedback": "Correct — the tuning dial selects which radio frequency the unit picks up."
+      "feedback": "Correct — that is the top face of the cube."
     },
     {
-      "id": "handle",
-      "label": "Carry handle",
-      "position": { "x": 0.0, "y": 0.18, "z": 0.0 },
-      "radius": 0.04,
+      "id": "bottom",
+      "label": "Bottom",
+      "position": { "x": 0, "y": -0.5, "z": 0 },
+      "radius": 0.3,
       "correct": false,
-      "feedback": "That is the carry handle, used to lift the unit. The tuning dial is the small circle on the front face."
+      "feedback": "That is the bottom face. The prompt asked for the top."
+    },
+    {
+      "id": "front",
+      "label": "Front",
+      "position": { "x": 0, "y": 0, "z": 0.5 },
+      "radius": 0.3,
+      "correct": false,
+      "feedback": "That is the front face. The prompt asked for the top."
     }
   ],
   "behaviour": {

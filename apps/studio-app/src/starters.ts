@@ -85,8 +85,18 @@ export const STARTERS: Record<ActivityKind, unknown> = {
     title: "3D Hotspot",
     prompt: "Click the correct part.",
     model: {
-      src: "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/main/Models/BoomBox/glTF-Binary/BoomBox.glb",
-      scale: 50,
+      // Bundled Khronos Box placeholder (CC BY 4.0). External CDN URLs
+      // here would break inside LMS networks that block external hosts
+      // and under engine-web's strict `connect-src 'self'` CSP.
+      // Authors should replace this with their own model.
+      src: "samples/hotspot-3d/box.glb",
+      scale: 1,
+      attribution: {
+        author: "Khronos Group",
+        sourceUrl: "https://github.com/KhronosGroup/glTF-Sample-Assets/tree/main/Models/Box",
+        license: "CC BY 4.0",
+        licenseUrl: "https://creativecommons.org/licenses/by/4.0/",
+      },
     },
     camera: { initialDistance: 0.6 },
     hotspots: [
@@ -135,7 +145,8 @@ export const STARTERS: Record<ActivityKind, unknown> = {
     version: "1.0",
     title: "Virtual Tour",
     scene: {
-      src: "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/main/Models/DamagedHelmet/glTF-Binary/DamagedHelmet.glb",
+      // Bundled placeholder (CC BY 4.0) — see comment under hotspot-3d.
+      src: "samples/virtual-tour/box.glb",
       spawn: { position: { x: 0, y: 0.5, z: 4 } },
     },
     movement: { speed: 2 },

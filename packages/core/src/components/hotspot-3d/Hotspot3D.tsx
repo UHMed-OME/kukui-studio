@@ -1,6 +1,6 @@
 import { Suspense, useEffect, useId, useMemo, useRef, useState } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { OrbitControls, Environment } from "@react-three/drei";
+import { OrbitControls } from "@react-three/drei";
 import * as THREE from "three";
 import type { Hotspot3DConfig } from "@kukui/schemas";
 import type { ActivityProps } from "../../types.js";
@@ -393,9 +393,16 @@ function Hotspot3DScene({
           camera={{ position: initialPos, fov: 45, near: 0.001, far: 1000 }}
           gl={{ toneMapping: THREE.ACESFilmicToneMapping, outputColorSpace: THREE.SRGBColorSpace }}
         >
-          <Environment preset={lightingPreset} environmentIntensity={0.8} />
-          <ambientLight intensity={0.25} />
-          <directionalLight position={[3, 5, 4]} intensity={0.6} />
+          {/* No drei <Environment preset> — that fetches an HDR from
+              raw.githack.com which fails inside LMS networks that block
+              external CDNs, and trips strict CSPs (CSP saw it before we
+              did). Use three procedural lights instead — flatter shading
+              than IBL, but the activity ships fully self-contained. To
+              restore IBL later, bundle an HDR file in the SCORM zip and
+              pass it via `files=` on Environment. */}
+          <ambientLight intensity={0.6} />
+          <directionalLight position={[3, 5, 4]} intensity={0.9} castShadow={false} />
+          <directionalLight position={[-3, 2, -4]} intensity={0.35} castShadow={false} />
           <Suspense fallback={null}>
             {config.model.src ? (
               <Model src={config.model.src} scale={modelScale} sceneRef={modelRef} />

@@ -1,9 +1,9 @@
 {
-  "_comment": "Demo fixture using Khronos Group's public DamagedHelmet glTF sample as a stand-in scene. Replace scene.src with author-provided geometry for production.",
+  "_comment": "Demo fixture using a bundled Khronos Box placeholder (CC BY 4.0). Authors replace scene.src with their own geometry for production. Local path so the activity renders inside LMS networks that block external CDNs.",
   "version": "1.0",
-  "title": "Tour of a sci-fi helmet",
+  "title": "Tour the cube",
   "scene": {
-    "src": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/main/Models/DamagedHelmet/glTF-Binary/DamagedHelmet.glb",
+    "src": "samples/virtual-tour/box.glb",
     "spawn": {
       "position": { "x": 0, "y": 0.5, "z": 4 }
     }
