@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { truncateResponse, encodeChoice, encodeMatching, encodeSequencing } from "./interaction-encoding.js";
+import { truncateResponse, encodeChoice, encodeMatching, encodeSequencing, encodeFillIn } from "./interaction-encoding.js";
 
 describe("truncateResponse", () => {
   it("leaves short strings unchanged", () => {
@@ -85,5 +85,25 @@ describe("encodeSequencing", () => {
 
   it("returns the empty string for an empty sequence", () => {
     expect(encodeSequencing([])).toBe("");
+  });
+});
+
+describe("encodeFillIn", () => {
+  it("trims surrounding whitespace", () => {
+    expect(encodeFillIn("  hello  ")).toBe("hello");
+  });
+
+  it("truncates long input to 255 chars with ellipsis", () => {
+    const out = encodeFillIn("x".repeat(400));
+    expect(out.length).toBe(255);
+    expect(out.endsWith("…")).toBe(true);
+  });
+
+  it("preserves internal whitespace", () => {
+    expect(encodeFillIn("multi word answer")).toBe("multi word answer");
+  });
+
+  it("handles unicode characters within byte budget", () => {
+    expect(encodeFillIn("café")).toBe("café");
   });
 });

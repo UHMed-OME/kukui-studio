@@ -55,3 +55,11 @@ export function encodeMatching(
 export function encodeSequencing(orderedIds: readonly string[]): string {
   return orderedIds.join(",");
 }
+
+/**
+ * SCORM 1.2 §3.4.7.5 fill-in form: free text capped at 255 chars. Used by
+ * fill-in-the-blanks, reflection-prompt, crossword, word-cloud, qa-board.
+ */
+export function encodeFillIn(text: string): string {
+  return truncateResponse(text.trim());
+}
