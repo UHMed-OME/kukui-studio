@@ -118,7 +118,14 @@ async function showPicker(token: string): Promise<PickedFile | null> {
 export async function openJsonFromDrive(): Promise<
   { name: string; json: string } | null
 > {
+  // Kick off the Picker library load in parallel with the OAuth popup.
+  // The popup is gated on user interaction (several seconds typical);
+  // gapi is ~25 KB and can ship while the user is consenting. Errors
+  // here are swallowed — if Picker load fails, showPicker() will
+  // surface the same error when it retries below.
+  const pickerReady = loadPicker().catch(() => {});
   const token = await requestDriveToken();
+  await pickerReady;
   const picked = await showPicker(token);
   if (!picked) return null;
   const resp = await fetch(

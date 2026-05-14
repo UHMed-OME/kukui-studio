@@ -106,10 +106,6 @@
   font-size: var(--font-size-meta);
 }
 
-.ks-connections-status > div {
-  display: contents;
-}
-
 .ks-connections-status dt {
   color: var(--color-text-secondary);
   font-weight: 500;

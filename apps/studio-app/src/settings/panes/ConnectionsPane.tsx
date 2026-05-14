@@ -79,19 +79,15 @@ function DriveSection() {
         file picker; the rest of your Drive stays invisible to us.
       </p>
       <dl className="ks-connections-status">
-        <div>
-          <dt>Status</dt>
-          <dd>{signedIn ? "Signed in (token cached in memory)" : "Not signed in"}</dd>
-        </div>
-        <div>
-          <dt>Scope</dt>
-          <dd>drive.file (per-file consent via Picker)</dd>
-        </div>
+        <dt>Status</dt>
+        <dd>{signedIn ? "Signed in (token cached in memory)" : "Not signed in"}</dd>
+        <dt>Scope</dt>
+        <dd>drive.file (per-file consent via Picker)</dd>
         {GOOGLE_APP_ID ? (
-          <div>
+          <>
             <dt>Project</dt>
             <dd>{GOOGLE_APP_ID}</dd>
-          </div>
+          </>
         ) : null}
       </dl>
       <div className="ks-settings-pane__actions">
