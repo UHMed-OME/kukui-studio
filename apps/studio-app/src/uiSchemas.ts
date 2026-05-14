@@ -343,18 +343,15 @@ export const UI_SCHEMAS: Record<ActivityKind, Record<string, unknown>> = {
     ),
     model: {
       "ui:title": "3D model",
-      src: f(
-        "Model file (.glb / .gltf)",
-        "Paste a URL or upload a file. Glb files >5 MB don't persist between sessions but still ship with the SCORM zip.",
-        {
-          "ui:widget": "file",
-          "ui:options": {
-            accept: ".glb,.gltf,model/gltf-binary,model/gltf+json",
-            maxSizeMb: 50,
-            kind: "model",
-          },
-        },
-      ),
+      "ui:help":
+        "Pick a model source (Link / Upload / Sketchfab) in the canvas to the right — the tabs above the 3D viewport. Set the scale and CC attribution here.",
+      // Source picking lives in the canvas (Hotspot3DEditor's
+      // ModelSourceField). Hiding both fields in the form prevents the
+      // double-control surface the author complained about — the form
+      // and the canvas were both exposing src/sketchfabUid as raw
+      // inputs, with no indication that they were the same fields.
+      src: HIDDEN,
+      sketchfabUid: HIDDEN,
       scale: f("Uniform scale", "Multiplies model size by this factor. Default 1."),
     },
     camera: {
