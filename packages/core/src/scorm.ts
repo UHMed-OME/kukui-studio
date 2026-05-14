@@ -1,4 +1,5 @@
 import LZString from "lz-string";
+import type { InteractionRecord } from "./types.js";
 
 /**
  * SCORM 1.2 wrapper. Discovers the SCORM API on the page (set up by the
@@ -36,6 +37,7 @@ export interface ScormDriver {
   getStudentName(): string | undefined;
   getStudentId(): string | undefined;
   isLive(): boolean;
+  recordInteraction(record: InteractionRecord): void;
 }
 
 class PipwerksDriver implements ScormDriver {
@@ -81,6 +83,12 @@ class PipwerksDriver implements ScormDriver {
   isLive() {
     return true;
   }
+  recordInteraction(record: InteractionRecord) {
+    // Implementation lands in Task 10.
+    console.warn(
+      `[kukui:scorm] recordInteraction(${record.id}) not yet implemented`,
+    );
+  }
 }
 
 class MemoryDriver implements ScormDriver {
@@ -108,6 +116,11 @@ class MemoryDriver implements ScormDriver {
   }
   isLive() {
     return false;
+  }
+  recordInteraction(record: InteractionRecord) {
+    console.info(
+      `[kukui:scorm:dev] interaction ${record.id} → "${record.studentResponse}" (${record.result.kind})`,
+    );
   }
 }
 

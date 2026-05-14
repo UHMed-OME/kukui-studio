@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { __setScormDriverForTest, getScormDriver } from "./scorm.js";
+import type { InteractionRecord } from "./types.js";
 
 describe("getScormDriver — fallback memory driver", () => {
   beforeEach(() => {
@@ -64,5 +65,35 @@ describe("getScormDriver — pipwerks driver", () => {
     expect(set).toHaveBeenCalledWith("cmi.core.score.raw", "80");
     expect(set).toHaveBeenCalledWith("cmi.core.lesson_status", "passed");
     expect(save).toHaveBeenCalled();
+  });
+});
+
+describe("MemoryDriver.recordInteraction", () => {
+  beforeEach(() => {
+    __setScormDriverForTest(undefined);
+  });
+  afterEach(() => {
+    __setScormDriverForTest(undefined);
+    vi.unstubAllGlobals();
+  });
+
+  it("logs an interaction summary in dev preview mode", () => {
+    const spy = vi.spyOn(console, "info").mockImplementation(() => {});
+    const driver = getScormDriver();
+    const record: InteractionRecord = {
+      id: "multiple-choice:abc12345:q1",
+      type: "choice",
+      studentResponse: "{a,c}",
+      correctResponse: "{a,b}",
+      result: { kind: "wrong" },
+      weighting: 1,
+      latencySeconds: 12.5,
+    };
+    driver.recordInteraction(record);
+    expect(spy).toHaveBeenCalledWith(
+      expect.stringContaining("multiple-choice:abc12345:q1"),
+    );
+    expect(spy).toHaveBeenCalledWith(expect.stringContaining("wrong"));
+    spy.mockRestore();
   });
 });
