@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { truncateResponse, encodeChoice, encodeMatching } from "./interaction-encoding.js";
+import { truncateResponse, encodeChoice, encodeMatching, encodeSequencing } from "./interaction-encoding.js";
 
 describe("truncateResponse", () => {
   it("leaves short strings unchanged", () => {
@@ -69,5 +69,21 @@ describe("encodeMatching", () => {
 
   it("returns the empty string for an empty list", () => {
     expect(encodeMatching([])).toBe("");
+  });
+});
+
+describe("encodeSequencing", () => {
+  it("joins ordered ids with commas", () => {
+    expect(encodeSequencing(["a", "b", "c"])).toBe("a,b,c");
+  });
+
+  it("preserves order exactly as given", () => {
+    expect(encodeSequencing(["step-3", "step-1", "step-2"])).toBe(
+      "step-3,step-1,step-2",
+    );
+  });
+
+  it("returns the empty string for an empty sequence", () => {
+    expect(encodeSequencing([])).toBe("");
   });
 });

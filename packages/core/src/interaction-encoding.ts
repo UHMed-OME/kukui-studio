@@ -47,3 +47,11 @@ export function encodeMatching(
 ): string {
   return pairs.map((p) => `${p.left}.${p.right}`).join(",");
 }
+
+/**
+ * SCORM 1.2 §3.4.7.5 sequencing form: `a,b,c`. Used by sequence-steps and
+ * ddx-tree.
+ */
+export function encodeSequencing(orderedIds: readonly string[]): string {
+  return orderedIds.join(",");
+}
