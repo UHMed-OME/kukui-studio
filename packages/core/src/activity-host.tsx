@@ -2,7 +2,7 @@ import { Suspense, useEffect, useState, type CSSProperties } from "react";
 import { SchemaRegistry, type SchemaRegistryKey } from "@kukui/schemas";
 import { loadContent, ContentLoadError } from "./content.js";
 import { getScormDriver } from "./scorm.js";
-import type { ActivityKind, BuiltActivityKind, ScoreState } from "./types.js";
+import type { ActivityKind, BuiltActivityKind, InteractionRecord, ScoreState } from "./types.js";
 import { ACTIVITY_REGISTRY, StubActivityLazy } from "./components/registry.js";
 import { PLANNED_ACTIVITY_KINDS } from "./planned.js";
 import { applyColorScheme, type ResolvedColorScheme } from "./colorScheme.js";
@@ -75,6 +75,10 @@ export function ActivityHost({ kind, configUrl, loader = loadContent }: Activity
     scorm.saveSuspendData(suspendData);
   };
 
+  const handleInteraction = (record: InteractionRecord) => {
+    scorm.recordInteraction(record);
+  };
+
   if (state.status === "loading") {
     return (
       <div role="status" aria-live="polite" style={loadingStyle}>
@@ -110,6 +114,7 @@ export function ActivityHost({ kind, configUrl, loader = loadContent }: Activity
   const callbackProps = {
     onSubmit: handleSubmit,
     onPersist: handlePersist,
+    onInteraction: handleInteraction,
     suspendData: scorm.loadSuspendData(),
   };
 
