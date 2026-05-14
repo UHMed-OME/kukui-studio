@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { truncateResponse, encodeChoice, encodeMatching, encodeSequencing, encodeFillIn, encodePerformance } from "./interaction-encoding.js";
+import { truncateResponse, encodeChoice, encodeMatching, encodeSequencing, encodeFillIn, encodePerformance, encodeLatency, encodeTimeOfDay, encodeResult } from "./interaction-encoding.js";
 
 describe("truncateResponse", () => {
   it("leaves short strings unchanged", () => {
@@ -126,5 +126,49 @@ describe("encodePerformance", () => {
 
   it("encodes arrays of ids without quoting", () => {
     expect(encodePerformance(["a", "b", "c"])).toBe('["a","b","c"]');
+  });
+});
+
+describe("encodeLatency", () => {
+  it("formats sub-second values with hundredths", () => {
+    expect(encodeLatency(0.5)).toBe("0000:00:00.50");
+  });
+
+  it("formats whole seconds", () => {
+    expect(encodeLatency(5)).toBe("0000:00:05.00");
+  });
+
+  it("rolls over to minutes and hours", () => {
+    expect(encodeLatency(65)).toBe("0000:01:05.00");
+    expect(encodeLatency(3725.5)).toBe("0001:02:05.50"); // 1h 2m 5.5s
+  });
+
+  it("clamps negative input to zero", () => {
+    expect(encodeLatency(-10)).toBe("0000:00:00.00");
+  });
+
+  it("handles four-digit hour values", () => {
+    expect(encodeLatency(36000)).toBe("0010:00:00.00");
+  });
+});
+
+describe("encodeTimeOfDay", () => {
+  it("formats hours:minutes:seconds with zero padding", () => {
+    const d = new Date(2026, 4, 14, 9, 5, 3); // local time
+    expect(encodeTimeOfDay(d)).toBe("09:05:03");
+  });
+});
+
+describe("encodeResult", () => {
+  it("maps the four enum kinds to their SCORM strings", () => {
+    expect(encodeResult({ kind: "correct" })).toBe("correct");
+    expect(encodeResult({ kind: "wrong" })).toBe("wrong");
+    expect(encodeResult({ kind: "unanticipated" })).toBe("unanticipated");
+    expect(encodeResult({ kind: "neutral" })).toBe("neutral");
+  });
+
+  it("formats numeric results to two decimal places", () => {
+    expect(encodeResult({ kind: "numeric", value: 0.5 })).toBe("0.50");
+    expect(encodeResult({ kind: "numeric", value: 1 })).toBe("1.00");
   });
 });

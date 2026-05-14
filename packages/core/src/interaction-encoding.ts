@@ -5,6 +5,8 @@
  * exhaustively.
  */
 
+import type { InteractionResult } from "./types.js";
+
 /** SCORM 1.2 CMIFeedback cap; applies to id, student_response, correct_responses.0.pattern. */
 export const MAX_RESPONSE_CHARS = 255;
 
@@ -76,4 +78,32 @@ export function encodeFillIn(text: string): string {
 export function encodePerformance(payload: unknown): string {
   const text = typeof payload === "string" ? payload : JSON.stringify(payload);
   return truncateResponse(text);
+}
+
+/**
+ * SCORM 1.2 §3.4.7.10 latency, HHHH:MM:SS.SS. Negative inputs clamp to zero
+ * so we never emit a malformed time string from a clock-skew edge case.
+ */
+export function encodeLatency(seconds: number): string {
+  const totalHundredths = Math.max(0, Math.floor(seconds * 100));
+  const hundredths = totalHundredths % 100;
+  const totalSec = Math.floor(totalHundredths / 100);
+  const s = totalSec % 60;
+  const m = Math.floor(totalSec / 60) % 60;
+  const h = Math.floor(totalSec / 3600);
+  const pad2 = (n: number) => String(n).padStart(2, "0");
+  const pad4 = (n: number) => String(n).padStart(4, "0");
+  return `${pad4(h)}:${pad2(m)}:${pad2(s)}.${pad2(hundredths)}`;
+}
+
+/** SCORM 1.2 §3.4.7.7 time, HH:MM:SS in the learner's local timezone. */
+export function encodeTimeOfDay(date: Date): string {
+  const pad2 = (n: number) => String(n).padStart(2, "0");
+  return `${pad2(date.getHours())}:${pad2(date.getMinutes())}:${pad2(date.getSeconds())}`;
+}
+
+/** Map an InteractionResult to the SCORM 1.2 §3.4.7.9 string form. */
+export function encodeResult(r: InteractionResult): string {
+  if (r.kind === "numeric") return r.value.toFixed(2);
+  return r.kind;
 }
