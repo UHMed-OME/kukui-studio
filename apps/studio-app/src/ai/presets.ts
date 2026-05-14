@@ -78,7 +78,8 @@ export const PRESETS: readonly ProviderPreset[] = [
     baseUrl: "https://generativelanguage.googleapis.com/v1beta/openai",
     model: "gemini-2.5-flash",
     signupUrl: "https://aistudio.google.com/apikey",
-    description: "Google AI Studio key — free tier with generous quota.",
+    description:
+      "Google AI Studio key — free tier with generous quota. Note: institutional Google Workspace tenants (incl. UH) often block AI Studio at the admin level; try Groq / Together / OpenRouter instead if the signup link is blocked.",
   },
   {
     id: "azure",
