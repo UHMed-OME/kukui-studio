@@ -114,3 +114,49 @@ export type ScoreBand = {
   to: number;
   message: string;
 };
+
+/**
+ * SCORM 1.2 §3.4.7.3 interaction types. The eight values are spec-defined;
+ * adding new ones isn't permitted.
+ */
+export type InteractionType =
+  | "true-false"
+  | "choice"
+  | "fill-in"
+  | "matching"
+  | "performance"
+  | "sequencing"
+  | "likert"
+  | "numeric";
+
+/**
+ * Discriminated union mirroring SCORM 1.2 §3.4.7.9 cmi.interactions.N.result
+ * vocabulary. `numeric` covers the spec's decimal 0..1 case.
+ */
+export type InteractionResult =
+  | { kind: "correct" }
+  | { kind: "wrong" }
+  | { kind: "unanticipated" }
+  | { kind: "neutral" }
+  | { kind: "numeric"; value: number };
+
+/**
+ * One learner-question pairing for SCORM 1.2 cmi.interactions.N.* writes.
+ * `id` must be stable across re-attempts so the LMS report aggregates
+ * correctly — see the spec for the `<kind>:<configIdent>:<itemRef>` format.
+ *
+ * `description` is internal — it's surfaced in dev-console logs and reserved
+ * for future xAPI / cmi5 work, but never written to SCORM (1.2 has no
+ * description field; objectives.N.id is for learning-objective linkage and
+ * is intentionally unused).
+ */
+export type InteractionRecord = {
+  id: string;
+  type: InteractionType;
+  description?: string;
+  studentResponse: string;
+  correctResponse?: string;
+  result: InteractionResult;
+  weighting?: number;
+  latencySeconds?: number;
+};
