@@ -626,6 +626,7 @@ const LIVE_KIND_SET = new Set<ActivityKind>([
   "word-cloud",
   "qa-board",
   "quick-quiz",
+  "isometric-chatroom",
 ]);
 
 export function ensureFreshKeys(kind: ActivityKind, value: unknown): unknown {
