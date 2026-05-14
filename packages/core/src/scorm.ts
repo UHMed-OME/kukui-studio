@@ -1,4 +1,10 @@
 import LZString from "lz-string";
+import {
+  encodeLatency,
+  encodeResult,
+  encodeTimeOfDay,
+  truncateResponse,
+} from "./interaction-encoding.js";
 import type { InteractionRecord } from "./types.js";
 
 /**
@@ -41,6 +47,7 @@ export interface ScormDriver {
 }
 
 class PipwerksDriver implements ScormDriver {
+  private interactionIndex = 0;
   constructor(private readonly api: PipwerksScorm) {}
   initialize() {
     return this.api.init();
@@ -84,10 +91,22 @@ class PipwerksDriver implements ScormDriver {
     return true;
   }
   recordInteraction(record: InteractionRecord) {
-    // Implementation lands in Task 10.
-    console.warn(
-      `[kukui:scorm] recordInteraction(${record.id}) not yet implemented`,
-    );
+    const i = this.interactionIndex;
+    this.interactionIndex += 1;
+    const prefix = `cmi.interactions.${i}`;
+    this.api.set(`${prefix}.id`, truncateResponse(record.id));
+    this.api.set(`${prefix}.type`, record.type);
+    this.api.set(`${prefix}.time`, encodeTimeOfDay(new Date()));
+    this.api.set(`${prefix}.student_response`, truncateResponse(record.studentResponse));
+    if (record.correctResponse !== undefined) {
+      this.api.set(`${prefix}.correct_responses.0.pattern`, truncateResponse(record.correctResponse));
+    }
+    this.api.set(`${prefix}.result`, encodeResult(record.result));
+    this.api.set(`${prefix}.weighting`, String(record.weighting ?? 1));
+    if (record.latencySeconds !== undefined) {
+      this.api.set(`${prefix}.latency`, encodeLatency(record.latencySeconds));
+    }
+    this.api.save();
   }
 }
 
