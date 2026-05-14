@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { truncateResponse, encodeChoice, encodeMatching, encodeSequencing, encodeFillIn } from "./interaction-encoding.js";
+import { truncateResponse, encodeChoice, encodeMatching, encodeSequencing, encodeFillIn, encodePerformance } from "./interaction-encoding.js";
 
 describe("truncateResponse", () => {
   it("leaves short strings unchanged", () => {
@@ -105,5 +105,26 @@ describe("encodeFillIn", () => {
 
   it("handles unicode characters within byte budget", () => {
     expect(encodeFillIn("café")).toBe("café");
+  });
+});
+
+describe("encodePerformance", () => {
+  it("returns strings unchanged when under the cap", () => {
+    expect(encodePerformance("hotspot-a,hotspot-c")).toBe("hotspot-a,hotspot-c");
+  });
+
+  it("JSON-stringifies non-string payloads", () => {
+    expect(encodePerformance({ x: 12, y: 34 })).toBe('{"x":12,"y":34}');
+  });
+
+  it("truncates over-cap payloads with ellipsis", () => {
+    const payload = { notes: "n".repeat(400) };
+    const out = encodePerformance(payload);
+    expect(out.length).toBe(255);
+    expect(out.endsWith("…")).toBe(true);
+  });
+
+  it("encodes arrays of ids without quoting", () => {
+    expect(encodePerformance(["a", "b", "c"])).toBe('["a","b","c"]');
   });
 });

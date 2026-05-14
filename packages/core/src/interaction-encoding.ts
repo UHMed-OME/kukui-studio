@@ -63,3 +63,17 @@ export function encodeSequencing(orderedIds: readonly string[]): string {
 export function encodeFillIn(text: string): string {
   return truncateResponse(text.trim());
 }
+
+/**
+ * SCORM 1.2 §3.4.7.5 performance form: free-form text. Used by hotspot-3d,
+ * highlight-text, virtual-tour, image-annotation, audio-recording,
+ * image-comparison-slider, isometric-chatroom — anywhere the response
+ * shape doesn't fit choice / matching / sequencing.
+ *
+ * Strings pass through unchanged; everything else is JSON-stringified.
+ * Result is truncated to 255 chars.
+ */
+export function encodePerformance(payload: unknown): string {
+  const text = typeof payload === "string" ? payload : JSON.stringify(payload);
+  return truncateResponse(text);
+}
