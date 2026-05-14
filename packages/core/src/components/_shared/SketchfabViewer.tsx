@@ -1,6 +1,11 @@
 import { useCallback, useEffect, useId, useRef, useState } from "react";
 import * as THREE from "three";
 import "./SketchfabViewer.css";
+// Pin pill / number / label styling. Without this import the studio
+// editor's Hotspot3DEditor mounts SketchfabViewer in isolation and the
+// pin buttons render as unstyled HTML — `kukui-pin` only existed in
+// the runtime's Hotspot3D.css.
+import "./HotspotPin.css";
 
 /**
  * Embeds a Sketchfab model via their Viewer API and overlays HTML pins
@@ -68,6 +73,9 @@ interface SketchfabClickEvent {
 interface SketchfabLookAt {
   position: [number, number, number];
   target: [number, number, number];
+  // Some Sketchfab API versions include an explicit up vector. When
+  // present, prefer it — falls back to world Y otherwise.
+  up?: [number, number, number];
 }
 
 const SKETCHFAB_API_SRC = "https://static.sketchfab.com/api/sketchfab-viewer-1.12.1.js";
@@ -174,7 +182,16 @@ export function SketchfabViewer({
           lookAt.position[1],
           lookAt.position[2],
         );
-        tmpCamera.up.set(0, 1, 0);
+        // Use Sketchfab's reported up vector when the API surfaces one
+        // (newer viewer versions do). Without it, fall back to world Y.
+        // Hardcoded Y-up was causing the overlay to track an axis the
+        // model wasn't actually rotating around — pins appeared to
+        // orbit on a different plane than the model's surface.
+        if (lookAt.up) {
+          tmpCamera.up.set(lookAt.up[0], lookAt.up[1], lookAt.up[2]);
+        } else {
+          tmpCamera.up.set(0, 1, 0);
+        }
         tmpCamera.lookAt(lookAt.target[0], lookAt.target[1], lookAt.target[2]);
         tmpCamera.fov = fovRef.current;
         tmpCamera.aspect = rect.width / rect.height;

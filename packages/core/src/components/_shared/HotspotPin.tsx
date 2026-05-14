@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
 import { Html } from "@react-three/drei";
 import * as THREE from "three";
+import "./HotspotPin.css";
 
 /**
  * Sketchfab-style HTML annotation pin for 3D scenes.
