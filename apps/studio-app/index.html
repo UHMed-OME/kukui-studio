@@ -5,6 +5,65 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <link rel="icon" type="image/svg+xml" href="/kukui-logo.svg" />
     <title>Kukui Studio</title>
+
+    <!--
+      Content Security Policy — Report-Only mode.
+
+      Started in report-only so we can browse the studio for a few days,
+      watch the console for "[Report Only] Refused to..." warnings, and
+      either tighten or relax the allowlist before flipping to enforcing.
+
+      Limitations of meta-CSP on GitHub Pages (no HTTP-header support):
+        - frame-ancestors is header-only — silently ignored here.
+        - report-uri / report-to need an endpoint we don't run.
+        - Applies after HTML parse, so an XSS in the initial document
+          would still execute. Defense-in-depth, not airtight.
+
+      Maintenance rule: every new third-party (AI provider, Drive,
+      Sketchfab successor, future Notion connector) means a CSP edit.
+      Keep the rationale next to each origin so the next person knows
+      why it's allowlisted.
+
+      `'unsafe-inline'` for styles is forced by Tiptap (the rich-text
+      editor sets per-element inline styles). 'wasm-unsafe-eval' is
+      forced by Trystero / Y.js (CRDT code-gen). Both are wider than
+      we'd like; not strictly fixable without dropping the libraries.
+    -->
+    <meta
+      http-equiv="Content-Security-Policy-Report-Only"
+      content="
+        default-src 'self';
+        script-src 'self' 'wasm-unsafe-eval'
+          https://accounts.google.com
+          https://apis.google.com
+          https://static.sketchfab.com;
+        style-src 'self' 'unsafe-inline';
+        img-src 'self' data: blob: https:;
+        font-src 'self' data:;
+        connect-src 'self'
+          https://accounts.google.com
+          https://oauth2.googleapis.com
+          https://www.googleapis.com
+          https://content.googleapis.com
+          https://generativelanguage.googleapis.com
+          https://api.openai.com
+          https://api.anthropic.com
+          https://api.groq.com
+          https://api.together.xyz
+          https://openrouter.ai;
+        frame-src
+          https://accounts.google.com
+          https://content.googleapis.com
+          https://docs.google.com
+          https://sketchfab.com
+          https://*.sketchfab.com;
+        media-src 'self' data: blob: https:;
+        worker-src 'self' blob:;
+        object-src 'none';
+        base-uri 'self';
+        form-action 'self';
+      "
+    />
   </head>
   <body>
     <div id="root"></div>
