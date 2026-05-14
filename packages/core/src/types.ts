@@ -27,6 +27,13 @@ export type ActivityProps<TConfig> = {
   /** Called whenever the learner makes a meaningful interaction we should persist. */
   onPersist?: (suspendData: string) => void;
   /**
+   * Report a per-question SCORM 1.2 interaction. Activities not yet wired
+   * simply don't call this; behaviour is purely additive. See the
+   * `2026-05-14-scorm-interaction-hygiene` spec for the per-activity
+   * vocabulary.
+   */
+  onInteraction?: (record: InteractionRecord) => void;
+  /**
    * Heading level the component should use for its title. Defaults to 1
    * (top-level activity); pass 2 when nesting inside Course Presentation /
    * Question Set so the document outline doesn't end up with multiple h1s.
