@@ -627,6 +627,16 @@ html[data-color-scheme="light"] .kukui-landing {
   margin: 0;
 }
 
+.kukui-landing__footer-legal a {
+  color: var(--color-text-muted);
+  text-decoration: none;
+  transition: color 120ms ease;
+}
+
+.kukui-landing__footer-legal a:hover {
+  color: var(--color-primary);
+}
+
 
 .kukui-landing__footer-pronounce {
   margin: 0;

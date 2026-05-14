@@ -274,6 +274,9 @@ export function Landing() {
 
         <div className="kukui-landing__footer-bottom">
           <p>© Kukui Studio · MIT-licensed open source</p>
+          <p className="kukui-landing__footer-legal">
+            <Link to="/privacy">Privacy &amp; data</Link>
+          </p>
         </div>
       </footer>
     </div>
