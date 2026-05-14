@@ -189,6 +189,32 @@ export function SketchfabViewer({
       rafId = requestAnimationFrame(tickProjection);
     };
 
+    /**
+     * Sketchfab's `viewerready` event has been unreliable across versions —
+     * for some embedded models it never fires even after the scene is
+     * fully loaded and interactive, leaving our loading overlay stuck
+     * over a visible model. Keep the event as the primary signal but
+     * back it up with two fallbacks:
+     *   - iframe `load`: fires when the Sketchfab page (containing the
+     *     viewer) has finished loading. Not the same as the model being
+     *     visible, but a strong proxy and always fires.
+     *   - 15 s timeout: hard ceiling. If neither signal arrives by then,
+     *     the model has either loaded fine without telling us or it'll
+     *     never load — either way, get out of the user's face.
+     */
+    const markReady = () => {
+      if (cancelled) return;
+      setStatus((prev) => (prev === "loading" ? "ready" : prev));
+    };
+    const fallbackTimeout = window.setTimeout(markReady, 15_000);
+    const onIframeLoad = () => {
+      // Iframe load fires before the model finishes downloading; give
+      // the viewer a short grace period so the user doesn't see a black
+      // canvas with no overlay.
+      window.setTimeout(markReady, 1500);
+    };
+    iframe.addEventListener("load", onIframeLoad);
+
     loadSketchfabApi()
       .then(() => {
         if (cancelled || !window.Sketchfab) return;
@@ -197,7 +223,7 @@ export function SketchfabViewer({
           success: (api) => {
             apiRef.current = api;
             api.addEventListener("viewerready", () => {
-              setStatus("ready");
+              markReady();
               api.getFov((_err, fov) => {
                 if (typeof fov === "number" && fov > 0) fovRef.current = fov;
               });
@@ -226,6 +252,8 @@ export function SketchfabViewer({
     return () => {
       cancelled = true;
       cancelAnimationFrame(rafId);
+      window.clearTimeout(fallbackTimeout);
+      iframe.removeEventListener("load", onIframeLoad);
       apiRef.current = null;
     };
     // hotspots is read off the closure inside the rAF loop, not deps —

@@ -261,9 +261,22 @@ function Hotspot3DEditorInner({
       }))
     : [];
 
+  const aspectCssMap: Record<string, string> = {
+    "16/10": "16 / 10",
+    "16/9": "16 / 9",
+    "4/3": "4 / 3",
+    "1/1": "1 / 1",
+  };
+  const aspect = config.behaviour?.aspectRatio ?? "16/10";
+  const viewportStyle = { aspectRatio: aspectCssMap[aspect] };
+
   return (
     <div className="ks-h3d-editor">
-      <div className="ks-h3d-editor__viewport" ref={canvasRef}>
+      <div
+        className="ks-h3d-editor__viewport"
+        ref={canvasRef}
+        style={viewportStyle}
+      >
         {sketchfabUid ? (
           <>
             <SketchfabViewer
@@ -521,17 +534,35 @@ function ClickableModel({
   );
 }
 
+type ModelSourceMode = "link" | "upload" | "sketchfab";
+
 /**
- * Single input that accepts either a GLB URL or a Sketchfab URL/UID
- * and routes the value into the correct schema field. Authors don't
- * have to know which path they're on — paste a Sketchfab link and
- * we switch to the embed; paste a .glb URL and we use the GLB path.
+ * Pick the visible tab based on what's currently in the config: a
+ * Sketchfab UID wins; an inline `data:` URL flips to Upload; anything
+ * else (including empty) defaults to Link. The author can override by
+ * tapping a different tab — switching modes clears the previous source
+ * so the schema's "src OR sketchfabUid" refinement stays satisfied.
+ */
+function deriveMode(config: Hotspot3DConfig): ModelSourceMode {
+  if (config.model?.sketchfabUid) return "sketchfab";
+  if (config.model?.src?.startsWith("data:")) return "upload";
+  return "link";
+}
+
+/**
+ * 3-mode model-source picker. Tabs across the top (Link / Upload /
+ * Sketchfab); the body shows the input that matches the active tab.
  *
- * Uses local state for the visible text so the user can type freely;
- * commits the parsed value to the config on blur. Keeps the input
- * in sync with external config changes (e.g. AI Accept, draft load)
- * by deriving the displayed value from config when the input is not
- * focused.
+ * - Link: paste a GLB / glTF URL.
+ * - Upload: drag-drop or pick a file; read inline as a data URL so it
+ *   round-trips with the draft. Capped at 50 MB (above that drafts
+ *   won't persist, but the SCORM zip will still include the file).
+ * - Sketchfab: paste a Sketchfab URL *or* a bare 32-char UID; the
+ *   field auto-extracts the UID either way.
+ *
+ * Mode switch clears the other source key so a stale value can't
+ * leak. The schema enforces "src OR sketchfabUid" via .refine; the
+ * picker is the source of truth for which one is set.
  */
 function ModelSourceField({
   config,
@@ -540,52 +571,232 @@ function ModelSourceField({
   config: Hotspot3DConfig;
   onChange: (next: Hotspot3DConfig) => void;
 }) {
-  const persistedDisplay = config.model.sketchfabUid
-    ? `https://sketchfab.com/models/${config.model.sketchfabUid}`
-    : (config.model.src ?? "");
-  const [text, setText] = useState(persistedDisplay);
-  const [focused, setFocused] = useState(false);
-  // When the config changes externally and the input isn't focused,
-  // pull the new value in so the field always shows current state.
+  const derivedMode = deriveMode(config);
+  const [mode, setMode] = useState<ModelSourceMode>(derivedMode);
+  // Re-sync the tab when the config changes externally (AI Accept,
+  // draft load, undo/redo) — pull the new mode in only if the user
+  // hasn't manually picked one that disagrees.
   useEffect(() => {
-    if (!focused) setText(persistedDisplay);
-  }, [persistedDisplay, focused]);
+    setMode(derivedMode);
+  }, [derivedMode]);
 
-  const commit = (raw: string) => {
-    const value = raw.trim();
-    const uid = parseSketchfabUid(value);
-    if (uid) {
-      onChange({
-        ...config,
-        model: { ...config.model, sketchfabUid: uid, src: undefined },
-      });
-    } else {
-      onChange({
-        ...config,
-        model: {
-          ...config.model,
-          src: value || undefined,
-          sketchfabUid: undefined,
-        },
-      });
-    }
+  // Local text state for the Link + Sketchfab inputs so the user can
+  // type freely; commits to the config on blur. Upload writes directly
+  // on file pick / drop.
+  const linkValue = config.model?.src && !config.model.src.startsWith("data:") ? config.model.src : "";
+  const sketchfabValue = config.model?.sketchfabUid
+    ? `https://sketchfab.com/models/${config.model.sketchfabUid}`
+    : "";
+
+  const writeLink = (raw: string) => {
+    const trimmed = raw.trim();
+    onChange({
+      ...config,
+      model: {
+        ...config.model,
+        src: trimmed || undefined,
+        sketchfabUid: undefined,
+      },
+    });
+  };
+
+  const writeSketchfab = (raw: string) => {
+    const uid = parseSketchfabUid(raw);
+    onChange({
+      ...config,
+      model: {
+        ...config.model,
+        sketchfabUid: uid ?? undefined,
+        src: undefined,
+      },
+    });
+  };
+
+  const writeUpload = (dataUrl: string) => {
+    onChange({
+      ...config,
+      model: {
+        ...config.model,
+        src: dataUrl,
+        sketchfabUid: undefined,
+      },
+    });
   };
 
   return (
-    <label className="ks-h3d-editor__field">
+    <div className="ks-h3d-editor__field">
       <span>Model source</span>
+      <div className="ks-h3d-source__tabs" role="tablist" aria-label="Model source type">
+        {(["link", "upload", "sketchfab"] as const).map((m) => (
+          <button
+            key={m}
+            type="button"
+            role="tab"
+            aria-selected={mode === m}
+            className={["ks-h3d-source__tab", mode === m ? "is-active" : ""]
+              .filter(Boolean)
+              .join(" ")}
+            onClick={() => setMode(m)}
+          >
+            {m === "link" ? "Link" : m === "upload" ? "Upload" : "Sketchfab"}
+          </button>
+        ))}
+      </div>
+      <div className="ks-h3d-source__body" role="tabpanel">
+        {mode === "link" ? (
+          <LinkInput value={linkValue} onCommit={writeLink} />
+        ) : mode === "upload" ? (
+          <UploadInput src={config.model?.src} onUpload={writeUpload} />
+        ) : (
+          <SketchfabInput value={sketchfabValue} onCommit={writeSketchfab} />
+        )}
+      </div>
+    </div>
+  );
+}
+
+function LinkInput({
+  value,
+  onCommit,
+}: {
+  value: string;
+  onCommit: (raw: string) => void;
+}) {
+  const [text, setText] = useState(value);
+  const [focused, setFocused] = useState(false);
+  useEffect(() => {
+    if (!focused) setText(value);
+  }, [value, focused]);
+  return (
+    <input
+      type="text"
+      placeholder="https://… .glb or .gltf URL"
+      value={text}
+      onChange={(e) => setText(e.target.value)}
+      onFocus={() => setFocused(true)}
+      onBlur={() => {
+        setFocused(false);
+        onCommit(text);
+      }}
+    />
+  );
+}
+
+function SketchfabInput({
+  value,
+  onCommit,
+}: {
+  value: string;
+  onCommit: (raw: string) => void;
+}) {
+  const [text, setText] = useState(value);
+  const [focused, setFocused] = useState(false);
+  useEffect(() => {
+    if (!focused) setText(value);
+  }, [value, focused]);
+  const liveUid = parseSketchfabUid(text);
+  const showInvalid = text.trim().length > 0 && !liveUid;
+  return (
+    <>
       <input
         type="text"
-        placeholder="https://… (GLB URL or Sketchfab link)"
+        placeholder="https://sketchfab.com/3d-models/… or a 32-char UID"
         value={text}
         onChange={(e) => setText(e.target.value)}
         onFocus={() => setFocused(true)}
         onBlur={() => {
           setFocused(false);
-          commit(text);
+          onCommit(text);
         }}
+        aria-invalid={showInvalid || undefined}
       />
-    </label>
+      {showInvalid ? (
+        <p className="ks-h3d-source__hint ks-h3d-source__hint--warn">
+          Couldn't find a Sketchfab UID in that input. Paste the full model
+          page URL or the 32-character UID itself.
+        </p>
+      ) : (
+        <p className="ks-h3d-source__hint">
+          Paste any Sketchfab model URL — we'll extract the UID automatically.
+        </p>
+      )}
+    </>
+  );
+}
+
+function UploadInput({
+  src,
+  onUpload,
+}: {
+  src: string | undefined;
+  onUpload: (dataUrl: string) => void;
+}) {
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [dragHover, setDragHover] = useState(false);
+
+  const handleFile = (file: File | undefined | null) => {
+    if (!file) return;
+    setError(null);
+    const sizeMb = file.size / 1024 / 1024;
+    if (sizeMb > 50) {
+      setError(
+        `File is ${sizeMb.toFixed(1)} MB; over the 50 MB cap. Drafts won't persist; the SCORM zip will still include it for this session.`,
+      );
+    }
+    const reader = new FileReader();
+    reader.onerror = () => setError("Could not read the file.");
+    reader.onload = () => {
+      if (typeof reader.result === "string") onUpload(reader.result);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const isData = src?.startsWith("data:") ?? false;
+  const sizeKb = isData && src ? Math.round((src.length * 0.75) / 1024) : null;
+
+  return (
+    <div
+      className={["ks-h3d-source__drop", dragHover ? "is-drophover" : ""]
+        .filter(Boolean)
+        .join(" ")}
+      onDragOver={(e) => {
+        e.preventDefault();
+        setDragHover(true);
+      }}
+      onDragLeave={() => setDragHover(false)}
+      onDrop={(e) => {
+        e.preventDefault();
+        setDragHover(false);
+        handleFile(e.dataTransfer.files?.[0]);
+      }}
+    >
+      <input
+        ref={fileRef}
+        type="file"
+        accept=".glb,.gltf,model/gltf-binary,model/gltf+json"
+        onChange={(e) => {
+          handleFile(e.target.files?.[0]);
+          e.target.value = "";
+        }}
+        className="ks-h3d-source__file"
+      />
+      <button
+        type="button"
+        className="ks-h3d-source__pick"
+        onClick={() => fileRef.current?.click()}
+      >
+        {isData ? "Replace file" : "Choose .glb / .gltf file"}
+      </button>
+      <p className="ks-h3d-source__hint">
+        {isData && sizeKb !== null
+          ? `Loaded inline (~${sizeKb} KB). Drop another file to replace.`
+          : "Or drag a .glb / .gltf file here. Up to 50 MB."}
+      </p>
+      {error ? (
+        <p className="ks-h3d-source__hint ks-h3d-source__hint--warn">{error}</p>
+      ) : null}
+    </div>
   );
 }
 

@@ -290,9 +290,23 @@ function Hotspot3DScene({
       return !!(c.getContext("webgl2") || c.getContext("webgl"));
     })();
 
+  const aspect = config.behaviour?.aspectRatio ?? "16/10";
+  const aspectCssMap: Record<string, string> = {
+    "16/10": "16 / 10",
+    "16/9": "16 / 9",
+    "4/3": "4 / 3",
+    "1/1": "1 / 1",
+  };
+  const viewportStyle = { aspectRatio: aspectCssMap[aspect] };
+
   if (!hasWebGL) {
     return (
-      <div className="kukui-h3d__no-webgl" role="img" aria-label="3D model placeholder">
+      <div
+        className="kukui-h3d__no-webgl"
+        role="img"
+        aria-label="3D model placeholder"
+        style={viewportStyle}
+      >
         3D scene unavailable in this environment. Use the keyboard list below.
       </div>
     );
@@ -325,7 +339,7 @@ function Hotspot3DScene({
       };
     });
     return (
-      <div className="kukui-h3d__canvas-wrap">
+      <div className="kukui-h3d__canvas-wrap" style={viewportStyle}>
         <SketchfabViewer
           uid={config.model.sketchfabUid}
           hotspots={sfHotspots}
@@ -363,7 +377,7 @@ function Hotspot3DScene({
     : [0, 0, 1];
 
   return (
-    <div className="kukui-h3d__canvas-wrap">
+    <div className="kukui-h3d__canvas-wrap" style={viewportStyle}>
       <GLBErrorBoundary
         fallback={
           <div className="kukui-glb-error" role="alert">

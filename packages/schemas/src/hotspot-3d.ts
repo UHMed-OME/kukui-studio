@@ -82,6 +82,13 @@ export const Hotspot3DConfigSchema = z
         enableRetry: z.boolean().optional(),
         showHotspotMarkers: z.boolean().optional(),
         allowOrbit: z.boolean().optional(),
+        /**
+         * Viewport aspect ratio for the 3D canvas. Default 16/10 matches
+         * the existing hotspot-3d layout. Authors with portrait reference
+         * art / square renders / widescreen captures can pin a different
+         * ratio without writing CSS.
+         */
+        aspectRatio: z.enum(["16/10", "16/9", "4/3", "1/1"]).optional(),
       })
       .strict()
       .optional(),
