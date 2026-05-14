@@ -1,4 +1,4 @@
-import { GOOGLE_API_KEY } from "./config.js";
+import { GOOGLE_API_KEY, GOOGLE_APP_ID } from "./config.js";
 import { requestDriveToken } from "./auth.js";
 
 /**
@@ -85,11 +85,17 @@ async function showPicker(token: string): Promise<PickedFile | null> {
       .setMimeTypes("application/json")
       .setIncludeFolders(false)
       .setSelectFolderEnabled(false);
-    const built = new picker.PickerBuilder()
+    const builder = new picker.PickerBuilder()
       .addView(view)
       .setOAuthToken(token)
       .setDeveloperKey(GOOGLE_API_KEY)
-      .setTitle("Open a Kukui activity from Drive")
+      .setTitle("Open a Kukui activity from Drive");
+    // With drive.file scope, the Picker needs the App ID (Google
+    // Cloud project NUMBER, not the project ID) to filter to files
+    // our app created. Without it the dialog opens empty even when
+    // the user has files we uploaded.
+    if (GOOGLE_APP_ID) builder.setAppId(GOOGLE_APP_ID);
+    const built = builder
       .setCallback((data) => {
         if (data.action === picker.Action.PICKED) {
           const doc = data.docs?.[0];

@@ -23,6 +23,16 @@ export const GOOGLE_CLIENT_ID =
 export const GOOGLE_API_KEY =
   typeof env.VITE_GOOGLE_API_KEY === "string" ? env.VITE_GOOGLE_API_KEY : "";
 
+/**
+ * Google Cloud project number (12-digit numeric ID, NOT the project
+ * ID slug). Passed to Picker via `setAppId`. With `drive.file` scope,
+ * the Picker uses this to filter to files our app created — without
+ * it, the dialog opens empty because Drive has no way to know which
+ * app's files to surface.
+ */
+export const GOOGLE_APP_ID =
+  typeof env.VITE_GOOGLE_APP_ID === "string" ? env.VITE_GOOGLE_APP_ID : "";
+
 export const DRIVE_SCOPE = "https://www.googleapis.com/auth/drive.file";
 
 /**

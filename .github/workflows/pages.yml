@@ -76,6 +76,10 @@ jobs:
           # them out of the public git log.
           VITE_GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
           VITE_GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+          # Project NUMBER (12-digit, not project ID). Required for the
+          # Picker to filter to files our app created under drive.file
+          # scope — without it the Picker shows nothing on Open.
+          VITE_GOOGLE_APP_ID: ${{ secrets.GOOGLE_APP_ID }}
         run: pnpm --filter @kukui/studio-app build
 
       - name: Build live-mode (served at /live/)

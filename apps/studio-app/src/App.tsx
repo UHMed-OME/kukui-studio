@@ -34,7 +34,6 @@ import {
   PencilIcon,
   PlayIcon,
   RedoIcon,
-  SaveIcon,
   SearchIcon,
   UndoIcon,
   UploadIcon,
@@ -42,12 +41,13 @@ import {
 } from "./icons.js";
 import { ActivityIcon } from "./activityIcons.js";
 import { ACTIVITY_LABELS, STARTERS, ensureFreshKeys } from "./starters.js";
-import { clearDraft, debouncedSaver, loadDraft, saveDraft } from "./drafts.js";
+import { clearDraft, debouncedSaver, loadDraft } from "./drafts.js";
 import { downloadScormZip } from "./scormDownload.js";
 import { importFromFile } from "./scormImport.js";
 import { driveEnabled } from "./drive/config.js";
 import { saveJsonToDrive } from "./drive/saveToDrive.js";
 import { openJsonFromDrive } from "./drive/openFromDrive.js";
+import { MenuButton, type MenuItem } from "./ui/MenuButton.js";
 import { slug } from "./util/slug.js";
 import { BrandWordmark } from "./pages/shared/BrandWordmark.js";
 import { useHistory } from "./hooks/useHistory.js";
@@ -362,16 +362,9 @@ export function App() {
     flash("Reset.");
   };
 
-  // Save = persist the current draft to this browser's storage. Auto-save
-  // already does this on every edit, so Save is mostly an explicit
-  // confirmation for users who want a beat of certainty.
-  const sessionSave = () => {
-    saveDraft(kind, value);
-    flash("Saved to this browser.");
-  };
-
-  // Export = download a portable JSON snapshot of the activity. Distinct
-  // from Save (in-session) and Download (SCORM zip for the LMS).
+  // Export = download a portable JSON snapshot of the activity.
+  // Auto-save (debouncedSaver) keeps localStorage in sync on every
+  // edit; there's no longer a separate "Save" affordance.
   const exportJson = () => {
     if (!validation.success) {
       flash("Fix the highlighted validation errors first.");
@@ -561,14 +554,6 @@ export function App() {
             title="Redo (⇧⌘Z)"
           >
             <RedoIcon />
-          </button>
-          <button
-            type="button"
-            onClick={sessionSave}
-            className="kukui-studio-btn kukui-studio-btn--secondary"
-          >
-            <SaveIcon />
-            <span>Save</span>
           </button>
           <button
             type="button"
@@ -828,46 +813,52 @@ export function App() {
                 status={asyncStatus}
                 onDismiss={() => setAsyncStatus(null)}
               />
-              <button
-                type="button"
-                onClick={triggerImport}
-                className="kukui-studio-btn kukui-studio-btn--ghost kukui-studio-btn--sm"
-                title="Import from JSON or SCORM zip"
-              >
-                <UploadIcon />
-                <span>Import</span>
-              </button>
-              <button
-                type="button"
-                onClick={exportJson}
-                className="kukui-studio-btn kukui-studio-btn--ghost kukui-studio-btn--sm"
-                title="Export this activity as a JSON file"
-              >
-                <DownloadIcon />
-                <span>Export</span>
-              </button>
-              {driveEnabled() ? (
-                <>
-                  <button
-                    type="button"
-                    onClick={openFromDrive}
-                    className="kukui-studio-btn kukui-studio-btn--ghost kukui-studio-btn--sm"
-                    title="Open a JSON file from your Google Drive"
-                  >
-                    <UploadIcon />
-                    <span>Open from Drive</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={saveToDrive}
-                    className="kukui-studio-btn kukui-studio-btn--ghost kukui-studio-btn--sm"
-                    title="Save this activity to your Google Drive"
-                  >
-                    <DownloadIcon />
-                    <span>Save to Drive</span>
-                  </button>
-                </>
-              ) : null}
+              <MenuButton
+                label="Import"
+                icon={<UploadIcon />}
+                title="Import an activity"
+                items={[
+                  {
+                    label: "From local file…",
+                    icon: <UploadIcon />,
+                    onClick: triggerImport,
+                    title: "Open a JSON or SCORM zip from this computer",
+                  },
+                  ...(driveEnabled()
+                    ? ([
+                        {
+                          label: "From Google Drive…",
+                          icon: <UploadIcon />,
+                          onClick: openFromDrive,
+                          title: "Pick a JSON file from your Google Drive",
+                        },
+                      ] satisfies MenuItem[])
+                    : []),
+                ]}
+              />
+              <MenuButton
+                label="Export"
+                icon={<DownloadIcon />}
+                title="Export this activity"
+                items={[
+                  {
+                    label: "Download as JSON file",
+                    icon: <DownloadIcon />,
+                    onClick: exportJson,
+                    title: "Download a portable JSON snapshot",
+                  },
+                  ...(driveEnabled()
+                    ? ([
+                        {
+                          label: "Save to Google Drive",
+                          icon: <DownloadIcon />,
+                          onClick: saveToDrive,
+                          title: "Save this activity to your Google Drive",
+                        },
+                      ] satisfies MenuItem[])
+                    : []),
+                ]}
+              />
               <button
                 type="button"
                 onClick={reset}
