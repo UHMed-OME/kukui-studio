@@ -64,6 +64,18 @@ jobs:
         run: echo "KUKUI_BASE=/" >> "$GITHUB_ENV"
 
       - name: Build Studio
+        env:
+          # Google Drive integration. Optional — when secrets aren't set,
+          # the Drive UI hides itself client-side (driveEnabled() returns
+          # false because the values land as empty strings in the bundle).
+          # Add these in Settings → Secrets and variables → Actions →
+          # "Repository secrets" once the Google Cloud OAuth client is
+          # registered. Both are public values by design (the Client ID
+          # ships in every browser; the API key is restricted to the
+          # Picker API in the Cloud Console), but storing in secrets keeps
+          # them out of the public git log.
+          VITE_GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          VITE_GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
         run: pnpm --filter @kukui/studio-app build
 
       - name: Build live-mode (served at /live/)

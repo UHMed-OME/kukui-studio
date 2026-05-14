@@ -45,6 +45,9 @@ import { ACTIVITY_LABELS, STARTERS, ensureFreshKeys } from "./starters.js";
 import { clearDraft, debouncedSaver, loadDraft, saveDraft } from "./drafts.js";
 import { downloadScormZip } from "./scormDownload.js";
 import { importFromFile } from "./scormImport.js";
+import { driveEnabled } from "./drive/config.js";
+import { saveJsonToDrive } from "./drive/saveToDrive.js";
+import { openJsonFromDrive } from "./drive/openFromDrive.js";
 import { slug } from "./util/slug.js";
 import { BrandWordmark } from "./pages/shared/BrandWordmark.js";
 import { useHistory } from "./hooks/useHistory.js";
@@ -390,6 +393,77 @@ export function App() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const triggerImport = () => fileInputRef.current?.click();
+
+  const saveToDrive = async () => {
+    if (!validation.success) {
+      flash("Fix the highlighted validation errors first.");
+      return;
+    }
+    const filename = `kukui-${slug((validation.data as { title?: string }).title) || kind}.json`;
+    setAsyncStatus({
+      kind: "building",
+      message: "Saving to Google Drive…",
+      dismissable: false,
+    });
+    try {
+      const meta = await saveJsonToDrive(
+        filename,
+        JSON.stringify(validation.data, null, 2),
+      );
+      setAsyncStatus({
+        kind: "success",
+        message: `Saved to Drive as ${meta.name}.`,
+        dismissable: true,
+      });
+    } catch (err) {
+      setAsyncStatus({
+        kind: "error",
+        message: err instanceof Error ? err.message : "Drive save failed.",
+        dismissable: true,
+      });
+    }
+  };
+
+  const openFromDrive = async () => {
+    setAsyncStatus({
+      kind: "importing",
+      message: "Opening Google Drive…",
+      dismissable: false,
+    });
+    try {
+      const picked = await openJsonFromDrive();
+      if (!picked) {
+        setAsyncStatus(null);
+        return;
+      }
+      const file = new File([picked.json], picked.name, {
+        type: "application/json",
+      });
+      const result = await importFromFile(file);
+      if (!result.ok) {
+        setAsyncStatus({
+          kind: "error",
+          message: `Import failed: ${result.error}`,
+          dismissable: true,
+        });
+        return;
+      }
+      setKind(result.kind);
+      history.reset(migrateToScoring(result.config, result.kind));
+      setIsDirty(true);
+      setAsyncStatus({
+        kind: "success",
+        message: `Opened ${picked.name} from Drive.`,
+        dismissable: true,
+      });
+    } catch (err) {
+      setAsyncStatus({
+        kind: "error",
+        message: err instanceof Error ? err.message : "Drive open failed.",
+        dismissable: true,
+      });
+    }
+  };
 
   const handleImportFile = async (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -772,6 +846,28 @@ export function App() {
                 <DownloadIcon />
                 <span>Export</span>
               </button>
+              {driveEnabled() ? (
+                <>
+                  <button
+                    type="button"
+                    onClick={openFromDrive}
+                    className="kukui-studio-btn kukui-studio-btn--ghost kukui-studio-btn--sm"
+                    title="Open a JSON file from your Google Drive"
+                  >
+                    <UploadIcon />
+                    <span>Open from Drive</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={saveToDrive}
+                    className="kukui-studio-btn kukui-studio-btn--ghost kukui-studio-btn--sm"
+                    title="Save this activity to your Google Drive"
+                  >
+                    <DownloadIcon />
+                    <span>Save to Drive</span>
+                  </button>
+                </>
+              ) : null}
               <button
                 type="button"
                 onClick={reset}

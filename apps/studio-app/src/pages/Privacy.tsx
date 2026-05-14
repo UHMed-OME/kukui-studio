@@ -40,6 +40,34 @@ export function Privacy() {
             client-side; what happens after upload is between you and your LMS.
           </p>
 
+          <h2>Google Drive (optional)</h2>
+          <p>
+            If you click <strong>Open from Drive</strong> or <strong>Save to Drive</strong>,
+            Studio opens an OAuth window directly with Google. Your sign-in and the
+            resulting access token never pass through any Kukui-operated server — the
+            entire flow happens between your browser and Google.
+          </p>
+          <p>
+            Kukui requests the <code>drive.file</code> scope, which is the most
+            restrictive Google offers: the app can only read or write files it created
+            itself, or files you explicitly pick through Google's file picker. We
+            cannot list, search, or read the rest of your Drive — not even
+            metadata. The access token stays in memory and expires roughly every
+            hour; we don't persist it to <code>localStorage</code> or anywhere else.
+          </p>
+          <p>
+            Files you save go to <em>your</em> Drive (typically the root). You can
+            delete or revoke access at any time via{" "}
+            <a
+              href="https://myaccount.google.com/permissions"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              myaccount.google.com/permissions
+            </a>
+            .
+          </p>
+
           <h2>Learner grades (SCORM passback)</h2>
           <p>
             SCORM activities packaged by Studio post grades only to the LMS that hosts
