@@ -38,6 +38,7 @@ export interface KukuiBridge {
   LoadSuspendData(): string;
   GetUrlParam(key: string): string;
   IsConnected(): boolean;
+  RecordInteraction(json: string): boolean;
 }
 
 declare global {
@@ -81,6 +82,26 @@ export function attachBridge(target: Window = window): KukuiBridge {
   if (!connected) {
     console.info("[kukui:bridge] SCORM API not available — running in preview mode.");
   }
+
+  const MAX_RESPONSE_CHARS = 255;
+  const truncate = (s: string) =>
+    s.length <= MAX_RESPONSE_CHARS ? s : s.slice(0, MAX_RESPONSE_CHARS - 1) + "…";
+  const encodeLatency = (seconds: number): string => {
+    const totalHundredths = Math.max(0, Math.floor(seconds * 100));
+    const hundredths = totalHundredths % 100;
+    const totalSec = Math.floor(totalHundredths / 100);
+    const s = totalSec % 60;
+    const m = Math.floor(totalSec / 60) % 60;
+    const h = Math.floor(totalSec / 3600);
+    const pad2 = (n: number) => String(n).padStart(2, "0");
+    const pad4 = (n: number) => String(n).padStart(4, "0");
+    return `${pad4(h)}:${pad2(m)}:${pad2(s)}.${pad2(hundredths)}`;
+  };
+  const encodeTime = (d: Date) => {
+    const pad2 = (n: number) => String(n).padStart(2, "0");
+    return `${pad2(d.getHours())}:${pad2(d.getMinutes())}:${pad2(d.getSeconds())}`;
+  };
+  let interactionIndex = 0;
 
   const bridge: KukuiBridge = {
     OnActivityComplete(rawIn, maxIn, successIn) {
@@ -151,6 +172,54 @@ export function attachBridge(target: Window = window): KukuiBridge {
 
     IsConnected() {
       return connected;
+    },
+
+    RecordInteraction(json) {
+      if (!connected || !scormApi) {
+        console.info(`[kukui:bridge:preview] RecordInteraction: ${json}`);
+        return false;
+      }
+      let record: {
+        id: string;
+        type: string;
+        studentResponse: string;
+        correctResponse?: string;
+        result: { kind: string; value?: number };
+        weighting?: number;
+        latencySeconds?: number;
+      };
+      try {
+        record = JSON.parse(json);
+      } catch (err) {
+        console.error("[kukui:bridge] RecordInteraction: invalid JSON", err);
+        return false;
+      }
+      try {
+        const i = interactionIndex;
+        interactionIndex += 1;
+        const prefix = `cmi.interactions.${i}`;
+        scormApi.set(`${prefix}.id`, truncate(record.id));
+        scormApi.set(`${prefix}.type`, record.type);
+        scormApi.set(`${prefix}.time`, encodeTime(new Date()));
+        scormApi.set(`${prefix}.student_response`, truncate(record.studentResponse));
+        if (record.correctResponse !== undefined) {
+          scormApi.set(`${prefix}.correct_responses.0.pattern`, truncate(record.correctResponse));
+        }
+        const result =
+          record.result.kind === "numeric" && typeof record.result.value === "number"
+            ? record.result.value.toFixed(2)
+            : record.result.kind;
+        scormApi.set(`${prefix}.result`, result);
+        scormApi.set(`${prefix}.weighting`, String(record.weighting ?? 1));
+        if (record.latencySeconds !== undefined) {
+          scormApi.set(`${prefix}.latency`, encodeLatency(record.latencySeconds));
+        }
+        scormApi.save();
+        return true;
+      } catch (err) {
+        console.error("[kukui:bridge] RecordInteraction failed:", err);
+        return false;
+      }
     },
   };
 

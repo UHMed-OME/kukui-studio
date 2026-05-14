@@ -100,3 +100,90 @@ describe("kukuiBridge — pipwerks-connected mode", () => {
     warn.mockRestore();
   });
 });
+
+describe("KukuiBridge.RecordInteraction", () => {
+  beforeEach(() => {
+    __resetBridgeForTest(window);
+  });
+  afterEach(() => {
+    __resetBridgeForTest(window);
+  });
+
+  it("returns false and logs in preview mode (no pipwerks)", () => {
+    const spy = vi.spyOn(console, "info").mockImplementation(() => {});
+    const bridge = attachBridge(window);
+    const ok = bridge.RecordInteraction(
+      JSON.stringify({
+        id: "test:abc:q1",
+        type: "choice",
+        studentResponse: "a",
+        result: { kind: "correct" },
+      }),
+    );
+    expect(ok).toBe(false);
+    expect(spy).toHaveBeenCalledWith(expect.stringContaining("RecordInteraction"));
+    spy.mockRestore();
+  });
+
+  it("writes cmi.interactions.0.* via pipwerks when connected", () => {
+    const set = vi.fn(() => true);
+    const get = vi.fn(() => "");
+    const save = vi.fn(() => true);
+    const init = vi.fn(() => true);
+    const quit = vi.fn(() => true);
+    (window as unknown as { pipwerks: unknown }).pipwerks = {
+      SCORM: { init, get, set, save, quit },
+    };
+    const bridge = attachBridge(window);
+    const ok = bridge.RecordInteraction(
+      JSON.stringify({
+        id: "test:abc:q1",
+        type: "choice",
+        studentResponse: "a",
+        correctResponse: "a",
+        result: { kind: "correct" },
+        weighting: 1,
+        latencySeconds: 2.5,
+      }),
+    );
+    expect(ok).toBe(true);
+    expect(set).toHaveBeenCalledWith("cmi.interactions.0.id", "test:abc:q1");
+    expect(set).toHaveBeenCalledWith("cmi.interactions.0.type", "choice");
+    expect(set).toHaveBeenCalledWith("cmi.interactions.0.student_response", "a");
+    expect(set).toHaveBeenCalledWith("cmi.interactions.0.result", "correct");
+    expect(set).toHaveBeenCalledWith("cmi.interactions.0.latency", "0000:00:02.50");
+    expect(save).toHaveBeenCalled();
+
+    // Second call must increment to cmi.interactions.1.* — guards against an
+    // accidental reset of `interactionIndex` inside the write block, which
+    // would silently overwrite the prior interaction.
+    const ok2 = bridge.RecordInteraction(
+      JSON.stringify({
+        id: "test:abc:q2",
+        type: "choice",
+        studentResponse: "b",
+        result: { kind: "wrong" },
+      }),
+    );
+    expect(ok2).toBe(true);
+    expect(set).toHaveBeenCalledWith("cmi.interactions.1.id", "test:abc:q2");
+  });
+
+  it("returns false on invalid JSON without throwing", () => {
+    (window as unknown as { pipwerks: unknown }).pipwerks = {
+      SCORM: {
+        init: () => true,
+        get: () => "",
+        set: () => true,
+        save: () => true,
+        quit: () => true,
+      },
+    };
+    const errSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    const bridge = attachBridge(window);
+    const ok = bridge.RecordInteraction("not-json");
+    expect(ok).toBe(false);
+    expect(errSpy).toHaveBeenCalled();
+    errSpy.mockRestore();
+  });
+});

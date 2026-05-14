@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { __setScormDriverForTest, getScormDriver } from "./scorm.js";
+import type { InteractionRecord } from "./types.js";
 
 describe("getScormDriver — fallback memory driver", () => {
   beforeEach(() => {
@@ -64,5 +65,137 @@ describe("getScormDriver — pipwerks driver", () => {
     expect(set).toHaveBeenCalledWith("cmi.core.score.raw", "80");
     expect(set).toHaveBeenCalledWith("cmi.core.lesson_status", "passed");
     expect(save).toHaveBeenCalled();
+  });
+});
+
+describe("MemoryDriver.recordInteraction", () => {
+  beforeEach(() => {
+    __setScormDriverForTest(undefined);
+  });
+  afterEach(() => {
+    __setScormDriverForTest(undefined);
+    vi.unstubAllGlobals();
+  });
+
+  it("logs an interaction summary in dev preview mode", () => {
+    const spy = vi.spyOn(console, "info").mockImplementation(() => {});
+    const driver = getScormDriver();
+    const record: InteractionRecord = {
+      id: "multiple-choice:abc12345:q1",
+      type: "choice",
+      studentResponse: "{a,c}",
+      correctResponse: "{a,b}",
+      result: { kind: "wrong" },
+      weighting: 1,
+      latencySeconds: 12.5,
+    };
+    driver.recordInteraction(record);
+    expect(spy).toHaveBeenCalledWith(
+      expect.stringContaining("multiple-choice:abc12345:q1"),
+    );
+    expect(spy).toHaveBeenCalledWith(expect.stringContaining("wrong"));
+    spy.mockRestore();
+  });
+});
+
+describe("PipwerksDriver.recordInteraction", () => {
+  beforeEach(() => {
+    __setScormDriverForTest(undefined);
+  });
+  afterEach(() => {
+    __setScormDriverForTest(undefined);
+    vi.unstubAllGlobals();
+  });
+
+  it("writes cmi.interactions.0.* fields and increments the index per call", () => {
+    const set = vi.fn(() => true);
+    const get = vi.fn(() => "");
+    const save = vi.fn(() => true);
+    const init = vi.fn(() => true);
+    const quit = vi.fn(() => true);
+    const status = vi.fn(() => "passed");
+    vi.stubGlobal("window", {
+      ...globalThis.window,
+      pipwerks: { SCORM: { init, get, set, save, quit, status } },
+    });
+
+    const driver = getScormDriver();
+    driver.recordInteraction({
+      id: "multiple-choice:abc12345:q1",
+      type: "choice",
+      studentResponse: "{a,c}",
+      correctResponse: "{a,b}",
+      result: { kind: "wrong" },
+      weighting: 2,
+      latencySeconds: 12.5,
+    });
+
+    expect(set).toHaveBeenCalledWith("cmi.interactions.0.id", "multiple-choice:abc12345:q1");
+    expect(set).toHaveBeenCalledWith("cmi.interactions.0.type", "choice");
+    expect(set).toHaveBeenCalledWith("cmi.interactions.0.student_response", "{a,c}");
+    expect(set).toHaveBeenCalledWith("cmi.interactions.0.correct_responses.0.pattern", "{a,b}");
+    expect(set).toHaveBeenCalledWith("cmi.interactions.0.result", "wrong");
+    expect(set).toHaveBeenCalledWith("cmi.interactions.0.weighting", "2");
+    expect(set).toHaveBeenCalledWith("cmi.interactions.0.latency", "0000:00:12.50");
+    expect(set).toHaveBeenCalledWith(
+      "cmi.interactions.0.time",
+      expect.stringMatching(/^\d{2}:\d{2}:\d{2}$/),
+    );
+    expect(save).toHaveBeenCalled();
+
+    driver.recordInteraction({
+      id: "multiple-choice:abc12345:q2",
+      type: "choice",
+      studentResponse: "a",
+      result: { kind: "correct" },
+    });
+    expect(set).toHaveBeenCalledWith("cmi.interactions.1.id", "multiple-choice:abc12345:q2");
+  });
+
+  it("omits correct_responses and latency when not provided", () => {
+    const set = vi.fn(() => true);
+    const save = vi.fn(() => true);
+    const init = vi.fn(() => true);
+    const quit = vi.fn(() => true);
+    vi.stubGlobal("window", {
+      ...globalThis.window,
+      pipwerks: { SCORM: { init, get: () => "", set, save, quit, status: () => "passed" } },
+    });
+
+    const driver = getScormDriver();
+    driver.recordInteraction({
+      id: "reflection-prompt:abc:r1",
+      type: "fill-in",
+      studentResponse: "I learned about pancreatic function.",
+      result: { kind: "neutral" },
+    });
+
+    const writes = set.mock.calls.map((c) => c[0]);
+    expect(writes).not.toContain("cmi.interactions.0.correct_responses.0.pattern");
+    expect(writes).not.toContain("cmi.interactions.0.latency");
+  });
+
+  it("truncates over-length id and student_response", () => {
+    const set = vi.fn(() => true);
+    const save = vi.fn(() => true);
+    const init = vi.fn(() => true);
+    const quit = vi.fn(() => true);
+    vi.stubGlobal("window", {
+      ...globalThis.window,
+      pipwerks: { SCORM: { init, get: () => "", set, save, quit, status: () => "passed" } },
+    });
+    const driver = getScormDriver();
+    driver.recordInteraction({
+      id: "x".repeat(300),
+      type: "fill-in",
+      studentResponse: "y".repeat(300),
+      result: { kind: "neutral" },
+    });
+    const idCall = set.mock.calls.find((c) => c[0] === "cmi.interactions.0.id");
+    const responseCall = set.mock.calls.find((c) => c[0] === "cmi.interactions.0.student_response");
+    expect(idCall?.[1]).toHaveLength(255);
+    expect(idCall?.[1]?.endsWith("…")).toBe(true);
+    expect(responseCall?.[1]).toHaveLength(255);
+    expect(responseCall?.[1]?.endsWith("…")).toBe(true);
   });
 });
