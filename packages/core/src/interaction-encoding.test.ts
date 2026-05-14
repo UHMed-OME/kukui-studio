@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { truncateResponse } from "./interaction-encoding.js";
+import { truncateResponse, encodeChoice } from "./interaction-encoding.js";
 
 describe("truncateResponse", () => {
   it("leaves short strings unchanged", () => {
@@ -18,5 +18,31 @@ describe("truncateResponse", () => {
     expect(out.length).toBe(255);
     expect(out.endsWith("…")).toBe(true);
     expect(out.slice(0, 254)).toBe("x".repeat(254));
+  });
+});
+
+describe("encodeChoice", () => {
+  it("returns the empty string for an empty selection", () => {
+    expect(encodeChoice([])).toBe("");
+  });
+
+  it("emits a bare letter for a single selection (SCORM 1.2 single-choice form)", () => {
+    expect(encodeChoice([0])).toBe("a");
+    expect(encodeChoice([3])).toBe("d");
+  });
+
+  it("wraps multiple selections in braces (SCORM 1.2 multi-choice form)", () => {
+    expect(encodeChoice([0, 2, 4])).toBe("{a,c,e}");
+  });
+
+  it("preserves selection order in the output", () => {
+    expect(encodeChoice([2, 0])).toBe("{c,a}");
+  });
+
+  it("emits two-letter labels for index >= 26", () => {
+    expect(encodeChoice([26])).toBe("aa");
+    expect(encodeChoice([27])).toBe("ab");
+    expect(encodeChoice([51])).toBe("az");
+    expect(encodeChoice([52])).toBe("ba");
   });
 });
