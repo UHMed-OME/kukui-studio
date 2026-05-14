@@ -142,11 +142,8 @@ const LIVE_ACTIVITIES: { kind: ActivityKind; label: string; sampleUrl: string }[
   },
   { kind: "qa-board", label: "Q&A Board", sampleUrl: "/samples/qa-board/basic.json" },
   { kind: "quick-quiz", label: "Quick Quiz", sampleUrl: "/samples/quick-quiz/basic.json" },
-  {
-    kind: "isometric-chatroom",
-    label: "Pixel Chat",
-    sampleUrl: "/samples/isometric-chatroom/basic.json",
-  },
+  // Pixel Chat (isometric-chatroom) — temporarily hidden from the Live
+  // landing while the runtime is overhauled. Studio authoring still works.
   {
     kind: "multiple-choice",
     label: "Multiple Choice (demo shell)",
@@ -160,7 +157,6 @@ const LIVE_AUTO_LOAD_KINDS = new Set<ActivityKind>([
   "word-cloud",
   "qa-board",
   "quick-quiz",
-  "isometric-chatroom",
 ]);
 
 /**

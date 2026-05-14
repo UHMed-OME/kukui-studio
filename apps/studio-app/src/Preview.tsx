@@ -211,7 +211,8 @@ const LIVE_ACTIVITY_KINDS: readonly ActivityKind[] = [
   "word-cloud",
   "qa-board",
   "quick-quiz",
-  "isometric-chatroom",
+  // "isometric-chatroom" — hidden from the Live launcher while the
+  // runtime is being overhauled. Studio editing still works.
 ];
 
 function isLiveActivity(kind: ActivityKind): boolean {
