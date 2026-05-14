@@ -251,6 +251,24 @@ export function Landing() {
                 </li>
               </ul>
             </section>
+            <section>
+              <h3>Support</h3>
+              <ul>
+                <li>
+                  <a
+                    href="https://give.uhfoundation.org/campaigns/67662/donations/new?utm_medium=redirect&utm_campaign=22MF7"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    Donate via UH Foundation
+                  </a>
+                </li>
+                <li className="kukui-landing__footer-note">
+                  Gifts go to JABSOM's Office of Medical Education, which
+                  builds and maintains Kukui.
+                </li>
+              </ul>
+            </section>
           </div>
         </div>
 

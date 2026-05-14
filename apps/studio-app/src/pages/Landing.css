@@ -601,6 +601,14 @@ html[data-color-scheme="light"] .kukui-landing {
   color: var(--color-primary);
 }
 
+.kukui-landing__footer-note {
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--color-text-secondary);
+  margin-top: 4px;
+  max-width: 22ch;
+}
+
 .kukui-landing__footer-bottom {
   display: flex;
   flex-wrap: wrap;

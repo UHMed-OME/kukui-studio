@@ -902,6 +902,18 @@ export function App() {
           <span aria-hidden="true" className="kukui-studio-footer__sep">
             ·
           </span>
+          <a
+            href="https://give.uhfoundation.org/campaigns/67662/donations/new?utm_medium=redirect&utm_campaign=22MF7"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="kukui-studio-footer__link"
+            title="Donate to UH JABSOM's Office of Medical Education via the UH Foundation"
+          >
+            Donate
+          </a>
+          <span aria-hidden="true" className="kukui-studio-footer__sep">
+            ·
+          </span>
           <Link to="/privacy" className="kukui-studio-footer__link">
             Privacy &amp; data
           </Link>
