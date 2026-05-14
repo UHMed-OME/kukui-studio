@@ -35,6 +35,7 @@ const STUDIO_SURFACED: readonly ActivityKind[] = [
   "word-cloud",
   "qa-board",
   "quick-quiz",
+  "isometric-chatroom",
 ];
 
 describe("activityIcons", () => {

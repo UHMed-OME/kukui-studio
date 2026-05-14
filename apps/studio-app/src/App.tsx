@@ -106,6 +106,7 @@ const BLOOM_BY_KIND: Partial<Record<ActivityKind, BloomLevel>> = {
   "confidence-meter": "evaluate",
   "qa-board": "evaluate",
   "quick-quiz": "evaluate",
+  "isometric-chatroom": "evaluate",
   "word-cloud": "remember",
   // Create — produce original work
   "audio-recording": "create",

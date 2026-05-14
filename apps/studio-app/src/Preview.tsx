@@ -211,6 +211,7 @@ const LIVE_ACTIVITY_KINDS: readonly ActivityKind[] = [
   "word-cloud",
   "qa-board",
   "quick-quiz",
+  "isometric-chatroom",
 ];
 
 function isLiveActivity(kind: ActivityKind): boolean {

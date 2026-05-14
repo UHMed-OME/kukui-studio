@@ -342,6 +342,15 @@ function StrawPollIcon(props: SVGProps<SVGSVGElement>) {
   );
 }
 
+function IsometricChatroomIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg {...baseProps} {...props}>
+      <path d="M3 4h12v8H8l-3 3v-3H3z" />
+      <path d="M11 10h10v8h-3l-3 3v-3h-4z" />
+    </svg>
+  );
+}
+
 type IconComponent = (props: SVGProps<SVGSVGElement>) => JSX.Element;
 
 const ICONS: Partial<Record<ActivityKind, IconComponent>> = {
@@ -371,6 +380,7 @@ const ICONS: Partial<Record<ActivityKind, IconComponent>> = {
   "word-cloud": WordCloudIcon,
   "qa-board": QABoardIcon,
   "quick-quiz": QuickQuizIcon,
+  "isometric-chatroom": IsometricChatroomIcon,
 };
 
 export function hasActivityIcon(kind: ActivityKind): boolean {
