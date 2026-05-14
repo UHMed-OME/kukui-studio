@@ -153,6 +153,20 @@ describe("KukuiBridge.RecordInteraction", () => {
     expect(set).toHaveBeenCalledWith("cmi.interactions.0.result", "correct");
     expect(set).toHaveBeenCalledWith("cmi.interactions.0.latency", "0000:00:02.50");
     expect(save).toHaveBeenCalled();
+
+    // Second call must increment to cmi.interactions.1.* — guards against an
+    // accidental reset of `interactionIndex` inside the write block, which
+    // would silently overwrite the prior interaction.
+    const ok2 = bridge.RecordInteraction(
+      JSON.stringify({
+        id: "test:abc:q2",
+        type: "choice",
+        studentResponse: "b",
+        result: { kind: "wrong" },
+      }),
+    );
+    expect(ok2).toBe(true);
+    expect(set).toHaveBeenCalledWith("cmi.interactions.1.id", "test:abc:q2");
   });
 
   it("returns false on invalid JSON without throwing", () => {
