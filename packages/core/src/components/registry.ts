@@ -51,6 +51,7 @@ export const ACTIVITY_REGISTRY: Record<BuiltActivityKind, ActivityComponent> = {
   "word-cloud": lazy(() => import("./word-cloud/index.js")),
   "qa-board": lazy(() => import("./qa-board/index.js")),
   "quick-quiz": lazy(() => import("./quick-quiz/index.js")),
+  "isometric-chatroom": lazy(() => import("./_stub/index.js")),
 };
 
 /**

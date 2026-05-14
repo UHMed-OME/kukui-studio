@@ -76,6 +76,10 @@ export {
 export { WordCloudConfigSchema, type WordCloudConfig } from "./word-cloud.js";
 export { QABoardConfigSchema, type QABoardConfig } from "./qa-board.js";
 export { QuickQuizConfigSchema, type QuickQuizConfig } from "./quick-quiz.js";
+export {
+  IsometricChatroomConfigSchema,
+  type IsometricChatroomConfig,
+} from "./isometric-chatroom.js";
 export { StubConfigSchema, type StubConfig } from "./stub.js";
 
 import { MultipleChoiceConfigSchema } from "./multiple-choice.js";
@@ -107,6 +111,9 @@ import { ConfidenceMeterConfigSchema } from "./confidence-meter.js";
 import { WordCloudConfigSchema } from "./word-cloud.js";
 import { QABoardConfigSchema } from "./qa-board.js";
 import { QuickQuizConfigSchema } from "./quick-quiz.js";
+import {
+  IsometricChatroomConfigSchema,
+} from "./isometric-chatroom.js";
 
 /**
  * Map of activity-kind → Zod schema. Keys match `ActivityKind` in
@@ -144,6 +151,7 @@ export const SchemaRegistry = {
   "word-cloud": WordCloudConfigSchema,
   "qa-board": QABoardConfigSchema,
   "quick-quiz": QuickQuizConfigSchema,
+  "isometric-chatroom": IsometricChatroomConfigSchema,
 } as const;
 
 export type SchemaRegistryKey = keyof typeof SchemaRegistry;

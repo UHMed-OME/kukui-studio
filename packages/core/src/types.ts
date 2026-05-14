@@ -63,7 +63,8 @@ export type BuiltActivityKind =
   | "confidence-meter"
   | "word-cloud"
   | "qa-board"
-  | "quick-quiz";
+  | "quick-quiz"
+  | "isometric-chatroom";
 
 /** Reserved for future activity kinds that haven't been implemented yet. */
 export type PlannedKind = never;
@@ -100,6 +101,7 @@ export const BUILT_ACTIVITY_KINDS: readonly BuiltActivityKind[] = [
   "word-cloud",
   "qa-board",
   "quick-quiz",
+  "isometric-chatroom",
 ] as const;
 
 export const ACTIVITY_KINDS: readonly ActivityKind[] = [

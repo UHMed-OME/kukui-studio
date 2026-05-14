@@ -13,6 +13,7 @@ import {
   type WordCloudConfig,
   type QABoardConfig,
   type QuickQuizConfig,
+  type IsometricChatroomConfig,
 } from "@kukui/schemas";
 import type { LiveRoomHandle, Presence } from "@kukui/live";
 import { InstructorConsole, type ConfigSummary } from "./InstructorConsole.js";
@@ -22,6 +23,7 @@ import { ConfidenceMeterLive } from "./activities/ConfidenceMeterLive.js";
 import { WordCloudLive } from "./activities/WordCloudLive.js";
 import { QABoardLive } from "./activities/QABoardLive.js";
 import { QuickQuizLive } from "./activities/QuickQuizLive.js";
+import { IsometricChatroomLive } from "./activities/IsometricChatroomLive.js";
 
 export type LiveHostProps = {
   /** Activity kind to host. Must be a key in `SchemaRegistry`. */
@@ -210,6 +212,14 @@ export function LiveHost({
     if (kind === "quick-quiz") {
       return (
         <QuickQuizLive {...liveProps} config={loadState.config as QuickQuizConfig} />
+      );
+    }
+    if (kind === "isometric-chatroom") {
+      return (
+        <IsometricChatroomLive
+          {...liveProps}
+          config={loadState.config as IsometricChatroomConfig}
+        />
       );
     }
   }

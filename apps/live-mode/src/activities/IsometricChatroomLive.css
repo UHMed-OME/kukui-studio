@@ -1,0 +1,679 @@
+/*
+ * Isometric Chatroom — live activity styles.
+ *
+ * Layout:
+ *   - Room canvas fills the left/center area
+ *   - Chat panel overlays the bottom-right
+ *   - Character picker floats bottom-left
+ *   - Instructor control panel on the right
+ *
+ * All spacing uses the Kukui design system tokens.
+ */
+
+/* ── Root layout ─────────────────────────────────────────────────────── */
+
+.isometric-chatroom {
+  display: flex;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+  background: var(--color-bg, #FCF8F2);
+}
+
+/* ── Room canvas wrapper ─────────────────────────────────────────────── */
+
+.isometric-chatroom__room-wrap {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+  min-width: 0;
+}
+
+.isometric-chatroom__canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* ── Lobby overlay ───────────────────────────────────────────────────── */
+
+.isometric-chatroom__lobby-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: color-mix(in srgb, var(--color-bg, #FCF8F2) 85%, transparent);
+  z-index: 10;
+}
+
+.isometric-chatroom__lobby-card {
+  max-width: 480px;
+  padding: var(--spacing-xxxl, 28px);
+  background: var(--color-surface, #FFFFFF);
+  border: 1px solid var(--color-border, #DAD2C6);
+  border-radius: var(--radius-card, 12px);
+  text-align: center;
+}
+
+.isometric-chatroom__lobby-title {
+  margin: 0 0 var(--spacing-sm, 8px);
+  font-size: var(--font-size-title, 22px);
+  font-weight: 650;
+  letter-spacing: -0.015em;
+  color: var(--color-text-primary, #1C1E20);
+}
+
+.isometric-chatroom__lobby-prompt {
+  margin: 0 0 var(--spacing-lg, 16px);
+  font-size: var(--font-size-prompt, 16px);
+  line-height: 1.5;
+  color: var(--color-text-primary, #1C1E20);
+}
+
+.isometric-chatroom__lobby-rules {
+  margin: 0 0 var(--spacing-lg, 16px);
+  text-align: left;
+  padding: var(--spacing-md, 12px) var(--spacing-lg, 16px);
+  background: color-mix(in srgb, var(--color-tip-bg, #F2F0E8) 70%, transparent);
+  border-left: 3px solid var(--color-accent, #B69B5D);
+  border-radius: var(--radius-sm, 6px);
+}
+
+.isometric-chatroom__lobby-rules-title {
+  margin: 0 0 var(--spacing-sm, 8px);
+  font-size: var(--font-size-body, 15px);
+  font-weight: 700;
+  color: var(--color-text-primary, #1C1E20);
+}
+
+.isometric-chatroom__lobby-rules ol {
+  margin: 0;
+  padding: 0 0 0 var(--spacing-lg, 16px);
+}
+
+.isometric-chatroom__lobby-rules li {
+  margin-bottom: var(--spacing-xs, 4px);
+  font-size: var(--font-size-caption, 14px);
+  color: var(--color-text-primary, #1C1E20);
+}
+
+.isometric-chatroom__lobby-hint {
+  margin: 0;
+  font-size: var(--font-size-meta, 13px);
+  color: var(--color-text-secondary, #606069);
+}
+
+/* ── Phase banner ────────────────────────────────────────────────────── */
+
+.isometric-chatroom__phase-banner {
+  position: absolute;
+  bottom: var(--spacing-lg, 16px);
+  left: 50%;
+  transform: translateX(-50%);
+  padding: var(--spacing-sm, 8px) var(--spacing-lg, 16px);
+  background: var(--color-surface, #FFFFFF);
+  border: 2px solid var(--color-border, #DAD2C6);
+  border-radius: var(--radius-md, 8px);
+  font-size: var(--font-size-caption, 14px);
+  color: var(--color-text-primary, #1C1E20);
+  z-index: 5;
+  white-space: nowrap;
+}
+
+/* ── Pinned question banner ──────────────────────────────────────────── */
+
+.isometric-chatroom__pin-banner {
+  position: absolute;
+  top: var(--spacing-lg, 16px);
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm, 8px);
+  padding: var(--spacing-sm, 8px) var(--spacing-lg, 16px);
+  background: color-mix(in srgb, var(--color-tip-bg, #F2F0E8) 95%, var(--color-surface, #FFFFFF));
+  border: 2px solid var(--color-accent, #B69B5D);
+  border-radius: var(--radius-md, 8px);
+  z-index: 15;
+}
+
+.isometric-chatroom__pin-icon {
+  font-size: 18px;
+}
+
+.isometric-chatroom__pin-text {
+  margin: 0;
+  font-size: var(--font-size-prompt, 16px);
+  font-weight: 500;
+  color: var(--color-text-primary, #1C1E20);
+  flex: 1;
+}
+
+.isometric-chatroom__pin-close {
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  color: var(--color-text-secondary, #606069);
+  border-radius: var(--radius-pill, 4px);
+}
+
+.isometric-chatroom__pin-close:hover {
+  background: var(--color-tip-bg, #F2F0E8);
+}
+
+/* ── Instructor panel ────────────────────────────────────────────────── */
+
+.isometric-chatroom__panel {
+  width: 360px;
+  min-width: 360px;
+  overflow-y: auto;
+  padding: var(--spacing-xl, 20px);
+  background: var(--color-surface, #FFFFFF);
+  border-left: 1px solid var(--color-border, #DAD2C6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xl, 20px);
+}
+
+.isometric-chatroom__panel-header {
+  padding-bottom: var(--spacing-md, 12px);
+  border-bottom: 1px solid var(--color-border, #DAD2C6);
+}
+
+.isometric-chatroom__panel-title {
+  margin: 0 0 var(--spacing-xs, 4px);
+  font-size: var(--font-size-title, 22px);
+  font-weight: 650;
+  letter-spacing: -0.015em;
+  color: var(--color-text-primary, #1C1E20);
+}
+
+.isometric-chatroom__panel-subtitle {
+  margin: 0;
+  font-size: var(--font-size-meta, 13px);
+  color: var(--color-text-secondary, #606069);
+}
+
+.isometric-chatroom__panel-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm, 8px);
+}
+
+.isometric-chatroom__panel-heading {
+  margin: 0;
+  font-size: var(--font-size-caption, 14px);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-text-secondary, #606069);
+}
+
+.isometric-chatroom__phase-btns {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-sm, 8px);
+}
+
+/* ── Pin input ────────────────────────────────────────────────────────── */
+
+.isometric-chatroom__pin-input-row {
+  display: flex;
+  gap: var(--spacing-xs, 4px);
+}
+
+.isometric-chatroom__pin-input {
+  flex: 1;
+  min-height: 44px;
+  padding: "8px 12px";
+  border: 2px solid var(--color-border, #DAD2C6);
+  border-radius: var(--radius-md, 8px);
+  font: inherit;
+  font-size: var(--font-size-body, 15px);
+  color: var(--color-text-primary, #1C1E20);
+  background: var(--color-surface, #FFFFFF);
+}
+
+.isometric-chatroom__pin-input:focus {
+  outline: none;
+  border-color: var(--color-primary, #7B4324);
+}
+
+.isometric-chatroom__pin-input::placeholder {
+  color: var(--color-text-secondary, #606069);
+}
+
+/* ── Moderation row ──────────────────────────────────────────────────── */
+
+.isometric-chatroom__mod-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-sm, 8px);
+}
+
+/* ── Message list ────────────────────────────────────────────────────── */
+
+.isometric-chatroom__msg-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs, 4px);
+  max-height: 240px;
+  overflow-y: auto;
+}
+
+.isometric-chatroom__msg-empty {
+  margin: 0;
+  font-size: var(--font-size-meta, 13px);
+  color: var(--color-text-secondary, #606069);
+  font-style: italic;
+}
+
+.isometric-chatroom__msg-row {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-xs, 4px);
+  padding: var(--spacing-xs, 4px) var(--spacing-sm, 8px);
+  background: var(--color-tip-bg, #F2F0E8);
+  border-radius: var(--radius-sm, 6px);
+}
+
+.isometric-chatroom__msg-author {
+  font-size: var(--font-size-meta, 13px);
+  font-weight: 600;
+  color: var(--color-primary, #7B4324);
+  white-space: nowrap;
+}
+
+.isometric-chatroom__msg-text {
+  flex: 1;
+  margin: 0;
+  font-size: var(--font-size-caption, 14px);
+  color: var(--color-text-primary, #1C1E20);
+  word-break: break-word;
+}
+
+.isometric-chatroom__msg-delete {
+  width: 24px;
+  height: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 12px;
+  color: var(--color-text-secondary, #606069);
+  border-radius: var(--radius-pill, 4px);
+  flex-shrink: 0;
+}
+
+.isometric-chatroom__msg-delete:hover {
+  background: var(--color-error-soft, color-mix(in srgb, var(--color-error, #C34132) 12%, transparent));
+  color: var(--color-error, #C34132);
+}
+
+.isometric-chatroom__panel-footer {
+  margin-top: auto;
+  padding-top: var(--spacing-md, 12px);
+  border-top: 1px solid var(--color-border, #DAD2C6);
+}
+
+/* ── Chat panel (student) ────────────────────────────────────────────── */
+
+.isometric-chatroom__chat-panel {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: min(380px, 40vw);
+  max-height: 60vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--color-surface, #FFFFFF);
+  border-top-left-radius: var(--radius-card, 12px);
+  border-top: 2px solid var(--color-border, #DAD2C6);
+  border-left: 2px solid var(--color-border, #DAD2C6);
+  z-index: 20;
+  overflow: hidden;
+}
+
+.isometric-chatroom__chat-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--spacing-sm, 8px) var(--spacing-md, 12px);
+  border-bottom: 1px solid var(--color-border, #DAD2C6);
+  background: var(--color-tip-bg, #F2F0E8);
+  flex-shrink: 0;
+}
+
+.isometric-chatroom__chat-toggle {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs, 4px);
+  min-height: 44px;
+  padding: 0 var(--spacing-md, 12px);
+  background: none;
+  border: 2px solid transparent;
+  border-radius: var(--radius-md, 8px);
+  font: inherit;
+  font-size: var(--font-size-body, 15px);
+  font-weight: 600;
+  color: var(--color-text-primary, #1C1E20);
+  cursor: pointer;
+}
+
+.isometric-chatroom__chat-toggle:hover {
+  border-color: var(--color-border-hover, #BBAE9A);
+}
+
+.isometric-chatroom__chat-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--spacing-sm, 8px);
+  min-height: 0;
+}
+
+.isometric-chatroom__chat-empty {
+  margin: var(--spacing-md, 12px) 0;
+  font-size: var(--font-size-meta, 13px);
+  color: var(--color-text-secondary, #606069);
+  text-align: center;
+  font-style: italic;
+}
+
+.isometric-chatroom__chat-msg {
+  margin-bottom: var(--spacing-sm, 8px);
+  padding: var(--spacing-sm, 8px) var(--spacing-md, 12px);
+  background: var(--color-tip-bg, #F2F0E8);
+  border-radius: var(--radius-sm, 6px);
+  border-left: 3px solid var(--color-border, #DAD2C6);
+}
+
+.isometric-chatroom__chat-msg-author {
+  display: block;
+  font-size: var(--font-size-meta, 13px);
+  font-weight: 600;
+  color: var(--color-primary, #7B4324);
+  margin-bottom: 2px;
+}
+
+.isometric-chatroom__chat-msg-text {
+  margin: 0;
+  font-size: var(--font-size-prompt, 16px);
+  line-height: 1.4;
+  color: var(--color-text-primary, #1C1E20);
+  word-break: break-word;
+}
+
+.isometric-chatroom__chat-msg-reactions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-xs, 4px);
+  margin-top: var(--spacing-xs, 4px);
+}
+
+.isometric-chatroom__chat-msg-reaction {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 2px 6px;
+  background: var(--color-surface, #FFFFFF);
+  border: 1px solid var(--color-border, #DAD2C6);
+  border-radius: var(--radius-pill, 4px);
+  font-size: 12px;
+  color: var(--color-text-primary, #1C1E20);
+}
+
+/* ── Emoji bar ───────────────────────────────────────────────────────── */
+
+.isometric-chatroom__emoji-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px;
+  padding: var(--spacing-xs, 4px) var(--spacing-sm, 8px);
+  border-top: 1px solid var(--color-border, #DAD2C6);
+  overflow-x: auto;
+  flex-shrink: 0;
+}
+
+.isometric-chatroom__emoji-btn {
+  width: 36px;
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: 2px solid transparent;
+  border-radius: var(--radius-sm, 6px);
+  font-size: 18px;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: border-color 100ms ease, background 100ms ease;
+}
+
+.isometric-chatroom__emoji-btn:hover {
+  background: var(--color-tip-bg, #F2F0E8);
+  border-color: var(--color-border-hover, #BBAE9A);
+}
+
+.isometric-chatroom__emoji-btn--active {
+  background: color-mix(in srgb, var(--color-accent, #B69B5D) 14%, var(--color-surface, #FFFFFF));
+  border-color: var(--color-accent, #B69B5D);
+}
+
+/* ── Chat input ──────────────────────────────────────────────────────── */
+
+.isometric-chatroom__chat-input-wrap {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs, 4px);
+  padding: var(--spacing-sm, 8px) var(--spacing-md, 12px);
+  border-top: 1px solid var(--color-border, #DAD2C6);
+  background: var(--color-surface, #FFFFFF);
+  flex-shrink: 0;
+}
+
+.isometric-chatroom__chat-input {
+  flex: 1;
+  min-height: 44px;
+  padding: 8px 12px;
+  border: 2px solid var(--color-border, #DAD2C6);
+  border-radius: var(--radius-md, 8px);
+  font: inherit;
+  font-size: var(--font-size-body, 15px);
+  color: var(--color-text-primary, #1C1E20);
+  background: var(--color-surface, #FFFFFF);
+}
+
+.isometric-chatroom__chat-input:focus {
+  outline: none;
+  border-color: var(--color-primary, #7B4324);
+}
+
+.isometric-chatroom__chat-input:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.isometric-chatroom__chat-input::placeholder {
+  color: var(--color-text-secondary, #606069);
+}
+
+.isometric-chatroom__chat-count {
+  font-size: var(--font-size-micro, 12px);
+  font-weight: 600;
+  color: var(--color-text-secondary, #606069);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* ── Character picker toggle ─────────────────────────────────────────── */
+
+.isometric-chatroom__char-picker-btn {
+  position: absolute;
+  bottom: var(--spacing-lg, 16px);
+  left: var(--spacing-lg, 16px);
+  min-height: 44px;
+  padding: 0 var(--spacing-lg, 16px);
+  background: var(--color-surface, #FFFFFF);
+  border: 2px solid var(--color-border, #DAD2C6);
+  border-radius: var(--radius-md, 8px);
+  font: inherit;
+  font-size: var(--font-size-body, 15px);
+  font-weight: 600;
+  color: var(--color-text-primary, #1C1E20);
+  cursor: pointer;
+  z-index: 15;
+  transition: border-color 100ms ease;
+}
+
+.isometric-chatroom__char-picker-btn:hover {
+  border-color: var(--color-border-hover, #BBAE9A);
+}
+
+/* ── Character picker panel ──────────────────────────────────────────── */
+
+.isometric-chatroom__char-picker {
+  position: absolute;
+  bottom: var(--spacing-xxxl, 28px);
+  left: var(--spacing-lg, 16px);
+  width: 280px;
+  max-height: 320px;
+  overflow-y: auto;
+  background: var(--color-surface, #FFFFFF);
+  border: 2px solid var(--color-border, #DAD2C6);
+  border-radius: var(--radius-card, 12px);
+  z-index: 20;
+  box-shadow: 0 4px 12px color-mix(in srgb, #000000 15%, transparent);
+}
+
+.isometric-chatroom__char-picker-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--spacing-md, 12px) var(--spacing-lg, 16px);
+  border-bottom: 1px solid var(--color-border, #DAD2C6);
+}
+
+.isometric-chatroom__char-picker-title {
+  margin: 0;
+  font-size: var(--font-size-body, 15px);
+  font-weight: 700;
+  color: var(--color-text-primary, #1C1E20);
+}
+
+.isometric-chatroom__char-picker-close {
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  color: var(--color-text-secondary, #606069);
+  border-radius: var(--radius-pill, 4px);
+}
+
+.isometric-chatroom__char-picker-close:hover {
+  background: var(--color-tip-bg, #F2F0E8);
+}
+
+.isometric-chatroom__char-picker-list {
+  display: flex;
+  flex-direction: column;
+  padding: var(--spacing-sm, 8px);
+  gap: var(--spacing-xs, 4px);
+}
+
+.isometric-chatroom__char-option {
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+  padding: var(--spacing-sm, 8px) var(--spacing-md, 12px);
+  background: none;
+  border: 2px solid transparent;
+  border-radius: var(--radius-md, 8px);
+  font: inherit;
+  font-size: var(--font-size-body, 15px);
+  color: var(--color-text-primary, #1C1E20);
+  cursor: pointer;
+  text-align: left;
+  width: 100%;
+  transition: border-color 100ms ease, background 100ms ease;
+}
+
+.isometric-chatroom__char-option:hover {
+  background: var(--color-tip-bg, #F2F0E8);
+  border-color: var(--color-border-hover, #BBAE9A);
+}
+
+.isometric-chatroom__char-option--selected {
+  border-color: var(--color-primary, #7B4324);
+  background: color-mix(in srgb, var(--color-primary, #7B4324) 10%, var(--color-surface, #FFFFFF));
+}
+
+.isometric-chatroom__char-label {
+  font-weight: 600;
+}
+
+/* ── Leave button ────────────────────────────────────────────────────── */
+
+.isometric-chatroom__leave-btn {
+  position: absolute;
+  top: var(--spacing-md, 12px);
+  right: var(--spacing-md, 12px);
+  min-height: 44px;
+  padding: 0 var(--spacing-lg, 16px);
+  background: var(--color-surface, #FFFFFF);
+  border: 2px solid var(--color-border, #DAD2C6);
+  border-radius: var(--radius-md, 8px);
+  font: inherit;
+  font-size: var(--font-size-body, 15px);
+  color: var(--color-text-secondary, #606069);
+  cursor: pointer;
+  z-index: 25;
+  transition: border-color 100ms ease, color 100ms ease;
+}
+
+.isometric-chatroom__leave-btn:hover {
+  border-color: var(--color-error, #C34132);
+  color: var(--color-error, #C34132);
+}
+
+/* ── Responsive ──────────────────────────────────────────────────────── */
+
+@media (max-width: 768px) {
+  .isometric-chatroom__chat-panel {
+    width: 100vw;
+    max-height: 50vh;
+    border-top-left-radius: var(--radius-card, 12px);
+    border-left: none;
+  }
+
+  .isometric-chatroom__char-picker {
+    width: calc(100vw - 32px);
+    left: 16px;
+  }
+
+  .isometric-chatroom__char-picker-btn {
+    left: 16px;
+  }
+}
+
+/* ── Reduced motion ──────────────────────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  .isometric-chatroom__emoji-btn {
+    transition: none;
+  }
+}

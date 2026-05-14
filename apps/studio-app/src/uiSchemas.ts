@@ -1438,6 +1438,142 @@ export const UI_SCHEMAS: Record<ActivityKind, Record<string, unknown>> = {
     },
   },
 
+  "isometric-chatroom": {
+    ...COMMON,
+    "ui:order": ["title", "prompt", "room", "characters", "rules", "emoji", "live", "appearance", "*"],
+    title: TITLE,
+    author: AUTHOR,
+    prompt: f(
+      "Lobby prompt (optional)",
+      "Shown to students in the lobby before the instructor starts the activity.",
+      { "ui:widget": "textarea", "ui:options": { rows: 3 } },
+    ),
+    room: {
+      "ui:title": "Room",
+      "ui:help": "Configure the isometric room appearance and size.",
+      name: f("Room name", "Displayed in the room header."),
+      theme: f(
+        "Room theme",
+        "Preset environment. Each theme has its own floor, walls, and furniture.",
+        { "ui:enumNames": ["Classroom", "Library", "Cafe", "Lounge", "Outdoor", "Custom"] },
+      ),
+      backgroundImage: f(
+        "Custom background image",
+        "Paste a URL or upload a file. Overrides the theme background.",
+        {
+          "ui:widget": "file",
+          "ui:options": { accept: "image/*", maxSizeMb: 5, kind: "image" },
+        },
+      ),
+      backgroundAlt: f(
+        "Background alt text (required if image set)",
+        "Describes the custom background for screen-reader users.",
+      ),
+      width: f("Room width (tiles)", "8–20 tiles. Wider rooms give more walking space.", {
+        "ui:options": { step: 1, min: 8, max: 20 },
+      }),
+      height: f("Room height (tiles)", "8–20 tiles.", {
+        "ui:options": { step: 1, min: 8, max: 20 },
+      }),
+      seed: f(
+        "Seed",
+        "Deterministic room layout. Use 'reshuffle' to regenerate.",
+      ),
+    },
+    characters: {
+      "ui:title": "Characters",
+      "ui:help": "Available avatar options. Students pick one in the lobby. Drag to reorder.",
+      "ui:options": {
+        order: ["id", "label", "sprite", "palette", "availableToStudents"],
+      },
+      items: {
+        id: HIDDEN,
+        label: f("Display name", "What the learner sees in the character picker."),
+        sprite: f(
+          "Sprite",
+          "Base64 data URL or external URL. 16×24 pixel art.",
+          {
+            "ui:widget": "file",
+            "ui:options": { accept: "image/*", maxSizeMb: 1, kind: "image" },
+          },
+        ),
+        palette: f(
+          "Palette override (optional)",
+          "Array of 8 hex colors. Overrides the default palette for this character.",
+        ),
+        availableToStudents: f(
+          "Available to students",
+          "When off, only the instructor can use this character.",
+        ),
+      },
+    },
+    rules: {
+      "ui:title": "Chat rules",
+      "ui:help": "Configure chat behavior and constraints.",
+      "ui:order": [
+        "requireAcknowledge",
+        "rules",
+        "maxMessageLength",
+        "messageDisplayDuration",
+        "chatMode",
+        "allowLobbyClose",
+        "allowIndividualMute",
+        "allowMessageDeletion",
+        "showNamesInChat",
+      ],
+      requireAcknowledge: f(
+        "Require rule acknowledgment",
+        "Students must see the rules before entering the room.",
+      ),
+      rules: {
+        "ui:title": "Room rules",
+        "ui:help": "Displayed in the lobby. Min 1, max 10 rules.",
+        items: {
+          "ui:title": "Rule",
+        },
+      },
+      maxMessageLength: f(
+        "Max message length",
+        "Characters. Default 280. Min 50. Max 1000.",
+        { "ui:options": { step: 10, min: 50, max: 1000 } },
+      ),
+      messageDisplayDuration: f(
+        "Message display duration",
+        "How long speech bubbles stay above avatars. Default 8000ms. Min 3000. Max 30000.",
+        { "ui:options": { step: 500, min: 3000, max: 30000 } },
+      ),
+      chatMode: f(
+        "Chat mode",
+        "When students can type. 'Free' = always. 'Question' = only during question phase. 'Discussion' = only during discussion phase.",
+        { "ui:enumNames": ["Free (always)", "Question phase only", "Discussion phase only"] },
+      ),
+      allowLobbyClose: f("Allow instructor to close lobby", ""),
+      allowIndividualMute: f("Allow individual mute", ""),
+      allowMessageDeletion: f("Allow message deletion", ""),
+      showNamesInChat: f("Show names in chat", ""),
+    },
+    emoji: {
+      "ui:title": "Emoji reactions",
+      "ui:help": "Emoji set available for student reactions.",
+      "ui:order": ["preset", "custom"],
+      preset: f(
+        "Emoji preset",
+        "Choose a curated set or define your own.",
+        { "ui:enumNames": ["Standard (24)", "Academic (20)", "Minimal (12)", "Custom"] },
+      ),
+      custom: {
+        "ui:title": "Custom emoji set",
+        "ui:help": "Only used when preset is 'Custom'. Min 4, max 24 entries.",
+        items: {
+          name: f("Name", "Display name for this emoji."),
+          char: f("Emoji character", "The emoji character (1–4 code units)."),
+        },
+      },
+    },
+    live: LIVE_SETTINGS_UI,
+    appearance: HIDDEN,
+  },
+
   // Stubbed (planned) activity kinds get filled in below.
 } as unknown as Record<ActivityKind, Record<string, unknown>>;
 

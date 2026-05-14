@@ -492,6 +492,62 @@ export const STARTERS: Record<ActivityKind, unknown> = {
     ],
     behaviour: { allowReveal: true, allowReshuffle: true, showHints: true },
   },
+  "isometric-chatroom": {
+    version: "1.0",
+    title: "Discussion Chatroom",
+    prompt: "Welcome! Pick a character, explore the room, and join the discussion when the instructor starts.",
+    room: {
+      name: "Classroom",
+      theme: "classroom",
+      width: 12,
+      height: 12,
+      seed: "kukui-default-v1",
+    },
+    characters: [
+      {
+        id: "student-m-default",
+        label: "Student (default)",
+        sprite: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==",
+        availableToStudents: true,
+      },
+      {
+        id: "student-f-default",
+        label: "Student (alt)",
+        sprite: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==",
+        availableToStudents: true,
+      },
+      {
+        id: "robot-default",
+        label: "Robot",
+        sprite: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==",
+        availableToStudents: true,
+      },
+    ],
+    rules: {
+      requireAcknowledge: true,
+      rules: [
+        "Be respectful to everyone",
+        "Stay on topic during the question phase",
+        "Use the emoji reactions to respond non-verbally",
+      ],
+      maxMessageLength: 280,
+      messageDisplayDuration: 8000,
+      chatMode: "free",
+      allowLobbyClose: true,
+      allowIndividualMute: true,
+      allowMessageDeletion: true,
+      showNamesInChat: true,
+    },
+    emoji: {
+      preset: "standard",
+    },
+    appearance: { theme: "auto" },
+    live: {
+      joinKey: "",
+      adminKey: "",
+      signaling: "nostr",
+    },
+  },
   ...PLANNED_STARTERS,
 } as Record<ActivityKind, unknown>;
 
@@ -525,6 +581,7 @@ export const ACTIVITY_LABELS: Record<ActivityKind, string> = {
   "word-cloud": "Word Cloud (Live)",
   "qa-board": "Q&A Board (Live)",
   "quick-quiz": "Quick Quiz (Live)",
+  "isometric-chatroom": "Isometric Chatroom (Live)",
   ...PLANNED_LABELS,
 } as Record<ActivityKind, string>;
 
