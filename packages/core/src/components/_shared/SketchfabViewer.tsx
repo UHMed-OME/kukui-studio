@@ -25,10 +25,13 @@ import "./SketchfabViewer.css";
 declare global {
   interface Window {
     // Sketchfab's loader script attaches `Sketchfab` to window once
-    // the script tag loads. Typed as unknown to avoid pulling their
-    // namespace; we only call the constructor.
+    // the script tag loads. Single-arg form (just the iframe) is the
+    // signature the current viewer-1.12.1 script ships; older docs
+    // showed `(version, iframe)` but passing a number there throws
+    // "No API named '<num>'" because Sketchfab's API registry keys are
+    // strings (the actual viewer version like "1.12.1"). Stick to the
+    // single-arg form.
     Sketchfab?: new (
-      version: number,
       iframe: HTMLIFrameElement,
     ) => { init: (uid: string, opts: SketchfabInitOpts) => void };
   }
@@ -224,7 +227,7 @@ export function SketchfabViewer({
     loadSketchfabApi()
       .then(() => {
         if (cancelled || !window.Sketchfab) return;
-        const client = new window.Sketchfab(1, iframe);
+        const client = new window.Sketchfab(iframe);
         client.init(uid, {
           success: (api) => {
             apiRef.current = api;
