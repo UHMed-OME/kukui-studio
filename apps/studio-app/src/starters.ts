@@ -581,7 +581,7 @@ export const ACTIVITY_LABELS: Record<ActivityKind, string> = {
   "word-cloud": "Word Cloud (Live)",
   "qa-board": "Q&A Board (Live)",
   "quick-quiz": "Quick Quiz (Live)",
-  "isometric-chatroom": "Isometric Chatroom (Live)",
+  "isometric-chatroom": "Pixel Chat (Live)",
   ...PLANNED_LABELS,
 } as Record<ActivityKind, string>;
 

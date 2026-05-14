@@ -144,7 +144,7 @@ const LIVE_ACTIVITIES: { kind: ActivityKind; label: string; sampleUrl: string }[
   { kind: "quick-quiz", label: "Quick Quiz", sampleUrl: "/samples/quick-quiz/basic.json" },
   {
     kind: "isometric-chatroom",
-    label: "Isometric Chatroom",
+    label: "Pixel Chat",
     sampleUrl: "/samples/isometric-chatroom/basic.json",
   },
   {
