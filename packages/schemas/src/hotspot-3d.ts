@@ -27,6 +27,16 @@ export const Hotspot3DConfigSchema = z
           .string()
           .regex(/^[a-f0-9]{32}$/i, "Sketchfab UID must be 32 hex characters")
           .optional(),
+        /**
+         * When `sketchfabUid` is set, this discriminates between two
+         * runtime paths:
+         *   - "embed" (or absent): use the existing Sketchfab Viewer
+         *     iframe. No GLB download; works without OAuth.
+         *   - "import": the activity expects a bundled GLB file at
+         *     `model.src`. SCORM export embeds the cached body from
+         *     IndexedDB; the Studio preview reads the cache directly.
+         */
+        sketchfabMode: z.enum(["embed", "import"]).optional(),
         scale: z.number().positive().optional(),
         /**
          * Creative Commons / Sketchfab attribution. Rendered in the
