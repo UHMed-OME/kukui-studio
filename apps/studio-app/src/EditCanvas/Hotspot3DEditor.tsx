@@ -13,6 +13,7 @@ import {
   SketchfabViewer,
   type SketchfabHotspot,
 } from "@kukui/core/components/_shared/SketchfabViewer";
+import { loadCachedModelBlob } from "../sketchfab/modelCache";
 
 const LIGHTING_PRESETS = ["studio", "warehouse", "park", "forest", "lobby", "sunset"] as const;
 type LightingPreset = (typeof LIGHTING_PRESETS)[number];
@@ -100,6 +101,45 @@ function Hotspot3DEditorInner({
     [hotspots, selectedId],
   );
   const modelScale = config.model.scale ?? 1;
+
+  // When the author has imported a Sketchfab model (sketchfabMode === "import"),
+  // the .glb body lives in IndexedDB — there is no model.src yet. Load the blob
+  // and create an object URL so the GLB-loader path can handle it identically to
+  // a regular URL. The runtime (post-export) always has model.src set, so it
+  // never reaches this branch.
+  const importMode =
+    config.model.sketchfabMode === "import" &&
+    Boolean(config.model.sketchfabUid) &&
+    !config.model.src;
+  const [importedBlobUrl, setImportedBlobUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!importMode || !config.model.sketchfabUid) {
+      setImportedBlobUrl(null);
+      return;
+    }
+    let active = true;
+    let createdUrl: string | null = null;
+    loadCachedModelBlob(config.model.sketchfabUid).then((blob) => {
+      if (!active) return;
+      if (!blob) {
+        console.warn(
+          `[kukui:sketchfab] no cached blob for ${config.model.sketchfabUid}; re-import the model`,
+        );
+        setImportedBlobUrl(null);
+        return;
+      }
+      createdUrl = URL.createObjectURL(blob);
+      setImportedBlobUrl(createdUrl);
+    });
+    return () => {
+      active = false;
+      if (createdUrl) URL.revokeObjectURL(createdUrl);
+    };
+  }, [importMode, config.model.sketchfabUid]);
+
+  // Effective GLB source: prefer explicit src, then IndexedDB blob URL.
+  const effectiveSrc = config.model.src ?? importedBlobUrl ?? undefined;
 
   const writeHotspots = useCallback(
     (next: Hotspot[]) => {
@@ -263,7 +303,7 @@ function Hotspot3DEditorInner({
         ref={canvasRef}
         style={viewportStyle}
       >
-        {sketchfabUid ? (
+        {sketchfabUid && !importMode ? (
           <>
             <SketchfabViewer
               uid={sketchfabUid}
@@ -303,9 +343,9 @@ function Hotspot3DEditorInner({
           <directionalLight position={[3, 5, 4]} intensity={0.9} castShadow={false} />
           <directionalLight position={[-3, 2, -4]} intensity={0.35} castShadow={false} />
           <Suspense fallback={null}>
-            {config.model.src ? (
+            {effectiveSrc ? (
               <ClickableModel
-                src={config.model.src}
+                src={effectiveSrc}
                 scale={modelScale}
                 onPlace={handleModelClick}
                 sceneRef={modelRef}

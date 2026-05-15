@@ -1,5 +1,7 @@
 import type { ActivityKind } from "@kukui/core";
+import type JSZipType from "jszip";
 import { slug } from "./util/slug.js";
+import { loadCachedModelBlob } from "./sketchfab/modelCache.js";
 
 /**
  * Build a SCORM 1.2 zip in the browser by patching a pre-built template.
@@ -10,6 +12,11 @@ import { slug } from "./util/slug.js";
  * author's draft as `samples/<kind>/basic.json`, and rewrite the activity
  * title in `imsmanifest.xml` so D2L's gradebook listing matches what the
  * author entered.
+ *
+ * If the activity has a Sketchfab-imported model (`model.sketchfabMode ===
+ * "import"`), the cached `.glb` body is bundled into the zip and
+ * `model.src` is rewritten to the relative asset path so the SCORM package
+ * is fully self-contained.
  */
 export async function downloadScormZip(kind: ActivityKind, config: unknown): Promise<void> {
   // JSZip (~25 KB gz) only matters when the author actually clicks
@@ -24,9 +31,14 @@ export async function downloadScormZip(kind: ActivityKind, config: unknown): Pro
   const templateBytes = await response.arrayBuffer();
   const zip = await JSZip.loadAsync(templateBytes);
 
+  // Rewrite Sketchfab-imported models BEFORE serialising. If a hotspot-3d
+  // activity has model.sketchfabMode === "import", the cached .glb body
+  // gets bundled into the zip and model.src is rewritten to point at it.
+  const finalConfig = await embedSketchfabImports(kind, config, zip);
+
   // Swap in the author's JSON.
   const samplePath = `samples/${kind}/basic.json`;
-  zip.file(samplePath, JSON.stringify(config, null, 2));
+  zip.file(samplePath, JSON.stringify(finalConfig, null, 2));
 
   // Patch the manifest's <title> tags to the author's title (if present).
   const manifest = await zip.file("imsmanifest.xml")?.async("string");
@@ -57,4 +69,47 @@ export async function downloadScormZip(kind: ActivityKind, config: unknown): Pro
   a.download = `${filename}.zip`;
   a.click();
   URL.revokeObjectURL(url);
+}
+
+/**
+ * If the activity config contains a Sketchfab-imported model
+ * (`model.sketchfabMode === "import"`), fetch the cached `.glb` blob from
+ * IndexedDB, embed it at `samples/<kind>/assets/<uid>.glb` inside the zip,
+ * and return a deep-cloned config with:
+ *   - `model.src` rewritten to `./assets/<uid>.glb`
+ *   - `model.sketchfabMode` removed  (the runtime GLB loader only needs `src`)
+ *   - `model.sketchfabUid` + `model.attribution` preserved for credit display
+ *
+ * For any other activity kind or model type the config is returned unchanged.
+ */
+async function embedSketchfabImports(
+  kind: ActivityKind,
+  config: unknown,
+  zip: JSZipType,
+): Promise<unknown> {
+  if (!config || typeof config !== "object") return config;
+  const model = (config as { model?: { sketchfabMode?: string; sketchfabUid?: string } }).model;
+  if (!model || model.sketchfabMode !== "import" || !model.sketchfabUid) {
+    return config;
+  }
+  const blob = await loadCachedModelBlob(model.sketchfabUid);
+  if (!blob) {
+    throw new Error(
+      `Sketchfab model ${model.sketchfabUid} is referenced but not in cache. Re-import the model and try again.`,
+    );
+  }
+  // Asset path inside the zip — colocated under the activity's samples
+  // folder so the relative ./ in model.src resolves cleanly from the
+  // JSON's URL at runtime.
+  const assetPath = `samples/${kind}/assets/${model.sketchfabUid}.glb`;
+  zip.file(assetPath, await blob.arrayBuffer());
+
+  // Deep clone the config and rewrite the embedded JSON: set model.src
+  // to the relative path, drop sketchfabMode (runtime uses src now),
+  // keep sketchfabUid + attribution for the footer credit.
+  const next = JSON.parse(JSON.stringify(config)) as Record<string, unknown>;
+  const nextModel = next.model as Record<string, unknown>;
+  nextModel.src = `./assets/${model.sketchfabUid}.glb`;
+  delete nextModel.sketchfabMode;
+  return next;
 }

@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState, type ChangeEvent, type DragEvent } from "react";
 import type { FieldProps } from "@rjsf/utils";
+import { SketchfabImportButton } from "../sketchfab/SketchfabImportButton.js";
+import type { ImportAttribution } from "../sketchfab/import.js";
 
 /**
  * RJSF custom field for the hotspot-3d `model` object.
@@ -63,16 +65,56 @@ export function ModelSourceField(props: FieldProps) {
     ? `https://sketchfab.com/models/${model.sketchfabUid}`
     : "";
 
+  // The three manual-source writers ALL clear sketchfabMode + attribution
+  // alongside their other field updates. Without that, a previously
+  // imported model's metadata persists when the author switches sources
+  // (e.g. import → manually paste a different UID): sketchfabMode stays
+  // "import" while sketchfabUid changes to a UID with no cached blob, so
+  // the preview silently looks up the wrong (or missing) body.
+  // writeImport sets sketchfabMode + attribution explicitly.
   const writeLink = (raw: string) => {
     const trimmed = raw.trim();
-    onChange({ ...model, src: trimmed || undefined, sketchfabUid: undefined });
+    onChange({
+      ...model,
+      src: trimmed || undefined,
+      sketchfabUid: undefined,
+      sketchfabMode: undefined,
+      attribution: undefined,
+    });
   };
   const writeSketchfab = (raw: string) => {
     const uid = parseSketchfabUid(raw);
-    onChange({ ...model, sketchfabUid: uid ?? undefined, src: undefined });
+    onChange({
+      ...model,
+      sketchfabUid: uid ?? undefined,
+      src: undefined,
+      sketchfabMode: undefined,
+      attribution: undefined,
+    });
   };
   const writeUpload = (dataUrl: string) => {
-    onChange({ ...model, src: dataUrl, sketchfabUid: undefined });
+    onChange({
+      ...model,
+      src: dataUrl,
+      sketchfabUid: undefined,
+      sketchfabMode: undefined,
+      attribution: undefined,
+    });
+  };
+  const writeImport = ({
+    uid,
+    attribution,
+  }: {
+    uid: string;
+    attribution: ImportAttribution;
+  }) => {
+    onChange({
+      ...model,
+      sketchfabUid: uid,
+      sketchfabMode: "import",
+      attribution,
+      src: undefined,
+    });
   };
 
   // Delegate non-source properties (scale, attribution) back to RJSF.
@@ -83,8 +125,11 @@ export function ModelSourceField(props: FieldProps) {
   const SchemaField = registry.fields.SchemaField as any;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const properties = (schema.properties ?? {}) as Record<string, any>;
+  // sketchfabMode is managed programmatically by the import button;
+  // sketchfabUid and src are owned by the tab picker above.
+  // All three are excluded from the RJSF-rendered child fields.
   const childKeys = Object.keys(properties).filter(
-    (k) => k !== "src" && k !== "sketchfabUid",
+    (k) => k !== "src" && k !== "sketchfabUid" && k !== "sketchfabMode",
   );
 
   const title = (uiSchema as Record<string, unknown> | undefined)?.["ui:title"];
@@ -126,7 +171,13 @@ export function ModelSourceField(props: FieldProps) {
         ) : mode === "upload" ? (
           <UploadInput src={model.src} onUpload={writeUpload} />
         ) : (
-          <SketchfabInput value={sketchfabValue} onCommit={writeSketchfab} />
+          <>
+            <SketchfabImportButton onImported={writeImport} />
+            <details className="ks-model-source__uid-fallback">
+              <summary>Or paste a UID / URL manually</summary>
+              <SketchfabInput value={sketchfabValue} onCommit={writeSketchfab} />
+            </details>
+          </>
         )}
       </div>
 
