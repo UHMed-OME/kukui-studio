@@ -65,16 +65,41 @@ export function ModelSourceField(props: FieldProps) {
     ? `https://sketchfab.com/models/${model.sketchfabUid}`
     : "";
 
+  // The three manual-source writers ALL clear sketchfabMode + attribution
+  // alongside their other field updates. Without that, a previously
+  // imported model's metadata persists when the author switches sources
+  // (e.g. import → manually paste a different UID): sketchfabMode stays
+  // "import" while sketchfabUid changes to a UID with no cached blob, so
+  // the preview silently looks up the wrong (or missing) body.
+  // writeImport sets sketchfabMode + attribution explicitly.
   const writeLink = (raw: string) => {
     const trimmed = raw.trim();
-    onChange({ ...model, src: trimmed || undefined, sketchfabUid: undefined });
+    onChange({
+      ...model,
+      src: trimmed || undefined,
+      sketchfabUid: undefined,
+      sketchfabMode: undefined,
+      attribution: undefined,
+    });
   };
   const writeSketchfab = (raw: string) => {
     const uid = parseSketchfabUid(raw);
-    onChange({ ...model, sketchfabUid: uid ?? undefined, src: undefined });
+    onChange({
+      ...model,
+      sketchfabUid: uid ?? undefined,
+      src: undefined,
+      sketchfabMode: undefined,
+      attribution: undefined,
+    });
   };
   const writeUpload = (dataUrl: string) => {
-    onChange({ ...model, src: dataUrl, sketchfabUid: undefined });
+    onChange({
+      ...model,
+      src: dataUrl,
+      sketchfabUid: undefined,
+      sketchfabMode: undefined,
+      attribution: undefined,
+    });
   };
   const writeImport = ({
     uid,
