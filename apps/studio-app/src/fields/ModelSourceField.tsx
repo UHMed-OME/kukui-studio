@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState, type ChangeEvent, type DragEvent } from "react";
 import type { FieldProps } from "@rjsf/utils";
+import { SketchfabImportButton } from "../sketchfab/SketchfabImportButton.js";
+import type { ImportAttribution } from "../sketchfab/import.js";
 
 /**
  * RJSF custom field for the hotspot-3d `model` object.
@@ -74,6 +76,21 @@ export function ModelSourceField(props: FieldProps) {
   const writeUpload = (dataUrl: string) => {
     onChange({ ...model, src: dataUrl, sketchfabUid: undefined });
   };
+  const writeImport = ({
+    uid,
+    attribution,
+  }: {
+    uid: string;
+    attribution: ImportAttribution;
+  }) => {
+    onChange({
+      ...model,
+      sketchfabUid: uid,
+      sketchfabMode: "import",
+      attribution,
+      src: undefined,
+    });
+  };
 
   // Delegate non-source properties (scale, attribution) back to RJSF.
   // The src/sketchfabUid pair is owned by the picker above; everything
@@ -83,8 +100,11 @@ export function ModelSourceField(props: FieldProps) {
   const SchemaField = registry.fields.SchemaField as any;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const properties = (schema.properties ?? {}) as Record<string, any>;
+  // sketchfabMode is managed programmatically by the import button;
+  // sketchfabUid and src are owned by the tab picker above.
+  // All three are excluded from the RJSF-rendered child fields.
   const childKeys = Object.keys(properties).filter(
-    (k) => k !== "src" && k !== "sketchfabUid",
+    (k) => k !== "src" && k !== "sketchfabUid" && k !== "sketchfabMode",
   );
 
   const title = (uiSchema as Record<string, unknown> | undefined)?.["ui:title"];
@@ -126,7 +146,13 @@ export function ModelSourceField(props: FieldProps) {
         ) : mode === "upload" ? (
           <UploadInput src={model.src} onUpload={writeUpload} />
         ) : (
-          <SketchfabInput value={sketchfabValue} onCommit={writeSketchfab} />
+          <>
+            <SketchfabImportButton onImported={writeImport} />
+            <details className="ks-model-source__uid-fallback">
+              <summary>Or paste a UID / URL manually</summary>
+              <SketchfabInput value={sketchfabValue} onCommit={writeSketchfab} />
+            </details>
+          </>
         )}
       </div>
 
