@@ -249,6 +249,74 @@ function SketchfabSection() {
           </button>
         )}
       </div>
+      {import.meta.env.DEV && status !== "signed-in" ? (
+        <details className="ks-connections-dev-affordance" style={{ marginTop: 12 }}>
+          <summary>Dev only — paste a token manually</summary>
+          <p className="ks-dialog__message">
+            Local dev can't complete a real OAuth flow until Sketchfab
+            adds <code>http://localhost:5174/auth/sketchfab/callback</code> as
+            a second redirect URI. In the meantime, generate a token
+            against production (sign in at kukuistudio.com once, copy
+            the token from sessionStorage) and paste it here to test the
+            signed-in code paths without leaving localhost.
+          </p>
+          <DevPasteToken />
+        </details>
+      ) : null}
     </>
+  );
+}
+
+function DevPasteToken() {
+  const [value, setValue] = useState("");
+  const [days, setDays] = useState("30");
+
+  const handleSave = () => {
+    const trimmed = value.trim();
+    if (!trimmed) return;
+    const dayCount = Math.max(1, Math.min(60, Number.parseInt(days, 10) || 30));
+    saveSketchfabToken({
+      accessToken: trimmed,
+      expiresAt: Date.now() + dayCount * 24 * 60 * 60 * 1000,
+      scope: "read",
+      storage: "session",
+    });
+    setValue("");
+    window.dispatchEvent(new Event("storage")); // nudge useSketchfabAuth
+  };
+
+  return (
+    <div style={{ display: "grid", gap: 8, marginTop: 8 }}>
+      <label>
+        Access token
+        <input
+          type="text"
+          value={value}
+          onChange={(e) => setValue(e.target.value)}
+          autoComplete="off"
+          spellCheck={false}
+          style={{ display: "block", width: "100%", fontFamily: "monospace" }}
+        />
+      </label>
+      <label>
+        Expires in (days)
+        <input
+          type="number"
+          value={days}
+          onChange={(e) => setDays(e.target.value)}
+          min={1}
+          max={60}
+          style={{ width: 80 }}
+        />
+      </label>
+      <button
+        type="button"
+        className="kukui-studio-btn kukui-studio-btn--primary"
+        onClick={handleSave}
+        disabled={!value.trim()}
+      >
+        Save dev token
+      </button>
+    </div>
   );
 }
