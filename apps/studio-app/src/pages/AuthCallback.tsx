@@ -48,9 +48,19 @@ export function AuthCallback() {
     // Default storage choice: session (more conservative than local).
     // The ConnectionsPane offers a "remember on this device" toggle that
     // re-saves with `storage: "local"` once the user is signed in.
+    //
+    // Sketchfab usually returns expires_in ~2592000 (30 days) per their
+    // Implicit grant docs. If the response is missing or zero — non-spec
+    // behaviour, but we've seen it from misconfigured OAuth providers —
+    // a literal `Date.now() + 0` would mark the token expired immediately
+    // and silently sign the user out after a successful round-trip. Fall
+    // back to Sketchfab's documented TTL in that case.
+    const SKETCHFAB_DEFAULT_TTL_SECONDS = 30 * 24 * 60 * 60;
+    const ttlSeconds =
+      result.expiresInSeconds > 0 ? result.expiresInSeconds : SKETCHFAB_DEFAULT_TTL_SECONDS;
     saveSketchfabToken({
       accessToken: result.accessToken,
-      expiresAt: Date.now() + result.expiresInSeconds * 1000,
+      expiresAt: Date.now() + ttlSeconds * 1000,
       scope: result.scope,
       storage: "session",
     });
