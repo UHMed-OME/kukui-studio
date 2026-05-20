@@ -120,10 +120,24 @@ const MANIFEST_BLOOM: Partial<Record<ActivityKind, BloomLevel>> =
     Object.values(ACTIVITY_MANIFESTS).map((m) => [m.kind, m.bloom]),
   );
 
-const BLOOM_BY_KIND: Partial<Record<ActivityKind, BloomLevel>> = {
-  ...LEGACY_BLOOM,
-  ...MANIFEST_BLOOM,
-};
+/**
+ * Activity kinds intentionally hidden from Studio's catalog. These render
+ * fine in the engine (multiple-choice, fill-in-the-blanks, question-set are
+ * embedded inside other activities like question-set/interactive-video) but
+ * are not standalone authoring targets in Studio. Suppress here AFTER the
+ * manifest merge so newly-migrated activities don't accidentally surface
+ * unless explicitly removed from this set.
+ */
+const STUDIO_SUPPRESSED = new Set<ActivityKind>([
+  "multiple-choice",
+  "fill-in-the-blanks",
+  "question-set",
+]);
+
+const BLOOM_BY_KIND: Partial<Record<ActivityKind, BloomLevel>> = Object.fromEntries(
+  Object.entries({ ...LEGACY_BLOOM, ...MANIFEST_BLOOM })
+    .filter(([kind]) => !STUDIO_SUPPRESSED.has(kind as ActivityKind))
+) as Partial<Record<ActivityKind, BloomLevel>>;
 
 const BLOOM_ORDER: readonly BloomLevel[] = [
   "remember",
