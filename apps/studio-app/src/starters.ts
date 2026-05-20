@@ -4,6 +4,7 @@
  */
 import type { ActivityKind } from "@kukui/core";
 import { PLANNED_LABELS, PLANNED_ACTIVITY_KINDS, PLANNED_DESCRIPTIONS } from "@kukui/core";
+import { ACTIVITY_MANIFESTS } from "@kukui/activities";
 
 /**
  * Inline SVG placeholder, embedded as a data URL so it travels with the
@@ -31,17 +32,7 @@ const PLANNED_STARTERS = Object.fromEntries(
   PLANNED_ACTIVITY_KINDS.map((k) => [k, stubStarter(PLANNED_LABELS[k], PLANNED_DESCRIPTIONS[k])]),
 ) as Record<(typeof PLANNED_ACTIVITY_KINDS)[number], unknown>;
 
-export const STARTERS: Record<ActivityKind, unknown> = {
-  "multiple-choice": {
-    version: "1.0",
-    title: "Multiple Choice",
-    question: "Replace this with your question.",
-    answers: [
-      { text: "Option A", correct: true },
-      { text: "Option B", correct: false },
-    ],
-    behaviour: { enableRetry: true, enableSolutionsButton: false, singlePoint: false },
-  },
+const LEGACY_STARTERS: Partial<Record<ActivityKind, unknown>> = {
   "fill-in-the-blanks": {
     version: "1.0",
     title: "Fill in the Blanks",
@@ -548,11 +539,20 @@ export const STARTERS: Record<ActivityKind, unknown> = {
       signaling: "nostr",
     },
   },
+};
+
+const MANIFEST_STARTERS: Partial<Record<ActivityKind, unknown>> =
+  Object.fromEntries(
+    Object.values(ACTIVITY_MANIFESTS).map((m) => [m.kind, m.starter]),
+  );
+
+export const STARTERS: Record<ActivityKind, unknown> = {
   ...PLANNED_STARTERS,
+  ...LEGACY_STARTERS,
+  ...MANIFEST_STARTERS,
 } as Record<ActivityKind, unknown>;
 
-export const ACTIVITY_LABELS: Record<ActivityKind, string> = {
-  "multiple-choice": "Multiple Choice",
+const LEGACY_LABELS: Partial<Record<ActivityKind, string>> = {
   "fill-in-the-blanks": "Fill in the Blanks",
   "drag-and-drop": "Drag and Drop",
   "question-set": "Question Set",
@@ -582,7 +582,17 @@ export const ACTIVITY_LABELS: Record<ActivityKind, string> = {
   "qa-board": "Q&A Board (Live)",
   "quick-quiz": "Quick Quiz (Live)",
   "isometric-chatroom": "Pixel Chat (Live)",
+};
+
+const MANIFEST_LABELS: Partial<Record<ActivityKind, string>> =
+  Object.fromEntries(
+    Object.values(ACTIVITY_MANIFESTS).map((m) => [m.kind, m.label]),
+  );
+
+export const ACTIVITY_LABELS: Record<ActivityKind, string> = {
   ...PLANNED_LABELS,
+  ...LEGACY_LABELS,
+  ...MANIFEST_LABELS,
 } as Record<ActivityKind, string>;
 
 /**
