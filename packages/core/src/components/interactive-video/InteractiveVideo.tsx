@@ -8,7 +8,7 @@ import {
 } from "@kukui/schemas";
 import type { ActivityProps, ScoreState } from "../../types.js";
 import { aggregate, resolveScoring } from "../../scoring.js";
-import { MultipleChoice } from "../multiple-choice/index.js";
+import MultipleChoice from "@kukui/activities/multiple-choice/Component";
 import { FillInTheBlanks } from "../fill-in-the-blanks/index.js";
 import { SafeHtml } from "../../safe-html.js";
 import "./InteractiveVideo.css";
