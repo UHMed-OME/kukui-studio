@@ -42,7 +42,7 @@ import {
   writeFile,
   stat,
 } from "node:fs/promises";
-import { existsSync } from "node:fs";
+import { existsSync, readdirSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { tmpdir } from "node:os";
@@ -51,35 +51,40 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = resolve(__dirname, "..");
 const ENGINE_WEB_DIST = join(REPO_ROOT, "apps", "engine-web", "dist");
 const SAMPLES_DIR = join(REPO_ROOT, "apps", "engine-web", "public", "samples");
+const ACTIVITIES_ROOT = join(REPO_ROOT, "packages", "activities");
 const TEMPLATE = join(__dirname, "templates", "imsmanifest.xml.tmpl");
 
-const PHASE_1_ACTIVITIES = [
-  "multiple-choice",
-  "fill-in-the-blanks",
-  "drag-and-drop",
-  "question-set",
-  "hotspot-3d",
-  "hotspot-2d",
-  "virtual-tour",
-  "sequence-steps",
-  "matching-pairs",
-  "categorization",
-  "anatomy-labeling",
-  "image-comparison-slider",
-  "highlight-text",
-  "flashcards",
-  "reflection-prompt",
-  "branching-scenario",
-  "image-annotation",
-  "concept-map",
-  "interactive-video",
-  "audio-recording",
-  "lab-panel",
-  "ddx-tree",
-  "osce",
-  "crossword",
-  "straw-poll",
-];
+// Auto-discover the union of:
+//   * activities co-located in packages/activities/<slug>/ (migrated)
+//   * activities still in apps/engine-web/public/samples/<slug>/ (legacy)
+// During Plan 2's bulk migration, the activities/ list grows and the
+// samples/ list shrinks; this script handles both during the transition.
+//
+// For packages/activities/, we additionally require a samples/ subdirectory
+// so that scaffolding files (node_modules, dist, src, package.json, etc.)
+// don't get treated as activity slugs. This matches the convention used by
+// apps/engine-web/vite-plugin-activity-samples.ts.
+function discoverActivitySlugs() {
+  const fromActivities = existsSync(ACTIVITIES_ROOT)
+    ? readdirSync(ACTIVITIES_ROOT, { withFileTypes: true })
+        .filter(
+          (e) =>
+            e.isDirectory() &&
+            !e.name.startsWith("_") &&
+            !e.name.startsWith(".") &&
+            existsSync(join(ACTIVITIES_ROOT, e.name, "samples")),
+        )
+        .map((e) => e.name)
+    : [];
+  const fromSamples = existsSync(SAMPLES_DIR)
+    ? readdirSync(SAMPLES_DIR, { withFileTypes: true })
+        .filter((e) => e.isDirectory() && !e.name.startsWith("_"))
+        .map((e) => e.name)
+    : [];
+  return Array.from(new Set([...fromActivities, ...fromSamples])).sort();
+}
+
+const PHASE_1_ACTIVITIES = discoverActivitySlugs();
 
 // Slugs become path components and zip names; reject anything outside
 // [a-z0-9-] starting with an alphanumeric to prevent ../ traversal or
@@ -196,9 +201,15 @@ async function packActivity(opts) {
     }
     const stagedSamples = join(stageDir, "samples", activity);
     if (!(await pathExists(stagedSamples))) {
-      const src = join(samplesRoot, activity);
+      // Prefer the new co-located location (packages/activities/<slug>/samples)
+      // and fall back to the legacy apps/engine-web/public/samples/<slug>.
+      const newSamplesDir = join(ACTIVITIES_ROOT, activity, "samples");
+      const legacySamplesDir = join(samplesRoot, activity);
+      const src = existsSync(newSamplesDir) ? newSamplesDir : legacySamplesDir;
       if (!(await pathExists(src))) {
-        throw new Error(`Samples directory missing for activity: ${src}`);
+        throw new Error(
+          `No samples directory for activity ${activity} at ${newSamplesDir} or ${legacySamplesDir}`,
+        );
       }
       await cp(src, stagedSamples, { recursive: true });
     }
