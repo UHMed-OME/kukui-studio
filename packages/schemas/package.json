@@ -7,7 +7,7 @@
   "types": "./src/index.ts",
   "exports": {
     ".": "./src/index.ts",
-    "./multiple-choice": "./src/multiple-choice.ts",
+    "./shared": "./src/shared.ts",
     "./fill-in-the-blanks": "./src/fill-in-the-blanks.ts",
     "./drag-and-drop": "./src/drag-and-drop.ts",
     "./question-set": "./src/question-set.ts",
@@ -38,6 +38,7 @@
     "./stub": "./src/stub.ts"
   },
   "dependencies": {
+    "@kukui/activities": "workspace:*",
     "zod": "^4.0.0"
   },
   "devDependencies": {

@@ -1,7 +1,7 @@
 export {
   MultipleChoiceConfigSchema,
   type MultipleChoiceConfig,
-} from "./multiple-choice.js";
+} from "@kukui/activities/multiple-choice/schema";
 export {
   FillInTheBlanksConfigSchema,
   type FillInTheBlanksConfig,
@@ -82,7 +82,7 @@ export {
 } from "./isometric-chatroom.js";
 export { StubConfigSchema, type StubConfig } from "./stub.js";
 
-import { MultipleChoiceConfigSchema } from "./multiple-choice.js";
+import { MultipleChoiceConfigSchema } from "@kukui/activities/multiple-choice/schema";
 import { FillInTheBlanksConfigSchema } from "./fill-in-the-blanks.js";
 import { DragAndDropConfigSchema } from "./drag-and-drop.js";
 import { QuestionSetConfigSchema } from "./question-set.js";
