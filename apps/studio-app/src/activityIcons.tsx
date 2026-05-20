@@ -12,6 +12,7 @@
  */
 import type { JSX, SVGProps } from "react";
 import type { ActivityKind } from "@kukui/core";
+import { ACTIVITY_MANIFESTS } from "@kukui/activities";
 
 const baseProps: SVGProps<SVGSVGElement> = {
   width: 16,
@@ -353,7 +354,7 @@ function IsometricChatroomIcon(props: SVGProps<SVGSVGElement>) {
 
 type IconComponent = (props: SVGProps<SVGSVGElement>) => JSX.Element;
 
-const ICONS: Partial<Record<ActivityKind, IconComponent>> = {
+const LEGACY_ICONS: Partial<Record<ActivityKind, IconComponent>> = {
   flashcards: FlashcardsIcon,
   "matching-pairs": MatchingPairsIcon,
   "hotspot-2d": Hotspot2dIcon,
@@ -384,26 +385,35 @@ const ICONS: Partial<Record<ActivityKind, IconComponent>> = {
 };
 
 export function hasActivityIcon(kind: ActivityKind): boolean {
-  return Boolean(ICONS[kind]);
+  return Boolean(ACTIVITY_MANIFESTS[kind]?.Icon || LEGACY_ICONS[kind]);
 }
 
 export function ActivityIcon({
   kind,
   ...rest
 }: { kind: ActivityKind } & SVGProps<SVGSVGElement>) {
-  const Icon = ICONS[kind];
-  if (!Icon) {
-    return (
-      <span
-        aria-hidden="true"
-        style={{
-          display: "inline-block",
-          width: 16,
-          height: 16,
-          flex: "0 0 16px",
-        }}
-      />
-    );
+  // Prefer manifest-supplied icon (Plan 1+) over the hand-written legacy map.
+  const ManifestIcon = ACTIVITY_MANIFESTS[kind]?.Icon;
+  if (ManifestIcon) {
+    return <ManifestIcon className={rest.className} />;
   }
-  return <Icon {...rest} />;
+  const LegacyIcon = LEGACY_ICONS[kind];
+  if (LegacyIcon) {
+    return <LegacyIcon {...rest} />;
+  }
+  // No icon registered — render the same invisible 16×16 placeholder the
+  // file header promises so missing icons never collapse the sidebar's
+  // flex layout.
+  return (
+    <span
+      aria-hidden="true"
+      className={rest.className}
+      style={{
+        display: "inline-block",
+        width: 16,
+        height: 16,
+        flex: "0 0 16px",
+      }}
+    />
+  );
 }
