@@ -249,6 +249,25 @@ importers:
         specifier: ^6.0.0
         version: 6.4.2(@types/node@22.19.17)(jiti@2.7.0)(lightningcss@1.32.0)
 
+  packages/activities:
+    dependencies:
+      '@kukui/schemas':
+        specifier: workspace:*
+        version: link:../schemas
+      react:
+        specifier: ^19.0.0
+        version: 19.2.5
+      zod:
+        specifier: ^4.0.0
+        version: 4.4.3
+    devDependencies:
+      '@types/react':
+        specifier: ^19.0.0
+        version: 19.2.14
+      typescript:
+        specifier: ^5.7.2
+        version: 5.9.3
+
   packages/bridge:
     devDependencies:
       typescript:
