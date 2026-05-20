@@ -11,6 +11,7 @@
   "include": ["src/**/*", "vite.config.ts"],
   "exclude": ["dist", "**/*.test.tsx", "**/*.test.ts"],
   "references": [
+    { "path": "../../packages/activities" },
     { "path": "../../packages/core" },
     { "path": "../../packages/schemas" }
   ]

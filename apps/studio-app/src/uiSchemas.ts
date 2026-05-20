@@ -8,6 +8,7 @@
  * guidance the author has to see at a glance.
  */
 import { type ActivityKind, PLANNED_ACTIVITY_KINDS } from "@kukui/core";
+import { ACTIVITY_MANIFESTS } from "@kukui/activities";
 
 const HIDDEN = { "ui:widget": "hidden" } as const;
 
@@ -102,57 +103,7 @@ const LIVE_SETTINGS_UI = {
   ),
 } as const;
 
-export const UI_SCHEMAS: Record<ActivityKind, Record<string, unknown>> = {
-  "multiple-choice": {
-    ...COMMON,
-    "ui:order": ["title", "question", "answers", "behaviour", "ui", "overallFeedback", "*"],
-    title: TITLE,
-    author: AUTHOR,
-    question: f(
-      "Question prompt",
-      "What the learner is asked. Use the toolbar to format text or paste HTML.",
-      { "ui:widget": "html", "ui:options": { rows: 3 } },
-    ),
-    answers: {
-      "ui:title": "Answer choices",
-      "ui:help": "Two or more options. At least one must be marked correct.",
-      items: {
-        text: f("Choice text", "What the learner sees on this answer button. HTML allowed."),
-        correct: f(
-          "Counts as correct",
-          "Selecting this option awards points toward the score.",
-        ),
-        feedback: f(
-          "Feedback after submit",
-          "Shown beneath the choice when the learner picks this answer.",
-          { "ui:widget": "textarea", "ui:options": { rows: 2 } },
-        ),
-        tip: f(
-          "Hover hint (before submit)",
-          "Optional tooltip shown while the learner is still answering.",
-          { "ui:widget": "textarea", "ui:options": { rows: 2 } },
-        ),
-      },
-    },
-    behaviour: {
-      "ui:title": "Activity behaviour",
-      enableRetry: BEHAVIOUR_RETRY,
-      enableSolutionsButton: BEHAVIOUR_SHOW_SOLUTION,
-      singlePoint: BEHAVIOUR_SINGLEPOINT,
-      randomAnswers: f(
-        "Randomize answer order",
-        "Shuffle the answer rows each time the activity loads.",
-      ),
-    },
-    ui: {
-      "ui:title": "Button label overrides",
-      checkAnswerButton: f("'Check' button text", "Defaults to 'Check'."),
-      showSolutionButton: f("'Show Solution' button text", "Defaults to 'Show solution'."),
-      tryAgainButton: f("'Try Again' button text", "Defaults to 'Try again'."),
-    },
-    overallFeedback: HIDDEN,
-  },
-
+const LEGACY_UI_SCHEMAS: Partial<Record<ActivityKind, Record<string, unknown>>> = {
   "fill-in-the-blanks": {
     ...COMMON,
     "ui:order": ["title", "text", "behaviour", "ui", "*"],
@@ -1574,14 +1525,17 @@ export const UI_SCHEMAS: Record<ActivityKind, Record<string, unknown>> = {
     appearance: HIDDEN,
   },
 
-  // Stubbed (planned) activity kinds get filled in below.
-} as unknown as Record<ActivityKind, Record<string, unknown>>;
+  // Multiple-choice intentionally absent — it now ships from
+  // @kukui/activities/multiple-choice/manifest.ts and is merged in via
+  // MANIFEST_UI_SCHEMAS below.
+};
 
-// Inject a minimal stub uiSchema for every planned kind. PLANNED_ACTIVITY_KINDS
-// is currently empty (every spec'd activity has shipped) — this loop is a
-// future hook for when the catalog grows again.
+// Minimal stub uiSchema for every planned kind. PLANNED_ACTIVITY_KINDS is
+// currently empty (every spec'd activity has shipped) — this map is a future
+// hook for when the catalog grows again.
+const PLANNED_STUBS: Partial<Record<ActivityKind, Record<string, unknown>>> = {};
 for (const kind of PLANNED_ACTIVITY_KINDS) {
-  (UI_SCHEMAS as Record<string, unknown>)[kind] = {
+  (PLANNED_STUBS as Record<string, unknown>)[kind] = {
     ...COMMON,
     title: f("Activity title", "What learners and instructors see in the gradebook."),
     description: f("Description", "Short summary of what the activity will do.", {
@@ -1594,3 +1548,24 @@ for (const kind of PLANNED_ACTIVITY_KINDS) {
     }),
   };
 }
+
+// uiSchemas sourced from per-activity manifests in @kukui/activities. As
+// Plan 2's bulk migration drains LEGACY_UI_SCHEMAS entry by entry, more
+// kinds will appear here automatically.
+const MANIFEST_UI_SCHEMAS: Partial<Record<ActivityKind, Record<string, unknown>>> =
+  Object.fromEntries(
+    Object.values(ACTIVITY_MANIFESTS).map((m) => [m.kind, m.uiSchema as Record<string, unknown>]),
+  );
+
+/**
+ * Final merged uiSchema map exposed to Studio. Manifest entries win over
+ * legacy hand-tuned entries, which win over planned stubs. The cast at the
+ * end acknowledges TypeScript can't statically prove every ActivityKind is
+ * covered after the merge — runtime coverage is enforced by the test suite
+ * + Studio's stub-fallback render path (see Preview.tsx StubActivityLazy).
+ */
+export const UI_SCHEMAS: Record<ActivityKind, Record<string, unknown>> = {
+  ...PLANNED_STUBS,
+  ...LEGACY_UI_SCHEMAS,
+  ...MANIFEST_UI_SCHEMAS,
+} as Record<ActivityKind, Record<string, unknown>>;

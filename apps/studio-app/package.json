@@ -9,6 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@kukui/activities": "workspace:*",
     "@kukui/core": "workspace:*",
     "@kukui/schemas": "workspace:*",
     "@react-three/drei": "^10.0.0",
