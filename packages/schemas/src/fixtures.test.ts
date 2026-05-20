@@ -6,6 +6,7 @@ import { SchemaRegistry, type SchemaRegistryKey } from "./index.js";
 
 const REPO_ROOT = resolve(fileURLToPath(import.meta.url), "../../../..");
 const SAMPLES_ROOT = join(REPO_ROOT, "apps", "engine-web", "public", "samples");
+const ACTIVITIES_ROOT = join(REPO_ROOT, "packages", "activities");
 
 const ACTIVITIES: SchemaRegistryKey[] = [
   "multiple-choice",
@@ -18,9 +19,17 @@ const ACTIVITIES: SchemaRegistryKey[] = [
 ];
 
 async function readFixture(activity: string, name: string): Promise<unknown> {
-  const path = join(SAMPLES_ROOT, activity, name);
-  const text = await readFile(path, "utf8");
-  return JSON.parse(text);
+  // Migrated activities live in packages/activities/<slug>/samples/.
+  // Legacy still in apps/engine-web/public/samples/<slug>/. Try new first.
+  const newPath = join(ACTIVITIES_ROOT, activity, "samples", name);
+  const oldPath = join(SAMPLES_ROOT, activity, name);
+  try {
+    const text = await readFile(newPath, "utf8");
+    return JSON.parse(text);
+  } catch {
+    const text = await readFile(oldPath, "utf8");
+    return JSON.parse(text);
+  }
 }
 
 describe("Sample fixtures validate against the schema registry", () => {
@@ -58,9 +67,13 @@ describe("Sample fixtures validate against the schema registry", () => {
       it("_invalid/ fixtures all fail to validate", async () => {
         let invalidNames: string[] = [];
         try {
-          invalidNames = await readdir(join(SAMPLES_ROOT, activity, "_invalid"));
+          invalidNames = await readdir(join(ACTIVITIES_ROOT, activity, "samples", "_invalid"));
         } catch {
-          return; // no _invalid/ dir
+          try {
+            invalidNames = await readdir(join(SAMPLES_ROOT, activity, "_invalid"));
+          } catch {
+            return; // no _invalid/ dir in either location
+          }
         }
         for (const name of invalidNames.filter((n) => n.endsWith(".json"))) {
           const json = await readFixture(activity, join("_invalid", name));
