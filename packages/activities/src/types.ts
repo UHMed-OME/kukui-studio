@@ -20,8 +20,8 @@ export interface ActivityManifest<K extends string = string> {
   uiSchema: Record<string, unknown>;
   /** Minimal valid config used as Studio's "new activity" starter template. */
   starter: unknown;
-  /** SVG icon for Studio's sidebar/picker. */
-  Icon: ComponentType<{ className?: string }>;
+  /** Optional SVG icon for Studio's sidebar/picker. When absent, Studio renders an invisible placeholder (matches today's Partial<Record<...>> behavior in activityIcons.tsx). */
+  Icon?: ComponentType<{ className?: string }>;
   /** Display name shown in Studio's catalog. */
   label: string;
   /** One-line description for Studio's catalog and learning-objective matching. */
