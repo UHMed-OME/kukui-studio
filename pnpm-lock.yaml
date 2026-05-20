@@ -251,6 +251,9 @@ importers:
 
   packages/activities:
     dependencies:
+      '@kukui/core':
+        specifier: workspace:*
+        version: link:../core
       '@kukui/schemas':
         specifier: workspace:*
         version: link:../schemas
@@ -288,6 +291,9 @@ importers:
       '@dnd-kit/utilities':
         specifier: ^3.2.2
         version: 3.2.2(react@19.2.5)
+      '@kukui/activities':
+        specifier: workspace:*
+        version: link:../activities
       '@kukui/schemas':
         specifier: workspace:*
         version: link:../schemas
