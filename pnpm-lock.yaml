@@ -371,6 +371,9 @@ importers:
 
   packages/schemas:
     dependencies:
+      '@kukui/activities':
+        specifier: workspace:*
+        version: link:../activities
       zod:
         specifier: ^4.0.0
         version: 4.4.3
