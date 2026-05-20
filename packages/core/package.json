@@ -16,7 +16,6 @@
     "./components/_shared/glb-loader": "./src/components/_shared/glb-loader.tsx",
     "./components/_shared/SketchfabViewer": "./src/components/_shared/SketchfabViewer.tsx",
     "./components/registry": "./src/components/registry.ts",
-    "./components/multiple-choice": "./src/components/multiple-choice/index.ts",
     "./components/fill-in-the-blanks": "./src/components/fill-in-the-blanks/index.ts",
     "./components/drag-and-drop": "./src/components/drag-and-drop/index.ts",
     "./components/question-set": "./src/components/question-set/index.ts",
@@ -50,6 +49,7 @@
     "./components/*": "./src/components/*"
   },
   "dependencies": {
+    "@kukui/activities": "workspace:*",
     "@kukui/schemas": "workspace:*",
     "@dnd-kit/core": "^6.3.0",
     "@dnd-kit/sortable": "^9.0.0",

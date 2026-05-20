@@ -22,7 +22,7 @@ import type { ActivityProps } from "../types.js";
 export type ActivityComponent = LazyExoticComponent<ComponentType<ActivityProps<any>>>;
 
 export const ACTIVITY_REGISTRY: Record<BuiltActivityKind, ActivityComponent> = {
-  "multiple-choice": lazy(() => import("./multiple-choice/index.js")),
+  "multiple-choice": lazy(() => import("@kukui/activities/multiple-choice/Component")),
   "fill-in-the-blanks": lazy(() => import("./fill-in-the-blanks/index.js")),
   "drag-and-drop": lazy(() => import("./drag-and-drop/index.js")),
   "question-set": lazy(() => import("./question-set/index.js")),

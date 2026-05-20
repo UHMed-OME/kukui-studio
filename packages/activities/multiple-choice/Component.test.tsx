@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import type { MultipleChoiceConfig } from "@kukui/schemas";
-import { MultipleChoice } from "./MultipleChoice.js";
+import Component from "./Component.js";
 
 const cfgSingle: MultipleChoiceConfig = {
   version: "1.0",
@@ -28,9 +28,9 @@ const cfgMulti: MultipleChoiceConfig = {
   ],
 };
 
-describe("MultipleChoice", () => {
+describe("Component", () => {
   it("renders title, question and answer buttons", () => {
-    render(<MultipleChoice config={cfgSingle} onSubmit={vi.fn()} />);
+    render(<Component config={cfgSingle} onSubmit={vi.fn()} />);
     expect(screen.getByRole("heading", { level: 1, name: /photosynthesis/i })).toBeInTheDocument();
     expect(screen.getByText(/which gas do plants take in/i)).toBeInTheDocument();
     // 3 answer buttons + Check (4 total). Filter by aria-pressed to count answers.
@@ -43,7 +43,7 @@ describe("MultipleChoice", () => {
   it("disables Check until something is selected, then submits and posts a score", async () => {
     const user = userEvent.setup();
     const onSubmit = vi.fn();
-    render(<MultipleChoice config={cfgSingle} onSubmit={onSubmit} />);
+    render(<Component config={cfgSingle} onSubmit={onSubmit} />);
     const check = screen.getByRole("button", { name: /^check$/i });
     expect(check).toBeDisabled();
     await user.click(screen.getByRole("button", { name: /carbon dioxide/i }));
@@ -55,7 +55,7 @@ describe("MultipleChoice", () => {
 
   it("shows feedback inline below the chosen answer after submit", async () => {
     const user = userEvent.setup();
-    render(<MultipleChoice config={cfgSingle} onSubmit={vi.fn()} />);
+    render(<Component config={cfgSingle} onSubmit={vi.fn()} />);
     await user.click(screen.getByRole("button", { name: /carbon dioxide/i }));
     await user.click(screen.getByRole("button", { name: /^check$/i }));
     expect(screen.getByText(/co2 fixed in calvin cycle/i)).toBeInTheDocument();
@@ -64,7 +64,7 @@ describe("MultipleChoice", () => {
   it("handles multi-correct selection (multiple aria-pressed=true after picks)", async () => {
     const user = userEvent.setup();
     const onSubmit = vi.fn();
-    render(<MultipleChoice config={cfgMulti} onSubmit={onSubmit} />);
+    render(<Component config={cfgMulti} onSubmit={onSubmit} />);
     await user.click(screen.getByRole("button", { name: /co2/i }));
     await user.click(screen.getByRole("button", { name: /^h2o/i }));
     await user.click(screen.getByRole("button", { name: /^check$/i }));
@@ -73,7 +73,7 @@ describe("MultipleChoice", () => {
 
   it("Try again returns to the answering stage when enableRetry=true", async () => {
     const user = userEvent.setup();
-    render(<MultipleChoice config={cfgSingle} onSubmit={vi.fn()} />);
+    render(<Component config={cfgSingle} onSubmit={vi.fn()} />);
     await user.click(screen.getByRole("button", { name: /oxygen/i }));
     await user.click(screen.getByRole("button", { name: /^check$/i }));
     await user.click(screen.getByRole("button", { name: /try again/i }));
@@ -83,7 +83,7 @@ describe("MultipleChoice", () => {
   it("persists state via onPersist when interactions occur", async () => {
     const user = userEvent.setup();
     const onPersist = vi.fn();
-    render(<MultipleChoice config={cfgSingle} onSubmit={vi.fn()} onPersist={onPersist} />);
+    render(<Component config={cfgSingle} onSubmit={vi.fn()} onPersist={onPersist} />);
     await user.click(screen.getByRole("button", { name: /carbon dioxide/i }));
     expect(onPersist).toHaveBeenCalled();
     const lastCall = onPersist.mock.calls.at(-1);
@@ -91,13 +91,13 @@ describe("MultipleChoice", () => {
   });
 
   it("aria-label on each option includes the state", () => {
-    render(<MultipleChoice config={cfgSingle} onSubmit={vi.fn()} />);
+    render(<Component config={cfgSingle} onSubmit={vi.fn()} />);
     const btn = screen.getByRole("button", { name: /carbon dioxide, not selected/i });
     expect(btn).toBeInTheDocument();
   });
 
   it("when headingLevel=2 is passed, the title renders as h2 (used by QS / CP nesting)", () => {
-    render(<MultipleChoice config={cfgSingle} onSubmit={vi.fn()} headingLevel={2} />);
+    render(<Component config={cfgSingle} onSubmit={vi.fn()} headingLevel={2} />);
     expect(screen.getByRole("heading", { level: 2, name: /photosynthesis/i })).toBeInTheDocument();
   });
 
@@ -108,7 +108,7 @@ describe("MultipleChoice", () => {
       ...cfgSingle,
       behaviour: { ...cfgSingle.behaviour, randomAnswers: true },
     };
-    render(<MultipleChoice config={cfg} onSubmit={onSubmit} />);
+    render(<Component config={cfg} onSubmit={onSubmit} />);
     // Selecting the correct answer by its accessible name still scores 1/1,
     // regardless of where the shuffle put it in the DOM.
     await user.click(screen.getByRole("button", { name: /carbon dioxide/i }));
@@ -135,7 +135,7 @@ describe("MultipleChoice", () => {
         { text: "Beta", correct: false },
       ],
     };
-    render(<MultipleChoice config={cfg} onSubmit={vi.fn()} />);
+    render(<Component config={cfg} onSubmit={vi.fn()} />);
     await user.click(screen.getByRole("button", { name: /alpha/i }));
     await user.click(screen.getByRole("button", { name: /^check$/i }));
     expect(screen.getByText(/greek letter a is the first/i)).toBeInTheDocument();

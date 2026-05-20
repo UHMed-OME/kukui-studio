@@ -1,9 +1,14 @@
 import { useEffect, useId, useMemo, useState } from "react";
 import type { MultipleChoiceConfig } from "@kukui/schemas";
-import type { ActivityProps } from "../../types.js";
-import { bandMessage, percentage, resolveScoring, scoreSelection } from "../../scoring.js";
-import { SafeHtml, htmlToText } from "../../safe-html.js";
-import "./MultipleChoice.css";
+import type { ActivityProps } from "@kukui/core/types";
+import {
+  bandMessage,
+  percentage,
+  resolveScoring,
+  scoreSelection,
+} from "@kukui/core/scoring";
+import { SafeHtml, htmlToText } from "@kukui/core";
+import "./Component.css";
 
 type Stage = "answering" | "submitted";
 
@@ -39,7 +44,7 @@ function shuffleIndices(n: number, seed: number): number[] {
   return out;
 }
 
-export function MultipleChoice({
+export function Component({
   config,
   onSubmit,
   onPersist,
@@ -257,3 +262,5 @@ function parseSuspend(s: string | undefined): State | null {
   }
   return null;
 }
+
+export default Component;
