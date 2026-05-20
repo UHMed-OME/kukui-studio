@@ -5,7 +5,8 @@
     "outDir": "dist",
     "composite": true,
     "tsBuildInfoFile": "dist/.tsbuildinfo",
-    "jsx": "react-jsx"
+    "jsx": "react-jsx",
+    "types": ["vite/client"]
   },
   "include": ["src/**/*", "*/**/*.ts", "*/**/*.tsx"],
   "exclude": ["dist", "**/*.test.ts", "**/*.test.tsx"],
