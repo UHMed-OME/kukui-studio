@@ -1,7 +1,7 @@
 import { defineConfig, type Plugin } from "vite";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
-import { globSync } from "node:fs";
+import { readdirSync } from "node:fs";
 import { resolve } from "node:path";
 import { activitySamplesPlugin } from "./vite-plugin-activity-samples.js";
 
@@ -71,10 +71,12 @@ export default defineConfig({
       // Maps slug → absolute path. Replaces a previously-maintained ~26-entry
       // list; adding a new activity now just needs a sibling .html file.
       input: Object.fromEntries(
-        globSync("*.html", { cwd: __dirname }).map((file) => [
-          file.replace(/\.html$/, ""),
-          resolve(__dirname, file),
-        ]),
+        readdirSync(__dirname)
+          .filter((file) => file.endsWith(".html"))
+          .map((file) => [
+            file.replace(/\.html$/, ""),
+            resolve(__dirname, file),
+          ]),
       ),
     },
   },
