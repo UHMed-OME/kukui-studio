@@ -1,190 +1,233 @@
-# `/kukui` scaffold mode — design
+# Activity co-location refactor + simplified `/kukui` scaffold — design
 
-**Status:** design approved 2026-05-15 — implementation plan pending
-**File touched:** [.claude/commands/kukui.md](../../../.claude/commands/kukui.md)
+**Status:** design approved 2026-05-20 — implementation plan pending
+**Supersedes:** earlier draft of this file that scoped only the scaffold command without the architectural refactor.
 
 ## Why this exists
 
-Kukui already has ~30 activity types. Adding a new one is a 8–13-file change across four packages — schema, registry, core types, components, Studio uiSchemas/starters, samples, fixture test, and (optionally) Live variant. Doing it by hand is error-prone: a typo in `BuiltActivityKind` breaks every consumer; a missing `uiSchemas.ts` entry makes Studio silently fall back to raw JSON; a forgotten `fixtures.test.ts` append leaves the negative-case net incomplete.
+Today, adding a new activity type to Kukui touches **~16 files across four packages and two apps** — and that's before counting the per-activity HTML entry and (optional) Live variant. The actual surface, mapped from the codebase as of 2026-05-20:
 
-At the same time, **most learning objectives don't need a new activity type** — the catalog is broad. A scaffold command that doesn't actively resist premature new-type creation will balloon the codebase.
+| Layer | Files touched | Hand-authored content (not auto-derivable) |
+|---|---|---|
+| Schemas | `schemas/src/index.ts` (3 edits) | the schema itself |
+| Core types | `core/src/types.ts` (2 edits), `core/src/components/registry.ts` (1 edit) | — |
+| Engine | `apps/engine-web/vite.config.ts:68-95` (hardcoded list), `apps/engine-web/{slug}.html` (per-slug HTML) | — |
+| Studio | `apps/studio-app/src/{App.tsx, Preview.tsx, uiSchemas.ts, starters.ts, activityIcons.tsx, EditCanvas/index.tsx}` | Bloom level, uiSchema (per-field labels), starter config, icon SVG, optional visual editor |
+| Tests | `packages/schemas/src/fixtures.test.ts:10-18` | (already drifted: hardcodes 7 of 25 activities) |
+| Packaging | `packaging/pack-scorm.js:56-82` (hardcoded list) | — |
+| Live | `apps/live-mode/src/LiveHost.tsx:189-224` (if-chain dispatch), `apps/live-mode/src/activities/{Slug}Live.tsx`, `use{Slug}.ts` | the Live component, the hook |
 
-The revised `/kukui` is therefore two things:
-1. **An instructional-design partner** — given a learning objective, propose 2–4 designs (mixing existing types and novel patterns), each with fit, cost, and "how it fits in Kukui" framing.
-2. **A scaffold generator** — when novel work is genuinely warranted, write the full vertical slice with type-check gates between batches.
+Most of the friction comes from **synchronized enumeration**: arrays, switch maps, and lazy-import objects that must each be edited when a new kind is added. A scaffold command that hides this complexity behind a CLI helps individuals, but doesn't fix the underlying architecture — and the `fixtures.test.ts` drift (only 7 of 25 activities covered today) is direct evidence that hand-maintained registries lose to entropy.
 
-The existing content-authoring flow (today's Steps 1–5) is preserved and reachable from both the top-level branch and from the scaffold flow's S4.
+## The core idea
 
-## Top-level shape
+**Co-locate everything per activity into `packages/activities/{slug}/`, and replace enumeration with auto-discovery.** A new activity becomes one folder with a small set of files, and downstream consumers (engine, Studio, packaging, fixtures test, Live registry) auto-discover via Vite's `import.meta.glob` or filesystem reads.
 
-`/kukui` opens with a single mode question:
+### Per-activity folder shape
 
 ```
-A) Author content for an EXISTING activity type   → content flow (today's Steps 1–5)
-B) Scaffold a NEW activity type                   → scaffold flow (S1–S5)
+packages/activities/{slug}/
+├── manifest.ts             # exports `activity` — the contract (see below)
+├── schema.ts               # Zod schema; manifest re-exports
+├── Component.tsx           # engine-mode React component
+├── Component.test.tsx      # smoke test + per-activity behavior tests
+├── Component.css           # optional, only if Tailwind tokens insufficient
+├── samples/
+│   ├── basic.json          # required; tested for parse-success
+│   ├── full.json           # optional; tested for parse-success
+│   └── _invalid/           # optional; tested for parse-failure
+│       └── *.json
+├── ui-schema.ts            # RJSF uiSchema for Studio (often substantial; hand-authored)
+├── starter.ts              # minimal valid config for Studio's "new activity" template
+├── icon.tsx                # SVG icon for Studio's sidebar/picker
+├── editor.tsx              # optional: visual canvas editor for Studio (lazy)
+└── meta.ts                 # bloom level, description, label, live flag
 ```
 
-`$ARGUMENTS` can pre-select but doesn't bypass the question:
-- Slug present in `SchemaRegistry` → default A
-- Slug absent or unknown → default B
-- No args → no default; ask
+### The manifest contract
 
-Both flows share two helpers:
-- **Read the canon** — `docs/design-system.md`, `docs/ux-design.md`, `docs/research-foundations.md`, plus the relevant schema file (content flow) or `stub.ts` + 1–2 representative schemas (scaffold flow)
-- **Save & confirm coda** — same shape: file tree + preview command + follow-ups
+`manifest.ts` exports a single `activity` object that downstream consumers read:
 
-The command's `allowed-tools` frontmatter expands from `Read, Write, Bash, Glob` to add `Edit` and `Grep`.
+```ts
+import { lazy } from "react";
+import type { ActivityManifest } from "@kukui/activities/types";
+import { schema } from "./schema.js";
+import uiSchema from "./ui-schema.js";
+import starter from "./starter.js";
+import { Icon } from "./icon.js";
+import { label, description, bloom, live } from "./meta.js";
 
-## Scaffold flow (Steps S1–S5)
+export const activity: ActivityManifest<"multiple-choice"> = {
+  kind: "multiple-choice",
+  schema,
+  Component: lazy(() => import("./Component.js")),
+  uiSchema,
+  starter,
+  Icon,
+  label, description, bloom, live,
+  Editor: lazy(() => import("./editor.js")), // optional
+};
+```
 
-### S1 — Learning objective intake
+The `ActivityManifest` type pins `kind` as a string literal, so when manifests are collected into a glob-imported map, the union `BuiltActivityKind` is derivable:
 
-One open-ended question: *"What should the learner be able to do after this activity?"* Accept a paragraph; one optional follow-up only when truly needed (target learner level, async vs. live, time budget).
+```ts
+const modules = import.meta.glob<{ activity: ActivityManifest }>("./*/manifest.ts", { eager: true });
+export const ACTIVITY_MANIFESTS = Object.fromEntries(
+  Object.values(modules).map((m) => [m.activity.kind, m.activity]),
+);
+export type BuiltActivityKind = (typeof ACTIVITY_MANIFESTS)[keyof typeof ACTIVITY_MANIFESTS]["kind"];
+```
 
-`$ARGUMENTS` containing an objective-shaped string is used directly.
+Lazy components stay lazy (Vite chunk-splits per import), so engine bundle size is unchanged.
 
-### S2 — Proposal slate
+### What lives where (after refactor)
 
-The command reads JSDoc/title from every `packages/schemas/src/*.ts` (excluding `index.ts`, `appearance.ts`, `migrate.ts`, `scoring.ts`, `stub.ts`, `url.ts`, `*.test.ts`) and surfaces 2–4 proposals. Each is labeled `[EXISTING: slug]` or `[NOVEL: proposed-slug]` and includes:
+| Concern | Owns the data | Reads the data |
+|---|---|---|
+| Schema | `packages/activities/{slug}/schema.ts` | `@kukui/activities` glob; `@kukui/schemas` re-exports for back-compat |
+| Component | `packages/activities/{slug}/Component.tsx` (lazy) | `@kukui/activities` glob; `@kukui/core` re-exports `ACTIVITY_REGISTRY` |
+| Sample fixtures | `packages/activities/{slug}/samples/*.json` | `fixtures.test.ts` (glob); engine-web loader (glob → emitted as static assets at build) |
+| uiSchema | `packages/activities/{slug}/ui-schema.ts` | Studio's `uiSchemas.ts` becomes a barrel that exports `Object.fromEntries(...glob)` |
+| Starter | `packages/activities/{slug}/starter.ts` | same pattern for `starters.ts` |
+| Icon | `packages/activities/{slug}/icon.tsx` | same pattern for `activityIcons.tsx` |
+| Bloom / label / description / live-flag | `packages/activities/{slug}/meta.ts` | derived map in `@kukui/activities` |
+| Visual editor (optional) | `packages/activities/{slug}/editor.tsx` (lazy) | Studio's `EditCanvas/index.tsx` builds `EDITORS` map from manifests with `Editor` set |
 
-- **Inherits / Why novel** — what comes pre-built vs. what new ground is being broken
-- **Fit** — one-line pedagogical rationale tied to the S1 objective
-- **How it fits in Kukui** — multi-line block covering:
-  - **Modes:** Engine (async, SCORM) / Studio authoring / Live classroom — each marked ✓ / partial / ✗
-  - **Leverages:** specific `_shared/` primitives, `ScoringSchema` discriminator, design-system tokens
-  - **Adds:** (novel only) what new capability this introduces to the platform; cite `docs/research-foundations.md` section when relevant
-  - **Authoring:** can it be authored entirely via Studio's GUI? Or does it need code?
-  - **Tracking:** how it reports to SCORM `cmi.interactions`
-- **Cost** — minutes-to-author for existing; days-to-build for novel
-- **Reusable across modules?** — explicit yes/no on whether the pattern generalizes (novel only)
+### What stays in apps/live-mode
 
-**The slate biases toward existing.** When any existing type cleanly covers the objective, the command says so plainly and recommends authoring content rather than scaffolding. Novel proposals come with honest cost vs. reusability framing.
+Per the explore-agent recommendation, **Live variants do not move**. The eager-dispatch latency and app-level room/CRDT coupling make co-location costly without a clear win. Instead, Live gets the same registry treatment **within its current folder**:
 
-**Novel-proposal guard:** before finalizing a `[NOVEL]` option, the command checks the proposed slug against existing slugs for prefix overlap or single-edit distance. Too close → demote to "Fork `existing-slug`" instead.
+```
+apps/live-mode/src/activities/
+├── index.ts                  # barrel: collects { kind, Component, useHook? } from this dir
+├── StrawPollLive.tsx
+├── useStrawPoll.ts
+├── ... (per-activity files unchanged)
+```
 
-### S3 — Branch on choice
+`LiveHost.tsx`'s if-chain dispatch becomes a `Record<ActivityKind, LiveActivityManifest>` lookup. Each Live file gains an `export const liveActivity = { kind, Component, useHook? }` and the barrel collects via glob. The `meta.ts` `live: true` flag in the engine-side manifest signals Studio that a Live mode exists; cross-reference is enforced by a small test that every `live: true` kind has a matching entry in Live's barrel.
 
-| User picks | Flow |
-|---|---|
-| `[EXISTING]` proposal | Bail out of scaffold mode → drop into content-authoring flow (Steps 1–5) on that slug |
-| `[NOVEL]` proposal | Continue to S3a (schema axes) → S3b (field walk) |
-| "None of these" | One open description prompt → pattern-match against existing 30 again with the new info → if still no fit, scaffold novel |
+## Phased plan
 
-### S3a — Schema axes (novel mode, proposal-driven)
+The refactor is large enough that big-bang risks weeks of churn. Eight phases, each independently shippable, with the green-build invariant held between them.
 
-The command **infers** four axes from the objective and proposal description, presents each with reasoning, and asks for confirmation (or override). No question is asked unless the inference is genuinely ambiguous.
+### Phase 1 — Manifest contract + infrastructure (no migration)
 
-- **Scoring model:** `binary` / `per-item` / `weighted` / `free-response` / `none` (maps to `ScoringSchema` discriminator in `packages/schemas/src/scoring.ts`)
-- **Input modality:** `click` / `drag` / `type` / `draw` / `speak` / `multi`
-- **Layout:** `single-canvas` / `list-of-items` / `multi-step` / `split-pane`
-- **Media dependencies (multi-select):** `image` / `audio` / `video` / `3d-model` / `none`
+**Goal:** create the new package, define the contract, prove the glob discovery works.
 
-These selections drive the starter schema skeleton and the component shell.
+- Add `packages/activities/` to `pnpm-workspace.yaml`, `tsconfig.json` references
+- Create `packages/activities/src/types.ts` (the `ActivityManifest<K>` type)
+- Create `packages/activities/src/index.ts` with the empty glob (returns `{}` until a manifest is added)
+- Add `packages/activities/tsconfig.json` (composite, references `@kukui/schemas`)
+- Add minimal vitest setup
+- No activities migrated. `pnpm typecheck && pnpm test` stays green.
 
-### S3b — Field walk
+### Phase 2 — Pilot: migrate `multiple-choice` end-to-end
 
-Starting from a generated schema draft (boilerplate `version` / `title` / `appearance` / `scoring` auto-filled silently), walk **only the meaningful custom fields** with "tweak or accept?" per field. Each comes with a one-line preview. If the user says "I don't know what shape that should be," show 2–3 example shapes from existing schemas with trade-offs, then ask.
+**Goal:** verify the contract under real load before bulk migration.
 
-Cross-check referential integrity manually (Zod won't catch these): every `correctZones[]` ID matches a defined drop-zone ID, every `requiredOverlayIds[]` matches an overlay ID, every nested sub-config is itself valid.
+- Create `packages/activities/multiple-choice/{manifest.ts, schema.ts, Component.tsx, Component.test.tsx, samples/basic.json, samples/full.json, ui-schema.ts, starter.ts, icon.tsx, meta.ts}` by moving + adapting from current locations
+- Update `packages/schemas/src/index.ts` to import multiple-choice's schema from `@kukui/activities/multiple-choice` (re-export for back-compat with existing imports)
+- Update `packages/core/src/components/registry.ts` to import the lazy component from `@kukui/activities/multiple-choice`
+- Update `apps/studio-app/src/uiSchemas.ts` to read `multiple-choice` entry from `@kukui/activities`
+- Same for `starters.ts`, `activityIcons.tsx`, App.tsx's BLOOM_BY_KIND
+- Verify: `pnpm typecheck`, `pnpm test`, `pnpm dev` (engine + Studio), `node packaging/pack-scorm.js --activity multiple-choice`
 
-### S4 — Sample fixture via content-flow hand-off
+### Phase 3 — Studio aggregator gut
 
-Once the schema compiles (after Batch 1 — see below), enter the **existing content-authoring flow** on the new slug to produce `basic.json`. This is the convergence point: scaffold creates type infrastructure, content flow fills it in.
+**Goal:** Studio's per-kind files become thin barrels that aggregate manifests, not data files.
 
-Single MC at the end of S4: also generate `full.json` (uses all optional fields) and `_invalid/missing-required-field.json` (negative-case for `fixtures.test.ts`)? Default: yes — it's cheap insurance.
+- `apps/studio-app/src/uiSchemas.ts` → builds `UI_SCHEMAS` from `ACTIVITY_MANIFESTS`; still ~30 lines for `COMMON` fragment plus a fold over manifests. Falls back to the `PLANNED_ACTIVITY_KINDS` stub generator for unmigrated kinds (which all kinds except `multiple-choice` are, at this phase).
+- Same shape for `starters.ts`, `activityIcons.tsx`
+- App.tsx: `BLOOM_BY_KIND` derived from `Object.fromEntries(manifests.map(m => [m.kind, m.bloom]))`, with a hand-curated override map for kinds whose Bloom assignment needs designer judgment
+- `Preview.tsx` and EditCanvas: read `Editor` from manifests where present
+- After this phase, **only multiple-choice is fully manifest-driven; everything else still uses the old enumeration**. The aggregators handle both during the transition.
 
-### S5 — Live variant gate
+### Phase 4 — Engine + packaging + fixtures-test auto-discovery
 
-Pre-answer based on the activity's nature: single-learner / reflection / async-only → suggest "no" with reasoning. Discussion / discrimination / sequencing → suggest "yes." Let user override either way.
+**Goal:** replace hardcoded slug lists in build pipelines.
 
-## Write batches with type-check gates
+- `apps/engine-web/vite.config.ts:68-95`: replace `rollupOptions.input` with a glob over `apps/engine-web/*.html` (which is what the list mirrors anyway). Activities continue to live as one HTML file each per Vite's static-multi-page pattern.
+- `packaging/pack-scorm.js:56-82`: replace `PHASE_1_ACTIVITIES` with `readdirSync('packages/activities/').filter(isDir)`
+- `packages/schemas/src/fixtures.test.ts:10-18`: replace `ACTIVITIES` array with auto-discovery — `readdir('packages/activities/')`. **Closes the existing drift** where only 7 of 25 activities are sample-tested today.
+- `apps/engine-web/src/main.tsx:17` and per-slug HTML `data-config="samples/{slug}/basic.json"`: samples need to be served as static assets, so add an `engine-web` Vite plugin that copies (or symlinks) `packages/activities/*/samples/` into `apps/engine-web/public/samples/` at dev/build time. Alternative: change loader to use `import.meta.glob` over packages/activities and remove the public/ samples directory entirely — preferred, but slightly more invasive.
 
-Each batch is cumulative — built on the green state of the prior. Failure surfaces the error and waits for direction; never auto-revert.
+### Phase 5 — Bulk migration of remaining 24 activities
 
-### Batch 1 — Schema + kind union
+**Goal:** mechanical move of each remaining activity into `packages/activities/{slug}/`.
 
-**Writes:**
-- `packages/schemas/src/{slug}.ts` — full Zod schema, JSDoc cites the S1 objective verbatim
-- `packages/schemas/src/index.ts` — three edits: re-export line (top block), import line (second block), entry in `SchemaRegistry` map
-- `packages/core/src/types.ts` — slug added to `BuiltActivityKind` union and `BUILT_ACTIVITY_KINDS` readonly array
+- One activity per commit, or batched into thematic groups (e.g. "the 6 live-flagged ones," "the 8 vision-based ones") for readable PRs
+- For each: copy schema/component/test/samples into the new folder; create manifest.ts; hand-port uiSchema/starter/icon entries from the old central files into per-activity files; delete now-orphan central entries
+- The aggregators from Phase 3 absorb each migration without code changes — they already loop over whatever's in `ACTIVITY_MANIFESTS`
+- After Phase 5, central enumeration files are empty (or contain only the `COMMON` uiSchema fragment, etc.). They can be inlined into the aggregators or deleted entirely.
 
-**Gate:** `pnpm typecheck` (root-level; runs `tsc -b` across all project references — catches cross-package issues we'd miss with per-package checks).
-Also run `pnpm test packages/schemas --exclude '**/fixtures.test.ts'` (will fail otherwise until Batch 3 lands `basic.json`).
+### Phase 6 — Live-mode registry refactor
 
-### Batch 2 — Component + registry + test stub
+**Goal:** replace `LiveHost.tsx`'s if-chain dispatch (`LiveHost.tsx:189-224`) with a barrel + map lookup, mirroring the engine pattern within Live's own folder.
 
-**Writes:**
-- `packages/core/src/components/{slug}/index.ts` — barrel re-exporting the component as default
-- `packages/core/src/components/{slug}/{PascalSlug}.tsx` — layout-stable shell per S3a axes, imports inferred type from `@kukui/schemas`, accepts `ActivityProps<TConfig>`. Every interactive element ships with `min-h-11 min-w-11`. Comment header references `docs/design-system.md`.
-- `packages/core/src/components/{slug}/{PascalSlug}.test.tsx` — minimal Vitest render-smoke test + TODO list of behaviors to cover
-- `packages/core/src/components/{slug}/{PascalSlug}.css` — only if S3a indicates custom visual is unavoidable (3D scene, slider, etc.); most activities skip this
-- `packages/core/src/components/registry.ts` — one edit: lazy-import entry in `ACTIVITY_REGISTRY`
+- Add `export const liveActivity = { kind, Component, useHook? }` to each `*Live.tsx`
+- Create `apps/live-mode/src/activities/index.ts` that globs `*Live.tsx` and builds `LIVE_ACTIVITY_REGISTRY: Record<ActivityKind, LiveActivityManifest>`
+- Rewrite LiveHost dispatch to `const Live = LIVE_ACTIVITY_REGISTRY[kind]; return <Live.Component .../>` — still eager-imported (no lazy chunks) per Live's latency constraint
+- Add a cross-reference test in `packages/activities` that every manifest with `live: true` has a matching entry in `LIVE_ACTIVITY_REGISTRY`. The test reads the Live barrel at test time and asserts the intersection.
 
-**Gate:** `pnpm typecheck`
+### Phase 7 — Cleanup & docs
 
-### Batch 3 — Samples + Studio integration + fixture test
+**Goal:** remove transitional shims; update documentation; lock in the new pattern.
 
-**Writes:**
-- `apps/engine-web/public/samples/{slug}/basic.json` — produced by S4's content-flow hand-off
-- Optional (if user opted in): `full.json`, `_invalid/missing-required-field.json`
-- `apps/studio-app/src/uiSchemas.ts` — explicit entry for the new built kind (the auto-stub loop only covers `PLANNED_ACTIVITY_KINDS`). Generated from Zod shape; surface a follow-up TODO that this needs hand-tuning for nicer field labels.
-- `apps/studio-app/src/starters.ts` — starter entry pointing at `basic.json`'s content shape
-- `packages/schemas/src/fixtures.test.ts` — append new slug to the `ACTIVITIES` array
+- Remove `packages/schemas/src/index.ts`'s explicit per-kind imports if they're now just re-exports from `@kukui/activities`; keep the barrel if downstream consumers still need it for back-compat
+- Remove `apps/engine-web/public/samples/` once Phase 4's alternative landed
+- Update `CLAUDE.md` "Where things live" section to point at the new layout
+- Update `AGENTS.md`, the activity authoring section in `docs/ux-design.md`
+- Update `.claude/commands/kukui.md` to reflect the new layout (next phase ships the rewrite)
 
-**Gate:** `pnpm typecheck && pnpm test packages/schemas` (fixture test now covers the new slug). Studio app's typecheck is included in the root `tsc -b` so no separate command is needed.
+### Phase 8 — Rewrite `/kukui` scaffold command
 
-### Batch 4 — Live variant (only if S5 said yes)
+**Goal:** the scaffold command from the original spec, but now trivial.
 
-**Writes:**
-- `apps/live-mode/src/activities/{PascalSlug}Live.tsx` — skeleton importing the engine component + Live wrapper; Trystero/Y.js hooks stubbed but not implemented
-- `apps/live-mode/src/activities/use{PascalSlug}.ts` — only if shared P2P state shape is needed (decide per S5 reasoning)
-- Conventions from `apps/live-mode/src/activities/CLAUDE.md` applied
+The two-mode shape from the original draft survives — Step 0 still branches between "author content for existing activity" and "scaffold new activity." The S1–S5 interview design also survives unchanged. What changes is the **write phase**:
 
-**Gate:** `pnpm typecheck` (covers `@kukui/live-mode` via project references)
+Instead of four batches with type-check gates across 8–13 files, the command writes **one folder, 9–11 files in it**, no edits to shared files:
 
-## Confirmation step
+```
+packages/activities/{slug}/
+├── manifest.ts
+├── schema.ts
+├── Component.tsx
+├── Component.test.tsx
+├── samples/basic.json
+├── ui-schema.ts            # generated starter; user TODO to polish
+├── starter.ts              # derived from schema defaults
+├── icon.tsx                # placeholder rectangle; user TODO to draw
+└── meta.ts                 # populated from S1 (label, description, bloom guess)
+```
 
-End-of-run report prints:
-1. **File tree** of everything created/edited (grouped by batch)
-2. **Preview command:** `pnpm dev:studio` → Studio's Import button → select `basic.json`
-3. **Follow-up TODOs the user owes:**
-   - "uiSchema needs hand-tuning at `apps/studio-app/src/uiSchemas.ts:NNN`"
-   - "Component is layout-stable but inert — wire up interactions"
-   - "Live wrapper has stub hooks — implement CRDT shape" (if Batch 4 ran)
-4. Optionally: offer to run `git status` so the user can stage in sensible chunks
+Single typecheck-and-test gate at the end. Optional Live variant adds two files to `apps/live-mode/src/activities/`. The objective-driven discovery flow (S1 objective intake + S2 proposal slate with "How it fits in Kukui" + S3 schema-axis confirmation) is unchanged.
 
-## Guards and edge cases
+The end-of-run TODO list shrinks dramatically: hand-tune `ui-schema.ts`, draw real `icon.tsx`, wire component interactions. No registry edits to remember.
 
-**Slug validation (pre-flight):**
-- Lowercase kebab-case, ASCII only
-- No leading `_` (reserved for `_shared`, `_stub`, `_live-preview`, `_invalid`)
-- Reject if already in `SchemaRegistry` — route to content-authoring on existing slug
-- Reject if `PascalSlug` collides with a JSX intrinsic (`Img`, `Input`, `Label`, etc.) — propose an alternative
-- Warn (not block) on single-edit distance from any existing slug — ask "are these the same activity?"
+## Hard rules preserved
 
-**Partial-scaffold detection:**
-Before scaffolding, grep for the slug in `SchemaRegistry`, `BUILT_ACTIVITY_KINDS`, and `ACTIVITY_REGISTRY`. If found in some but not all, refuse with a file list and ask the user to either finish manually or pick a new slug. The command does not resume half-finished previous runs — too easy to clobber hand-tuned code.
-
-**Failure handling at gates:**
-- Typecheck/test failure → surface first 20 lines of stderr, identify likely cause, offer (a) fix in place, (b) roll back this batch via `git checkout -- <files>`, (c) abort and leave as-is. Default is (c); destructive options require explicit confirmation.
-- Never auto-revert.
-
-**Hard rules (CLAUDE.md):**
-- Never write "H5P" in any generated file or comment
-- Never invent design-token values — only reference tokens defined in `docs/design-system.md`
-- WCAG 2.2 AA non-negotiable in generated component skeletons (44×44 hit targets, layout-stable state changes, color paired with text/icon/position)
-- Generated JSDoc cites the S1 objective verbatim
+All hard rules from CLAUDE.md and the original spec carry forward unchanged:
+- No "H5P" in any generated file or comment
+- No invented design-token values
+- WCAG 2.2 AA in component skeletons (44×44 hit targets, layout-stable state, color paired with text/icon/position)
+- Generated JSDoc cites the learning objective verbatim
 
 ## Non-goals
 
-- **No resume from half-finished state.** A failed or interrupted run leaves files on disk; the user finishes manually or removes them.
-- **No auto-generation of polished uiSchemas.** The generated entry is a Zod-derived starting point; hand-tuning is a tracked follow-up TODO, not a scaffold deliverable.
-- **No real component behavior.** The scaffold produces a green, inert vertical slice. Interactions, state, and visual polish are explicit follow-up work.
-- **No xAPI / cmi5 emission.** SCORM 1.2 only, per the stack pin.
-- **No AI assist within the command** for content generation (per CLAUDE.md: "AI assist for Studio: skipped indefinitely"). The interview is interactive Q&A, not generative.
+- **No migration of Live variants into packages/activities/**. Live stays in `apps/live-mode/src/activities/` with a barrel registry of its own.
+- **No retroactive coverage backfill** during the refactor itself. The Phase 4 fixture-test auto-discovery will surface kinds without `basic.json` (currently 18 of 25 activities lack a tested fixture); adding those fixtures is follow-up work, not blocking.
+- **No AI-generated uiSchema polish.** The scaffold's generated `ui-schema.ts` is a starting point. Hand-tuning is the contract.
+- **No retiring the `PLANNED_ACTIVITY_KINDS` extension point.** It still serves as the "in catalog but not built" tier; only the Studio aggregators stop being the source of truth for built-kind enumeration.
 
-## Out of scope (future revisions)
+## Risks and mitigations
 
-- A separate `/kukui promote` command for moving a slug from `PLANNED_ACTIVITY_KINDS` to a full built kind. Currently `PLANNED_ACTIVITY_KINDS` is empty and the scaffold creates built kinds directly.
-- A "remove activity" command — counterpart to scaffold for cleanly retiring a type.
-- Integration with Notion sync to pre-populate the S1 objective from a linked spec page.
+| Risk | Mitigation |
+|---|---|
+| `import.meta.glob` with eager mode breaks tree-shaking → engine bundles bloat | Use lazy glob for Component/Editor (default in Vite); eager only for tiny manifest objects (schema refs, label, bloom). Verified pattern in existing `apps/studio-app/src/pages/content.ts`. |
+| TS project references break with circular deps between `packages/activities` and `packages/core` | `@kukui/activities` depends on `@kukui/schemas` only. `@kukui/core`'s ACTIVITY_REGISTRY re-exports from `@kukui/activities`, never the reverse. One-way arrow. |
+| Phase 5 bulk migration introduces subtle regressions per kind | Phase 2's pilot proves the contract end-to-end. Phase 3's aggregators tolerate mixed (manifest + legacy) state for the duration of Phase 5. Each kind's migration is one commit, easy to revert. |
+| `BuiltActivityKind` union becomes `string` in some contexts | Force `kind` to be `const`-asserted in each manifest. Use `as const satisfies ActivityManifest` pattern. Add a typecheck test that the union has the expected member count. |
+| Engine HTML pages reference samples via relative URLs (`samples/{slug}/basic.json`) — moving samples breaks this | Phase 4 either (a) keeps a Vite plugin that copies packages/activities/*/samples into engine-web public/ at build time, or (b) switches the loader to glob-based JSON imports. Path (a) is safer; (b) is cleaner. Decide at Phase 4. |
+| The 18 of 25 untested-fixture activities surface as test failures the moment fixtures.test.ts auto-discovers | Either backfill the missing `basic.json` files before merging Phase 4 (mechanical work), or scope the auto-discovery to "test every fixture that exists, don't require every activity to have one" — the latter is the right move during transition. |
