@@ -14,7 +14,17 @@ export interface ActivityManifest<K extends string = string> {
   kind: K;
   /** Zod schema that validates this activity's JSON config. */
   schema: z.ZodTypeAny;
-  /** Engine-mode React component, lazy-loaded so Vite chunk-splits per activity. */
+  /**
+   * Engine-mode React component, lazy-loaded so Vite chunk-splits per activity.
+   *
+   * Typed as `ComponentType<unknown>` to keep this package a TS leaf (a
+   * properly-typed `ComponentType<ActivityProps<TConfig>>` would require
+   * importing from `@kukui/core`, deepening the workspace dep cycle).
+   * Each manifest needs an `as unknown as ComponentType<unknown>` cast on
+   * its lazy import; this is sound because the engine validates configs
+   * via Zod at the boundary before rendering. Widen when shared primitives
+   * (ActivityProps etc.) migrate to a leaf package.
+   */
   Component: LazyExoticComponent<ComponentType<unknown>>;
   /** RJSF uiSchema for Studio's form editor. */
   uiSchema: Record<string, unknown>;
