@@ -163,6 +163,9 @@ importers:
 
   apps/studio-app:
     dependencies:
+      '@kukui/activities':
+        specifier: workspace:*
+        version: link:../../packages/activities
       '@kukui/core':
         specifier: workspace:*
         version: link:../../packages/core
