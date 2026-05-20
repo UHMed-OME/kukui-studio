@@ -10,6 +10,7 @@ import {
 } from "react";
 import { Link } from "react-router-dom";
 import { type ActivityKind, PLANNED_ACTIVITY_KINDS } from "@kukui/core";
+import { ACTIVITY_MANIFESTS } from "@kukui/activities";
 import {
   SchemaRegistry,
   type SchemaRegistryKey,
@@ -76,7 +77,7 @@ type BloomLevel = "remember" | "understand" | "apply" | "analyze" | "evaluate" |
 
 // Quiz-style kinds (multiple-choice, FIB, question-set) live in @kukui/core
 // but aren't surfaced in Studio, so they're omitted from the map.
-const BLOOM_BY_KIND: Partial<Record<ActivityKind, BloomLevel>> = {
+const LEGACY_BLOOM: Partial<Record<ActivityKind, BloomLevel>> = {
   // Remember — recall facts, terminology
   flashcards: "remember",
   "matching-pairs": "remember",
@@ -112,6 +113,16 @@ const BLOOM_BY_KIND: Partial<Record<ActivityKind, BloomLevel>> = {
   "word-cloud": "remember",
   // Create — produce original work
   "audio-recording": "create",
+};
+
+const MANIFEST_BLOOM: Partial<Record<ActivityKind, BloomLevel>> =
+  Object.fromEntries(
+    Object.values(ACTIVITY_MANIFESTS).map((m) => [m.kind, m.bloom]),
+  );
+
+const BLOOM_BY_KIND: Partial<Record<ActivityKind, BloomLevel>> = {
+  ...LEGACY_BLOOM,
+  ...MANIFEST_BLOOM,
 };
 
 const BLOOM_ORDER: readonly BloomLevel[] = [
