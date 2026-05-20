@@ -2,6 +2,7 @@ import { defineConfig, type Plugin } from "vite";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 import { resolve } from "node:path";
+import { activitySamplesPlugin } from "./vite-plugin-activity-samples.js";
 
 /**
  * Inject a tight Content-Security-Policy <meta> tag into every engine-web
@@ -62,7 +63,7 @@ export default defineConfig({
   // Relative base so the same Vite build can be packaged into SCORM zips that
   // D2L serves from a sub-path. Without this, `/assets/...` 404s on the LMS.
   base: "./",
-  plugins: [react(), tailwindcss(), cspMetaPlugin()],
+  plugins: [react(), activitySamplesPlugin(), tailwindcss(), cspMetaPlugin()],
   build: {
     rollupOptions: {
       input: {
