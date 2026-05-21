@@ -82,7 +82,6 @@ const LEGACY_BLOOM: Partial<Record<ActivityKind, BloomLevel>> = {
   crossword: "remember",
   // Understand — identify, explain, classify
   "hotspot-2d": "understand",
-  "anatomy-labeling": "understand",
   "highlight-text": "understand",
   // Apply — use procedures in new contexts
   "hotspot-3d": "apply",

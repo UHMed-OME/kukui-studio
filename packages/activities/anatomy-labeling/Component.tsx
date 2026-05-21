@@ -11,11 +11,11 @@ import {
   type DragEndEvent,
   type DragStartEvent,
 } from "@dnd-kit/core";
-import type { AnatomyLabelingConfig } from "@kukui/schemas";
-import type { ActivityProps } from "../../types.js";
-import { SafeHtml } from "../../safe-html.js";
-import { resolveScoring } from "../../scoring.js";
-import "./AnatomyLabeling.css";
+import type { AnatomyLabelingConfig } from "./schema.js";
+import type { ActivityProps } from "@kukui/core/types";
+import { SafeHtml } from "@kukui/core";
+import { resolveScoring } from "@kukui/core/scoring";
+import "./Component.css";
 
 type Stage = "answering" | "submitted";
 
@@ -40,7 +40,7 @@ type State = {
  * second label on an occupied target replaces the first (which falls back
  * into the tray).
  */
-export function AnatomyLabeling({
+export default function Component({
   config,
   onSubmit,
   onPersist,

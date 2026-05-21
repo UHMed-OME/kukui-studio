@@ -14,7 +14,6 @@
     "./virtual-tour": "./src/virtual-tour.ts",
     "./highlight-text": "./src/highlight-text.ts",
     "./image-comparison-slider": "./src/image-comparison-slider.ts",
-    "./anatomy-labeling": "./src/anatomy-labeling.ts",
     "./branching-scenario": "./src/branching-scenario.ts",
     "./image-annotation": "./src/image-annotation.ts",
     "./concept-map": "./src/concept-map.ts",

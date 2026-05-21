@@ -332,56 +332,6 @@ const LEGACY_UI_SCHEMAS: Partial<Record<ActivityKind, Record<string, unknown>>> 
     },
   },
 
-  "anatomy-labeling": {
-    ...COMMON,
-    "ui:order": ["title", "prompt", "image", "labels", "targets", "behaviour", "ui", "*"],
-    title: TITLE,
-    author: AUTHOR,
-    prompt: f("Prompt", "Tells the learner what to label.", {
-      "ui:widget": "html",
-      "ui:options": { rows: 3 },
-    }),
-    image: {
-      "ui:title": "Image",
-      src: f("Image", "Paste a link or upload a file. Uploaded files are saved inside the activity.", {
-        "ui:widget": "file",
-        "ui:options": { accept: "image/*", maxSizeMb: 5, kind: "image" },
-      }),
-      alt: f(
-        "Alt text (required)",
-        "Description for screen-reader users. Required for accessibility — describe what the diagram shows in one short sentence.",
-      ),
-    },
-    labels: {
-      "ui:title": "Labels",
-      "ui:help": "Each label declares which target id is its correct home.",
-      items: {
-        id: HIDDEN,
-        text: f("Label text"),
-        correctTargetId: f("Correct target id", "Must match one of the target ids declared below."),
-      },
-    },
-    targets: {
-      "ui:title": "Targets (numbered points)",
-      "ui:help": "Each target is a small numbered circle on the image.",
-      items: {
-        id: HIDDEN,
-        position: { "ui:title": "Position (0..1)", x: f("X (left)"), y: f("Y (top)") },
-      },
-    },
-    behaviour: {
-      "ui:title": "Activity behaviour",
-      enableRetry: BEHAVIOUR_RETRY,
-      singlePoint: BEHAVIOUR_SINGLEPOINT,
-      randomizeLabels: f("Shuffle labels", "Tray order randomized on load."),
-    },
-    ui: {
-      "ui:title": "Button label overrides",
-      checkAnswerButton: f("'Check' button text"),
-      tryAgainButton: f("'Try Again' button text"),
-    },
-  },
-
   "image-comparison-slider": {
     ...COMMON,
     "ui:order": ["title", "prompt", "before", "after", "initialPosition", "behaviour", "ui", "*"],

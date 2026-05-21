@@ -1,8 +1,8 @@
 import { describe, expect, it, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import type { AnatomyLabelingConfig } from "@kukui/schemas";
-import { AnatomyLabeling } from "./AnatomyLabeling.js";
+import type { AnatomyLabelingConfig } from "./schema.js";
+import Component from "./Component.js";
 
 const cfg: AnatomyLabelingConfig = {
   version: "1.0",
@@ -27,7 +27,7 @@ const cfg: AnatomyLabelingConfig = {
 
 describe("AnatomyLabeling — keyboard fallback path", () => {
   it("renders title, prompt, image, and a fallback select per label", () => {
-    render(<AnatomyLabeling config={cfg} onSubmit={vi.fn()} />);
+    render(<Component config={cfg} onSubmit={vi.fn()} />);
     expect(
       screen.getByRole("heading", { level: 1, name: /label the parts of a neuron/i }),
     ).toBeInTheDocument();
@@ -43,7 +43,7 @@ describe("AnatomyLabeling — keyboard fallback path", () => {
 
   it("Check is disabled until every label is placed via the keyboard select", async () => {
     const user = userEvent.setup();
-    render(<AnatomyLabeling config={cfg} onSubmit={vi.fn()} />);
+    render(<Component config={cfg} onSubmit={vi.fn()} />);
     const check = screen.getByRole("button", { name: /check/i });
     expect(check).toBeDisabled();
     const selects = screen.getAllByRole("combobox");
@@ -57,7 +57,7 @@ describe("AnatomyLabeling — keyboard fallback path", () => {
   it("all-correct placements score full marks (1 point per label)", async () => {
     const user = userEvent.setup();
     const onSubmit = vi.fn();
-    render(<AnatomyLabeling config={cfg} onSubmit={onSubmit} />);
+    render(<Component config={cfg} onSubmit={onSubmit} />);
     const selects = screen.getAllByRole("combobox");
     await user.selectOptions(selects[0]!, "t-1");
     await user.selectOptions(selects[1]!, "t-2");
@@ -73,7 +73,7 @@ describe("AnatomyLabeling — keyboard fallback path", () => {
   it("partial correctness yields partial credit by default", async () => {
     const user = userEvent.setup();
     const onSubmit = vi.fn();
-    render(<AnatomyLabeling config={cfg} onSubmit={onSubmit} />);
+    render(<Component config={cfg} onSubmit={onSubmit} />);
     const selects = screen.getAllByRole("combobox");
     await user.selectOptions(selects[0]!, "t-1"); // correct
     await user.selectOptions(selects[1]!, "t-3"); // wrong
@@ -95,7 +95,7 @@ describe("AnatomyLabeling — keyboard fallback path", () => {
       ...cfg,
       behaviour: { ...cfg.behaviour, singlePoint: true },
     };
-    render(<AnatomyLabeling config={sp} onSubmit={onSubmit} />);
+    render(<Component config={sp} onSubmit={onSubmit} />);
     const selects = screen.getAllByRole("combobox");
     await user.selectOptions(selects[0]!, "t-1");
     await user.selectOptions(selects[1]!, "t-3"); // wrong
@@ -110,7 +110,7 @@ describe("AnatomyLabeling — keyboard fallback path", () => {
 
   it("Try again resets all placements", async () => {
     const user = userEvent.setup();
-    render(<AnatomyLabeling config={cfg} onSubmit={vi.fn()} />);
+    render(<Component config={cfg} onSubmit={vi.fn()} />);
     const selects = screen.getAllByRole("combobox");
     await user.selectOptions(selects[0]!, "t-1");
     await user.selectOptions(selects[1]!, "t-2");
@@ -128,7 +128,7 @@ describe("AnatomyLabeling — keyboard fallback path", () => {
   it("persists state via onPersist on each placement change", async () => {
     const user = userEvent.setup();
     const onPersist = vi.fn();
-    render(<AnatomyLabeling config={cfg} onSubmit={vi.fn()} onPersist={onPersist} />);
+    render(<Component config={cfg} onSubmit={vi.fn()} onPersist={onPersist} />);
     const selects = screen.getAllByRole("combobox");
     await user.selectOptions(selects[0]!, "t-1");
     expect(onPersist).toHaveBeenCalled();
@@ -138,7 +138,7 @@ describe("AnatomyLabeling — keyboard fallback path", () => {
 
   it("placing a second label on an occupied target bumps the first label back to the tray", async () => {
     const user = userEvent.setup();
-    render(<AnatomyLabeling config={cfg} onSubmit={vi.fn()} />);
+    render(<Component config={cfg} onSubmit={vi.fn()} />);
     const selects = screen.getAllByRole("combobox");
     // Both labels claim target t-1; second placement should win, first reverts.
     await user.selectOptions(selects[0]!, "t-1");
@@ -149,7 +149,7 @@ describe("AnatomyLabeling — keyboard fallback path", () => {
 
   it("after submit, shows a correction note beside wrongly-placed labels", async () => {
     const user = userEvent.setup();
-    render(<AnatomyLabeling config={cfg} onSubmit={vi.fn()} />);
+    render(<Component config={cfg} onSubmit={vi.fn()} />);
     const selects = screen.getAllByRole("combobox");
     await user.selectOptions(selects[0]!, "t-2"); // dendrite wrong; correct is t-1 (target 1)
     await user.selectOptions(selects[1]!, "t-3"); // soma wrong; correct is t-2 (target 2)

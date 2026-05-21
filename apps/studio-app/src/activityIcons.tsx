@@ -36,19 +36,6 @@ function Hotspot2dIcon(props: SVGProps<SVGSVGElement>) {
   );
 }
 
-function AnatomyLabelingIcon(props: SVGProps<SVGSVGElement>) {
-  return (
-    <svg {...baseProps} {...props}>
-      <circle cx="9" cy="6" r="2.5" />
-      <path d="M9 9v6" />
-      <path d="M6 13l3-2 3 2" />
-      <path d="M7 20l2-3 2 3" />
-      <line x1="13" y1="6" x2="17" y2="6" />
-      <rect x="17" y="4" width="4" height="4" rx="0.5" />
-    </svg>
-  );
-}
-
 function HighlightTextIcon(props: SVGProps<SVGSVGElement>) {
   return (
     <svg {...baseProps} {...props}>
@@ -282,7 +269,6 @@ type IconComponent = (props: SVGProps<SVGSVGElement>) => JSX.Element;
 
 const LEGACY_ICONS: Partial<Record<ActivityKind, IconComponent>> = {
   "hotspot-2d": Hotspot2dIcon,
-  "anatomy-labeling": AnatomyLabelingIcon,
   "highlight-text": HighlightTextIcon,
   "hotspot-3d": Hotspot3dIcon,
   "virtual-tour": VirtualTourIcon,

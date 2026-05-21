@@ -135,24 +135,6 @@ const LEGACY_STARTERS: Partial<Record<ActivityKind, unknown>> = {
     completion: { mode: "manual" },
     behaviour: { enableRetry: true },
   },
-  "anatomy-labeling": {
-    version: "1.0",
-    title: "Anatomy Labeling",
-    prompt: "Drag each label onto the correct target.",
-    image: {
-      src: PLACEHOLDER_IMAGE,
-      alt: "Diagram placeholder",
-    },
-    labels: [
-      { id: "l1", text: "Label A", correctTargetId: "t1" },
-      { id: "l2", text: "Label B", correctTargetId: "t2" },
-    ],
-    targets: [
-      { id: "t1", position: { x: 0.3, y: 0.4 } },
-      { id: "t2", position: { x: 0.7, y: 0.4 } },
-    ],
-    behaviour: { enableRetry: true },
-  },
   "image-comparison-slider": {
     version: "1.0",
     title: "Image Comparison",
@@ -487,7 +469,6 @@ const LEGACY_LABELS: Partial<Record<ActivityKind, string>> = {
   "hotspot-3d": "3D Hotspots",
   "hotspot-2d": "Image Hotspots",
   "virtual-tour": "Virtual Tour",
-  "anatomy-labeling": "Anatomy Labeling",
   "image-comparison-slider": "Image Comparison Slider",
   "highlight-text": "Highlight Text Spans",
   "branching-scenario": "Branching Scenario",

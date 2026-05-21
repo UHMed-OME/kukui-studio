@@ -22,7 +22,6 @@
     "./components/hotspot-3d": "./src/components/hotspot-3d/index.ts",
     "./components/hotspot-2d": "./src/components/hotspot-2d/index.ts",
     "./components/virtual-tour": "./src/components/virtual-tour/index.ts",
-    "./components/anatomy-labeling": "./src/components/anatomy-labeling/index.ts",
     "./components/sequence-steps": "./src/components/sequence-steps/index.ts",
     "./components/matching-pairs": "./src/components/matching-pairs/index.ts",
     "./components/highlight-text": "./src/components/highlight-text/index.ts",
