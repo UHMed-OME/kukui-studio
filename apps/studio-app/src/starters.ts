@@ -33,21 +33,6 @@ const PLANNED_STARTERS = Object.fromEntries(
 ) as Record<(typeof PLANNED_ACTIVITY_KINDS)[number], unknown>;
 
 const LEGACY_STARTERS: Partial<Record<ActivityKind, unknown>> = {
-  "confidence-meter": {
-    version: "1.0",
-    title: "Confidence rating",
-    prompt: "How confident are you about today's material?",
-    scale: {
-      min: 0,
-      max: 100,
-      step: 1,
-      lowLabel: "Lost",
-      highLabel: "Could teach it",
-      unit: "%",
-    },
-    behaviour: { showLiveResultsToStudents: true, allowChangeRating: true },
-    live: { joinKey: "", adminKey: "", signaling: "nostr" },
-  },
   "word-cloud": {
     version: "1.0",
     title: "Word cloud",
@@ -155,7 +140,6 @@ export const STARTERS: Record<ActivityKind, unknown> = {
 } as Record<ActivityKind, unknown>;
 
 const LEGACY_LABELS: Partial<Record<ActivityKind, string>> = {
-  "confidence-meter": "Confidence Meter (Live)",
   "word-cloud": "Word Cloud (Live)",
   "qa-board": "Q&A Board (Live)",
   "quick-quiz": "Quick Quiz (Live)",

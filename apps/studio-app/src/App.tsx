@@ -79,7 +79,6 @@ type BloomLevel = "remember" | "understand" | "apply" | "analyze" | "evaluate" |
 // but aren't surfaced in Studio, so they're omitted from the map.
 const LEGACY_BLOOM: Partial<Record<ActivityKind, BloomLevel>> = {
   // Evaluate — judge, critique, decide
-  "confidence-meter": "evaluate",
   "qa-board": "evaluate",
   "quick-quiz": "evaluate",
   // "isometric-chatroom": "evaluate", — hidden from the Studio sidebar

@@ -104,37 +104,6 @@ const LIVE_SETTINGS_UI = {
 } as const;
 
 const LEGACY_UI_SCHEMAS: Partial<Record<ActivityKind, Record<string, unknown>>> = {
-  "confidence-meter": {
-    ...COMMON,
-    "ui:order": ["title", "prompt", "scale", "behaviour", "live", "ui", "*"],
-    title: TITLE,
-    author: AUTHOR,
-    prompt: f(
-      "Prompt",
-      "The question students rate themselves against. One sentence works best.",
-      { "ui:widget": "textarea", "ui:options": { rows: 2 } },
-    ),
-    scale: {
-      "ui:title": "Slider scale",
-      min: f("Minimum", "Default 0."),
-      max: f("Maximum", "Default 100. Higher = more confident."),
-      step: f("Step size", "Increment per slider tick. 1 is fine for percentages; 5 or 10 for coarser scales."),
-      lowLabel: f("Low-end label", "Tooltip shown next to the slider's minimum (e.g. 'Lost')."),
-      highLabel: f("High-end label", "Tooltip shown next to the slider's maximum (e.g. 'Could teach it back')."),
-      unit: f("Unit", "Suffix shown beside numeric values (e.g. '%'). Optional."),
-    },
-    behaviour: {
-      "ui:title": "Behaviour",
-      showLiveResultsToStudents: f(
-        "Show live histogram to students",
-        "Default on. Turn off for blind ratings (students don't see classmates' values until reveal).",
-      ),
-      allowChangeRating: f("Allow students to change their rating", "Default on; last drag wins."),
-    },
-    ui: { "ui:title": "Button label overrides" },
-    live: LIVE_SETTINGS_UI,
-  },
-
   "word-cloud": {
     ...COMMON,
     "ui:order": [

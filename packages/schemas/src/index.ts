@@ -102,7 +102,7 @@ export {
 export {
   ConfidenceMeterConfigSchema,
   type ConfidenceMeterConfig,
-} from "./confidence-meter.js";
+} from "@kukui/activities/confidence-meter/schema";
 export { WordCloudConfigSchema, type WordCloudConfig } from "./word-cloud.js";
 export { QABoardConfigSchema, type QABoardConfig } from "./qa-board.js";
 export { QuickQuizConfigSchema, type QuickQuizConfig } from "./quick-quiz.js";
@@ -137,7 +137,7 @@ import { DDxTreeConfigSchema } from "@kukui/activities/ddx-tree/schema";
 import { OSCEConfigSchema } from "@kukui/activities/osce/schema";
 import { CrosswordConfigSchema } from "@kukui/activities/crossword/schema";
 import { StrawPollConfigSchema } from "@kukui/activities/straw-poll/schema";
-import { ConfidenceMeterConfigSchema } from "./confidence-meter.js";
+import { ConfidenceMeterConfigSchema } from "@kukui/activities/confidence-meter/schema";
 import { WordCloudConfigSchema } from "./word-cloud.js";
 import { QABoardConfigSchema } from "./qa-board.js";
 import { QuickQuizConfigSchema } from "./quick-quiz.js";

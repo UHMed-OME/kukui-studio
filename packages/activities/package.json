@@ -18,6 +18,8 @@
     "./categorization/schema": "./categorization/schema.ts",
     "./concept-map/Component": "./concept-map/Component.tsx",
     "./concept-map/schema": "./concept-map/schema.ts",
+    "./confidence-meter/Component": "./confidence-meter/Component.tsx",
+    "./confidence-meter/schema": "./confidence-meter/schema.ts",
     "./crossword/Component": "./crossword/Component.tsx",
     "./crossword/schema": "./crossword/schema.ts",
     "./ddx-tree/Component": "./ddx-tree/Component.tsx",

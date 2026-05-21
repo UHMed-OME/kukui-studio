@@ -26,17 +26,6 @@ const baseProps: SVGProps<SVGSVGElement> = {
   "aria-hidden": true,
 };
 
-function ConfidenceMeterIcon(props: SVGProps<SVGSVGElement>) {
-  return (
-    <svg {...baseProps} {...props}>
-      <line x1="4" y1="16" x2="20" y2="16" />
-      <path d="M4 16 a8 8 0 0 1 16 0" />
-      <line x1="12" y1="16" x2="17" y2="11" />
-      <circle cx="12" cy="16" r="1.5" fill="currentColor" stroke="none" />
-    </svg>
-  );
-}
-
 function WordCloudIcon(props: SVGProps<SVGSVGElement>) {
   return (
     <svg {...baseProps} {...props}>
@@ -86,7 +75,6 @@ function IsometricChatroomIcon(props: SVGProps<SVGSVGElement>) {
 type IconComponent = (props: SVGProps<SVGSVGElement>) => JSX.Element;
 
 const LEGACY_ICONS: Partial<Record<ActivityKind, IconComponent>> = {
-  "confidence-meter": ConfidenceMeterIcon,
   "word-cloud": WordCloudIcon,
   "qa-board": QABoardIcon,
   "quick-quiz": QuickQuizIcon,
