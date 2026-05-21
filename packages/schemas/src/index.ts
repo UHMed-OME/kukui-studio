@@ -23,7 +23,10 @@ export {
   Hotspot2DConfigSchema,
   type Hotspot2DConfig,
 } from "@kukui/activities/hotspot-2d/schema";
-export { VirtualTourConfigSchema, type VirtualTourConfig } from "./virtual-tour.js";
+export {
+  VirtualTourConfigSchema,
+  type VirtualTourConfig,
+} from "@kukui/activities/virtual-tour/schema";
 export {
   CategorizationConfigSchema,
   type CategorizationConfig,
@@ -112,7 +115,7 @@ import { DragAndDropConfigSchema } from "@kukui/activities/drag-and-drop/schema"
 import { QuestionSetConfigSchema } from "@kukui/activities/question-set/schema";
 import { Hotspot3DConfigSchema } from "@kukui/activities/hotspot-3d/schema";
 import { Hotspot2DConfigSchema } from "@kukui/activities/hotspot-2d/schema";
-import { VirtualTourConfigSchema } from "./virtual-tour.js";
+import { VirtualTourConfigSchema } from "@kukui/activities/virtual-tour/schema";
 import { CategorizationConfigSchema } from "@kukui/activities/categorization/schema";
 import { SequenceStepsConfigSchema } from "@kukui/activities/sequence-steps/schema";
 import { ReflectionPromptConfigSchema } from "@kukui/activities/reflection-prompt/schema";

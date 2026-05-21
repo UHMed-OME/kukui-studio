@@ -2,12 +2,11 @@ import { Suspense, useEffect, useId, useMemo, useRef, useState } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { useGLTF } from "@react-three/drei";
 import * as THREE from "three";
-import { HotspotPin } from "../_shared/HotspotPin.js";
-import type { VirtualTourConfig } from "@kukui/schemas";
-import type { ActivityProps } from "../../types.js";
-import { SafeHtml } from "../../safe-html.js";
-import { tokens } from "../../tokens.js";
-import "./VirtualTour.css";
+import { HotspotPin } from "@kukui/core/components/_shared/HotspotPin";
+import type { VirtualTourConfig } from "./schema.js";
+import type { ActivityProps } from "@kukui/core/types";
+import { SafeHtml } from "@kukui/core";
+import "./Component.css";
 
 type Stage = "exploring" | "submitted";
 
@@ -25,7 +24,7 @@ type State = {
  * the overlay as visited and opens its content panel exactly the same as a
  * 3D click would.
  */
-export function VirtualTour({
+export default function Component({
   config,
   onSubmit,
   onPersist,

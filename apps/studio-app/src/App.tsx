@@ -78,8 +78,6 @@ type BloomLevel = "remember" | "understand" | "apply" | "analyze" | "evaluate" |
 // Quiz-style kinds (multiple-choice, FIB, question-set) live in @kukui/core
 // but aren't surfaced in Studio, so they're omitted from the map.
 const LEGACY_BLOOM: Partial<Record<ActivityKind, BloomLevel>> = {
-  // Apply — use procedures in new contexts
-  "virtual-tour": "apply",
   // Evaluate — judge, critique, decide
   "straw-poll": "evaluate",
   "confidence-meter": "evaluate",

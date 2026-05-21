@@ -1,8 +1,8 @@
 import { describe, expect, it, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import type { VirtualTourConfig } from "@kukui/schemas";
-import { VirtualTour } from "./VirtualTour.js";
+import type { VirtualTourConfig } from "./schema.js";
+import Component from "./Component.js";
 
 const cfg: VirtualTourConfig = {
   version: "1.0",
@@ -32,7 +32,7 @@ const cfgVisitAll: VirtualTourConfig = {
 
 describe("VirtualTour — fallback list", () => {
   it("renders title and one button per overlay", () => {
-    render(<VirtualTour config={cfg} onSubmit={vi.fn()} />);
+    render(<Component config={cfg} onSubmit={vi.fn()} />);
     expect(screen.getByRole("heading", { level: 1, name: /test tour/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /stop one/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /stop two/i })).toBeInTheDocument();
@@ -40,7 +40,7 @@ describe("VirtualTour — fallback list", () => {
 
   it("clicking a fallback button opens the overlay panel and marks visited", async () => {
     const user = userEvent.setup();
-    render(<VirtualTour config={cfg} onSubmit={vi.fn()} />);
+    render(<Component config={cfg} onSubmit={vi.fn()} />);
     await user.click(screen.getByRole("button", { name: /stop one/i }));
     expect(screen.getByRole("dialog")).toBeInTheDocument();
     expect(screen.getByText(/welcome to stop one/i)).toBeInTheDocument();
@@ -50,7 +50,7 @@ describe("VirtualTour — fallback list", () => {
   it("manual completion: Done button calls onSubmit with visited count", async () => {
     const user = userEvent.setup();
     const onSubmit = vi.fn();
-    render(<VirtualTour config={cfg} onSubmit={onSubmit} />);
+    render(<Component config={cfg} onSubmit={onSubmit} />);
     await user.click(screen.getByRole("button", { name: /stop one/i }));
     await user.click(screen.getByRole("button", { name: /^done$/i }));
     expect(onSubmit.mock.calls[0]?.[0]).toMatchObject({ raw: 1, max: 2, success: false });
@@ -59,7 +59,7 @@ describe("VirtualTour — fallback list", () => {
   it("visitAll auto-submits when every required overlay is visited", async () => {
     const user = userEvent.setup();
     const onSubmit = vi.fn();
-    render(<VirtualTour config={cfgVisitAll} onSubmit={onSubmit} />);
+    render(<Component config={cfgVisitAll} onSubmit={onSubmit} />);
     await user.click(screen.getByRole("button", { name: /stop one/i }));
     expect(onSubmit).not.toHaveBeenCalled();
     await user.click(screen.getByRole("button", { name: /stop two/i }));
@@ -70,7 +70,7 @@ describe("VirtualTour — fallback list", () => {
   it("persists state via onPersist on each visit", async () => {
     const user = userEvent.setup();
     const onPersist = vi.fn();
-    render(<VirtualTour config={cfg} onSubmit={vi.fn()} onPersist={onPersist} />);
+    render(<Component config={cfg} onSubmit={vi.fn()} onPersist={onPersist} />);
     await user.click(screen.getByRole("button", { name: /stop one/i }));
     expect(onPersist).toHaveBeenCalled();
     const last = onPersist.mock.calls.at(-1)?.[0] as string;

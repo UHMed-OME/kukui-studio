@@ -26,16 +26,6 @@ const baseProps: SVGProps<SVGSVGElement> = {
   "aria-hidden": true,
 };
 
-function VirtualTourIcon(props: SVGProps<SVGSVGElement>) {
-  return (
-    <svg {...baseProps} {...props}>
-      <ellipse cx="12" cy="12" rx="9" ry="4" />
-      <polyline points="6 9 3 12 6 15" />
-      <polyline points="18 9 21 12 18 15" />
-    </svg>
-  );
-}
-
 function ConfidenceMeterIcon(props: SVGProps<SVGSVGElement>) {
   return (
     <svg {...baseProps} {...props}>
@@ -110,7 +100,6 @@ function IsometricChatroomIcon(props: SVGProps<SVGSVGElement>) {
 type IconComponent = (props: SVGProps<SVGSVGElement>) => JSX.Element;
 
 const LEGACY_ICONS: Partial<Record<ActivityKind, IconComponent>> = {
-  "virtual-tour": VirtualTourIcon,
   "straw-poll": StrawPollIcon,
   "confidence-meter": ConfidenceMeterIcon,
   "word-cloud": WordCloudIcon,

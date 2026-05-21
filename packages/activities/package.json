@@ -54,6 +54,8 @@
     "./reflection-prompt/schema": "./reflection-prompt/schema.ts",
     "./sequence-steps/Component": "./sequence-steps/Component.tsx",
     "./sequence-steps/schema": "./sequence-steps/schema.ts",
+    "./virtual-tour/Component": "./virtual-tour/Component.tsx",
+    "./virtual-tour/schema": "./virtual-tour/schema.ts",
     "./*": "./*"
   },
   "dependencies": {

@@ -33,27 +33,6 @@ const PLANNED_STARTERS = Object.fromEntries(
 ) as Record<(typeof PLANNED_ACTIVITY_KINDS)[number], unknown>;
 
 const LEGACY_STARTERS: Partial<Record<ActivityKind, unknown>> = {
-  "virtual-tour": {
-    version: "1.0",
-    title: "Virtual Tour",
-    scene: {
-      // Bundled placeholder (CC BY 4.0) — see comment under hotspot-3d.
-      src: "samples/virtual-tour/box.glb",
-      spawn: { position: { x: 0, y: 0.5, z: 4 } },
-    },
-    movement: { speed: 2 },
-    overlays: [
-      {
-        id: "stop-1",
-        title: "Point of interest",
-        position: { x: 0, y: 0, z: 0 },
-        trigger: "click",
-        content: [{ type: "text", html: "Describe this point." }],
-      },
-    ],
-    completion: { mode: "manual" },
-    behaviour: { enableRetry: true },
-  },
   "straw-poll": {
     version: "1.0",
     title: "Pulse check",
@@ -201,7 +180,6 @@ export const STARTERS: Record<ActivityKind, unknown> = {
 } as Record<ActivityKind, unknown>;
 
 const LEGACY_LABELS: Partial<Record<ActivityKind, string>> = {
-  "virtual-tour": "Virtual Tour",
   "straw-poll": "Straw Poll (Live)",
   "confidence-meter": "Confidence Meter (Live)",
   "word-cloud": "Word Cloud (Live)",
