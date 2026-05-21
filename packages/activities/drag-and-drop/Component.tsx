@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useId, useMemo, useReducer } from "react";
 import type { DragAndDropConfig } from "@kukui/schemas";
-import type { ActivityProps } from "../../types.js";
-import { resolveScoring } from "../../scoring.js";
+import type { ActivityProps } from "@kukui/core/types";
+import { resolveScoring } from "@kukui/core/scoring";
 import { DragLayer } from "./DragLayer.js";
 import { TapLayer } from "./TapLayer.js";
 import {
@@ -14,7 +14,7 @@ import {
   type State,
 } from "./state.js";
 import { useInteractionMode } from "./useInteractionMode.js";
-import "./DragAndDrop.css";
+import "./Component.css";
 
 /**
  * Top-level Drag-and-Drop activity. Owns the state machine; delegates
@@ -28,7 +28,7 @@ import "./DragAndDrop.css";
  * below 760 px the runtime always uses TapLayer regardless of override.
  */
 
-export function DragAndDrop({
+export function Component({
   config,
   onSubmit,
   onPersist,
@@ -168,3 +168,5 @@ export function DragAndDrop({
     />
   );
 }
+
+export default Component;

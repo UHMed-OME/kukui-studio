@@ -33,18 +33,6 @@ const PLANNED_STARTERS = Object.fromEntries(
 ) as Record<(typeof PLANNED_ACTIVITY_KINDS)[number], unknown>;
 
 const LEGACY_STARTERS: Partial<Record<ActivityKind, unknown>> = {
-  "drag-and-drop": {
-    version: "1.0",
-    title: "Drag and Drop",
-    prompt: "Drag each label to its matching drop zone, then tap Check to score your answers.",
-    background: {
-      src: PLACEHOLDER_IMAGE,
-      alt: "Replace this placeholder with a description of your background image",
-    },
-    draggables: [{ id: "d1", label: "Label A", correctZones: ["z1"] }],
-    dropZones: [{ id: "z1", label: "Zone 1", rect: { x: 0.4, y: 0.4, w: 0.2, h: 0.2 } }],
-    behaviour: { enableRetry: true },
-  },
   "question-set": {
     version: "1.0",
     title: "Question Set",
@@ -547,7 +535,6 @@ export const STARTERS: Record<ActivityKind, unknown> = {
 } as Record<ActivityKind, unknown>;
 
 const LEGACY_LABELS: Partial<Record<ActivityKind, string>> = {
-  "drag-and-drop": "Drag and Drop",
   "question-set": "Question Set",
   "hotspot-3d": "3D Hotspots",
   "hotspot-2d": "Image Hotspots",

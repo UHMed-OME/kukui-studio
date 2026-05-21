@@ -8,7 +8,6 @@
   "exports": {
     ".": "./src/index.ts",
     "./shared": "./src/shared.ts",
-    "./drag-and-drop": "./src/drag-and-drop.ts",
     "./question-set": "./src/question-set.ts",
     "./hotspot-3d": "./src/hotspot-3d.ts",
     "./hotspot-2d": "./src/hotspot-2d.ts",

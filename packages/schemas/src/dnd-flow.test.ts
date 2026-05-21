@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { DragAndDropConfigSchema } from "./drag-and-drop.js";
+import { DragAndDropConfigSchema } from "@kukui/activities/drag-and-drop/schema";
 import { migrateToScoring, syncLegacyFields } from "./migrate.js";
 import type { Scoring } from "./scoring.js";
 

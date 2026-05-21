@@ -78,23 +78,6 @@ function HighlightTextIcon(props: SVGProps<SVGSVGElement>) {
   );
 }
 
-function DragAndDropIcon(props: SVGProps<SVGSVGElement>) {
-  return (
-    <svg {...baseProps} {...props}>
-      <rect x="3" y="3" width="9" height="9" rx="1" />
-      <rect
-        x="12"
-        y="12"
-        width="9"
-        height="9"
-        rx="1"
-        strokeDasharray="2 2"
-      />
-      <path d="M8 12l5 5" />
-    </svg>
-  );
-}
-
 function SequenceStepsIcon(props: SVGProps<SVGSVGElement>) {
   return (
     <svg {...baseProps} {...props}>
@@ -360,7 +343,6 @@ const LEGACY_ICONS: Partial<Record<ActivityKind, IconComponent>> = {
   "hotspot-2d": Hotspot2dIcon,
   "anatomy-labeling": AnatomyLabelingIcon,
   "highlight-text": HighlightTextIcon,
-  "drag-and-drop": DragAndDropIcon,
   "sequence-steps": SequenceStepsIcon,
   categorization: CategorizationIcon,
   "hotspot-3d": Hotspot3dIcon,

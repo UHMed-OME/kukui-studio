@@ -1,7 +1,7 @@
 import { useId, useMemo, type CSSProperties, type ReactNode } from "react";
 import type { DragAndDropConfig } from "@kukui/schemas";
-import { resolveScoring } from "../../scoring.js";
-import { SafeHtml } from "../../safe-html.js";
+import { resolveScoring } from "@kukui/core/scoring";
+import { SafeHtml } from "@kukui/core";
 import { Chip } from "./Chip.js";
 import { Zone } from "./Zone.js";
 import type { State } from "./state.js";

@@ -8,6 +8,8 @@
   "exports": {
     ".": "./src/index.ts",
     "./types": "./src/types.ts",
+    "./drag-and-drop/Component": "./drag-and-drop/Component.tsx",
+    "./drag-and-drop/schema": "./drag-and-drop/schema.ts",
     "./fill-in-the-blanks/Component": "./fill-in-the-blanks/Component.tsx",
     "./fill-in-the-blanks/schema": "./fill-in-the-blanks/schema.ts",
     "./multiple-choice/Component": "./multiple-choice/Component.tsx",
@@ -15,6 +17,8 @@
     "./*": "./*"
   },
   "dependencies": {
+    "@dnd-kit/core": "^6.3.0",
+    "@dnd-kit/utilities": "^3.2.2",
     "@kukui/core": "workspace:*",
     "@kukui/schemas": "workspace:*",
     "react": "^19.0.0",

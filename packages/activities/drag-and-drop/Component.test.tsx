@@ -2,7 +2,7 @@ import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
 import { act, fireEvent, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import type { DragAndDropConfig } from "@kukui/schemas";
-import { DragAndDrop } from "./DragAndDrop.js";
+import Component from "./Component.js";
 
 /**
  * NOTE on interaction mode in tests:
@@ -45,7 +45,7 @@ const tapCfg: DragAndDropConfig = {
 
 describe("DragAndDrop — tap-to-place flow", () => {
   it("renders board heading + tray chips + check button", () => {
-    render(<DragAndDrop config={tapCfg} onSubmit={vi.fn()} />);
+    render(<Component config={tapCfg} onSubmit={vi.fn()} />);
     expect(
       screen.getByRole("heading", { level: 1, name: /plant cell/i }),
     ).toBeInTheDocument();
@@ -56,7 +56,7 @@ describe("DragAndDrop — tap-to-place flow", () => {
 
   it("tap chip → tap zone places the chip", async () => {
     const user = userEvent.setup();
-    render(<DragAndDrop config={tapCfg} onSubmit={vi.fn()} />);
+    render(<Component config={tapCfg} onSubmit={vi.fn()} />);
     const chip = screen.getByRole("button", { name: /^nucleus$/i });
     await user.click(chip);
     expect(chip).toHaveAttribute("aria-pressed", "true");
@@ -69,7 +69,7 @@ describe("DragAndDrop — tap-to-place flow", () => {
 
   it("keyboard: Space selects chip, Space on zone places it", async () => {
     const user = userEvent.setup();
-    render(<DragAndDrop config={tapCfg} onSubmit={vi.fn()} />);
+    render(<Component config={tapCfg} onSubmit={vi.fn()} />);
     const chip = screen.getByRole("button", { name: /^nucleus$/i });
     chip.focus();
     await user.keyboard(" ");
@@ -83,7 +83,7 @@ describe("DragAndDrop — tap-to-place flow", () => {
 
   it("Check is disabled until every chip is placed", async () => {
     const user = userEvent.setup();
-    render(<DragAndDrop config={tapCfg} onSubmit={vi.fn()} />);
+    render(<Component config={tapCfg} onSubmit={vi.fn()} />);
     const check = screen.getByRole("button", { name: /check/i });
     expect(check).toBeDisabled();
     await user.click(screen.getByRole("button", { name: /^nucleus$/i }));
@@ -97,7 +97,7 @@ describe("DragAndDrop — tap-to-place flow", () => {
   it("all-correct placements score full marks", async () => {
     const user = userEvent.setup();
     const onSubmit = vi.fn();
-    render(<DragAndDrop config={tapCfg} onSubmit={onSubmit} />);
+    render(<Component config={tapCfg} onSubmit={onSubmit} />);
     await user.click(screen.getByRole("button", { name: /^nucleus$/i }));
     await user.click(screen.getByRole("button", { name: /nucleus zone/i }));
     await user.click(screen.getByRole("button", { name: /^chloroplast$/i }));
@@ -108,7 +108,7 @@ describe("DragAndDrop — tap-to-place flow", () => {
 
   it("Try again resets all placements", async () => {
     const user = userEvent.setup();
-    render(<DragAndDrop config={tapCfg} onSubmit={vi.fn()} />);
+    render(<Component config={tapCfg} onSubmit={vi.fn()} />);
     await user.click(screen.getByRole("button", { name: /^nucleus$/i }));
     await user.click(screen.getByRole("button", { name: /nucleus zone/i }));
     await user.click(screen.getByRole("button", { name: /^chloroplast$/i }));
@@ -123,7 +123,7 @@ describe("DragAndDrop — tap-to-place flow", () => {
 
   it("respects zone capacity (default 1) — second chip can't enter the same zone", async () => {
     const user = userEvent.setup();
-    render(<DragAndDrop config={tapCfg} onSubmit={vi.fn()} />);
+    render(<Component config={tapCfg} onSubmit={vi.fn()} />);
     await user.click(screen.getByRole("button", { name: /^nucleus$/i }));
     await user.click(screen.getByRole("button", { name: /nucleus zone/i }));
     // Now try to place the second chip into the same zone.
@@ -138,7 +138,7 @@ describe("DragAndDrop — tap-to-place flow", () => {
   it("persists state via onPersist on each placement", async () => {
     const user = userEvent.setup();
     const onPersist = vi.fn();
-    render(<DragAndDrop config={tapCfg} onSubmit={vi.fn()} onPersist={onPersist} />);
+    render(<Component config={tapCfg} onSubmit={vi.fn()} onPersist={onPersist} />);
     await user.click(screen.getByRole("button", { name: /^nucleus$/i }));
     await user.click(screen.getByRole("button", { name: /nucleus zone/i }));
     expect(onPersist).toHaveBeenCalled();
@@ -153,7 +153,7 @@ describe("DragAndDrop — tap-to-place flow", () => {
       ...tapCfg,
       behaviour: { ...tapCfg.behaviour, singlePoint: true },
     };
-    render(<DragAndDrop config={singlePointCfg} onSubmit={onSubmit} />);
+    render(<Component config={singlePointCfg} onSubmit={onSubmit} />);
     // Place correctly.
     await user.click(screen.getByRole("button", { name: /^nucleus$/i }));
     await user.click(screen.getByRole("button", { name: /nucleus zone/i }));
@@ -172,7 +172,7 @@ describe("DragAndDrop — resume from suspend data", () => {
       selectedChipId: null,
       attempts: 0,
     });
-    render(<DragAndDrop config={tapCfg} onSubmit={vi.fn()} suspendData={suspend} />);
+    render(<Component config={tapCfg} onSubmit={vi.fn()} suspendData={suspend} />);
     const zone = screen.getByRole("button", { name: /nucleus zone/i });
     expect(within(zone).queryByText("Nucleus")).not.toBeNull();
   });
@@ -185,7 +185,7 @@ describe("DragAndDrop — Show solution", () => {
       ...tapCfg,
       behaviour: { ...tapCfg.behaviour, enableSolutionsButton: true },
     };
-    render(<DragAndDrop config={solutionCfg} onSubmit={vi.fn()} />);
+    render(<Component config={solutionCfg} onSubmit={vi.fn()} />);
     // Submit with wrong placements.
     await user.click(screen.getByRole("button", { name: /^nucleus$/i }));
     await user.click(screen.getByRole("button", { name: /chloroplast zone/i })); // wrong
@@ -298,7 +298,7 @@ describe("DragAndDrop — drag regression test (DndContext + PointerSensor)", ()
   });
 
   it("pointerdown + pointermove + pointerup places the chip into the zone", () => {
-    render(<DragAndDrop config={cfg} onSubmit={vi.fn()} />);
+    render(<Component config={cfg} onSubmit={vi.fn()} />);
     const chip = screen.getByRole("button", { name: /^nucleus$/i });
 
     act(() => {
