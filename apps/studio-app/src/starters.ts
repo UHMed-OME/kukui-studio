@@ -33,31 +33,6 @@ const PLANNED_STARTERS = Object.fromEntries(
 ) as Record<(typeof PLANNED_ACTIVITY_KINDS)[number], unknown>;
 
 const LEGACY_STARTERS: Partial<Record<ActivityKind, unknown>> = {
-  "straw-poll": {
-    version: "1.0",
-    title: "Pulse check",
-    prompt: "How confident do you feel about today's material?",
-    choices: [
-      { id: "very", label: "Very confident — could teach it back" },
-      { id: "mostly", label: "Mostly — minor gaps" },
-      { id: "shaky", label: "Shaky — need to review" },
-      { id: "lost", label: "Lost — need a re-teach" },
-    ],
-    behaviour: {
-      showLiveResultsToStudents: true,
-      allowChangeVote: true,
-      showIndividualVotes: false,
-    },
-    live: {
-      // Keys intentionally left empty here — `ensureFreshKeys` fills
-      // them in with fresh randoms whenever this starter is applied
-      // (new draft, Reset, or kind switch), so two authors never
-      // ship with the same admin key by accident.
-      joinKey: "",
-      adminKey: "",
-      signaling: "nostr",
-    },
-  },
   "confidence-meter": {
     version: "1.0",
     title: "Confidence rating",
@@ -180,7 +155,6 @@ export const STARTERS: Record<ActivityKind, unknown> = {
 } as Record<ActivityKind, unknown>;
 
 const LEGACY_LABELS: Partial<Record<ActivityKind, string>> = {
-  "straw-poll": "Straw Poll (Live)",
   "confidence-meter": "Confidence Meter (Live)",
   "word-cloud": "Word Cloud (Live)",
   "qa-board": "Q&A Board (Live)",

@@ -8,7 +8,6 @@
   "exports": {
     ".": "./src/index.ts",
     "./shared": "./src/shared.ts",
-    "./straw-poll": "./src/straw-poll.ts",
     "./confidence-meter": "./src/confidence-meter.ts",
     "./word-cloud": "./src/word-cloud.ts",
     "./qa-board": "./src/qa-board.ts",

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { StrawPollConfigSchema } from "./straw-poll.js";
+import { StrawPollConfigSchema } from "@kukui/activities/straw-poll/schema";
 
 describe("StrawPollConfigSchema", () => {
   it("accepts a minimal valid config", () => {

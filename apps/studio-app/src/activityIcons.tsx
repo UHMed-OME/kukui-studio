@@ -74,20 +74,6 @@ function QuickQuizIcon(props: SVGProps<SVGSVGElement>) {
   );
 }
 
-function StrawPollIcon(props: SVGProps<SVGSVGElement>) {
-  return (
-    <svg {...baseProps} {...props}>
-      <line x1="4" y1="20" x2="20" y2="20" />
-      <rect x="5" y="14" width="3" height="6" fill="currentColor" stroke="none" opacity="0.22" />
-      <rect x="5" y="14" width="3" height="6" />
-      <rect x="10.5" y="9" width="3" height="11" fill="currentColor" stroke="none" opacity="0.22" />
-      <rect x="10.5" y="9" width="3" height="11" />
-      <rect x="16" y="12" width="3" height="8" fill="currentColor" stroke="none" opacity="0.22" />
-      <rect x="16" y="12" width="3" height="8" />
-    </svg>
-  );
-}
-
 function IsometricChatroomIcon(props: SVGProps<SVGSVGElement>) {
   return (
     <svg {...baseProps} {...props}>
@@ -100,7 +86,6 @@ function IsometricChatroomIcon(props: SVGProps<SVGSVGElement>) {
 type IconComponent = (props: SVGProps<SVGSVGElement>) => JSX.Element;
 
 const LEGACY_ICONS: Partial<Record<ActivityKind, IconComponent>> = {
-  "straw-poll": StrawPollIcon,
   "confidence-meter": ConfidenceMeterIcon,
   "word-cloud": WordCloudIcon,
   "qa-board": QABoardIcon,

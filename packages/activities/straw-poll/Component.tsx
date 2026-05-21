@@ -1,8 +1,8 @@
 import { useId } from "react";
-import type { StrawPollConfig } from "@kukui/schemas";
-import type { ActivityProps } from "../../types.js";
-import { SafeHtml } from "../../safe-html.js";
-import "./StrawPoll.css";
+import type { StrawPollConfig } from "./schema.js";
+import type { ActivityProps } from "@kukui/core/types";
+import { SafeHtml } from "@kukui/core";
+import "./Component.css";
 
 /**
  * Engine / Studio-preview view of a Straw Poll.
@@ -17,7 +17,7 @@ import "./StrawPoll.css";
  * marks the SCO complete. The interactive UI is reserved for
  * `StrawPollLive` in apps/live-mode.
  */
-export function StrawPoll({
+export default function Component({
   config,
   onSubmit,
   headingLevel = 1,
