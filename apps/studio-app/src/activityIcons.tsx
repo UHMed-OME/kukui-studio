@@ -26,18 +26,6 @@ const baseProps: SVGProps<SVGSVGElement> = {
   "aria-hidden": true,
 };
 
-function QABoardIcon(props: SVGProps<SVGSVGElement>) {
-  return (
-    <svg {...baseProps} {...props}>
-      <path d="M3 5 h18 v10 h-7 l-4 3 v-3 H3z" />
-      <line x1="7" y1="9" x2="13" y2="9" />
-      <line x1="7" y1="12" x2="11" y2="12" />
-      <circle cx="17.5" cy="9.5" r="0.7" fill="currentColor" stroke="none" />
-      <line x1="16.5" y1="11.5" x2="16.5" y2="13" />
-    </svg>
-  );
-}
-
 function QuickQuizIcon(props: SVGProps<SVGSVGElement>) {
   return (
     <svg {...baseProps} {...props}>
@@ -64,7 +52,6 @@ function IsometricChatroomIcon(props: SVGProps<SVGSVGElement>) {
 type IconComponent = (props: SVGProps<SVGSVGElement>) => JSX.Element;
 
 const LEGACY_ICONS: Partial<Record<ActivityKind, IconComponent>> = {
-  "qa-board": QABoardIcon,
   "quick-quiz": QuickQuizIcon,
   "isometric-chatroom": IsometricChatroomIcon,
 };

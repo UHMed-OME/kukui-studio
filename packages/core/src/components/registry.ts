@@ -49,7 +49,7 @@ export const ACTIVITY_REGISTRY: Record<BuiltActivityKind, ActivityComponent> = {
   "straw-poll": lazy(() => import("@kukui/activities/straw-poll/Component")),
   "confidence-meter": lazy(() => import("@kukui/activities/confidence-meter/Component")),
   "word-cloud": lazy(() => import("@kukui/activities/word-cloud/Component")),
-  "qa-board": lazy(() => import("./qa-board/index.js")),
+  "qa-board": lazy(() => import("@kukui/activities/qa-board/Component")),
   "quick-quiz": lazy(() => import("./quick-quiz/index.js")),
   "isometric-chatroom": lazy(() => import("./_stub/index.js")),
 };

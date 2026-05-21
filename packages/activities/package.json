@@ -50,6 +50,8 @@
     "./multiple-choice/schema": "./multiple-choice/schema.ts",
     "./osce/Component": "./osce/Component.tsx",
     "./osce/schema": "./osce/schema.ts",
+    "./qa-board/Component": "./qa-board/Component.tsx",
+    "./qa-board/schema": "./qa-board/schema.ts",
     "./question-set/Component": "./question-set/Component.tsx",
     "./question-set/schema": "./question-set/schema.ts",
     "./reflection-prompt/Component": "./reflection-prompt/Component.tsx",

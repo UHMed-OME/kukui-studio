@@ -107,7 +107,10 @@ export {
   WordCloudConfigSchema,
   type WordCloudConfig,
 } from "@kukui/activities/word-cloud/schema";
-export { QABoardConfigSchema, type QABoardConfig } from "./qa-board.js";
+export {
+  QABoardConfigSchema,
+  type QABoardConfig,
+} from "@kukui/activities/qa-board/schema";
 export { QuickQuizConfigSchema, type QuickQuizConfig } from "./quick-quiz.js";
 export {
   IsometricChatroomConfigSchema,
@@ -142,7 +145,7 @@ import { CrosswordConfigSchema } from "@kukui/activities/crossword/schema";
 import { StrawPollConfigSchema } from "@kukui/activities/straw-poll/schema";
 import { ConfidenceMeterConfigSchema } from "@kukui/activities/confidence-meter/schema";
 import { WordCloudConfigSchema } from "@kukui/activities/word-cloud/schema";
-import { QABoardConfigSchema } from "./qa-board.js";
+import { QABoardConfigSchema } from "@kukui/activities/qa-board/schema";
 import { QuickQuizConfigSchema } from "./quick-quiz.js";
 import {
   IsometricChatroomConfigSchema,

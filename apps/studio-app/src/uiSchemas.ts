@@ -104,46 +104,6 @@ const LIVE_SETTINGS_UI = {
 } as const;
 
 const LEGACY_UI_SCHEMAS: Partial<Record<ActivityKind, Record<string, unknown>>> = {
-  "qa-board": {
-    ...COMMON,
-    "ui:order": [
-      "title",
-      "prompt",
-      "maxQuestionsPerStudent",
-      "maxQuestionLength",
-      "behaviour",
-      "live",
-      "ui",
-      "*",
-    ],
-    title: TITLE,
-    author: AUTHOR,
-    prompt: f(
-      "Prompt",
-      "Frame the backchannel — e.g. 'Post any questions you have during lecture'. Short.",
-      { "ui:widget": "textarea", "ui:options": { rows: 2 } },
-    ),
-    maxQuestionsPerStudent: f(
-      "Max questions per student",
-      "Default 5. Caps spam; raise for long lectures.",
-    ),
-    maxQuestionLength: f("Max characters per question", "Default 240."),
-    behaviour: {
-      "ui:title": "Behaviour",
-      allowAnonymous: f(
-        "Show questions as anonymous",
-        "Default on. Instructor still sees the author for moderation; classmates don't.",
-      ),
-      allowUpvoteOwn: f("Allow upvoting your own question", "Default off."),
-      showAnsweredBelow: f(
-        "Move answered questions below open ones",
-        "Default on. Keeps the active queue at the top.",
-      ),
-    },
-    ui: { "ui:title": "Button label overrides" },
-    live: LIVE_SETTINGS_UI,
-  },
-
   "quick-quiz": {
     ...COMMON,
     "ui:order": ["title", "prompt", "choices", "behaviour", "live", "ui", "*"],
