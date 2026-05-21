@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { AppearanceSchema } from "./appearance.js";
+import { AppearanceSchema } from "@kukui/schemas/shared";
 
 const versionRe = /^\d+\.\d+(\.\d+)?$/;
 

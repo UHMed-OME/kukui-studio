@@ -8,7 +8,6 @@
   "exports": {
     ".": "./src/index.ts",
     "./shared": "./src/shared.ts",
-    "./word-cloud": "./src/word-cloud.ts",
     "./qa-board": "./src/qa-board.ts",
     "./quick-quiz": "./src/quick-quiz.ts",
     "./stub": "./src/stub.ts"

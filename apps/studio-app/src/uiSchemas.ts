@@ -104,53 +104,6 @@ const LIVE_SETTINGS_UI = {
 } as const;
 
 const LEGACY_UI_SCHEMAS: Partial<Record<ActivityKind, Record<string, unknown>>> = {
-  "word-cloud": {
-    ...COMMON,
-    "ui:order": [
-      "title",
-      "prompt",
-      "submissionsPerStudent",
-      "maxWordsPerSubmission",
-      "maxCharsPerSubmission",
-      "behaviour",
-      "live",
-      "ui",
-      "*",
-    ],
-    title: TITLE,
-    author: AUTHOR,
-    prompt: f(
-      "Prompt",
-      "Frame the response — e.g. 'Sum up today's lecture in one or two words'. Short answers are the whole point; longer prompts dilute the cloud.",
-      { "ui:widget": "textarea", "ui:options": { rows: 2 } },
-    ),
-    submissionsPerStudent: f(
-      "Submissions per student",
-      "Default 1. Raise to 2 or 3 for richer clouds in smaller classes (×N entries each).",
-    ),
-    maxWordsPerSubmission: f(
-      "Max words per submission",
-      "Default 2. Keep low (1–3) so the cloud aggregates meaningfully.",
-    ),
-    maxCharsPerSubmission: f(
-      "Max characters per submission",
-      "Hard cap on submission length. 24 is a good default for a few words.",
-    ),
-    behaviour: {
-      "ui:title": "Behaviour",
-      showLiveResultsToStudents: f(
-        "Show live cloud to students",
-        "Default on. Turn off if seeing peer answers would prime students.",
-      ),
-      caseSensitive: f(
-        "Case-sensitive tally",
-        "Default off — 'apple' and 'Apple' merge. Turn on for case-distinct content (gene names, acronyms).",
-      ),
-    },
-    ui: { "ui:title": "Button label overrides" },
-    live: LIVE_SETTINGS_UI,
-  },
-
   "qa-board": {
     ...COMMON,
     "ui:order": [

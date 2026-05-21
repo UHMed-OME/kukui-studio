@@ -26,17 +26,6 @@ const baseProps: SVGProps<SVGSVGElement> = {
   "aria-hidden": true,
 };
 
-function WordCloudIcon(props: SVGProps<SVGSVGElement>) {
-  return (
-    <svg {...baseProps} {...props}>
-      <ellipse cx="9" cy="12" rx="4" ry="2.5" />
-      <ellipse cx="15.5" cy="8.5" rx="3" ry="1.8" />
-      <ellipse cx="15" cy="15.5" rx="3.5" ry="2.2" />
-      <ellipse cx="6" cy="17" rx="2" ry="1.2" />
-    </svg>
-  );
-}
-
 function QABoardIcon(props: SVGProps<SVGSVGElement>) {
   return (
     <svg {...baseProps} {...props}>
@@ -75,7 +64,6 @@ function IsometricChatroomIcon(props: SVGProps<SVGSVGElement>) {
 type IconComponent = (props: SVGProps<SVGSVGElement>) => JSX.Element;
 
 const LEGACY_ICONS: Partial<Record<ActivityKind, IconComponent>> = {
-  "word-cloud": WordCloudIcon,
   "qa-board": QABoardIcon,
   "quick-quiz": QuickQuizIcon,
   "isometric-chatroom": IsometricChatroomIcon,

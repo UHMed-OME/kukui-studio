@@ -84,7 +84,6 @@ const LEGACY_BLOOM: Partial<Record<ActivityKind, BloomLevel>> = {
   // "isometric-chatroom": "evaluate", — hidden from the Studio sidebar
   // while the runtime is being reworked. Kind, schema, registry, and
   // existing configs all remain valid; this just hides the picker entry.
-  "word-cloud": "remember",
 };
 
 const MANIFEST_BLOOM: Partial<Record<ActivityKind, BloomLevel>> =

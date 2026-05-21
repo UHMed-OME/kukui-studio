@@ -33,16 +33,6 @@ const PLANNED_STARTERS = Object.fromEntries(
 ) as Record<(typeof PLANNED_ACTIVITY_KINDS)[number], unknown>;
 
 const LEGACY_STARTERS: Partial<Record<ActivityKind, unknown>> = {
-  "word-cloud": {
-    version: "1.0",
-    title: "Word cloud",
-    prompt: "Sum up the lecture in one or two words.",
-    submissionsPerStudent: 2,
-    maxWordsPerSubmission: 2,
-    maxCharsPerSubmission: 24,
-    behaviour: { showLiveResultsToStudents: true, caseSensitive: false },
-    live: { joinKey: "", adminKey: "", signaling: "nostr" },
-  },
   "qa-board": {
     version: "1.0",
     title: "Class Q&A board",
@@ -140,7 +130,6 @@ export const STARTERS: Record<ActivityKind, unknown> = {
 } as Record<ActivityKind, unknown>;
 
 const LEGACY_LABELS: Partial<Record<ActivityKind, string>> = {
-  "word-cloud": "Word Cloud (Live)",
   "qa-board": "Q&A Board (Live)",
   "quick-quiz": "Quick Quiz (Live)",
   "isometric-chatroom": "Pixel Chat (Live)",

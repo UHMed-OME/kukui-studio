@@ -22,7 +22,6 @@
     "./components/matching-pairs": "./src/components/matching-pairs/index.ts",
     "./components/flashcards": "./src/components/flashcards/index.ts",
     "./components/reflection-prompt": "./src/components/reflection-prompt/index.ts",
-    "./components/word-cloud": "./src/components/word-cloud/index.ts",
     "./components/qa-board": "./src/components/qa-board/index.ts",
     "./components/quick-quiz": "./src/components/quick-quiz/index.ts",
     "./components/_live-preview": "./src/components/_live-preview/index.ts",

@@ -60,6 +60,8 @@
     "./straw-poll/schema": "./straw-poll/schema.ts",
     "./virtual-tour/Component": "./virtual-tour/Component.tsx",
     "./virtual-tour/schema": "./virtual-tour/schema.ts",
+    "./word-cloud/Component": "./word-cloud/Component.tsx",
+    "./word-cloud/schema": "./word-cloud/schema.ts",
     "./*": "./*"
   },
   "dependencies": {
