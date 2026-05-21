@@ -23,7 +23,7 @@ export type ActivityComponent = LazyExoticComponent<ComponentType<ActivityProps<
 
 export const ACTIVITY_REGISTRY: Record<BuiltActivityKind, ActivityComponent> = {
   "multiple-choice": lazy(() => import("@kukui/activities/multiple-choice/Component")),
-  "fill-in-the-blanks": lazy(() => import("./fill-in-the-blanks/index.js")),
+  "fill-in-the-blanks": lazy(() => import("@kukui/activities/fill-in-the-blanks/Component")),
   "drag-and-drop": lazy(() => import("./drag-and-drop/index.js")),
   "question-set": lazy(() => import("./question-set/index.js")),
   "hotspot-3d": lazy(() => import("./hotspot-3d/index.js")),

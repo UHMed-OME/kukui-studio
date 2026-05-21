@@ -104,38 +104,6 @@ const LIVE_SETTINGS_UI = {
 } as const;
 
 const LEGACY_UI_SCHEMAS: Partial<Record<ActivityKind, Record<string, unknown>>> = {
-  "fill-in-the-blanks": {
-    ...COMMON,
-    "ui:order": ["title", "text", "behaviour", "ui", "*"],
-    title: TITLE,
-    author: AUTHOR,
-    text: f(
-      "Question text with blanks",
-      "Wrap each blank in asterisks, like *answer*. Use / or | for alternate accepted answers, e.g. *Honolulu/O'ahu*.",
-      { "ui:widget": "textarea", "ui:options": { rows: 6 } },
-    ),
-    behaviour: {
-      "ui:title": "Activity behaviour",
-      enableRetry: BEHAVIOUR_RETRY,
-      caseSensitive: f(
-        "Case-sensitive matching",
-        "When on, 'Honolulu' is not the same as 'honolulu'.",
-      ),
-      acceptSpellingErrors: f(
-        "Accept minor spelling errors",
-        "Allows answers off by one letter (a single typo, missing letter, or extra letter).",
-      ),
-      showSolutionsButton: BEHAVIOUR_SHOW_SOLUTION,
-      singlePoint: BEHAVIOUR_SINGLEPOINT,
-    },
-    ui: {
-      "ui:title": "Button label overrides",
-      checkAnswerButton: f("'Check' button text"),
-      showSolutionButton: f("'Show Solution' button text"),
-      tryAgainButton: f("'Try Again' button text"),
-    },
-  },
-
   "drag-and-drop": {
     ...COMMON,
     "ui:order": ["title", "prompt", "background", "draggables", "dropZones", "behaviour", "ui", "*"],

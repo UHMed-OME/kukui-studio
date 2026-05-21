@@ -9,7 +9,7 @@ import {
 import type { ActivityProps, ScoreState } from "../../types.js";
 import { resolveScoring } from "../../scoring.js";
 import MultipleChoice from "@kukui/activities/multiple-choice/Component";
-import { FillInTheBlanks } from "../fill-in-the-blanks/index.js";
+import FillInTheBlanks from "@kukui/activities/fill-in-the-blanks/Component";
 import "./QuestionSet.css";
 
 type Stage = "answering" | "submitted";

@@ -1,8 +1,8 @@
 import { useEffect, useId, useMemo, useState } from "react";
 import { parseClozeText, type FillInTheBlanksConfig } from "@kukui/schemas";
-import type { ActivityProps } from "../../types.js";
-import { resolveScoring } from "../../scoring.js";
-import "./FillInTheBlanks.css";
+import type { ActivityProps } from "@kukui/core/types";
+import { resolveScoring } from "@kukui/core/scoring";
+import "./Component.css";
 
 type Stage = "answering" | "submitted";
 
@@ -61,7 +61,7 @@ function isBlankCorrect(
   return false;
 }
 
-export function FillInTheBlanks({
+export function Component({
   config,
   onSubmit,
   onPersist,
@@ -278,6 +278,8 @@ export function FillInTheBlanks({
     </div>
   );
 }
+
+export default Component;
 
 function parseSuspend(s: string | undefined, blankCount: number): State | null {
   if (!s) return null;

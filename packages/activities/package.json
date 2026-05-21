@@ -8,6 +8,8 @@
   "exports": {
     ".": "./src/index.ts",
     "./types": "./src/types.ts",
+    "./fill-in-the-blanks/Component": "./fill-in-the-blanks/Component.tsx",
+    "./fill-in-the-blanks/schema": "./fill-in-the-blanks/schema.ts",
     "./multiple-choice/Component": "./multiple-choice/Component.tsx",
     "./multiple-choice/schema": "./multiple-choice/schema.ts",
     "./*": "./*"

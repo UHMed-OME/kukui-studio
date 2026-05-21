@@ -6,7 +6,7 @@ export {
   FillInTheBlanksConfigSchema,
   type FillInTheBlanksConfig,
   parseClozeText,
-} from "./fill-in-the-blanks.js";
+} from "@kukui/activities/fill-in-the-blanks/schema";
 export { DragAndDropConfigSchema, type DragAndDropConfig } from "./drag-and-drop.js";
 export { QuestionSetConfigSchema, type QuestionSetConfig } from "./question-set.js";
 export { Hotspot3DConfigSchema, type Hotspot3DConfig } from "./hotspot-3d.js";
@@ -83,7 +83,7 @@ export {
 export { StubConfigSchema, type StubConfig } from "./stub.js";
 
 import { MultipleChoiceConfigSchema } from "@kukui/activities/multiple-choice/schema";
-import { FillInTheBlanksConfigSchema } from "./fill-in-the-blanks.js";
+import { FillInTheBlanksConfigSchema } from "@kukui/activities/fill-in-the-blanks/schema";
 import { DragAndDropConfigSchema } from "./drag-and-drop.js";
 import { QuestionSetConfigSchema } from "./question-set.js";
 import { Hotspot3DConfigSchema } from "./hotspot-3d.js";

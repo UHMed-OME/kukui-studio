@@ -9,7 +9,7 @@ import {
 import type { ActivityProps, ScoreState } from "../../types.js";
 import { aggregate, resolveScoring } from "../../scoring.js";
 import MultipleChoice from "@kukui/activities/multiple-choice/Component";
-import { FillInTheBlanks } from "../fill-in-the-blanks/index.js";
+import FillInTheBlanks from "@kukui/activities/fill-in-the-blanks/Component";
 import { SafeHtml } from "../../safe-html.js";
 import "./InteractiveVideo.css";
 

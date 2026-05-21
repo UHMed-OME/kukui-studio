@@ -33,12 +33,6 @@ const PLANNED_STARTERS = Object.fromEntries(
 ) as Record<(typeof PLANNED_ACTIVITY_KINDS)[number], unknown>;
 
 const LEGACY_STARTERS: Partial<Record<ActivityKind, unknown>> = {
-  "fill-in-the-blanks": {
-    version: "1.0",
-    title: "Fill in the Blanks",
-    text: "Photosynthesis takes in *carbon dioxide* and releases *oxygen*.",
-    behaviour: { enableRetry: true, caseSensitive: false },
-  },
   "drag-and-drop": {
     version: "1.0",
     title: "Drag and Drop",
@@ -553,7 +547,6 @@ export const STARTERS: Record<ActivityKind, unknown> = {
 } as Record<ActivityKind, unknown>;
 
 const LEGACY_LABELS: Partial<Record<ActivityKind, string>> = {
-  "fill-in-the-blanks": "Fill in the Blanks",
   "drag-and-drop": "Drag and Drop",
   "question-set": "Question Set",
   "hotspot-3d": "3D Hotspots",
