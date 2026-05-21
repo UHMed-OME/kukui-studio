@@ -1,8 +1,8 @@
 import { useEffect, useId, useMemo, useState } from "react";
-import type { Hotspot2DConfig } from "@kukui/schemas";
-import type { ActivityProps } from "../../types.js";
-import { SafeHtml } from "../../safe-html.js";
-import "./Hotspot2D.css";
+import type { Hotspot2DConfig } from "./schema.js";
+import type { ActivityProps } from "@kukui/core/types";
+import { SafeHtml } from "@kukui/core";
+import "./Component.css";
 
 type Stage = "answering" | "submitted";
 
@@ -20,7 +20,7 @@ type State = {
  * (visible focus ring), Check submits. A keyboard fallback list below
  * the image lets non-mouse users hit the same regions by name.
  */
-export function Hotspot2D({
+export default function Component({
   config,
   onSubmit,
   onPersist,

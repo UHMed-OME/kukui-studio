@@ -26,16 +26,6 @@ const baseProps: SVGProps<SVGSVGElement> = {
   "aria-hidden": true,
 };
 
-function Hotspot2dIcon(props: SVGProps<SVGSVGElement>) {
-  return (
-    <svg {...baseProps} {...props}>
-      <rect x="3" y="3" width="18" height="18" rx="2" />
-      <circle cx="12" cy="12" r="3" />
-      <circle cx="12" cy="12" r="0.6" fill="currentColor" stroke="none" />
-    </svg>
-  );
-}
-
 function Hotspot3dIcon(props: SVGProps<SVGSVGElement>) {
   return (
     <svg {...baseProps} {...props}>
@@ -131,7 +121,6 @@ function IsometricChatroomIcon(props: SVGProps<SVGSVGElement>) {
 type IconComponent = (props: SVGProps<SVGSVGElement>) => JSX.Element;
 
 const LEGACY_ICONS: Partial<Record<ActivityKind, IconComponent>> = {
-  "hotspot-2d": Hotspot2dIcon,
   "hotspot-3d": Hotspot3dIcon,
   "virtual-tour": VirtualTourIcon,
   "straw-poll": StrawPollIcon,

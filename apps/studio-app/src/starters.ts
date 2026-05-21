@@ -70,30 +70,6 @@ const LEGACY_STARTERS: Partial<Record<ActivityKind, unknown>> = {
     ],
     behaviour: { enableRetry: true, showHotspotMarkers: true, allowOrbit: true },
   },
-  "hotspot-2d": {
-    version: "1.0",
-    title: "Image Hotspot",
-    prompt: "Click the correct region.",
-    image: {
-      src: PLACEHOLDER_IMAGE,
-      alt: "Replace with the image authors will mark up",
-    },
-    hotspots: [
-      {
-        id: "h1",
-        label: "Region A",
-        rect: { x: 0.2, y: 0.3, w: 0.2, h: 0.2 },
-        correct: true,
-      },
-      {
-        id: "h2",
-        label: "Region B",
-        rect: { x: 0.6, y: 0.3, w: 0.2, h: 0.2 },
-        correct: false,
-      },
-    ],
-    behaviour: { enableRetry: true, showHotspotMarkers: true },
-  },
   "virtual-tour": {
     version: "1.0",
     title: "Virtual Tour",
@@ -263,7 +239,6 @@ export const STARTERS: Record<ActivityKind, unknown> = {
 
 const LEGACY_LABELS: Partial<Record<ActivityKind, string>> = {
   "hotspot-3d": "3D Hotspots",
-  "hotspot-2d": "Image Hotspots",
   "virtual-tour": "Virtual Tour",
   "straw-poll": "Straw Poll (Live)",
   "confidence-meter": "Confidence Meter (Live)",

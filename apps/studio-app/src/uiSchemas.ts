@@ -170,62 +170,6 @@ const LEGACY_UI_SCHEMAS: Partial<Record<ActivityKind, Record<string, unknown>>> 
     },
   },
 
-  "hotspot-2d": {
-    ...COMMON,
-    "ui:order": ["title", "prompt", "image", "hotspots", "behaviour", "ui", "*"],
-    title: TITLE,
-    author: AUTHOR,
-    prompt: f(
-      "Prompt shown to the learner",
-      "Tells the learner what region to find. Use the toolbar to format text.",
-      { "ui:widget": "html", "ui:options": { rows: 3 } },
-    ),
-    image: {
-      "ui:title": "Image",
-      src: f("Image", "Paste a link or upload a file. Uploaded files are saved inside the activity.", {
-        "ui:widget": "file",
-        "ui:options": { accept: "image/*", maxSizeMb: 5, kind: "image" },
-      }),
-      alt: f(
-        "Alt text (required)",
-        "Describes the image for screen-reader users. Required for accessibility — describe what the image shows in one short sentence.",
-      ),
-    },
-    hotspots: {
-      "ui:title": "Hotspots",
-      "ui:help":
-        "Rectangles overlaid on the image. Exactly one should be marked correct. Edit positions visually in the Edit-mode tab once that lands.",
-      items: {
-        id: HIDDEN,
-        label: f("Label", "Shown on the marker pin and in the keyboard fallback list."),
-        rect: {
-          "ui:title": "Rectangle (normalized 0..1)",
-          x: f("X (left)"),
-          y: f("Y (top)"),
-          w: f("Width"),
-          h: f("Height"),
-        },
-        correct: f("Counts as correct", "Selecting this region is the right answer."),
-        feedback: f("Feedback after pick", "Shown after the learner submits if they picked this region.", {
-          "ui:widget": "textarea",
-          "ui:options": { rows: 2 },
-        }),
-      },
-    },
-    behaviour: {
-      "ui:title": "Activity behaviour",
-      enableRetry: BEHAVIOUR_RETRY,
-      showHotspotMarkers: f(
-        "Show hotspot markers",
-        "When on, learners see labeled rectangles indicating each region. When off, blind identification.",
-      ),
-    },
-    ui: {
-      "ui:title": "Button label overrides",
-      tryAgainButton: f("'Try Again' button text"),
-    },
-  },
-
   "virtual-tour": {
     ...COMMON,
     "ui:order": ["title", "scene", "movement", "overlays", "completion", "behaviour", "ui", "*"],

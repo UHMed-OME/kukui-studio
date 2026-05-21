@@ -30,6 +30,8 @@
     "./flashcards/schema": "./flashcards/schema.ts",
     "./highlight-text/Component": "./highlight-text/Component.tsx",
     "./highlight-text/schema": "./highlight-text/schema.ts",
+    "./hotspot-2d/Component": "./hotspot-2d/Component.tsx",
+    "./hotspot-2d/schema": "./hotspot-2d/schema.ts",
     "./image-annotation/Component": "./image-annotation/Component.tsx",
     "./image-annotation/schema": "./image-annotation/schema.ts",
     "./image-comparison-slider/Component": "./image-comparison-slider/Component.tsx",
