@@ -26,20 +26,9 @@ const baseProps: SVGProps<SVGSVGElement> = {
   "aria-hidden": true,
 };
 
-function IsometricChatroomIcon(props: SVGProps<SVGSVGElement>) {
-  return (
-    <svg {...baseProps} {...props}>
-      <path d="M3 4h12v8H8l-3 3v-3H3z" />
-      <path d="M11 10h10v8h-3l-3 3v-3h-4z" />
-    </svg>
-  );
-}
-
 type IconComponent = (props: SVGProps<SVGSVGElement>) => JSX.Element;
 
-const LEGACY_ICONS: Partial<Record<ActivityKind, IconComponent>> = {
-  "isometric-chatroom": IsometricChatroomIcon,
-};
+const LEGACY_ICONS: Partial<Record<ActivityKind, IconComponent>> = {};
 
 export function hasActivityIcon(kind: ActivityKind): boolean {
   return Boolean(ACTIVITY_MANIFESTS[kind]?.Icon || LEGACY_ICONS[kind]);

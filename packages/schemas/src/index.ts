@@ -118,7 +118,7 @@ export {
 export {
   IsometricChatroomConfigSchema,
   type IsometricChatroomConfig,
-} from "./isometric-chatroom.js";
+} from "@kukui/activities/isometric-chatroom/schema";
 export { StubConfigSchema, type StubConfig } from "./stub.js";
 
 import { MultipleChoiceConfigSchema } from "@kukui/activities/multiple-choice/schema";
@@ -150,9 +150,7 @@ import { ConfidenceMeterConfigSchema } from "@kukui/activities/confidence-meter/
 import { WordCloudConfigSchema } from "@kukui/activities/word-cloud/schema";
 import { QABoardConfigSchema } from "@kukui/activities/qa-board/schema";
 import { QuickQuizConfigSchema } from "@kukui/activities/quick-quiz/schema";
-import {
-  IsometricChatroomConfigSchema,
-} from "./isometric-chatroom.js";
+import { IsometricChatroomConfigSchema } from "@kukui/activities/isometric-chatroom/schema";
 
 /**
  * Map of activity-kind → Zod schema. Keys match `ActivityKind` in

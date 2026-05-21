@@ -32,64 +32,7 @@ const PLANNED_STARTERS = Object.fromEntries(
   PLANNED_ACTIVITY_KINDS.map((k) => [k, stubStarter(PLANNED_LABELS[k], PLANNED_DESCRIPTIONS[k])]),
 ) as Record<(typeof PLANNED_ACTIVITY_KINDS)[number], unknown>;
 
-const LEGACY_STARTERS: Partial<Record<ActivityKind, unknown>> = {
-  "isometric-chatroom": {
-    version: "1.0",
-    title: "Discussion Chatroom",
-    prompt: "Welcome! Pick a character, explore the room, and join the discussion when the instructor starts.",
-    room: {
-      name: "Classroom",
-      theme: "classroom",
-      width: 12,
-      height: 12,
-      seed: "kukui-default-v1",
-    },
-    characters: [
-      {
-        id: "student-m-default",
-        label: "Student (default)",
-        sprite: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==",
-        availableToStudents: true,
-      },
-      {
-        id: "student-f-default",
-        label: "Student (alt)",
-        sprite: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==",
-        availableToStudents: true,
-      },
-      {
-        id: "robot-default",
-        label: "Robot",
-        sprite: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==",
-        availableToStudents: true,
-      },
-    ],
-    rules: {
-      requireAcknowledge: true,
-      rules: [
-        "Be respectful to everyone",
-        "Stay on topic during the question phase",
-        "Use the emoji reactions to respond non-verbally",
-      ],
-      maxMessageLength: 280,
-      messageDisplayDuration: 8000,
-      chatMode: "free",
-      allowLobbyClose: true,
-      allowIndividualMute: true,
-      allowMessageDeletion: true,
-      showNamesInChat: true,
-    },
-    emoji: {
-      preset: "standard",
-    },
-    appearance: { theme: "auto" },
-    live: {
-      joinKey: "",
-      adminKey: "",
-      signaling: "nostr",
-    },
-  },
-};
+const LEGACY_STARTERS: Partial<Record<ActivityKind, unknown>> = {};
 
 const MANIFEST_STARTERS: Partial<Record<ActivityKind, unknown>> =
   Object.fromEntries(
@@ -102,9 +45,7 @@ export const STARTERS: Record<ActivityKind, unknown> = {
   ...MANIFEST_STARTERS,
 } as Record<ActivityKind, unknown>;
 
-const LEGACY_LABELS: Partial<Record<ActivityKind, string>> = {
-  "isometric-chatroom": "Pixel Chat (Live)",
-};
+const LEGACY_LABELS: Partial<Record<ActivityKind, string>> = {};
 
 const MANIFEST_LABELS: Partial<Record<ActivityKind, string>> =
   Object.fromEntries(

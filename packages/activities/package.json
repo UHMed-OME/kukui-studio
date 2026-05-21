@@ -42,6 +42,8 @@
     "./image-comparison-slider/schema": "./image-comparison-slider/schema.ts",
     "./interactive-video/Component": "./interactive-video/Component.tsx",
     "./interactive-video/schema": "./interactive-video/schema.ts",
+    "./isometric-chatroom/Component": "./isometric-chatroom/Component.tsx",
+    "./isometric-chatroom/schema": "./isometric-chatroom/schema.ts",
     "./lab-panel/Component": "./lab-panel/Component.tsx",
     "./lab-panel/schema": "./lab-panel/schema.ts",
     "./matching-pairs/Component": "./matching-pairs/Component.tsx",
