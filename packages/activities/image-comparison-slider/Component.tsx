@@ -9,10 +9,10 @@ import {
   type PointerEvent as ReactPointerEvent,
   type CSSProperties,
 } from "react";
-import type { ImageComparisonSliderConfig } from "@kukui/schemas";
-import type { ActivityProps } from "../../types.js";
-import { SafeHtml } from "../../safe-html.js";
-import "./ImageComparisonSlider.css";
+import type { ImageComparisonSliderConfig } from "./schema.js";
+import type { ActivityProps } from "@kukui/core/types";
+import { SafeHtml } from "@kukui/core";
+import "./Component.css";
 
 type State = {
   /** Seam position in 0..1. */
@@ -30,7 +30,7 @@ function clamp01(n: number): number {
   return n;
 }
 
-export function ImageComparisonSlider({
+export default function Component({
   config,
   onSubmit,
   onPersist,

@@ -135,19 +135,6 @@ const LEGACY_STARTERS: Partial<Record<ActivityKind, unknown>> = {
     completion: { mode: "manual" },
     behaviour: { enableRetry: true },
   },
-  "image-comparison-slider": {
-    version: "1.0",
-    title: "Image Comparison",
-    prompt: "Drag the slider to compare the two images.",
-    before: {
-      src: PLACEHOLDER_IMAGE,
-      alt: "Before",
-    },
-    after: {
-      src: PLACEHOLDER_IMAGE,
-      alt: "After",
-    },
-  },
   "branching-scenario": {
     version: "1.0",
     title: "Branching Scenario",
@@ -457,7 +444,6 @@ const LEGACY_LABELS: Partial<Record<ActivityKind, string>> = {
   "hotspot-3d": "3D Hotspots",
   "hotspot-2d": "Image Hotspots",
   "virtual-tour": "Virtual Tour",
-  "image-comparison-slider": "Image Comparison Slider",
   "branching-scenario": "Branching Scenario",
   "image-annotation": "Image Annotation",
   "concept-map": "Concept Map",

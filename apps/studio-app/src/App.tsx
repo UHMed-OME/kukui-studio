@@ -88,7 +88,6 @@ const LEGACY_BLOOM: Partial<Record<ActivityKind, BloomLevel>> = {
   "interactive-video": "apply",
   // Analyze — break apart, compare, infer relationships
   "image-annotation": "analyze",
-  "image-comparison-slider": "analyze",
   "concept-map": "analyze",
   "lab-panel": "analyze",
   // Evaluate — judge, critique, decide

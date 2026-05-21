@@ -34,7 +34,7 @@ export {
 export {
   ImageComparisonSliderConfigSchema,
   type ImageComparisonSliderConfig,
-} from "./image-comparison-slider.js";
+} from "@kukui/activities/image-comparison-slider/schema";
 export {
   AnatomyLabelingConfigSchema,
   type AnatomyLabelingConfig,
@@ -96,7 +96,7 @@ import { CategorizationConfigSchema } from "@kukui/activities/categorization/sch
 import { SequenceStepsConfigSchema } from "@kukui/activities/sequence-steps/schema";
 import { ReflectionPromptConfigSchema } from "@kukui/activities/reflection-prompt/schema";
 import { FlashcardsConfigSchema } from "@kukui/activities/flashcards/schema";
-import { ImageComparisonSliderConfigSchema } from "./image-comparison-slider.js";
+import { ImageComparisonSliderConfigSchema } from "@kukui/activities/image-comparison-slider/schema";
 import { AnatomyLabelingConfigSchema } from "@kukui/activities/anatomy-labeling/schema";
 import { MatchingPairsConfigSchema } from "@kukui/activities/matching-pairs/schema";
 import { HighlightTextConfigSchema } from "@kukui/activities/highlight-text/schema";

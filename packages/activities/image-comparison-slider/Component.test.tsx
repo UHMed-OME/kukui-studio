@@ -1,8 +1,8 @@
 import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import type { ImageComparisonSliderConfig } from "@kukui/schemas";
-import { ImageComparisonSlider } from "./ImageComparisonSlider.js";
+import type { ImageComparisonSliderConfig } from "./schema.js";
+import Component from "./Component.js";
 
 const cfg: ImageComparisonSliderConfig = {
   version: "1.0",
@@ -62,7 +62,7 @@ describe("ImageComparisonSlider", () => {
   });
 
   it("renders title, prompt, both images, and the seam slider", () => {
-    render(<ImageComparisonSlider config={cfg} onSubmit={vi.fn()} />);
+    render(<Component config={cfg} onSubmit={vi.fn()} />);
     expect(
       screen.getByRole("heading", { level: 1, name: /wrist x-ray/i }),
     ).toBeInTheDocument();
@@ -77,7 +77,7 @@ describe("ImageComparisonSlider", () => {
 
   it("clicking the stage at 25% jumps the seam to 25", async () => {
     const user = userEvent.setup();
-    render(<ImageComparisonSlider config={cfg} onSubmit={vi.fn()} />);
+    render(<Component config={cfg} onSubmit={vi.fn()} />);
     const stage = document.querySelector(".kukui-ics__stage") as HTMLElement;
     expect(stage).not.toBeNull();
     // Click at clientX=100 in a 400-px-wide stage → 25%.
@@ -88,7 +88,7 @@ describe("ImageComparisonSlider", () => {
 
   it("Left/Right arrow keys nudge by 1%, Home/End jump to ends", async () => {
     const user = userEvent.setup();
-    render(<ImageComparisonSlider config={cfg} onSubmit={vi.fn()} />);
+    render(<Component config={cfg} onSubmit={vi.fn()} />);
     const seam = screen.getByRole("slider", { name: /comparison seam/i });
     seam.focus();
     expect(seam).toHaveAttribute("aria-valuenow", "50");
@@ -109,7 +109,7 @@ describe("ImageComparisonSlider", () => {
   it("Done calls onSubmit with raw=1, max=1, success=true", async () => {
     const user = userEvent.setup();
     const onSubmit = vi.fn();
-    render(<ImageComparisonSlider config={cfg} onSubmit={onSubmit} />);
+    render(<Component config={cfg} onSubmit={onSubmit} />);
     await user.click(screen.getByRole("button", { name: /^done$/i }));
     expect(onSubmit).toHaveBeenCalledTimes(1);
     expect(onSubmit.mock.calls[0]?.[0]).toMatchObject({
@@ -124,7 +124,7 @@ describe("ImageComparisonSlider", () => {
     const user = userEvent.setup();
     const onPersist = vi.fn();
     render(
-      <ImageComparisonSlider
+      <Component
         config={cfg}
         onSubmit={vi.fn()}
         onPersist={onPersist}
@@ -140,7 +140,7 @@ describe("ImageComparisonSlider", () => {
 
   it("when headingLevel=2 is passed, the title renders as h2", () => {
     render(
-      <ImageComparisonSlider
+      <Component
         config={cfg}
         onSubmit={vi.fn()}
         headingLevel={2}

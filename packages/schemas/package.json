@@ -12,7 +12,6 @@
     "./hotspot-3d": "./src/hotspot-3d.ts",
     "./hotspot-2d": "./src/hotspot-2d.ts",
     "./virtual-tour": "./src/virtual-tour.ts",
-    "./image-comparison-slider": "./src/image-comparison-slider.ts",
     "./branching-scenario": "./src/branching-scenario.ts",
     "./image-annotation": "./src/image-annotation.ts",
     "./concept-map": "./src/concept-map.ts",

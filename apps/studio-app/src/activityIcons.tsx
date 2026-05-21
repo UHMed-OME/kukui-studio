@@ -81,17 +81,6 @@ function ImageAnnotationIcon(props: SVGProps<SVGSVGElement>) {
   );
 }
 
-function ImageComparisonSliderIcon(props: SVGProps<SVGSVGElement>) {
-  return (
-    <svg {...baseProps} {...props}>
-      <rect x="3" y="5" width="18" height="14" rx="1" />
-      <line x1="12" y1="3" x2="12" y2="21" />
-      <polyline points="9 10 7 12 9 14" />
-      <polyline points="15 10 17 12 15 14" />
-    </svg>
-  );
-}
-
 function ConceptMapIcon(props: SVGProps<SVGSVGElement>) {
   return (
     <svg {...baseProps} {...props}>
@@ -263,7 +252,6 @@ const LEGACY_ICONS: Partial<Record<ActivityKind, IconComponent>> = {
   "virtual-tour": VirtualTourIcon,
   "interactive-video": InteractiveVideoIcon,
   "image-annotation": ImageAnnotationIcon,
-  "image-comparison-slider": ImageComparisonSliderIcon,
   "concept-map": ConceptMapIcon,
   "lab-panel": LabPanelIcon,
   "branching-scenario": BranchingScenarioIcon,

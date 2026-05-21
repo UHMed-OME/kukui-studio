@@ -332,53 +332,6 @@ const LEGACY_UI_SCHEMAS: Partial<Record<ActivityKind, Record<string, unknown>>> 
     },
   },
 
-  "image-comparison-slider": {
-    ...COMMON,
-    "ui:order": ["title", "prompt", "before", "after", "initialPosition", "behaviour", "ui", "*"],
-    title: TITLE,
-    author: AUTHOR,
-    prompt: f("Prompt", "Tells the learner what to look at.", {
-      "ui:widget": "html",
-      "ui:options": { rows: 3 },
-    }),
-    before: {
-      "ui:title": "Before image",
-      src: f("Image", "Paste URL or upload.", {
-        "ui:widget": "file",
-        "ui:options": { accept: "image/*", maxSizeMb: 5, kind: "image" },
-      }),
-      alt: f(
-        "Alt text (required)",
-        "Required for accessibility. Describe the 'before' state in one short sentence.",
-      ),
-      caption: f("Caption", "Optional. Shown beneath the image."),
-    },
-    after: {
-      "ui:title": "After image",
-      src: f("Image", "Paste URL or upload.", {
-        "ui:widget": "file",
-        "ui:options": { accept: "image/*", maxSizeMb: 5, kind: "image" },
-      }),
-      alt: f(
-        "Alt text (required)",
-        "Required for accessibility. Describe the 'after' state in one short sentence.",
-      ),
-      caption: f("Caption", "Optional."),
-    },
-    initialPosition: f(
-      "Initial seam position (0..1)",
-      "Where the seam starts. 0 = before fills the canvas; 1 = after fills the canvas. Default 0.5.",
-    ),
-    behaviour: {
-      "ui:title": "Activity behaviour",
-      autoSnap: f("Auto-snap to centre on release", "Seam returns to 0.5 when the learner lets go."),
-    },
-    ui: {
-      "ui:title": "Button label overrides",
-      doneButton: f("'Done' button text"),
-    },
-  },
-
   "image-annotation": {
     ...COMMON,
     "ui:order": [
