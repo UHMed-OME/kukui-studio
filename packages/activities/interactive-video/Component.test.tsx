@@ -1,8 +1,8 @@
 import { describe, expect, it, vi } from "vitest";
 import { fireEvent, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import type { InteractiveVideoConfig } from "@kukui/schemas";
-import { InteractiveVideo } from "./InteractiveVideo.js";
+import type { InteractiveVideoConfig } from "./schema.js";
+import Component from "./Component.js";
 
 const cfg: InteractiveVideoConfig = {
   version: "1.0",
@@ -71,9 +71,9 @@ function getVideo(): HTMLVideoElement {
   return screen.getByTestId("kukui-iv-video") as HTMLVideoElement;
 }
 
-describe("InteractiveVideo", () => {
+describe("interactive-video Component", () => {
   it("renders the video element with the configured src and the title", () => {
-    render(<InteractiveVideo config={cfg} onSubmit={vi.fn()} />);
+    render(<Component config={cfg} onSubmit={vi.fn()} />);
     expect(screen.getByRole("heading", { level: 1, name: /demo video/i })).toBeInTheDocument();
     const video = getVideo();
     expect(video).toBeInTheDocument();
@@ -83,7 +83,7 @@ describe("InteractiveVideo", () => {
   });
 
   it("pauses the video and shows the interaction overlay when currentTime hits an interaction", () => {
-    render(<InteractiveVideo config={cfg} onSubmit={vi.fn()} />);
+    render(<Component config={cfg} onSubmit={vi.fn()} />);
     const video = getVideo();
     const { pause } = stubVideoMethods(video);
 
@@ -105,7 +105,7 @@ describe("InteractiveVideo", () => {
   it("records the embedded MC score and lets the learner resume the video", async () => {
     const user = userEvent.setup();
     const onSubmit = vi.fn();
-    render(<InteractiveVideo config={cfg} onSubmit={onSubmit} />);
+    render(<Component config={cfg} onSubmit={onSubmit} />);
     const video = getVideo();
     const { play } = stubVideoMethods(video);
 
@@ -129,7 +129,7 @@ describe("InteractiveVideo", () => {
   it("video ended event triggers aggregate onSubmit with summed score", async () => {
     const user = userEvent.setup();
     const onSubmit = vi.fn();
-    render(<InteractiveVideo config={cfg} onSubmit={onSubmit} />);
+    render(<Component config={cfg} onSubmit={onSubmit} />);
     const video = getVideo();
     stubVideoMethods(video);
 
@@ -159,7 +159,7 @@ describe("InteractiveVideo", () => {
       ...cfg,
       interactions: [],
     };
-    render(<InteractiveVideo config={single} onSubmit={onSubmit} />);
+    render(<Component config={single} onSubmit={onSubmit} />);
     const video = getVideo();
     stubVideoMethods(video);
     fireEvent.ended(video);
@@ -172,7 +172,7 @@ describe("InteractiveVideo", () => {
   it("persists state via onPersist on time updates and on interaction resolution", async () => {
     const user = userEvent.setup();
     const onPersist = vi.fn();
-    render(<InteractiveVideo config={cfg} onSubmit={vi.fn()} onPersist={onPersist} />);
+    render(<Component config={cfg} onSubmit={vi.fn()} onPersist={onPersist} />);
     const video = getVideo();
     stubVideoMethods(video);
 
@@ -198,13 +198,13 @@ describe("InteractiveVideo", () => {
       video: { src: "https://youtube.com/watch?v=abc", type: "youtube" },
       interactions: [],
     };
-    render(<InteractiveVideo config={yt} onSubmit={vi.fn()} />);
+    render(<Component config={yt} onSubmit={vi.fn()} />);
     expect(screen.queryByTestId("kukui-iv-video")).not.toBeInTheDocument();
     expect(screen.getByText(/youtube embeds are not yet supported/i)).toBeInTheDocument();
   });
 
   it("seeking forward past an unresolved required interaction rewinds and pauses", () => {
-    render(<InteractiveVideo config={cfg} onSubmit={vi.fn()} />);
+    render(<Component config={cfg} onSubmit={vi.fn()} />);
     const video = getVideo();
     const { pause } = stubVideoMethods(video);
     // Allow setting currentTime (the real video element's currentTime is
@@ -236,7 +236,7 @@ describe("InteractiveVideo", () => {
       interactions: [],
       behaviour: { enableRetry: true, passPercentage: 50 },
     };
-    render(<InteractiveVideo config={retryCfg} onSubmit={onSubmit} />);
+    render(<Component config={retryCfg} onSubmit={onSubmit} />);
     const video = getVideo();
     stubVideoMethods(video);
     fireEvent.ended(video);

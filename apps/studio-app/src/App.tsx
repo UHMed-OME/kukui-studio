@@ -83,7 +83,6 @@ const LEGACY_BLOOM: Partial<Record<ActivityKind, BloomLevel>> = {
   // Apply — use procedures in new contexts
   "hotspot-3d": "apply",
   "virtual-tour": "apply",
-  "interactive-video": "apply",
   // Evaluate — judge, critique, decide
   "straw-poll": "evaluate",
   "confidence-meter": "evaluate",

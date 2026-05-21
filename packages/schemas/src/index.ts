@@ -53,7 +53,7 @@ export {
 export {
   InteractiveVideoConfigSchema,
   type InteractiveVideoConfig,
-} from "./interactive-video.js";
+} from "@kukui/activities/interactive-video/schema";
 export {
   AudioRecordingConfigSchema,
   type AudioRecordingConfig,
@@ -115,7 +115,7 @@ import { ImageComparisonSliderConfigSchema } from "@kukui/activities/image-compa
 import { AnatomyLabelingConfigSchema } from "@kukui/activities/anatomy-labeling/schema";
 import { MatchingPairsConfigSchema } from "@kukui/activities/matching-pairs/schema";
 import { HighlightTextConfigSchema } from "@kukui/activities/highlight-text/schema";
-import { InteractiveVideoConfigSchema } from "./interactive-video.js";
+import { InteractiveVideoConfigSchema } from "@kukui/activities/interactive-video/schema";
 import { AudioRecordingConfigSchema } from "@kukui/activities/audio-recording/schema";
 import { BranchingScenarioConfigSchema } from "@kukui/activities/branching-scenario/schema";
 import { ImageAnnotationConfigSchema } from "@kukui/activities/image-annotation/schema";

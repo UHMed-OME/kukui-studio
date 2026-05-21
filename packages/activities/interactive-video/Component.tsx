@@ -1,17 +1,19 @@
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import {
   MultipleChoiceConfigSchema,
-  FillInTheBlanksConfigSchema,
-  type InteractiveVideoConfig,
   type MultipleChoiceConfig,
+} from "@kukui/activities/multiple-choice/schema";
+import {
+  FillInTheBlanksConfigSchema,
   type FillInTheBlanksConfig,
-} from "@kukui/schemas";
-import type { ActivityProps, ScoreState } from "../../types.js";
-import { aggregate, resolveScoring } from "../../scoring.js";
+} from "@kukui/activities/fill-in-the-blanks/schema";
+import type { InteractiveVideoConfig } from "./schema.js";
+import type { ActivityProps, ScoreState } from "@kukui/core/types";
+import { aggregate, resolveScoring } from "@kukui/core/scoring";
 import MultipleChoice from "@kukui/activities/multiple-choice/Component";
 import FillInTheBlanks from "@kukui/activities/fill-in-the-blanks/Component";
-import { SafeHtml } from "../../safe-html.js";
-import "./InteractiveVideo.css";
+import { SafeHtml } from "@kukui/core";
+import "./Component.css";
 
 type Stage = "watching" | "submitted";
 
@@ -41,7 +43,7 @@ type ValidatedInteraction =
 
 const TRIGGER_WINDOW = 0.5;
 
-export function InteractiveVideo({
+export default function Component({
   config,
   onSubmit,
   onPersist,

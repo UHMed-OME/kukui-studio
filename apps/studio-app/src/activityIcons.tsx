@@ -57,19 +57,6 @@ function VirtualTourIcon(props: SVGProps<SVGSVGElement>) {
   );
 }
 
-function InteractiveVideoIcon(props: SVGProps<SVGSVGElement>) {
-  return (
-    <svg {...baseProps} {...props}>
-      <rect x="3" y="5" width="18" height="14" rx="2" />
-      <polygon
-        points="10 9 16 12 10 15"
-        fill="currentColor"
-        stroke="none"
-      />
-    </svg>
-  );
-}
-
 function ConfidenceMeterIcon(props: SVGProps<SVGSVGElement>) {
   return (
     <svg {...baseProps} {...props}>
@@ -147,7 +134,6 @@ const LEGACY_ICONS: Partial<Record<ActivityKind, IconComponent>> = {
   "hotspot-2d": Hotspot2dIcon,
   "hotspot-3d": Hotspot3dIcon,
   "virtual-tour": VirtualTourIcon,
-  "interactive-video": InteractiveVideoIcon,
   "straw-poll": StrawPollIcon,
   "confidence-meter": ConfidenceMeterIcon,
   "word-cloud": WordCloudIcon,

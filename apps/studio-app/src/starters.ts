@@ -115,16 +115,6 @@ const LEGACY_STARTERS: Partial<Record<ActivityKind, unknown>> = {
     completion: { mode: "manual" },
     behaviour: { enableRetry: true },
   },
-  "interactive-video": {
-    version: "1.0",
-    title: "Interactive Video",
-    video: {
-      src: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
-      type: "html5",
-    },
-    interactions: [],
-    behaviour: { enableRetry: true },
-  },
   "straw-poll": {
     version: "1.0",
     title: "Pulse check",
@@ -275,7 +265,6 @@ const LEGACY_LABELS: Partial<Record<ActivityKind, string>> = {
   "hotspot-3d": "3D Hotspots",
   "hotspot-2d": "Image Hotspots",
   "virtual-tour": "Virtual Tour",
-  "interactive-video": "Interactive Video",
   "straw-poll": "Straw Poll (Live)",
   "confidence-meter": "Confidence Meter (Live)",
   "word-cloud": "Word Cloud (Live)",

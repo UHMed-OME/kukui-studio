@@ -294,41 +294,6 @@ const LEGACY_UI_SCHEMAS: Partial<Record<ActivityKind, Record<string, unknown>>> 
     },
   },
 
-  "interactive-video": {
-    ...COMMON,
-    "ui:order": ["title", "prompt", "video", "interactions", "behaviour", "ui", "*"],
-    title: TITLE,
-    author: AUTHOR,
-    prompt: f("Prompt", "Optional. Shown above the player.", {
-      "ui:widget": "html",
-      "ui:options": { rows: 2 },
-    }),
-    video: {
-      "ui:title": "Video source",
-      src: f("Video URL", "MP4, YouTube, or Vimeo URL."),
-      type: f("Source type", "html5 for direct MP4; otherwise youtube / vimeo."),
-      poster: f("Poster image", "Optional. Shown before play."),
-    },
-    interactions: {
-      "ui:title": "Time-coded interactions",
-      "ui:help": "Each interaction pauses the video and renders a sub-activity.",
-      items: {
-        id: HIDDEN,
-        kind: f("Interaction kind", "Which sub-activity to render."),
-        required: f("Required", "Block playback resume until answered."),
-      },
-    },
-    behaviour: {
-      "ui:title": "Activity behaviour",
-      enableRetry: BEHAVIOUR_RETRY,
-      passPercentage: HIDDEN,
-    },
-    ui: {
-      "ui:title": "Button label overrides",
-      submitButtonLabel: f("'Submit' button text"),
-    },
-  },
-
   "straw-poll": {
     ...COMMON,
     "ui:order": ["title", "prompt", "choices", "behaviour", "live", "ui", "*"],
