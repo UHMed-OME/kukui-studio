@@ -58,7 +58,7 @@ export {
 export {
   BranchingScenarioConfigSchema,
   type BranchingScenarioConfig,
-} from "./branching-scenario.js";
+} from "@kukui/activities/branching-scenario/schema";
 export {
   ImageAnnotationConfigSchema,
   type ImageAnnotationConfig,
@@ -114,7 +114,7 @@ import { MatchingPairsConfigSchema } from "@kukui/activities/matching-pairs/sche
 import { HighlightTextConfigSchema } from "@kukui/activities/highlight-text/schema";
 import { InteractiveVideoConfigSchema } from "./interactive-video.js";
 import { AudioRecordingConfigSchema } from "@kukui/activities/audio-recording/schema";
-import { BranchingScenarioConfigSchema } from "./branching-scenario.js";
+import { BranchingScenarioConfigSchema } from "@kukui/activities/branching-scenario/schema";
 import { ImageAnnotationConfigSchema } from "@kukui/activities/image-annotation/schema";
 import { ConceptMapConfigSchema } from "@kukui/activities/concept-map/schema";
 import { LabPanelConfigSchema } from "@kukui/activities/lab-panel/schema";

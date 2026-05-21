@@ -85,7 +85,6 @@ const LEGACY_BLOOM: Partial<Record<ActivityKind, BloomLevel>> = {
   "virtual-tour": "apply",
   "interactive-video": "apply",
   // Evaluate — judge, critique, decide
-  "branching-scenario": "evaluate",
   "straw-poll": "evaluate",
   "confidence-meter": "evaluate",
   "qa-board": "evaluate",

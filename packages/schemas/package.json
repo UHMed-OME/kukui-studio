@@ -12,7 +12,6 @@
     "./hotspot-3d": "./src/hotspot-3d.ts",
     "./hotspot-2d": "./src/hotspot-2d.ts",
     "./virtual-tour": "./src/virtual-tour.ts",
-    "./branching-scenario": "./src/branching-scenario.ts",
     "./straw-poll": "./src/straw-poll.ts",
     "./confidence-meter": "./src/confidence-meter.ts",
     "./word-cloud": "./src/word-cloud.ts",

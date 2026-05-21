@@ -332,49 +332,6 @@ const LEGACY_UI_SCHEMAS: Partial<Record<ActivityKind, Record<string, unknown>>> 
     },
   },
 
-  "branching-scenario": {
-    ...COMMON,
-    "ui:order": ["title", "startNodeId", "nodes", "behaviour", "ui", "*"],
-    title: TITLE,
-    author: AUTHOR,
-    startNodeId: f("Starting step", "Which step the learner sees first.", {
-      "ui:widget": "nodeSelect",
-    }),
-    nodes: {
-      "ui:title": "Scenario steps",
-      "ui:help":
-        "Each step shows a prompt, then either a list of choices that lead elsewhere or a final outcome.",
-      items: {
-        id: HIDDEN,
-        prompt: f("Prompt", "Shown when the learner reaches this step.", {
-          "ui:widget": "html",
-        }),
-        choices: {
-          "ui:title": "Choices",
-          items: {
-            id: HIDDEN,
-            text: f("Choice text", "What the learner sees on the button."),
-            nextNodeId: f("Goes to step", "Which step this choice leads to.", {
-              "ui:widget": "nodeSelect",
-            }),
-            feedback: f("Feedback (optional)", "Shown when this choice is picked.", {
-              "ui:widget": "textarea",
-              "ui:options": { rows: 2 },
-            }),
-          },
-        },
-      },
-    },
-    behaviour: {
-      "ui:title": "Activity behaviour",
-      enableRetry: BEHAVIOUR_RETRY,
-    },
-    ui: {
-      "ui:title": "Button label overrides",
-      restartButton: f("'Restart' button text"),
-    },
-  },
-
   "interactive-video": {
     ...COMMON,
     "ui:order": ["title", "prompt", "video", "interactions", "behaviour", "ui", "*"],

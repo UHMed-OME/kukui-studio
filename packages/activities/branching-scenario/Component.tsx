@@ -1,8 +1,7 @@
 import { useEffect, useId, useMemo, useRef, useState } from "react";
-import type { BranchingScenarioConfig } from "@kukui/schemas/branching-scenario";
-import type { ActivityProps } from "../../types.js";
-import { SafeHtml, htmlToText } from "../../safe-html.js";
-import "./BranchingScenario.css";
+import type { BranchingScenarioConfig } from "./schema.js";
+import { SafeHtml, htmlToText, type ActivityProps } from "@kukui/core";
+import "./Component.css";
 
 type State = {
   currentNodeId: string;
@@ -18,7 +17,7 @@ type DefaultOutcome = { score: number; success: boolean; message?: string };
 
 const COMPLETION_DEFAULT: DefaultOutcome = { score: 1, success: true };
 
-export function BranchingScenario({
+export default function Component({
   config,
   onSubmit,
   onPersist,

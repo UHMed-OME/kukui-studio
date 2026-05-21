@@ -1,8 +1,8 @@
 import { describe, expect, it, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import type { BranchingScenarioConfig } from "@kukui/schemas/branching-scenario";
-import { BranchingScenario } from "./BranchingScenario.js";
+import type { BranchingScenarioConfig } from "./schema.js";
+import Component from "./Component.js";
 
 const cfg: BranchingScenarioConfig = {
   version: "1.0",
@@ -93,7 +93,7 @@ const cfgBroken: BranchingScenarioConfig = {
 
 describe("BranchingScenario", () => {
   it("renders the start node's prompt and its choice buttons", () => {
-    render(<BranchingScenario config={cfg} onSubmit={vi.fn()} />);
+    render(<Component config={cfg} onSubmit={vi.fn()} />);
     expect(
       screen.getByRole("heading", { level: 1, name: /triage call/i }),
     ).toBeInTheDocument();
@@ -108,7 +108,7 @@ describe("BranchingScenario", () => {
 
   it("clicking a choice routes to the next node's prompt", async () => {
     const user = userEvent.setup();
-    render(<BranchingScenario config={cfg} onSubmit={vi.fn()} />);
+    render(<Component config={cfg} onSubmit={vi.fn()} />);
     await user.click(screen.getByRole("button", { name: /take vitals/i }));
     expect(screen.getByText(/bp is 150\/95/i)).toBeInTheDocument();
     expect(
@@ -119,7 +119,7 @@ describe("BranchingScenario", () => {
   it("reaching a terminal node calls onSubmit with the outcome's score and a path in suspendData", async () => {
     const user = userEvent.setup();
     const onSubmit = vi.fn();
-    render(<BranchingScenario config={cfg} onSubmit={onSubmit} />);
+    render(<Component config={cfg} onSubmit={onSubmit} />);
     await user.click(screen.getByRole("button", { name: /take vitals/i }));
     await user.click(screen.getByRole("button", { name: /order an ekg/i }));
     expect(onSubmit).toHaveBeenCalledTimes(1);
@@ -135,7 +135,7 @@ describe("BranchingScenario", () => {
   it("defaults to score=1/success=true when a terminal node has no outcome (completion-only)", async () => {
     const user = userEvent.setup();
     const onSubmit = vi.fn();
-    render(<BranchingScenario config={cfgNoOutcome} onSubmit={onSubmit} />);
+    render(<Component config={cfgNoOutcome} onSubmit={onSubmit} />);
     await user.click(screen.getByRole("button", { name: /^go$/i }));
     expect(onSubmit).toHaveBeenCalledWith(
       expect.objectContaining({ raw: 1, max: 1, success: true }),
@@ -144,7 +144,7 @@ describe("BranchingScenario", () => {
 
   it("Restart resets to the start node and clears the path when enableRetry=true", async () => {
     const user = userEvent.setup();
-    render(<BranchingScenario config={cfg} onSubmit={vi.fn()} />);
+    render(<Component config={cfg} onSubmit={vi.fn()} />);
     await user.click(screen.getByRole("button", { name: /discharge them/i }));
     expect(screen.getByText(/adverse outcome/i)).toBeInTheDocument();
     await user.click(screen.getByRole("button", { name: /restart/i }));
@@ -159,7 +159,7 @@ describe("BranchingScenario", () => {
     const user = userEvent.setup();
     const onPersist = vi.fn();
     render(
-      <BranchingScenario
+      <Component
         config={cfg}
         onSubmit={vi.fn()}
         onPersist={onPersist}
@@ -180,7 +180,7 @@ describe("BranchingScenario", () => {
   it("handles a broken nextNodeId gracefully (no crash, no navigation, no onSubmit)", async () => {
     const user = userEvent.setup();
     const onSubmit = vi.fn();
-    render(<BranchingScenario config={cfgBroken} onSubmit={onSubmit} />);
+    render(<Component config={cfgBroken} onSubmit={onSubmit} />);
     await user.click(screen.getByRole("button", { name: /broken/i }));
     // Stayed on the start node — broken choice did not navigate.
     expect(screen.getByRole("button", { name: /broken/i })).toBeInTheDocument();
@@ -199,7 +199,7 @@ describe("BranchingScenario", () => {
       lastChoiceId: "vitals",
     });
     render(
-      <BranchingScenario
+      <Component
         config={cfg}
         onSubmit={vi.fn()}
         suspendData={suspendData}

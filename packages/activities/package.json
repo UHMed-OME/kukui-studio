@@ -12,6 +12,8 @@
     "./anatomy-labeling/schema": "./anatomy-labeling/schema.ts",
     "./audio-recording/Component": "./audio-recording/Component.tsx",
     "./audio-recording/schema": "./audio-recording/schema.ts",
+    "./branching-scenario/Component": "./branching-scenario/Component.tsx",
+    "./branching-scenario/schema": "./branching-scenario/schema.ts",
     "./categorization/Component": "./categorization/Component.tsx",
     "./categorization/schema": "./categorization/schema.ts",
     "./concept-map/Component": "./concept-map/Component.tsx",

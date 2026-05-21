@@ -135,34 +135,6 @@ const LEGACY_STARTERS: Partial<Record<ActivityKind, unknown>> = {
     completion: { mode: "manual" },
     behaviour: { enableRetry: true },
   },
-  "branching-scenario": {
-    version: "1.0",
-    title: "Branching Scenario",
-    startNodeId: "n1",
-    nodes: [
-      {
-        id: "n1",
-        prompt: "What's your first move?",
-        choices: [
-          { id: "c1", text: "Option A", nextNodeId: "n2" },
-          { id: "c2", text: "Option B", nextNodeId: "n3" },
-        ],
-      },
-      {
-        id: "n2",
-        prompt: "Outcome A.",
-        choices: null,
-        outcome: { score: 1, success: true, message: "Good call." },
-      },
-      {
-        id: "n3",
-        prompt: "Outcome B.",
-        choices: null,
-        outcome: { score: 0, success: false, message: "Try again." },
-      },
-    ],
-    behaviour: { enableRetry: true },
-  },
   "interactive-video": {
     version: "1.0",
     title: "Interactive Video",
@@ -324,7 +296,6 @@ const LEGACY_LABELS: Partial<Record<ActivityKind, string>> = {
   "hotspot-3d": "3D Hotspots",
   "hotspot-2d": "Image Hotspots",
   "virtual-tour": "Virtual Tour",
-  "branching-scenario": "Branching Scenario",
   "interactive-video": "Interactive Video",
   "straw-poll": "Straw Poll (Live)",
   "confidence-meter": "Confidence Meter (Live)",

@@ -70,18 +70,6 @@ function InteractiveVideoIcon(props: SVGProps<SVGSVGElement>) {
   );
 }
 
-function BranchingScenarioIcon(props: SVGProps<SVGSVGElement>) {
-  return (
-    <svg {...baseProps} {...props}>
-      <circle cx="12" cy="5" r="2" />
-      <circle cx="6" cy="17" r="2" />
-      <circle cx="18" cy="17" r="2" />
-      <line x1="11" y1="7" x2="7" y2="15" />
-      <line x1="13" y1="7" x2="17" y2="15" />
-    </svg>
-  );
-}
-
 function ConfidenceMeterIcon(props: SVGProps<SVGSVGElement>) {
   return (
     <svg {...baseProps} {...props}>
@@ -160,7 +148,6 @@ const LEGACY_ICONS: Partial<Record<ActivityKind, IconComponent>> = {
   "hotspot-3d": Hotspot3dIcon,
   "virtual-tour": VirtualTourIcon,
   "interactive-video": InteractiveVideoIcon,
-  "branching-scenario": BranchingScenarioIcon,
   "straw-poll": StrawPollIcon,
   "confidence-meter": ConfidenceMeterIcon,
   "word-cloud": WordCloudIcon,
