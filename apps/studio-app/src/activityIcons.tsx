@@ -70,19 +70,6 @@ function InteractiveVideoIcon(props: SVGProps<SVGSVGElement>) {
   );
 }
 
-function ConceptMapIcon(props: SVGProps<SVGSVGElement>) {
-  return (
-    <svg {...baseProps} {...props}>
-      <circle cx="6" cy="6" r="2.5" />
-      <circle cx="18" cy="8" r="2.5" />
-      <circle cx="12" cy="18" r="2.5" />
-      <line x1="8" y1="7" x2="16" y2="8" />
-      <line x1="7" y1="8" x2="11" y2="16" />
-      <line x1="17" y1="10" x2="13" y2="16" />
-    </svg>
-  );
-}
-
 function LabPanelIcon(props: SVGProps<SVGSVGElement>) {
   return (
     <svg {...baseProps} {...props}>
@@ -240,7 +227,6 @@ const LEGACY_ICONS: Partial<Record<ActivityKind, IconComponent>> = {
   "hotspot-3d": Hotspot3dIcon,
   "virtual-tour": VirtualTourIcon,
   "interactive-video": InteractiveVideoIcon,
-  "concept-map": ConceptMapIcon,
   "lab-panel": LabPanelIcon,
   "branching-scenario": BranchingScenarioIcon,
   "ddx-tree": DdxTreeIcon,

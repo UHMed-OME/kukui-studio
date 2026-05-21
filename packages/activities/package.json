@@ -12,6 +12,8 @@
     "./anatomy-labeling/schema": "./anatomy-labeling/schema.ts",
     "./categorization/Component": "./categorization/Component.tsx",
     "./categorization/schema": "./categorization/schema.ts",
+    "./concept-map/Component": "./concept-map/Component.tsx",
+    "./concept-map/schema": "./concept-map/schema.ts",
     "./drag-and-drop/Component": "./drag-and-drop/Component.tsx",
     "./drag-and-drop/schema": "./drag-and-drop/schema.ts",
     "./fill-in-the-blanks/Component": "./fill-in-the-blanks/Component.tsx",

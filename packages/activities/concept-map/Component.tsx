@@ -9,10 +9,10 @@ import {
   type KeyboardEvent,
   type PointerEvent,
 } from "react";
-import type { ConceptMapConfig } from "@kukui/schemas/concept-map";
-import type { ActivityProps } from "../../types.js";
-import { SafeHtml } from "../../safe-html.js";
-import "./ConceptMap.css";
+import type { ConceptMapConfig } from "./schema.js";
+import type { ActivityProps } from "@kukui/core/types";
+import { SafeHtml } from "@kukui/core";
+import "./Component.css";
 
 type NodeShape = { id: string; label: string; position: { x: number; y: number } };
 type EdgeShape = { id: string; from: string; to: string; label?: string };
@@ -61,7 +61,7 @@ const NODE_NUDGE = 0.02; // 2 % per arrow press
  * - Undo / redo
  * - Real-time multi-learner sync (planned for Phase 3 / Live)
  */
-export function ConceptMap({
+export default function Component({
   config,
   onSubmit,
   onPersist,

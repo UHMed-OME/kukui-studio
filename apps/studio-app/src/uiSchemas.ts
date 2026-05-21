@@ -375,61 +375,6 @@ const LEGACY_UI_SCHEMAS: Partial<Record<ActivityKind, Record<string, unknown>>> 
     },
   },
 
-  "concept-map": {
-    ...COMMON,
-    "ui:order": [
-      "title",
-      "prompt",
-      "seedNodes",
-      "availableConcepts",
-      "expected",
-      "behaviour",
-      "ui",
-      "*",
-    ],
-    title: TITLE,
-    author: AUTHOR,
-    prompt: f("Prompt", "What the learner builds a concept map of.", {
-      "ui:widget": "html",
-      "ui:options": { rows: 3 },
-    }),
-    seedNodes: {
-      "ui:title": "Starter nodes",
-      "ui:help": "Optional. Nodes the learner sees pre-placed on the canvas.",
-      items: {
-        id: HIDDEN,
-        label: f("Label", "Visible node text."),
-      },
-    },
-    availableConcepts: {
-      "ui:title": "Concept palette",
-      "ui:help": "Optional. Concepts the learner can drag onto the canvas.",
-      items: {
-        id: HIDDEN,
-        label: f("Label", "Visible label text."),
-      },
-    },
-    expected: {
-      "ui:title": "Expected (ground-truth) map",
-      nodes: f("Required node labels", "Optional. Labels the learner must include."),
-      edges: {
-        "ui:title": "Required edges",
-      },
-    },
-    behaviour: {
-      "ui:title": "Activity behaviour",
-      enableRetry: BEHAVIOUR_RETRY,
-      allowFreeText: f(
-        "Allow free-text nodes",
-        "When on, the learner can add nodes outside the seed set.",
-      ),
-    },
-    ui: {
-      "ui:title": "Button label overrides",
-      submitButton: f("'Submit' button text"),
-    },
-  },
-
   "interactive-video": {
     ...COMMON,
     "ui:order": ["title", "prompt", "video", "interactions", "behaviour", "ui", "*"],

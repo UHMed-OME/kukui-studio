@@ -13,7 +13,6 @@
     "./hotspot-2d": "./src/hotspot-2d.ts",
     "./virtual-tour": "./src/virtual-tour.ts",
     "./branching-scenario": "./src/branching-scenario.ts",
-    "./concept-map": "./src/concept-map.ts",
     "./audio-recording": "./src/audio-recording.ts",
     "./lab-panel": "./src/lab-panel.ts",
     "./ddx-tree": "./src/ddx-tree.ts",

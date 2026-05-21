@@ -28,7 +28,6 @@
     "./components/reflection-prompt": "./src/components/reflection-prompt/index.ts",
     "./components/audio-recording": "./src/components/audio-recording/index.ts",
     "./components/branching-scenario": "./src/components/branching-scenario/index.ts",
-    "./components/concept-map": "./src/components/concept-map/index.ts",
     "./components/interactive-video": "./src/components/interactive-video/index.ts",
     "./components/lab-panel": "./src/components/lab-panel/index.ts",
     "./components/ddx-tree": "./src/components/ddx-tree/index.ts",

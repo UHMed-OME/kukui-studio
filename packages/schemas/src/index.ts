@@ -66,7 +66,7 @@ export {
 export {
   ConceptMapConfigSchema,
   type ConceptMapConfig,
-} from "./concept-map.js";
+} from "@kukui/activities/concept-map/schema";
 export { LabPanelConfigSchema, type LabPanelConfig } from "./lab-panel.js";
 export { DDxTreeConfigSchema, type DDxTreeConfig } from "./ddx-tree.js";
 export { OSCEConfigSchema, type OSCEConfig } from "./osce.js";
@@ -104,7 +104,7 @@ import { InteractiveVideoConfigSchema } from "./interactive-video.js";
 import { AudioRecordingConfigSchema } from "./audio-recording.js";
 import { BranchingScenarioConfigSchema } from "./branching-scenario.js";
 import { ImageAnnotationConfigSchema } from "@kukui/activities/image-annotation/schema";
-import { ConceptMapConfigSchema } from "./concept-map.js";
+import { ConceptMapConfigSchema } from "@kukui/activities/concept-map/schema";
 import { LabPanelConfigSchema } from "./lab-panel.js";
 import { DDxTreeConfigSchema } from "./ddx-tree.js";
 import { OSCEConfigSchema } from "./osce.js";

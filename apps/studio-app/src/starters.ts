@@ -163,16 +163,6 @@ const LEGACY_STARTERS: Partial<Record<ActivityKind, unknown>> = {
     ],
     behaviour: { enableRetry: true },
   },
-  "concept-map": {
-    version: "1.0",
-    title: "Concept Map",
-    prompt: "Build a concept map.",
-    seedNodes: [
-      { id: "n1", label: "Concept A", position: { x: 0.3, y: 0.4 } },
-      { id: "n2", label: "Concept B", position: { x: 0.7, y: 0.4 } },
-    ],
-    behaviour: { enableRetry: true, allowFreeText: true },
-  },
   "interactive-video": {
     version: "1.0",
     title: "Interactive Video",
@@ -434,7 +424,6 @@ const LEGACY_LABELS: Partial<Record<ActivityKind, string>> = {
   "hotspot-2d": "Image Hotspots",
   "virtual-tour": "Virtual Tour",
   "branching-scenario": "Branching Scenario",
-  "concept-map": "Concept Map",
   "interactive-video": "Interactive Video",
   "audio-recording": "Audio Recording",
   "lab-panel": "Lab Panel Interpretation",

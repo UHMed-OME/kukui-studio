@@ -1,8 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createEvent, fireEvent, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import type { ConceptMapConfig } from "@kukui/schemas/concept-map";
-import { ConceptMap } from "./ConceptMap.js";
+import type { ConceptMapConfig } from "./schema.js";
+import Component from "./Component.js";
 
 /**
  * JSDOM's PointerEvent constructor strips clientX/clientY from the dispatched
@@ -89,7 +89,7 @@ describe("ConceptMap", () => {
   });
 
   it("renders title, prompt, toolbar, canvas, and seed nodes", () => {
-    render(<ConceptMap config={baseCfg} onSubmit={vi.fn()} />);
+    render(<Component config={baseCfg} onSubmit={vi.fn()} />);
     expect(
       screen.getByRole("heading", { level: 1, name: /map cell organelles/i }),
     ).toBeInTheDocument();
@@ -120,7 +120,7 @@ describe("ConceptMap", () => {
 
   it("clicking a palette chip adds a node to the canvas at canvas centre (keyboard fallback)", async () => {
     const user = userEvent.setup();
-    render(<ConceptMap config={baseCfg} onSubmit={vi.fn()} />);
+    render(<Component config={baseCfg} onSubmit={vi.fn()} />);
     const ribosomePaletteBtn = screen.getByRole("button", {
       name: /add concept ribosome to canvas/i,
     });
@@ -135,7 +135,7 @@ describe("ConceptMap", () => {
 
   it("entering Edge mode and clicking two nodes draws an edge between them", async () => {
     const user = userEvent.setup();
-    render(<ConceptMap config={baseCfg} onSubmit={vi.fn()} />);
+    render(<Component config={baseCfg} onSubmit={vi.fn()} />);
     await user.click(
       screen.getByRole("button", { name: /draw an edge between two nodes/i }),
     );
@@ -154,7 +154,7 @@ describe("ConceptMap", () => {
 
   it("Delete on a focused node removes the node and any incident edges", async () => {
     const user = userEvent.setup();
-    render(<ConceptMap config={baseCfg} onSubmit={vi.fn()} />);
+    render(<Component config={baseCfg} onSubmit={vi.fn()} />);
     // First make an edge from nucleus to mitochondrion.
     await user.click(screen.getByRole("button", { name: /draw an edge/i }));
     await user.click(screen.getByRole("button", { name: /node nucleus/i }));
@@ -178,7 +178,7 @@ describe("ConceptMap", () => {
   it("Submit scores correct nodes + correct edges and reports success when all expected items present", async () => {
     const user = userEvent.setup();
     const onSubmit = vi.fn();
-    render(<ConceptMap config={baseCfg} onSubmit={onSubmit} />);
+    render(<Component config={baseCfg} onSubmit={onSubmit} />);
 
     // Add ribosome from palette to fulfill the third expected node.
     await user.click(
@@ -204,7 +204,7 @@ describe("ConceptMap", () => {
   it("partial correctness yields partial credit", async () => {
     const user = userEvent.setup();
     const onSubmit = vi.fn();
-    render(<ConceptMap config={baseCfg} onSubmit={onSubmit} />);
+    render(<Component config={baseCfg} onSubmit={onSubmit} />);
     // Don't add ribosome; don't connect anything. Submit with just the seeds.
     await user.click(screen.getByRole("button", { name: /^submit$/i }));
     expect(onSubmit.mock.calls[0]?.[0]).toMatchObject({
@@ -223,7 +223,7 @@ describe("ConceptMap", () => {
       prompt: "<p>Build a map of any concepts you choose.</p>",
       availableConcepts: [{ id: "a", label: "Alpha" }],
     };
-    render(<ConceptMap config={noExpected} onSubmit={onSubmit} />);
+    render(<Component config={noExpected} onSubmit={onSubmit} />);
     // Submit is disabled with zero nodes.
     expect(screen.getByRole("button", { name: /^submit$/i })).toBeDisabled();
     await user.click(screen.getByRole("button", { name: /add concept alpha to canvas/i }));
@@ -237,7 +237,7 @@ describe("ConceptMap", () => {
 
   it("dragging a node updates its position via pointer events", () => {
     const onPersist = vi.fn();
-    render(<ConceptMap config={baseCfg} onSubmit={vi.fn()} onPersist={onPersist} />);
+    render(<Component config={baseCfg} onSubmit={vi.fn()} onPersist={onPersist} />);
 
     const nucleusBtn = screen.getByRole("button", { name: /node nucleus/i });
     const canvas = document.querySelector(".kukui-cm__canvas") as HTMLElement;
@@ -273,7 +273,7 @@ describe("ConceptMap", () => {
   it("arrow keys nudge a focused node", async () => {
     const user = userEvent.setup();
     const onPersist = vi.fn();
-    render(<ConceptMap config={baseCfg} onSubmit={vi.fn()} onPersist={onPersist} />);
+    render(<Component config={baseCfg} onSubmit={vi.fn()} onPersist={onPersist} />);
     const nucleusBtn = screen.getByRole("button", { name: /node nucleus/i });
     nucleusBtn.focus();
     // Initial nucleus is at (0.2, 0.3).
@@ -288,7 +288,7 @@ describe("ConceptMap", () => {
 
   it("Clear all empties the canvas of nodes and edges", async () => {
     const user = userEvent.setup();
-    render(<ConceptMap config={baseCfg} onSubmit={vi.fn()} />);
+    render(<Component config={baseCfg} onSubmit={vi.fn()} />);
     expect(screen.getByRole("button", { name: /node nucleus/i })).toBeInTheDocument();
     await user.click(screen.getByRole("button", { name: /clear all nodes and edges/i }));
     expect(screen.queryByRole("button", { name: /node nucleus/i })).toBeNull();
@@ -298,7 +298,7 @@ describe("ConceptMap", () => {
   it("persists state via onPersist on each meaningful change", async () => {
     const user = userEvent.setup();
     const onPersist = vi.fn();
-    render(<ConceptMap config={baseCfg} onSubmit={vi.fn()} onPersist={onPersist} />);
+    render(<Component config={baseCfg} onSubmit={vi.fn()} onPersist={onPersist} />);
     // Initial mount fires once.
     const initialCallCount = onPersist.mock.calls.length;
     expect(initialCallCount).toBeGreaterThan(0);
@@ -311,7 +311,7 @@ describe("ConceptMap", () => {
 
   it("after submit, Try again resets the canvas to seed state when enableRetry is on", async () => {
     const user = userEvent.setup();
-    render(<ConceptMap config={baseCfg} onSubmit={vi.fn()} />);
+    render(<Component config={baseCfg} onSubmit={vi.fn()} />);
     // Add a node, then submit.
     await user.click(screen.getByRole("button", { name: /add concept ribosome to canvas/i }));
     await user.click(screen.getByRole("button", { name: /^submit$/i }));
