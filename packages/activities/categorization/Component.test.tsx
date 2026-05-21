@@ -1,8 +1,8 @@
 import { describe, expect, it, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import type { CategorizationConfig } from "@kukui/schemas";
-import { Categorization } from "./Categorization.js";
+import type { CategorizationConfig } from "./schema.js";
+import Component from "./Component.js";
 
 const cfg: CategorizationConfig = {
   version: "1.0",
@@ -23,7 +23,7 @@ const cfg: CategorizationConfig = {
 
 describe("Categorization — keyboard fallback path", () => {
   it("renders title, prompt, bins, and a fallback select per item", () => {
-    render(<Categorization config={cfg} onSubmit={vi.fn()} />);
+    render(<Component config={cfg} onSubmit={vi.fn()} />);
     expect(
       screen.getByRole("heading", { level: 1, name: /sort the organisms/i }),
     ).toBeInTheDocument();
@@ -37,7 +37,7 @@ describe("Categorization — keyboard fallback path", () => {
 
   it("Check is disabled until every item is binned", async () => {
     const user = userEvent.setup();
-    render(<Categorization config={cfg} onSubmit={vi.fn()} />);
+    render(<Component config={cfg} onSubmit={vi.fn()} />);
     const check = screen.getByRole("button", { name: /check/i });
     expect(check).toBeDisabled();
     const selects = screen.getAllByRole("combobox");
@@ -51,7 +51,7 @@ describe("Categorization — keyboard fallback path", () => {
   it("all-correct placements score full marks (1 point per item)", async () => {
     const user = userEvent.setup();
     const onSubmit = vi.fn();
-    render(<Categorization config={cfg} onSubmit={onSubmit} />);
+    render(<Component config={cfg} onSubmit={onSubmit} />);
     const selects = screen.getAllByRole("combobox");
     await user.selectOptions(selects[0]!, "c-plantae");
     await user.selectOptions(selects[1]!, "c-animalia");
@@ -63,7 +63,7 @@ describe("Categorization — keyboard fallback path", () => {
   it("partial correctness yields partial credit by default", async () => {
     const user = userEvent.setup();
     const onSubmit = vi.fn();
-    render(<Categorization config={cfg} onSubmit={onSubmit} />);
+    render(<Component config={cfg} onSubmit={onSubmit} />);
     const selects = screen.getAllByRole("combobox");
     await user.selectOptions(selects[0]!, "c-plantae"); // correct
     await user.selectOptions(selects[1]!, "c-fungi"); // wrong
@@ -79,7 +79,7 @@ describe("Categorization — keyboard fallback path", () => {
       ...cfg,
       behaviour: { ...cfg.behaviour, singlePoint: true },
     };
-    render(<Categorization config={sp} onSubmit={onSubmit} />);
+    render(<Component config={sp} onSubmit={onSubmit} />);
     const selects = screen.getAllByRole("combobox");
     await user.selectOptions(selects[0]!, "c-plantae");
     await user.selectOptions(selects[1]!, "c-fungi"); // wrong
@@ -90,7 +90,7 @@ describe("Categorization — keyboard fallback path", () => {
 
   it("Try again resets all placements", async () => {
     const user = userEvent.setup();
-    render(<Categorization config={cfg} onSubmit={vi.fn()} />);
+    render(<Component config={cfg} onSubmit={vi.fn()} />);
     const selects = screen.getAllByRole("combobox");
     await user.selectOptions(selects[0]!, "c-plantae");
     await user.selectOptions(selects[1]!, "c-animalia");
@@ -104,7 +104,7 @@ describe("Categorization — keyboard fallback path", () => {
   it("persists state via onPersist on each placement change", async () => {
     const user = userEvent.setup();
     const onPersist = vi.fn();
-    render(<Categorization config={cfg} onSubmit={vi.fn()} onPersist={onPersist} />);
+    render(<Component config={cfg} onSubmit={vi.fn()} onPersist={onPersist} />);
     const selects = screen.getAllByRole("combobox");
     await user.selectOptions(selects[0]!, "c-plantae");
     expect(onPersist).toHaveBeenCalled();
@@ -114,7 +114,7 @@ describe("Categorization — keyboard fallback path", () => {
 
   it("after submit, shows correct-category indicator beside wrong items", async () => {
     const user = userEvent.setup();
-    render(<Categorization config={cfg} onSubmit={vi.fn()} />);
+    render(<Component config={cfg} onSubmit={vi.fn()} />);
     const selects = screen.getAllByRole("combobox");
     await user.selectOptions(selects[0]!, "c-animalia"); // oak in wrong bin
     await user.selectOptions(selects[1]!, "c-animalia");

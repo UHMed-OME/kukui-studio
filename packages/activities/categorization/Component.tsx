@@ -11,11 +11,11 @@ import {
   type DragEndEvent,
   type DragStartEvent,
 } from "@dnd-kit/core";
-import type { CategorizationConfig } from "@kukui/schemas";
-import type { ActivityProps } from "../../types.js";
-import { SafeHtml } from "../../safe-html.js";
-import { resolveScoring } from "../../scoring.js";
-import "./Categorization.css";
+import type { CategorizationConfig } from "./schema.js";
+import type { ActivityProps } from "@kukui/core/types";
+import { SafeHtml } from "@kukui/core";
+import { resolveScoring } from "@kukui/core/scoring";
+import "./Component.css";
 
 type Stage = "answering" | "submitted";
 
@@ -28,7 +28,7 @@ type State = {
   attempts: number;
 };
 
-export function Categorization({
+export default function Component({
   config,
   onSubmit,
   onPersist,

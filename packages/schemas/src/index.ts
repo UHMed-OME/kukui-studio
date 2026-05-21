@@ -18,7 +18,7 @@ export { VirtualTourConfigSchema, type VirtualTourConfig } from "./virtual-tour.
 export {
   CategorizationConfigSchema,
   type CategorizationConfig,
-} from "./categorization.js";
+} from "@kukui/activities/categorization/schema";
 export {
   SequenceStepsConfigSchema,
   type SequenceStepsConfig,
@@ -92,7 +92,7 @@ import { QuestionSetConfigSchema } from "./question-set.js";
 import { Hotspot3DConfigSchema } from "./hotspot-3d.js";
 import { Hotspot2DConfigSchema } from "./hotspot-2d.js";
 import { VirtualTourConfigSchema } from "./virtual-tour.js";
-import { CategorizationConfigSchema } from "./categorization.js";
+import { CategorizationConfigSchema } from "@kukui/activities/categorization/schema";
 import { SequenceStepsConfigSchema } from "@kukui/activities/sequence-steps/schema";
 import { ReflectionPromptConfigSchema } from "./reflection-prompt.js";
 import { FlashcardsConfigSchema } from "./flashcards.js";

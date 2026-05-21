@@ -332,48 +332,6 @@ const LEGACY_UI_SCHEMAS: Partial<Record<ActivityKind, Record<string, unknown>>> 
     },
   },
 
-  categorization: {
-    ...COMMON,
-    "ui:order": ["title", "prompt", "categories", "items", "behaviour", "ui", "*"],
-    title: TITLE,
-    author: AUTHOR,
-    prompt: f("Prompt", "Tells the learner what to sort.", {
-      "ui:widget": "html",
-      "ui:options": { rows: 3 },
-    }),
-    categories: {
-      "ui:title": "Categories (bins)",
-      "ui:help": "The named bins items can be dropped into.",
-      items: {
-        id: HIDDEN,
-        label: f("Bin label", "Shown above the bin."),
-      },
-    },
-    items: {
-      "ui:title": "Items to sort",
-      "ui:help": "Each item declares which category id is its correct home.",
-      items: {
-        id: HIDDEN,
-        text: f("Item text", "What the learner sees on the item card."),
-        correctCategory: f(
-          "Correct category id",
-          "Must match one of the category ids declared above.",
-        ),
-      },
-    },
-    behaviour: {
-      "ui:title": "Activity behaviour",
-      enableRetry: BEHAVIOUR_RETRY,
-      singlePoint: BEHAVIOUR_SINGLEPOINT,
-      randomizeItems: f("Shuffle items on load", "When on, the tray order is randomized."),
-    },
-    ui: {
-      "ui:title": "Button label overrides",
-      checkAnswerButton: f("'Check' button text"),
-      tryAgainButton: f("'Try Again' button text"),
-    },
-  },
-
   "anatomy-labeling": {
     ...COMMON,
     "ui:order": ["title", "prompt", "image", "labels", "targets", "behaviour", "ui", "*"],

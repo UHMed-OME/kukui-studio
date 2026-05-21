@@ -68,19 +68,6 @@ function HighlightTextIcon(props: SVGProps<SVGSVGElement>) {
   );
 }
 
-function CategorizationIcon(props: SVGProps<SVGSVGElement>) {
-  return (
-    <svg {...baseProps} {...props}>
-      <path d="M3 4v3" />
-      <path d="M3 4h18" />
-      <path d="M21 4v3" />
-      <rect x="3" y="11" width="5" height="9" rx="0.5" />
-      <rect x="9.5" y="11" width="5" height="9" rx="0.5" />
-      <rect x="16" y="11" width="5" height="9" rx="0.5" />
-    </svg>
-  );
-}
-
 function Hotspot3dIcon(props: SVGProps<SVGSVGElement>) {
   return (
     <svg {...baseProps} {...props}>
@@ -320,7 +307,6 @@ const LEGACY_ICONS: Partial<Record<ActivityKind, IconComponent>> = {
   "hotspot-2d": Hotspot2dIcon,
   "anatomy-labeling": AnatomyLabelingIcon,
   "highlight-text": HighlightTextIcon,
-  categorization: CategorizationIcon,
   "hotspot-3d": Hotspot3dIcon,
   "virtual-tour": VirtualTourIcon,
   "interactive-video": InteractiveVideoIcon,
