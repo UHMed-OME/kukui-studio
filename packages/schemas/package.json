@@ -13,7 +13,6 @@
     "./hotspot-2d": "./src/hotspot-2d.ts",
     "./virtual-tour": "./src/virtual-tour.ts",
     "./highlight-text": "./src/highlight-text.ts",
-    "./reflection-prompt": "./src/reflection-prompt.ts",
     "./flashcards": "./src/flashcards.ts",
     "./image-comparison-slider": "./src/image-comparison-slider.ts",
     "./anatomy-labeling": "./src/anatomy-labeling.ts",

@@ -1,8 +1,8 @@
 import { useEffect, useId, useMemo, useState } from "react";
-import type { ReflectionPromptConfig } from "@kukui/schemas";
-import type { ActivityProps } from "../../types.js";
-import { SafeHtml } from "../../safe-html.js";
-import "./ReflectionPrompt.css";
+import type { ReflectionPromptConfig } from "./schema.js";
+import type { ActivityProps } from "@kukui/core/types";
+import { SafeHtml } from "@kukui/core";
+import "./Component.css";
 
 type Stage = "writing" | "submitted";
 
@@ -37,7 +37,7 @@ function parseSuspend(s: string | undefined): State | null {
   return null;
 }
 
-export function ReflectionPrompt({
+function Component({
   config,
   onSubmit,
   onPersist,
@@ -164,3 +164,5 @@ export function ReflectionPrompt({
     </div>
   );
 }
+
+export default Component;

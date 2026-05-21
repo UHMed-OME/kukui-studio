@@ -179,19 +179,6 @@ function DdxTreeIcon(props: SVGProps<SVGSVGElement>) {
   );
 }
 
-function ReflectionPromptIcon(props: SVGProps<SVGSVGElement>) {
-  return (
-    <svg {...baseProps} {...props}>
-      <path d="M4 5h13a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2H9l-5 4z" />
-      <path
-        d="M11 10l1-2 1 2 2 1-2 1-1 2-1-2-2-1z"
-        fill="currentColor"
-        stroke="none"
-      />
-    </svg>
-  );
-}
-
 function OsceIcon(props: SVGProps<SVGSVGElement>) {
   return (
     <svg {...baseProps} {...props}>
@@ -316,7 +303,6 @@ const LEGACY_ICONS: Partial<Record<ActivityKind, IconComponent>> = {
   "lab-panel": LabPanelIcon,
   "branching-scenario": BranchingScenarioIcon,
   "ddx-tree": DdxTreeIcon,
-  "reflection-prompt": ReflectionPromptIcon,
   osce: OsceIcon,
   "audio-recording": AudioRecordingIcon,
   crossword: CrosswordIcon,

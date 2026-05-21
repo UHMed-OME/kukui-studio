@@ -18,6 +18,8 @@
     "./matching-pairs/schema": "./matching-pairs/schema.ts",
     "./multiple-choice/Component": "./multiple-choice/Component.tsx",
     "./multiple-choice/schema": "./multiple-choice/schema.ts",
+    "./reflection-prompt/Component": "./reflection-prompt/Component.tsx",
+    "./reflection-prompt/schema": "./reflection-prompt/schema.ts",
     "./sequence-steps/Component": "./sequence-steps/Component.tsx",
     "./sequence-steps/schema": "./sequence-steps/schema.ts",
     "./*": "./*"

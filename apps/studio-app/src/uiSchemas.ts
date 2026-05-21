@@ -505,26 +505,6 @@ const LEGACY_UI_SCHEMAS: Partial<Record<ActivityKind, Record<string, unknown>>> 
     },
   },
 
-  "reflection-prompt": {
-    ...COMMON,
-    "ui:order": ["title", "prompt", "minWords", "placeholder", "ui", "*"],
-    title: TITLE,
-    author: AUTHOR,
-    prompt: f("Prompt", "What the learner reflects on.", {
-      "ui:widget": "html",
-      "ui:options": { rows: 4 },
-    }),
-    minWords: f(
-      "Minimum word count",
-      "Optional. If set, Submit is disabled until the learner writes this many words.",
-    ),
-    placeholder: f("Placeholder text", "Greys-out hint inside the empty textarea."),
-    ui: {
-      "ui:title": "Button label overrides",
-      submitButtonLabel: f("'Submit' button text"),
-    },
-  },
-
   "image-annotation": {
     ...COMMON,
     "ui:order": [

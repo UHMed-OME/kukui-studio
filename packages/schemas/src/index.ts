@@ -26,7 +26,7 @@ export {
 export {
   ReflectionPromptConfigSchema,
   type ReflectionPromptConfig,
-} from "./reflection-prompt.js";
+} from "@kukui/activities/reflection-prompt/schema";
 export {
   FlashcardsConfigSchema,
   type FlashcardsConfig,
@@ -94,7 +94,7 @@ import { Hotspot2DConfigSchema } from "./hotspot-2d.js";
 import { VirtualTourConfigSchema } from "./virtual-tour.js";
 import { CategorizationConfigSchema } from "@kukui/activities/categorization/schema";
 import { SequenceStepsConfigSchema } from "@kukui/activities/sequence-steps/schema";
-import { ReflectionPromptConfigSchema } from "./reflection-prompt.js";
+import { ReflectionPromptConfigSchema } from "@kukui/activities/reflection-prompt/schema";
 import { FlashcardsConfigSchema } from "./flashcards.js";
 import { ImageComparisonSliderConfigSchema } from "./image-comparison-slider.js";
 import { AnatomyLabelingConfigSchema } from "./anatomy-labeling.js";

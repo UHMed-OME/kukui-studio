@@ -1,8 +1,8 @@
 import { describe, expect, it, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import type { ReflectionPromptConfig } from "@kukui/schemas";
-import { ReflectionPrompt } from "./ReflectionPrompt.js";
+import type { ReflectionPromptConfig } from "./schema.js";
+import Component from "./Component.js";
 
 const cfgBasic: ReflectionPromptConfig = {
   version: "1.0",
@@ -18,9 +18,9 @@ const cfgMinWords: ReflectionPromptConfig = {
   placeholder: "Type here...",
 };
 
-describe("ReflectionPrompt", () => {
+describe("reflection-prompt Component", () => {
   it("renders the title, prompt HTML, and an empty textarea", () => {
-    render(<ReflectionPrompt config={cfgBasic} onSubmit={vi.fn()} />);
+    render(<Component config={cfgBasic} onSubmit={vi.fn()} />);
     expect(
       screen.getByRole("heading", { level: 1, name: /clinical reflection/i }),
     ).toBeInTheDocument();
@@ -32,7 +32,7 @@ describe("ReflectionPrompt", () => {
 
   it("typing updates the live word count", async () => {
     const user = userEvent.setup();
-    render(<ReflectionPrompt config={cfgMinWords} onSubmit={vi.fn()} />);
+    render(<Component config={cfgMinWords} onSubmit={vi.fn()} />);
     expect(screen.getByText(/^0 words$/)).toBeInTheDocument();
     expect(screen.getByText(/min: 5 words/i)).toBeInTheDocument();
 
@@ -43,7 +43,7 @@ describe("ReflectionPrompt", () => {
 
   it("Submit is disabled until minWords is met, then enables", async () => {
     const user = userEvent.setup();
-    render(<ReflectionPrompt config={cfgMinWords} onSubmit={vi.fn()} />);
+    render(<Component config={cfgMinWords} onSubmit={vi.fn()} />);
     const submit = screen.getByRole("button", { name: /submit/i });
     expect(submit).toBeDisabled();
 
@@ -55,7 +55,7 @@ describe("ReflectionPrompt", () => {
   it("Submit calls onSubmit with raw=1, max=1, success=true and text in suspendData", async () => {
     const user = userEvent.setup();
     const onSubmit = vi.fn();
-    render(<ReflectionPrompt config={cfgBasic} onSubmit={onSubmit} />);
+    render(<Component config={cfgBasic} onSubmit={onSubmit} />);
     const textarea = screen.getByRole("textbox");
     await user.type(textarea, "I learned a lot today.");
     await user.click(screen.getByRole("button", { name: /submit/i }));
@@ -70,7 +70,7 @@ describe("ReflectionPrompt", () => {
 
   it("after submit the textarea is read-only and shows confirmation", async () => {
     const user = userEvent.setup();
-    render(<ReflectionPrompt config={cfgBasic} onSubmit={vi.fn()} />);
+    render(<Component config={cfgBasic} onSubmit={vi.fn()} />);
     const textarea = screen.getByRole("textbox") as HTMLTextAreaElement;
     await user.type(textarea, "Done.");
     await user.click(screen.getByRole("button", { name: /submit/i }));
@@ -84,7 +84,7 @@ describe("ReflectionPrompt", () => {
     const user = userEvent.setup();
     const onPersist = vi.fn();
     render(
-      <ReflectionPrompt
+      <Component
         config={cfgBasic}
         onSubmit={vi.fn()}
         onPersist={onPersist}
@@ -100,7 +100,7 @@ describe("ReflectionPrompt", () => {
   it("submitting twice is a no-op", async () => {
     const user = userEvent.setup();
     const onSubmit = vi.fn();
-    render(<ReflectionPrompt config={cfgBasic} onSubmit={onSubmit} />);
+    render(<Component config={cfgBasic} onSubmit={onSubmit} />);
     await user.type(screen.getByRole("textbox"), "Hi.");
     const button = screen.getByRole("button", { name: /submit/i });
     await user.click(button);

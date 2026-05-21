@@ -188,13 +188,6 @@ const LEGACY_STARTERS: Partial<Record<ActivityKind, unknown>> = {
     ],
     behaviour: { shuffle: true },
   },
-  "reflection-prompt": {
-    version: "1.0",
-    title: "Reflection Prompt",
-    prompt: "Reflect on what you learned today.",
-    minWords: 30,
-    placeholder: "Type your reflection here…",
-  },
   "branching-scenario": {
     version: "1.0",
     title: "Branching Scenario",
@@ -508,7 +501,6 @@ const LEGACY_LABELS: Partial<Record<ActivityKind, string>> = {
   "image-comparison-slider": "Image Comparison Slider",
   "highlight-text": "Highlight Text Spans",
   flashcards: "Flashcards",
-  "reflection-prompt": "Reflection Prompt",
   "branching-scenario": "Branching Scenario",
   "image-annotation": "Image Annotation",
   "concept-map": "Concept Map",
