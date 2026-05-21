@@ -1,16 +1,18 @@
 import { useEffect, useId, useMemo, useState } from "react";
 import {
   MultipleChoiceConfigSchema,
-  FillInTheBlanksConfigSchema,
-  type QuestionSetConfig,
   type MultipleChoiceConfig,
+} from "@kukui/activities/multiple-choice/schema";
+import {
+  FillInTheBlanksConfigSchema,
   type FillInTheBlanksConfig,
-} from "@kukui/schemas";
-import type { ActivityProps, ScoreState } from "../../types.js";
-import { resolveScoring } from "../../scoring.js";
+} from "@kukui/activities/fill-in-the-blanks/schema";
+import type { QuestionSetConfig } from "./schema.js";
+import type { ActivityProps, ScoreState } from "@kukui/core/types";
+import { resolveScoring } from "@kukui/core/scoring";
 import MultipleChoice from "@kukui/activities/multiple-choice/Component";
 import FillInTheBlanks from "@kukui/activities/fill-in-the-blanks/Component";
-import "./QuestionSet.css";
+import "./Component.css";
 
 type Stage = "answering" | "submitted";
 
@@ -26,7 +28,7 @@ type State = {
   attempts: number;
 };
 
-export function QuestionSet({
+export default function Component({
   config,
   onSubmit,
   onPersist,

@@ -33,26 +33,6 @@ const PLANNED_STARTERS = Object.fromEntries(
 ) as Record<(typeof PLANNED_ACTIVITY_KINDS)[number], unknown>;
 
 const LEGACY_STARTERS: Partial<Record<ActivityKind, unknown>> = {
-  "question-set": {
-    version: "1.0",
-    title: "Question Set",
-    questions: [
-      {
-        type: "multipleChoice",
-        config: {
-          version: "1.0",
-          title: "Question 1",
-          question: "What's the answer?",
-          answers: [
-            { text: "A", correct: true },
-            { text: "B", correct: false },
-          ],
-        },
-      },
-    ],
-    passPercentage: 50,
-    behaviour: { enableRetry: true, showProgressBar: true },
-  },
   "hotspot-3d": {
     version: "1.0",
     title: "3D Hotspot",
@@ -292,7 +272,6 @@ export const STARTERS: Record<ActivityKind, unknown> = {
 } as Record<ActivityKind, unknown>;
 
 const LEGACY_LABELS: Partial<Record<ActivityKind, string>> = {
-  "question-set": "Question Set",
   "hotspot-3d": "3D Hotspots",
   "hotspot-2d": "Image Hotspots",
   "virtual-tour": "Virtual Tour",

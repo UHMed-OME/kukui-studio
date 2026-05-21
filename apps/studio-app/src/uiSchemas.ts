@@ -104,44 +104,6 @@ const LIVE_SETTINGS_UI = {
 } as const;
 
 const LEGACY_UI_SCHEMAS: Partial<Record<ActivityKind, Record<string, unknown>>> = {
-  "question-set": {
-    ...COMMON,
-    "ui:order": ["title", "questions", "passPercentage", "behaviour", "ui", "*"],
-    title: TITLE,
-    author: AUTHOR,
-    questions: {
-      "ui:title": "Questions in this set",
-      "ui:help":
-        "An ordered series of questions. Each entry's `type` selects the activity shape (multiple choice or fill-in-the-blanks).",
-      items: {
-        type: {
-          ...f("Question type", "Picks the activity shape used for the question."),
-          "ui:enumNames": ["Multiple choice", "Fill in the blanks"],
-        },
-        config: f("Activity config", "The full config for the picked question type."),
-        weight: f(
-          "Weight",
-          "Optional. Defaults to 1. Higher weight = this question contributes more to the final score.",
-        ),
-      },
-    },
-    passPercentage: HIDDEN,
-    behaviour: {
-      "ui:title": "Activity behaviour",
-      randomQuestions: f("Randomize question order", "Shuffle question order each time the set loads."),
-      showResults: f("Show per-question results", "Reveal correctness per question after Submit Set."),
-      enableRetry: BEHAVIOUR_RETRY,
-      showProgressBar: f("Show progress bar", "Display a 'Question N of M' indicator."),
-    },
-    ui: {
-      "ui:title": "Button label overrides",
-      nextQuestionButton: f("'Next' button text"),
-      previousQuestionButton: f("'Previous' button text"),
-      submitSetButton: f("'Submit set' button text"),
-      tryAgainButton: f("'Try Again' button text"),
-    },
-  },
-
   "hotspot-3d": {
     ...COMMON,
     "ui:order": ["title", "prompt", "model", "camera", "hotspots", "behaviour", "ui", "*"],

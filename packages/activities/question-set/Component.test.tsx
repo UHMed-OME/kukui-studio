@@ -1,8 +1,8 @@
 import { describe, expect, it, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import type { QuestionSetConfig } from "@kukui/schemas";
-import { QuestionSet } from "./QuestionSet.js";
+import type { QuestionSetConfig } from "./schema.js";
+import Component from "./Component.js";
 
 const cfg: QuestionSetConfig = {
   version: "1.0",
@@ -35,7 +35,7 @@ const cfg: QuestionSetConfig = {
 
 describe("QuestionSet", () => {
   it("renders the first question and a progress indicator", () => {
-    render(<QuestionSet config={cfg} onSubmit={vi.fn()} />);
+    render(<Component config={cfg} onSubmit={vi.fn()} />);
     expect(screen.getByText(/Question 1 of 2/i)).toBeInTheDocument();
     // Embedded MC renders as h2 inside Question Set (heading hierarchy).
     expect(screen.getByRole("heading", { level: 2, name: /q1/i })).toBeInTheDocument();
@@ -43,7 +43,7 @@ describe("QuestionSet", () => {
 
   it("Submit set is disabled until both questions are answered", async () => {
     const user = userEvent.setup();
-    render(<QuestionSet config={cfg} onSubmit={vi.fn()} />);
+    render(<Component config={cfg} onSubmit={vi.fn()} />);
     const submit = screen.getByRole("button", { name: /submit set/i });
     expect(submit).toBeDisabled();
 
@@ -61,7 +61,7 @@ describe("QuestionSet", () => {
   it("Submit set aggregates with weighted percent and triggers onSubmit", async () => {
     const user = userEvent.setup();
     const onSubmit = vi.fn();
-    render(<QuestionSet config={cfg} onSubmit={onSubmit} />);
+    render(<Component config={cfg} onSubmit={onSubmit} />);
 
     await user.click(screen.getByRole("button", { name: /jupiter/i }));
     await user.click(screen.getByRole("button", { name: /^check$/i }));
@@ -79,7 +79,7 @@ describe("QuestionSet", () => {
 
   it("Try again resets state when enableRetry=true", async () => {
     const user = userEvent.setup();
-    render(<QuestionSet config={cfg} onSubmit={vi.fn()} />);
+    render(<Component config={cfg} onSubmit={vi.fn()} />);
     await user.click(screen.getByRole("button", { name: /earth/i }));
     await user.click(screen.getByRole("button", { name: /^check$/i }));
     await user.click(screen.getByRole("button", { name: /next/i }));
@@ -115,7 +115,7 @@ describe("QuestionSet", () => {
         },
       ],
     };
-    render(<QuestionSet config={broken} onSubmit={vi.fn()} />);
+    render(<Component config={broken} onSubmit={vi.fn()} />);
     expect(screen.getByText(/Question 1 of 1/i)).toBeInTheDocument();
     expect(warn).toHaveBeenCalled();
     warn.mockRestore();
@@ -124,7 +124,7 @@ describe("QuestionSet", () => {
   it("persists state via onPersist on each interaction", async () => {
     const user = userEvent.setup();
     const onPersist = vi.fn();
-    render(<QuestionSet config={cfg} onSubmit={vi.fn()} onPersist={onPersist} />);
+    render(<Component config={cfg} onSubmit={vi.fn()} onPersist={onPersist} />);
     await user.click(screen.getByRole("button", { name: /next/i }));
     expect(onPersist).toHaveBeenCalled();
     const last = onPersist.mock.calls.at(-1)?.[0] as string;

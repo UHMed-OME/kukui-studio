@@ -18,7 +18,6 @@
     "./components/registry": "./src/components/registry.ts",
     "./components/fill-in-the-blanks": "./src/components/fill-in-the-blanks/index.ts",
     "./components/drag-and-drop": "./src/components/drag-and-drop/index.ts",
-    "./components/question-set": "./src/components/question-set/index.ts",
     "./components/hotspot-3d": "./src/components/hotspot-3d/index.ts",
     "./components/hotspot-2d": "./src/components/hotspot-2d/index.ts",
     "./components/virtual-tour": "./src/components/virtual-tour/index.ts",
