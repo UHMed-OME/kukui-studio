@@ -454,7 +454,7 @@ export function Crossword({
                 gridTemplateRows: `repeat(${layout.rows}, var(--kukui-cw-cell, 44px))`,
               }}
             >
-              {Array.from({ length: layout.rows }).map((_, r) =>
+              {Array.from({ length: layout.rows }).flatMap((_, r) =>
                 Array.from({ length: layout.cols }).map((__, c) => {
                   const k = keyOf(r, c);
                   const isActive = cellIndex.active.has(k);
