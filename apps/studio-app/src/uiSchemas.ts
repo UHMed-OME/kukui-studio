@@ -332,63 +332,6 @@ const LEGACY_UI_SCHEMAS: Partial<Record<ActivityKind, Record<string, unknown>>> 
     },
   },
 
-  "image-annotation": {
-    ...COMMON,
-    "ui:order": [
-      "title",
-      "prompt",
-      "image",
-      "tools",
-      "expectedAnnotations",
-      "behaviour",
-      "ui",
-      "*",
-    ],
-    title: TITLE,
-    author: AUTHOR,
-    prompt: f("Prompt", "Tells the learner what to annotate.", {
-      "ui:widget": "html",
-      "ui:options": { rows: 3 },
-    }),
-    image: {
-      "ui:title": "Image",
-      src: f("Image", "Paste URL or upload.", {
-        "ui:widget": "file",
-        "ui:options": { accept: "image/*", maxSizeMb: 5, kind: "image" },
-      }),
-      alt: f(
-        "Alt text (required)",
-        "Required for accessibility — describe what the image shows in one short sentence.",
-      ),
-    },
-    tools: {
-      "ui:title": "Annotation tools available to the learner",
-      rectangle: f("Rectangle"),
-      circle: f("Circle"),
-      arrow: f("Arrow"),
-      freehand: f("Freehand"),
-    },
-    expectedAnnotations: {
-      "ui:title": "Expected (ground-truth) marks",
-      "ui:help":
-        "Drawn in edit mode by clicking the canvas. The activity compares learner annotations against these.",
-      items: {
-        id: HIDDEN,
-        label: f("Label", "Optional. Shown on the mark for the author."),
-      },
-    },
-    behaviour: {
-      "ui:title": "Activity behaviour",
-      enableRetry: BEHAVIOUR_RETRY,
-      singlePoint: BEHAVIOUR_SINGLEPOINT,
-    },
-    ui: {
-      "ui:title": "Button label overrides",
-      submitButtonLabel: f("'Submit' button text"),
-      clearButton: f("'Clear' button text"),
-    },
-  },
-
   "branching-scenario": {
     ...COMMON,
     "ui:order": ["title", "startNodeId", "nodes", "behaviour", "ui", "*"],

@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
-import type { ImageAnnotationConfig } from "@kukui/schemas/image-annotation";
-import type { ActivityProps } from "../../types.js";
-import { SafeHtml } from "../../safe-html.js";
-import { resolveScoring } from "../../scoring.js";
-import "./ImageAnnotation.css";
+import type { ImageAnnotationConfig } from "./schema.js";
+import type { ActivityProps } from "@kukui/core/types";
+import { SafeHtml } from "@kukui/core";
+import { resolveScoring } from "@kukui/core/scoring";
+import "./Component.css";
 
 type ToolKind = "rectangle" | "circle" | "arrow" | "freehand" | "eraser";
 
@@ -62,7 +62,7 @@ const TOOL_META: Record<
  * circles and the expected regions (>=50% overlap = correct). `singlePoint`
  * collapses to all-or-nothing.
  */
-export function ImageAnnotation({
+export default function Component({
   config,
   onSubmit,
   onPersist,

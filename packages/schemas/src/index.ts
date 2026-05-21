@@ -62,7 +62,7 @@ export {
 export {
   ImageAnnotationConfigSchema,
   type ImageAnnotationConfig,
-} from "./image-annotation.js";
+} from "@kukui/activities/image-annotation/schema";
 export {
   ConceptMapConfigSchema,
   type ConceptMapConfig,
@@ -103,7 +103,7 @@ import { HighlightTextConfigSchema } from "@kukui/activities/highlight-text/sche
 import { InteractiveVideoConfigSchema } from "./interactive-video.js";
 import { AudioRecordingConfigSchema } from "./audio-recording.js";
 import { BranchingScenarioConfigSchema } from "./branching-scenario.js";
-import { ImageAnnotationConfigSchema } from "./image-annotation.js";
+import { ImageAnnotationConfigSchema } from "@kukui/activities/image-annotation/schema";
 import { ConceptMapConfigSchema } from "./concept-map.js";
 import { LabPanelConfigSchema } from "./lab-panel.js";
 import { DDxTreeConfigSchema } from "./ddx-tree.js";

@@ -70,17 +70,6 @@ function InteractiveVideoIcon(props: SVGProps<SVGSVGElement>) {
   );
 }
 
-function ImageAnnotationIcon(props: SVGProps<SVGSVGElement>) {
-  return (
-    <svg {...baseProps} {...props}>
-      <rect x="3" y="3" width="14" height="14" rx="2" />
-      <circle cx="8" cy="8" r="1.5" />
-      <path d="M3 14l4-4 5 5" />
-      <path d="M17 17h4v4z" />
-    </svg>
-  );
-}
-
 function ConceptMapIcon(props: SVGProps<SVGSVGElement>) {
   return (
     <svg {...baseProps} {...props}>
@@ -251,7 +240,6 @@ const LEGACY_ICONS: Partial<Record<ActivityKind, IconComponent>> = {
   "hotspot-3d": Hotspot3dIcon,
   "virtual-tour": VirtualTourIcon,
   "interactive-video": InteractiveVideoIcon,
-  "image-annotation": ImageAnnotationIcon,
   "concept-map": ConceptMapIcon,
   "lab-panel": LabPanelIcon,
   "branching-scenario": BranchingScenarioIcon,

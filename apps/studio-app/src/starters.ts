@@ -163,17 +163,6 @@ const LEGACY_STARTERS: Partial<Record<ActivityKind, unknown>> = {
     ],
     behaviour: { enableRetry: true },
   },
-  "image-annotation": {
-    version: "1.0",
-    title: "Image Annotation",
-    prompt: "Annotate the image.",
-    image: {
-      src: PLACEHOLDER_IMAGE,
-      alt: "Image to annotate",
-    },
-    tools: { rectangle: true, circle: true, freehand: true },
-    behaviour: { enableRetry: true },
-  },
   "concept-map": {
     version: "1.0",
     title: "Concept Map",
@@ -445,7 +434,6 @@ const LEGACY_LABELS: Partial<Record<ActivityKind, string>> = {
   "hotspot-2d": "Image Hotspots",
   "virtual-tour": "Virtual Tour",
   "branching-scenario": "Branching Scenario",
-  "image-annotation": "Image Annotation",
   "concept-map": "Concept Map",
   "interactive-video": "Interactive Video",
   "audio-recording": "Audio Recording",

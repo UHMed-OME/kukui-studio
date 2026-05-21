@@ -20,6 +20,8 @@
     "./flashcards/schema": "./flashcards/schema.ts",
     "./highlight-text/Component": "./highlight-text/Component.tsx",
     "./highlight-text/schema": "./highlight-text/schema.ts",
+    "./image-annotation/Component": "./image-annotation/Component.tsx",
+    "./image-annotation/schema": "./image-annotation/schema.ts",
     "./image-comparison-slider/Component": "./image-comparison-slider/Component.tsx",
     "./image-comparison-slider/schema": "./image-comparison-slider/schema.ts",
     "./matching-pairs/Component": "./matching-pairs/Component.tsx",

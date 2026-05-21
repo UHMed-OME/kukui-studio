@@ -1,8 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createEvent, fireEvent, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import type { ImageAnnotationConfig } from "@kukui/schemas/image-annotation";
-import { ImageAnnotation } from "./ImageAnnotation.js";
+import type { ImageAnnotationConfig } from "./schema.js";
+import Component from "./Component.js";
 
 /**
  * JSDOM 25 doesn't expose a working `PointerEvent` constructor, so
@@ -90,7 +90,7 @@ describe("ImageAnnotation", () => {
   });
 
   it("renders title, prompt, image, and the toolbar with all default tools", () => {
-    render(<ImageAnnotation config={cfg} onSubmit={vi.fn()} />);
+    render(<Component config={cfg} onSubmit={vi.fn()} />);
     expect(
       screen.getByRole("heading", { level: 1, name: /annotate the chest x-ray/i }),
     ).toBeInTheDocument();
@@ -114,7 +114,7 @@ describe("ImageAnnotation", () => {
 
   it("clicking a different tool selects it (aria-pressed flips)", async () => {
     const user = userEvent.setup();
-    render(<ImageAnnotation config={cfg} onSubmit={vi.fn()} />);
+    render(<Component config={cfg} onSubmit={vi.fn()} />);
     const circle = screen.getByRole("button", { name: /^circle$/i });
     expect(circle).toHaveAttribute("aria-pressed", "false");
     await user.click(circle);
@@ -127,7 +127,7 @@ describe("ImageAnnotation", () => {
   it("draws a rectangle via simulated pointer events and persists the shape", () => {
     const onPersist = vi.fn();
     render(
-      <ImageAnnotation
+      <Component
         config={cfg}
         onSubmit={vi.fn()}
         onPersist={onPersist}
@@ -151,7 +151,7 @@ describe("ImageAnnotation", () => {
   });
 
   it("Clear all removes every shape", () => {
-    render(<ImageAnnotation config={cfg} onSubmit={vi.fn()} />);
+    render(<Component config={cfg} onSubmit={vi.fn()} />);
     const svg = screen.getByTestId("kukui-ia-svg");
 
     // Draw two rectangles.
@@ -171,7 +171,7 @@ describe("ImageAnnotation", () => {
 
   it("Submit (no expectedAnnotations) calls onSubmit with raw=1, max=1, success=true", () => {
     const onSubmit = vi.fn();
-    render(<ImageAnnotation config={cfg} onSubmit={onSubmit} />);
+    render(<Component config={cfg} onSubmit={onSubmit} />);
     const svg = screen.getByTestId("kukui-ia-svg");
 
     firePointer(svg, "pointerDown", { clientX: 40, clientY: 30, button: 0, pointerId: 1 });
@@ -188,13 +188,13 @@ describe("ImageAnnotation", () => {
   });
 
   it("submit with no shapes is disabled", () => {
-    render(<ImageAnnotation config={cfg} onSubmit={vi.fn()} />);
+    render(<Component config={cfg} onSubmit={vi.fn()} />);
     expect(screen.getByRole("button", { name: /^submit$/i })).toBeDisabled();
   });
 
   it("scores by IoU when expectedAnnotations is set; ≥50% overlap = correct", () => {
     const onSubmit = vi.fn();
-    render(<ImageAnnotation config={cfgWithExpected} onSubmit={onSubmit} />);
+    render(<Component config={cfgWithExpected} onSubmit={onSubmit} />);
     const svg = screen.getByTestId("kukui-ia-svg");
 
     // Expected normalized rect: x 0.4..0.6, y 0.4..0.6 (i.e. 160..240 px in x,
@@ -213,7 +213,7 @@ describe("ImageAnnotation", () => {
   });
 
   it("when headingLevel=2 is passed, the title renders as h2", () => {
-    render(<ImageAnnotation config={cfg} onSubmit={vi.fn()} headingLevel={2} />);
+    render(<Component config={cfg} onSubmit={vi.fn()} headingLevel={2} />);
     expect(
       screen.getByRole("heading", { level: 2, name: /annotate the chest x-ray/i }),
     ).toBeInTheDocument();
