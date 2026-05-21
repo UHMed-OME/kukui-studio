@@ -26,15 +26,6 @@ const baseProps: SVGProps<SVGSVGElement> = {
   "aria-hidden": true,
 };
 
-function FlashcardsIcon(props: SVGProps<SVGSVGElement>) {
-  return (
-    <svg {...baseProps} {...props}>
-      <path d="M4 4h13l3 3v13H4z" />
-      <path d="M17 4v3h3" />
-    </svg>
-  );
-}
-
 function Hotspot2dIcon(props: SVGProps<SVGSVGElement>) {
   return (
     <svg {...baseProps} {...props}>
@@ -290,7 +281,6 @@ function IsometricChatroomIcon(props: SVGProps<SVGSVGElement>) {
 type IconComponent = (props: SVGProps<SVGSVGElement>) => JSX.Element;
 
 const LEGACY_ICONS: Partial<Record<ActivityKind, IconComponent>> = {
-  flashcards: FlashcardsIcon,
   "hotspot-2d": Hotspot2dIcon,
   "anatomy-labeling": AnatomyLabelingIcon,
   "highlight-text": HighlightTextIcon,

@@ -178,16 +178,6 @@ const LEGACY_STARTERS: Partial<Record<ActivityKind, unknown>> = {
     ],
     behaviour: { enableRetry: true },
   },
-  flashcards: {
-    version: "1.0",
-    title: "Flashcards",
-    prompt: "Flip each card; rate yourself honestly.",
-    cards: [
-      { id: "c1", front: "Front 1", back: "Back 1" },
-      { id: "c2", front: "Front 2", back: "Back 2" },
-    ],
-    behaviour: { shuffle: true },
-  },
   "branching-scenario": {
     version: "1.0",
     title: "Branching Scenario",
@@ -500,7 +490,6 @@ const LEGACY_LABELS: Partial<Record<ActivityKind, string>> = {
   "anatomy-labeling": "Anatomy Labeling",
   "image-comparison-slider": "Image Comparison Slider",
   "highlight-text": "Highlight Text Spans",
-  flashcards: "Flashcards",
   "branching-scenario": "Branching Scenario",
   "image-annotation": "Image Annotation",
   "concept-map": "Concept Map",

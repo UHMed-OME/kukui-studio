@@ -30,7 +30,7 @@ export {
 export {
   FlashcardsConfigSchema,
   type FlashcardsConfig,
-} from "./flashcards.js";
+} from "@kukui/activities/flashcards/schema";
 export {
   ImageComparisonSliderConfigSchema,
   type ImageComparisonSliderConfig,
@@ -95,7 +95,7 @@ import { VirtualTourConfigSchema } from "./virtual-tour.js";
 import { CategorizationConfigSchema } from "@kukui/activities/categorization/schema";
 import { SequenceStepsConfigSchema } from "@kukui/activities/sequence-steps/schema";
 import { ReflectionPromptConfigSchema } from "@kukui/activities/reflection-prompt/schema";
-import { FlashcardsConfigSchema } from "./flashcards.js";
+import { FlashcardsConfigSchema } from "@kukui/activities/flashcards/schema";
 import { ImageComparisonSliderConfigSchema } from "./image-comparison-slider.js";
 import { AnatomyLabelingConfigSchema } from "./anatomy-labeling.js";
 import { MatchingPairsConfigSchema } from "@kukui/activities/matching-pairs/schema";

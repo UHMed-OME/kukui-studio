@@ -1,8 +1,8 @@
 import { useEffect, useId, useMemo, useState } from "react";
-import type { FlashcardsConfig } from "@kukui/schemas";
-import type { ActivityProps } from "../../types.js";
-import { SafeHtml, htmlToText } from "../../safe-html.js";
-import "./Flashcards.css";
+import type { FlashcardsConfig } from "./schema.js";
+import type { ActivityProps } from "@kukui/core/types";
+import { SafeHtml, htmlToText } from "@kukui/core";
+import "./Component.css";
 
 type CardStatus = "knew" | "didnt" | "unanswered";
 
@@ -62,7 +62,7 @@ function buildInitialState(config: FlashcardsConfig, seed: number): State {
   };
 }
 
-export function Flashcards({
+function Component({
   config,
   onSubmit,
   onPersist,
@@ -378,3 +378,5 @@ function parseSuspend(s: string | undefined, config: FlashcardsConfig): State | 
     return null;
   }
 }
+
+export default Component;

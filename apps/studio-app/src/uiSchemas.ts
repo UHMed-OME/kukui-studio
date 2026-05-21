@@ -465,46 +465,6 @@ const LEGACY_UI_SCHEMAS: Partial<Record<ActivityKind, Record<string, unknown>>> 
     overallFeedback: HIDDEN,
   },
 
-  flashcards: {
-    ...COMMON,
-    "ui:order": ["title", "prompt", "cards", "behaviour", "ui", "*"],
-    title: TITLE,
-    author: AUTHOR,
-    prompt: f("Intro / instructions", "Optional intro shown above the deck.", {
-      "ui:widget": "html",
-      "ui:options": { rows: 2 },
-    }),
-    cards: {
-      "ui:title": "Cards",
-      "ui:help": "Each card has a front and a back. HTML allowed in both.",
-      items: {
-        id: HIDDEN,
-        front: f("Front (question side)", "What the learner sees first.", {
-          "ui:widget": "html",
-          "ui:options": { rows: 2 },
-        }),
-        back: f("Back (answer side)", "Revealed when the card flips.", {
-          "ui:widget": "html",
-          "ui:options": { rows: 2 },
-        }),
-        hint: f("Hint", "Optional hint shown alongside the front.", {
-          "ui:widget": "textarea",
-          "ui:options": { rows: 2 },
-        }),
-      },
-    },
-    behaviour: {
-      "ui:title": "Activity behaviour",
-      shuffle: f("Shuffle the deck", "Default on."),
-    },
-    ui: {
-      "ui:title": "Button label overrides",
-      gotItButton: f("'Got it' button text", "Label shown after the learner flips a card and remembered the answer."),
-      reviewAgainButton: f("'Review again' button text", "Label shown after the learner flips a card and wants to revisit it."),
-      nextButton: f("'Reveal answer' / next button text"),
-    },
-  },
-
   "image-annotation": {
     ...COMMON,
     "ui:order": [

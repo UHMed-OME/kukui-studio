@@ -79,7 +79,6 @@ type BloomLevel = "remember" | "understand" | "apply" | "analyze" | "evaluate" |
 // but aren't surfaced in Studio, so they're omitted from the map.
 const LEGACY_BLOOM: Partial<Record<ActivityKind, BloomLevel>> = {
   // Remember — recall facts, terminology
-  flashcards: "remember",
   crossword: "remember",
   // Understand — identify, explain, classify
   "hotspot-2d": "understand",
