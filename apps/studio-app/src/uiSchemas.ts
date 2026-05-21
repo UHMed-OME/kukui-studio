@@ -489,51 +489,6 @@ const LEGACY_UI_SCHEMAS: Partial<Record<ActivityKind, Record<string, unknown>>> 
     overallFeedback: HIDDEN,
   },
 
-  "ddx-tree": {
-    ...COMMON,
-    "ui:order": ["title", "startNodeId", "nodes", "behaviour", "ui", "*"],
-    title: TITLE,
-    author: AUTHOR,
-    startNodeId: f("Starting step", "First presentation the learner sees.", {
-      "ui:widget": "nodeSelect",
-    }),
-    nodes: {
-      "ui:title": "Differential diagnosis steps",
-      "ui:help":
-        "Each step has a clinical presentation, then a list of choices that lead elsewhere or a final diagnosis.",
-      items: {
-        id: HIDDEN,
-        presentation: f(
-          "Presentation",
-          "Vignette / patient context shown at this step.",
-          { "ui:widget": "html" },
-        ),
-        choices: {
-          "ui:title": "Choices",
-          items: {
-            id: HIDDEN,
-            text: f("Choice text"),
-            nextNodeId: f("Goes to step", "Which step this choice leads to.", {
-              "ui:widget": "nodeSelect",
-            }),
-            feedback: f("Feedback (optional)", undefined, {
-              "ui:widget": "textarea",
-              "ui:options": { rows: 2 },
-            }),
-          },
-        },
-      },
-    },
-    behaviour: {
-      "ui:title": "Activity behaviour",
-      enableRetry: BEHAVIOUR_RETRY,
-    },
-    ui: {
-      "ui:title": "Button label overrides",
-      restartButton: f("'Restart' button text"),
-    },
-  },
-
   osce: {
     ...COMMON,
     "ui:order": ["title", "phases", "expectedOrder", "behaviour", "ui", "*"],

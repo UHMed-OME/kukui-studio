@@ -1,8 +1,8 @@
 import { describe, expect, it, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import type { DDxTreeConfig } from "@kukui/schemas/ddx-tree";
-import { DDxTree } from "./DDxTree.js";
+import type { DDxTreeConfig } from "./schema.js";
+import Component from "./Component.js";
 
 const cfg: DDxTreeConfig = {
   version: "1.0",
@@ -78,9 +78,9 @@ const cfg: DDxTreeConfig = {
   ui: { restartButton: "Start over" },
 };
 
-describe("DDxTree", () => {
+describe("ddx-tree Component", () => {
   it("renders the title, case header and the start node presentation", () => {
-    render(<DDxTree config={cfg} onSubmit={vi.fn()} />);
+    render(<Component config={cfg} onSubmit={vi.fn()} />);
     expect(
       screen.getByRole("heading", { level: 1, name: /acute chest pain/i }),
     ).toBeInTheDocument();
@@ -98,7 +98,7 @@ describe("DDxTree", () => {
 
   it("clicking a choice routes to the next node and appends to Case so far", async () => {
     const user = userEvent.setup();
-    render(<DDxTree config={cfg} onSubmit={vi.fn()} />);
+    render(<Component config={cfg} onSubmit={vi.fn()} />);
     await user.click(screen.getByRole("button", { name: /12-lead ecg/i }));
     // Routed to n-ecg.
     expect(
@@ -117,7 +117,7 @@ describe("DDxTree", () => {
   it("reaching a correct terminal diagnosis fires onSubmit with success=true", async () => {
     const user = userEvent.setup();
     const onSubmit = vi.fn();
-    render(<DDxTree config={cfg} onSubmit={onSubmit} />);
+    render(<Component config={cfg} onSubmit={onSubmit} />);
     await user.click(screen.getByRole("button", { name: /12-lead ecg/i }));
     await user.click(screen.getByRole("button", { name: /^inferior mi$/i }));
     expect(onSubmit).toHaveBeenCalledTimes(1);
@@ -133,7 +133,7 @@ describe("DDxTree", () => {
   it("reaching an incorrect terminal diagnosis fires onSubmit with success=false", async () => {
     const user = userEvent.setup();
     const onSubmit = vi.fn();
-    render(<DDxTree config={cfg} onSubmit={onSubmit} />);
+    render(<Component config={cfg} onSubmit={onSubmit} />);
     await user.click(screen.getByRole("button", { name: /12-lead ecg/i }));
     await user.click(
       screen.getByRole("button", { name: /pulmonary embolism/i }),
@@ -149,7 +149,7 @@ describe("DDxTree", () => {
 
   it("Restart returns to the start node and clears the Case so far panel", async () => {
     const user = userEvent.setup();
-    render(<DDxTree config={cfg} onSubmit={vi.fn()} />);
+    render(<Component config={cfg} onSubmit={vi.fn()} />);
     await user.click(screen.getByRole("button", { name: /12-lead ecg/i }));
     await user.click(screen.getByRole("button", { name: /^inferior mi$/i }));
     await user.click(screen.getByRole("button", { name: /start over/i }));
@@ -168,7 +168,7 @@ describe("DDxTree", () => {
     const user = userEvent.setup();
     const onPersist = vi.fn();
     render(
-      <DDxTree config={cfg} onSubmit={vi.fn()} onPersist={onPersist} />,
+      <Component config={cfg} onSubmit={vi.fn()} onPersist={onPersist} />,
     );
     await user.click(screen.getByRole("button", { name: /12-lead ecg/i }));
     expect(onPersist).toHaveBeenCalled();
@@ -191,7 +191,7 @@ describe("DDxTree", () => {
       lastChoiceId: "c-ecg",
     });
     render(
-      <DDxTree config={cfg} onSubmit={vi.fn()} suspendData={suspendData} />,
+      <Component config={cfg} onSubmit={vi.fn()} suspendData={suspendData} />,
     );
     // Should render the n-ecg presentation, not the start node's.
     expect(

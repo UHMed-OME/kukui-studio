@@ -1,8 +1,8 @@
 import { useEffect, useId, useMemo, useRef, useState } from "react";
-import type { DDxTreeConfig } from "@kukui/schemas/ddx-tree";
-import type { ActivityProps } from "../../types.js";
-import { SafeHtml, htmlToText } from "../../safe-html.js";
-import "./DDxTree.css";
+import type { DDxTreeConfig } from "./schema.js";
+import type { ActivityProps } from "@kukui/core/types";
+import { SafeHtml, htmlToText } from "@kukui/core";
+import "./Component.css";
 
 type State = {
   currentNodeId: string;
@@ -18,7 +18,7 @@ type State = {
   lastChoiceId: string | null;
 };
 
-export function DDxTree({
+export default function Component({
   config,
   onSubmit,
   onPersist,

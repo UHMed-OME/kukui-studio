@@ -68,7 +68,10 @@ export {
   type ConceptMapConfig,
 } from "@kukui/activities/concept-map/schema";
 export { LabPanelConfigSchema, type LabPanelConfig } from "./lab-panel.js";
-export { DDxTreeConfigSchema, type DDxTreeConfig } from "./ddx-tree.js";
+export {
+  DDxTreeConfigSchema,
+  type DDxTreeConfig,
+} from "@kukui/activities/ddx-tree/schema";
 export { OSCEConfigSchema, type OSCEConfig } from "./osce.js";
 export { CrosswordConfigSchema, type CrosswordConfig } from "./crossword.js";
 export { StrawPollConfigSchema, type StrawPollConfig } from "./straw-poll.js";
@@ -106,7 +109,7 @@ import { BranchingScenarioConfigSchema } from "./branching-scenario.js";
 import { ImageAnnotationConfigSchema } from "@kukui/activities/image-annotation/schema";
 import { ConceptMapConfigSchema } from "@kukui/activities/concept-map/schema";
 import { LabPanelConfigSchema } from "./lab-panel.js";
-import { DDxTreeConfigSchema } from "./ddx-tree.js";
+import { DDxTreeConfigSchema } from "@kukui/activities/ddx-tree/schema";
 import { OSCEConfigSchema } from "./osce.js";
 import { CrosswordConfigSchema } from "./crossword.js";
 import { StrawPollConfigSchema } from "./straw-poll.js";

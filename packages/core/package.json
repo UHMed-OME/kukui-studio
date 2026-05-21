@@ -30,7 +30,6 @@
     "./components/branching-scenario": "./src/components/branching-scenario/index.ts",
     "./components/interactive-video": "./src/components/interactive-video/index.ts",
     "./components/lab-panel": "./src/components/lab-panel/index.ts",
-    "./components/ddx-tree": "./src/components/ddx-tree/index.ts",
     "./components/osce": "./src/components/osce/index.ts",
     "./components/crossword": "./src/components/crossword/index.ts",
     "./components/straw-poll": "./src/components/straw-poll/index.ts",

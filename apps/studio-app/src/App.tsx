@@ -90,7 +90,6 @@ const LEGACY_BLOOM: Partial<Record<ActivityKind, BloomLevel>> = {
   "lab-panel": "analyze",
   // Evaluate — judge, critique, decide
   "branching-scenario": "evaluate",
-  "ddx-tree": "evaluate",
   osce: "evaluate",
   "straw-poll": "evaluate",
   "confidence-meter": "evaluate",
