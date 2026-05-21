@@ -15,7 +15,10 @@ export {
   QuestionSetConfigSchema,
   type QuestionSetConfig,
 } from "@kukui/activities/question-set/schema";
-export { Hotspot3DConfigSchema, type Hotspot3DConfig } from "./hotspot-3d.js";
+export {
+  Hotspot3DConfigSchema,
+  type Hotspot3DConfig,
+} from "@kukui/activities/hotspot-3d/schema";
 export {
   Hotspot2DConfigSchema,
   type Hotspot2DConfig,
@@ -107,7 +110,7 @@ import { MultipleChoiceConfigSchema } from "@kukui/activities/multiple-choice/sc
 import { FillInTheBlanksConfigSchema } from "@kukui/activities/fill-in-the-blanks/schema";
 import { DragAndDropConfigSchema } from "@kukui/activities/drag-and-drop/schema";
 import { QuestionSetConfigSchema } from "@kukui/activities/question-set/schema";
-import { Hotspot3DConfigSchema } from "./hotspot-3d.js";
+import { Hotspot3DConfigSchema } from "@kukui/activities/hotspot-3d/schema";
 import { Hotspot2DConfigSchema } from "@kukui/activities/hotspot-2d/schema";
 import { VirtualTourConfigSchema } from "./virtual-tour.js";
 import { CategorizationConfigSchema } from "@kukui/activities/categorization/schema";

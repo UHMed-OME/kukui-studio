@@ -33,43 +33,6 @@ const PLANNED_STARTERS = Object.fromEntries(
 ) as Record<(typeof PLANNED_ACTIVITY_KINDS)[number], unknown>;
 
 const LEGACY_STARTERS: Partial<Record<ActivityKind, unknown>> = {
-  "hotspot-3d": {
-    version: "1.0",
-    title: "3D Hotspot",
-    prompt: "Click the correct part.",
-    model: {
-      // Bundled Khronos Box placeholder (CC BY 4.0). External CDN URLs
-      // here would break inside LMS networks that block external hosts
-      // and under engine-web's strict `connect-src 'self'` CSP.
-      // Authors should replace this with their own model.
-      src: "samples/hotspot-3d/box.glb",
-      scale: 1,
-      attribution: {
-        author: "Khronos Group",
-        sourceUrl: "https://github.com/KhronosGroup/glTF-Sample-Assets/tree/main/Models/Box",
-        license: "CC BY 4.0",
-        licenseUrl: "https://creativecommons.org/licenses/by/4.0/",
-      },
-    },
-    camera: { initialDistance: 0.6 },
-    hotspots: [
-      {
-        id: "part-a",
-        label: "Part A",
-        position: { x: 0, y: 0.05, z: 0.07 },
-        radius: 0.03,
-        correct: true,
-      },
-      {
-        id: "part-b",
-        label: "Part B",
-        position: { x: 0.18, y: 0, z: 0.05 },
-        radius: 0.04,
-        correct: false,
-      },
-    ],
-    behaviour: { enableRetry: true, showHotspotMarkers: true, allowOrbit: true },
-  },
   "virtual-tour": {
     version: "1.0",
     title: "Virtual Tour",
@@ -238,7 +201,6 @@ export const STARTERS: Record<ActivityKind, unknown> = {
 } as Record<ActivityKind, unknown>;
 
 const LEGACY_LABELS: Partial<Record<ActivityKind, string>> = {
-  "hotspot-3d": "3D Hotspots",
   "virtual-tour": "Virtual Tour",
   "straw-poll": "Straw Poll (Live)",
   "confidence-meter": "Confidence Meter (Live)",

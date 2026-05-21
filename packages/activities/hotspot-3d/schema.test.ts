@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { Hotspot3DConfigSchema } from "./hotspot-3d.js";
+import { Hotspot3DConfigSchema } from "./schema.js";
 
 const baseValid = {
   version: "1.0",

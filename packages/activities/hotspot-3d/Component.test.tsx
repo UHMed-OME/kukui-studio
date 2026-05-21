@@ -1,8 +1,8 @@
 import { describe, expect, it, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import type { Hotspot3DConfig } from "@kukui/schemas";
-import { Hotspot3D } from "./Hotspot3D.js";
+import type { Hotspot3DConfig } from "./schema.js";
+import Component from "./Component.js";
 
 // JSDOM has no WebGL — these tests exercise the keyboard fallback list, which
 // is the WCAG-required equivalent path. The 3D Canvas is rendered as a "scene
@@ -34,7 +34,7 @@ const cfg: Hotspot3DConfig = {
 
 describe("Hotspot3D — fallback list (select-then-confirm)", () => {
   it("renders title, prompt, fallback buttons, and Check disabled until a pick", () => {
-    render(<Hotspot3D config={cfg} onSubmit={vi.fn()} />);
+    render(<Component config={cfg} onSubmit={vi.fn()} />);
     expect(screen.getByRole("heading", { level: 1, name: /identify the part/i })).toBeInTheDocument();
     expect(screen.getByText(/click the labeled part/i)).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /^iako/i })).toBeInTheDocument();
@@ -45,7 +45,7 @@ describe("Hotspot3D — fallback list (select-then-confirm)", () => {
   it("clicking a fallback button selects without submitting (Check stays available)", async () => {
     const user = userEvent.setup();
     const onSubmit = vi.fn();
-    render(<Hotspot3D config={cfg} onSubmit={onSubmit} />);
+    render(<Component config={cfg} onSubmit={onSubmit} />);
     await user.click(screen.getByRole("button", { name: /^iako/i }));
     expect(onSubmit).not.toHaveBeenCalled();
     expect(screen.getByRole("button", { name: /^check$/i })).toBeEnabled();
@@ -54,7 +54,7 @@ describe("Hotspot3D — fallback list (select-then-confirm)", () => {
   it("Check on a correct selection scores 1/1 success and shows feedback", async () => {
     const user = userEvent.setup();
     const onSubmit = vi.fn();
-    render(<Hotspot3D config={cfg} onSubmit={onSubmit} />);
+    render(<Component config={cfg} onSubmit={onSubmit} />);
     await user.click(screen.getByRole("button", { name: /^iako/i }));
     await user.click(screen.getByRole("button", { name: /^check$/i }));
     expect(onSubmit.mock.calls[0]?.[0]).toMatchObject({ raw: 1, max: 1, success: true });
@@ -64,7 +64,7 @@ describe("Hotspot3D — fallback list (select-then-confirm)", () => {
   it("Check on a wrong selection scores 0/1 and reveals the correct answer", async () => {
     const user = userEvent.setup();
     const onSubmit = vi.fn();
-    render(<Hotspot3D config={cfg} onSubmit={onSubmit} />);
+    render(<Component config={cfg} onSubmit={onSubmit} />);
     await user.click(screen.getByRole("button", { name: /^ama/i }));
     await user.click(screen.getByRole("button", { name: /^check$/i }));
     expect(onSubmit.mock.calls[0]?.[0]).toMatchObject({ raw: 0, max: 1, success: false });
@@ -73,7 +73,7 @@ describe("Hotspot3D — fallback list (select-then-confirm)", () => {
 
   it("Try again resets state when enableRetry=true", async () => {
     const user = userEvent.setup();
-    render(<Hotspot3D config={cfg} onSubmit={vi.fn()} />);
+    render(<Component config={cfg} onSubmit={vi.fn()} />);
     await user.click(screen.getByRole("button", { name: /^ama/i }));
     await user.click(screen.getByRole("button", { name: /^check$/i }));
     await user.click(screen.getByRole("button", { name: /try again/i }));
@@ -83,7 +83,7 @@ describe("Hotspot3D — fallback list (select-then-confirm)", () => {
   it("persists state via onPersist on each pick", async () => {
     const user = userEvent.setup();
     const onPersist = vi.fn();
-    render(<Hotspot3D config={cfg} onSubmit={vi.fn()} onPersist={onPersist} />);
+    render(<Component config={cfg} onSubmit={vi.fn()} onPersist={onPersist} />);
     await user.click(screen.getByRole("button", { name: /^iako/i }));
     expect(onPersist).toHaveBeenCalled();
     const last = onPersist.mock.calls.at(-1)?.[0] as string;

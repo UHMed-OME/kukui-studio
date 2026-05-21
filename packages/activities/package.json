@@ -32,6 +32,8 @@
     "./highlight-text/schema": "./highlight-text/schema.ts",
     "./hotspot-2d/Component": "./hotspot-2d/Component.tsx",
     "./hotspot-2d/schema": "./hotspot-2d/schema.ts",
+    "./hotspot-3d/Component": "./hotspot-3d/Component.tsx",
+    "./hotspot-3d/schema": "./hotspot-3d/schema.ts",
     "./image-annotation/Component": "./image-annotation/Component.tsx",
     "./image-annotation/schema": "./image-annotation/schema.ts",
     "./image-comparison-slider/Component": "./image-comparison-slider/Component.tsx",
@@ -60,11 +62,15 @@
     "@dnd-kit/utilities": "^3.2.2",
     "@kukui/core": "workspace:*",
     "@kukui/schemas": "workspace:*",
+    "@react-three/drei": "^10.0.0",
+    "@react-three/fiber": "^9.0.0",
     "react": "^19.0.0",
+    "three": "^0.171.0",
     "zod": "^4.0.0"
   },
   "devDependencies": {
     "@types/react": "^19.0.0",
+    "@types/three": "^0.171.0",
     "typescript": "^5.7.2",
     "vite": "^6.0.0"
   }

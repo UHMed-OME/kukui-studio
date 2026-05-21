@@ -2,20 +2,20 @@ import { Suspense, useEffect, useId, useMemo, useRef, useState } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
 import * as THREE from "three";
-import type { Hotspot3DConfig } from "@kukui/schemas";
-import type { ActivityProps } from "../../types.js";
-import { SafeHtml } from "../../safe-html.js";
-import { HotspotPin } from "../_shared/HotspotPin.js";
+import type { Hotspot3DConfig } from "./schema.js";
+import type { ActivityProps } from "@kukui/core/types";
+import { SafeHtml } from "@kukui/core";
+import { HotspotPin } from "@kukui/core/components/_shared/HotspotPin";
 import {
   GLBErrorBoundary,
   GLBLoadingOverlay,
   useCompressedGLTF,
-} from "../_shared/glb-loader.js";
+} from "@kukui/core/components/_shared/glb-loader";
 import {
   SketchfabViewer,
   type SketchfabHotspot,
-} from "../_shared/SketchfabViewer.js";
-import "./Hotspot3D.css";
+} from "@kukui/core/components/_shared/SketchfabViewer";
+import "./Component.css";
 
 /**
  * Lighting presets selectable per-activity via `config.lighting.preset`.
@@ -44,7 +44,7 @@ type State = {
  * fallback list is always present and is functionally equivalent to clicking
  * a hotspot in 3D — every test exercise goes through it.
  */
-export function Hotspot3D({
+export default function Component({
   config,
   onSubmit,
   onPersist,
