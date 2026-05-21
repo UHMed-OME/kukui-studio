@@ -78,18 +78,6 @@ function HighlightTextIcon(props: SVGProps<SVGSVGElement>) {
   );
 }
 
-function SequenceStepsIcon(props: SVGProps<SVGSVGElement>) {
-  return (
-    <svg {...baseProps} {...props}>
-      <circle cx="5" cy="6" r="2" />
-      <circle cx="12" cy="12" r="2" />
-      <circle cx="19" cy="18" r="2" />
-      <line x1="6.5" y1="7.5" x2="10.5" y2="10.5" />
-      <line x1="13.5" y1="13.5" x2="17.5" y2="16.5" />
-    </svg>
-  );
-}
-
 function CategorizationIcon(props: SVGProps<SVGSVGElement>) {
   return (
     <svg {...baseProps} {...props}>
@@ -343,7 +331,6 @@ const LEGACY_ICONS: Partial<Record<ActivityKind, IconComponent>> = {
   "hotspot-2d": Hotspot2dIcon,
   "anatomy-labeling": AnatomyLabelingIcon,
   "highlight-text": HighlightTextIcon,
-  "sequence-steps": SequenceStepsIcon,
   categorization: CategorizationIcon,
   "hotspot-3d": Hotspot3dIcon,
   "virtual-tour": VirtualTourIcon,

@@ -22,7 +22,7 @@ export {
 export {
   SequenceStepsConfigSchema,
   type SequenceStepsConfig,
-} from "./sequence-steps.js";
+} from "@kukui/activities/sequence-steps/schema";
 export {
   ReflectionPromptConfigSchema,
   type ReflectionPromptConfig,
@@ -93,7 +93,7 @@ import { Hotspot3DConfigSchema } from "./hotspot-3d.js";
 import { Hotspot2DConfigSchema } from "./hotspot-2d.js";
 import { VirtualTourConfigSchema } from "./virtual-tour.js";
 import { CategorizationConfigSchema } from "./categorization.js";
-import { SequenceStepsConfigSchema } from "./sequence-steps.js";
+import { SequenceStepsConfigSchema } from "@kukui/activities/sequence-steps/schema";
 import { ReflectionPromptConfigSchema } from "./reflection-prompt.js";
 import { FlashcardsConfigSchema } from "./flashcards.js";
 import { ImageComparisonSliderConfigSchema } from "./image-comparison-slider.js";

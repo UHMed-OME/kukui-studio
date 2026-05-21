@@ -135,17 +135,6 @@ const LEGACY_STARTERS: Partial<Record<ActivityKind, unknown>> = {
     completion: { mode: "manual" },
     behaviour: { enableRetry: true },
   },
-  "sequence-steps": {
-    version: "1.0",
-    title: "Sequence Steps",
-    prompt: "Order these into the correct sequence.",
-    steps: [
-      { id: "s1", text: "First step" },
-      { id: "s2", text: "Second step" },
-      { id: "s3", text: "Third step" },
-    ],
-    behaviour: { enableRetry: true, randomize: true },
-  },
   "matching-pairs": {
     version: "1.0",
     title: "Matching Pairs",
@@ -539,7 +528,6 @@ const LEGACY_LABELS: Partial<Record<ActivityKind, string>> = {
   "hotspot-3d": "3D Hotspots",
   "hotspot-2d": "Image Hotspots",
   "virtual-tour": "Virtual Tour",
-  "sequence-steps": "Sequence Steps",
   "matching-pairs": "Matching Pairs",
   categorization: "Categorization",
   "anatomy-labeling": "Anatomy Labeling",

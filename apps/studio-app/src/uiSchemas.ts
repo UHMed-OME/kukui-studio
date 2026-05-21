@@ -332,37 +332,6 @@ const LEGACY_UI_SCHEMAS: Partial<Record<ActivityKind, Record<string, unknown>>> 
     },
   },
 
-  "sequence-steps": {
-    ...COMMON,
-    "ui:order": ["title", "prompt", "steps", "behaviour", "ui", "*"],
-    title: TITLE,
-    author: AUTHOR,
-    prompt: f("Prompt", "What the learner is asked to put in order.", {
-      "ui:widget": "html",
-      "ui:options": { rows: 3 },
-    }),
-    steps: {
-      "ui:title": "Steps (in correct order)",
-      "ui:help":
-        "List the steps in the correct sequence. Learners see them shuffled (when randomize is on) and reorder via drag.",
-      items: {
-        id: HIDDEN,
-        text: f("Step text", "What the learner sees on the row."),
-      },
-    },
-    behaviour: {
-      "ui:title": "Activity behaviour",
-      enableRetry: BEHAVIOUR_RETRY,
-      singlePoint: BEHAVIOUR_SINGLEPOINT,
-      randomize: f("Shuffle on load", "When on, present steps in a random initial order."),
-    },
-    ui: {
-      "ui:title": "Button label overrides",
-      checkAnswerButton: f("'Check' button text"),
-      tryAgainButton: f("'Try Again' button text"),
-    },
-  },
-
   "matching-pairs": {
     ...COMMON,
     "ui:order": ["title", "prompt", "pairs", "behaviour", "ui", "*"],

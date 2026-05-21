@@ -87,7 +87,6 @@ const LEGACY_BLOOM: Partial<Record<ActivityKind, BloomLevel>> = {
   "anatomy-labeling": "understand",
   "highlight-text": "understand",
   // Apply — use procedures in new contexts
-  "sequence-steps": "apply",
   categorization: "apply",
   "hotspot-3d": "apply",
   "virtual-tour": "apply",

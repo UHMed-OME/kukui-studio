@@ -18,7 +18,6 @@
     "./image-comparison-slider": "./src/image-comparison-slider.ts",
     "./matching-pairs": "./src/matching-pairs.ts",
     "./categorization": "./src/categorization.ts",
-    "./sequence-steps": "./src/sequence-steps.ts",
     "./anatomy-labeling": "./src/anatomy-labeling.ts",
     "./branching-scenario": "./src/branching-scenario.ts",
     "./image-annotation": "./src/image-annotation.ts",

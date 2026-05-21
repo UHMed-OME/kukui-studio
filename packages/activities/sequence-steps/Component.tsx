@@ -18,10 +18,10 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import type { SequenceStepsConfig } from "@kukui/schemas";
-import type { ActivityProps } from "../../types.js";
-import { SafeHtml } from "../../safe-html.js";
-import { resolveScoring } from "../../scoring.js";
-import "./SequenceSteps.css";
+import type { ActivityProps } from "@kukui/core/types";
+import { SafeHtml } from "@kukui/core";
+import { resolveScoring } from "@kukui/core/scoring";
+import "./Component.css";
 
 type Stage = "answering" | "submitted";
 
@@ -80,7 +80,7 @@ function buildInitialOrder(config: SequenceStepsConfig): string[] {
   return randomize ? shuffleDistinct(ids) : ids.slice();
 }
 
-export function SequenceSteps({
+export function Component({
   config,
   onSubmit,
   onPersist,
@@ -411,3 +411,5 @@ function parseSuspend(s: string | undefined, correctOrder: readonly string[]): S
   }
   return null;
 }
+
+export default Component;

@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import type { SequenceStepsConfig } from "@kukui/schemas";
-import { SequenceSteps } from "./SequenceSteps.js";
+import Component from "./Component.js";
 
 /**
  * Tests target the keyboard / button-driven reorder path. Pointer-driven
@@ -45,7 +45,7 @@ function readOrder(): string[] {
 
 describe("SequenceSteps", () => {
   it("renders title, prompt, and one row per step with index badges 1..N", () => {
-    render(<SequenceSteps config={cfg} onSubmit={vi.fn()} />);
+    render(<Component config={cfg} onSubmit={vi.fn()} />);
     expect(screen.getByRole("heading", { level: 1, name: /mitosis/i })).toBeInTheDocument();
     expect(screen.getByText(/order the stages of mitosis/i)).toBeInTheDocument();
     const rows = screen.getAllByRole("button", { name: /^Step:/i });
@@ -56,7 +56,7 @@ describe("SequenceSteps", () => {
 
   it("reordering via the keyboard-accessible nudge buttons updates the visible order", async () => {
     const user = userEvent.setup();
-    render(<SequenceSteps config={cfg} onSubmit={vi.fn()} />);
+    render(<Component config={cfg} onSubmit={vi.fn()} />);
     // Move "Telophase" (last) up twice → ends up at index 1.
     await user.click(screen.getByRole("button", { name: /move "telophase" up/i }));
     await user.click(screen.getByRole("button", { name: /move "telophase" up/i }));
@@ -67,7 +67,7 @@ describe("SequenceSteps", () => {
     const user = userEvent.setup();
     const onSubmit = vi.fn();
     // randomize=false → already in correct order.
-    render(<SequenceSteps config={cfg} onSubmit={onSubmit} />);
+    render(<Component config={cfg} onSubmit={onSubmit} />);
     await user.click(screen.getByRole("button", { name: /^check$/i }));
     expect(onSubmit).toHaveBeenCalledTimes(1);
     expect(onSubmit.mock.calls[0]?.[0]).toMatchObject({ raw: 4, max: 4, success: true });
@@ -76,7 +76,7 @@ describe("SequenceSteps", () => {
   it("partial-correct order scores partial credit per item in correct position", async () => {
     const user = userEvent.setup();
     const onSubmit = vi.fn();
-    render(<SequenceSteps config={cfg} onSubmit={onSubmit} />);
+    render(<Component config={cfg} onSubmit={onSubmit} />);
     // Swap rows 1 and 2 → Metaphase, Prophase, Anaphase, Telophase.
     // Prophase (idx 0 → 1, wrong), Metaphase (idx 1 → 0, wrong),
     // Anaphase (idx 2 → 2, right), Telophase (idx 3 → 3, right) = 2/4.
@@ -92,7 +92,7 @@ describe("SequenceSteps", () => {
   it("singlePoint behaviour scores 0/1 unless every step is correct", async () => {
     const user = userEvent.setup();
     const onSubmit = vi.fn();
-    render(<SequenceSteps config={cfgSinglePoint} onSubmit={onSubmit} />);
+    render(<Component config={cfgSinglePoint} onSubmit={onSubmit} />);
     // Move Telophase up by 1 → wrong order.
     await user.click(screen.getByRole("button", { name: /move "telophase" up/i }));
     await user.click(screen.getByRole("button", { name: /^check$/i }));
@@ -102,7 +102,7 @@ describe("SequenceSteps", () => {
   it("Try again returns to the answering stage with a fresh shuffle (different from correct order)", async () => {
     const user = userEvent.setup();
     // Use the deterministic-initial config but allow retry to randomize.
-    render(<SequenceSteps config={cfg} onSubmit={vi.fn()} />);
+    render(<Component config={cfg} onSubmit={vi.fn()} />);
     await user.click(screen.getByRole("button", { name: /^check$/i }));
     // Submitted state — Check is gone, Try again is shown.
     expect(screen.queryByRole("button", { name: /^check$/i })).not.toBeInTheDocument();
@@ -117,7 +117,7 @@ describe("SequenceSteps", () => {
   it("persists state via onPersist on each reorder", async () => {
     const user = userEvent.setup();
     const onPersist = vi.fn();
-    render(<SequenceSteps config={cfg} onSubmit={vi.fn()} onPersist={onPersist} />);
+    render(<Component config={cfg} onSubmit={vi.fn()} onPersist={onPersist} />);
     onPersist.mockClear();
     await user.click(screen.getByRole("button", { name: /move "telophase" up/i }));
     expect(onPersist).toHaveBeenCalled();
@@ -133,14 +133,14 @@ describe("SequenceSteps", () => {
       attempts: 2,
     });
     const { unmount } = render(
-      <SequenceSteps config={cfg} onSubmit={vi.fn()} suspendData={valid} />,
+      <Component config={cfg} onSubmit={vi.fn()} suspendData={valid} />,
     );
     expect(readOrder()).toEqual(["Telophase", "Anaphase", "Metaphase", "Prophase"]);
     unmount();
   });
 
   it("falls back to the initial order when suspendData is invalid JSON", () => {
-    render(<SequenceSteps config={cfg} onSubmit={vi.fn()} suspendData={"{not json"} />);
+    render(<Component config={cfg} onSubmit={vi.fn()} suspendData={"{not json"} />);
     expect(readOrder()).toEqual(["Prophase", "Metaphase", "Anaphase", "Telophase"]);
   });
 
@@ -151,7 +151,7 @@ describe("SequenceSteps", () => {
       order: ["x1", "x2", "x3", "x4"],
       attempts: 0,
     });
-    render(<SequenceSteps config={cfg} onSubmit={vi.fn()} suspendData={stale} />);
+    render(<Component config={cfg} onSubmit={vi.fn()} suspendData={stale} />);
     expect(readOrder()).toEqual(["Prophase", "Metaphase", "Anaphase", "Telophase"]);
   });
 
@@ -159,7 +159,7 @@ describe("SequenceSteps", () => {
     // Run a few times to dodge a 1-in-many rare identity shuffle (the
     // implementation re-shuffles up to 6 times to avoid this).
     for (let i = 0; i < 3; i += 1) {
-      const { unmount } = render(<SequenceSteps config={cfgRandomized} onSubmit={vi.fn()} />);
+      const { unmount } = render(<Component config={cfgRandomized} onSubmit={vi.fn()} />);
       const order = readOrder();
       expect(order).not.toEqual(["Prophase", "Metaphase", "Anaphase", "Telophase"]);
       unmount();
@@ -167,13 +167,13 @@ describe("SequenceSteps", () => {
   });
 
   it("when headingLevel=2 is passed, the title renders as h2 (used by QS / CP nesting)", () => {
-    render(<SequenceSteps config={cfg} onSubmit={vi.fn()} headingLevel={2} />);
+    render(<Component config={cfg} onSubmit={vi.fn()} headingLevel={2} />);
     expect(screen.getByRole("heading", { level: 2, name: /mitosis/i })).toBeInTheDocument();
   });
 
   it("after submit, each row's badge announces correct vs. correct-position hint", async () => {
     const user = userEvent.setup();
-    render(<SequenceSteps config={cfg} onSubmit={vi.fn()} />);
+    render(<Component config={cfg} onSubmit={vi.fn()} />);
     // Swap rows 1 and 2 so 2/4 are wrong.
     await user.click(screen.getByRole("button", { name: /move "metaphase" up/i }));
     await user.click(screen.getByRole("button", { name: /^check$/i }));
