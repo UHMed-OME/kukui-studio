@@ -78,8 +78,6 @@ type BloomLevel = "remember" | "understand" | "apply" | "analyze" | "evaluate" |
 // Quiz-style kinds (multiple-choice, FIB, question-set) live in @kukui/core
 // but aren't surfaced in Studio, so they're omitted from the map.
 const LEGACY_BLOOM: Partial<Record<ActivityKind, BloomLevel>> = {
-  // Evaluate — judge, critique, decide
-  "quick-quiz": "evaluate",
   // "isometric-chatroom": "evaluate", — hidden from the Studio sidebar
   // while the runtime is being reworked. Kind, schema, registry, and
   // existing configs all remain valid; this just hides the picker entry.

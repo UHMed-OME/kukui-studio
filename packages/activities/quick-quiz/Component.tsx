@@ -1,8 +1,18 @@
-import type { QuickQuizConfig } from "@kukui/schemas";
-import type { ActivityProps } from "../../types.js";
-import { LivePreviewCard } from "../_live-preview/LivePreviewCard.js";
+import type { QuickQuizConfig } from "./schema.js";
+import type { ActivityProps } from "@kukui/core/types";
+import { LivePreviewCard } from "@kukui/core/components/_live-preview";
 
-export function QuickQuiz({
+/**
+ * Engine / Studio-preview view of the Quick Quiz.
+ *
+ * Quick Quiz is Live-first — the realtime instructor-paced answering
+ * loop forms when classmates join the mesh. In the single-learner
+ * engine context (SCORM zip, Studio Preview) the `LivePreviewCard`
+ * renders the prompt + choices preview and a banner explaining that
+ * the interactive runtime opens in Kukui Live; it posts success:1/1 so
+ * the LMS marks the SCO complete.
+ */
+export default function Component({
   config,
   onSubmit,
   headingLevel = 1,

@@ -33,24 +33,6 @@ const PLANNED_STARTERS = Object.fromEntries(
 ) as Record<(typeof PLANNED_ACTIVITY_KINDS)[number], unknown>;
 
 const LEGACY_STARTERS: Partial<Record<ActivityKind, unknown>> = {
-  "quick-quiz": {
-    version: "1.0",
-    title: "Quick check",
-    prompt: "Which artery supplies the inferior wall of the left ventricle in most patients?",
-    choices: [
-      { id: "rca", label: "Right coronary artery (RCA)", correct: true },
-      { id: "lad", label: "Left anterior descending (LAD)" },
-      { id: "lcx", label: "Left circumflex (LCx)" },
-      { id: "ramus", label: "Ramus intermedius" },
-    ],
-    behaviour: {
-      showLiveResultsToStudents: false,
-      revealCorrectAnswer: true,
-      allowChangeAnswer: true,
-      showNamesAtReveal: false,
-    },
-    live: { joinKey: "", adminKey: "", signaling: "nostr" },
-  },
   "isometric-chatroom": {
     version: "1.0",
     title: "Discussion Chatroom",
@@ -121,7 +103,6 @@ export const STARTERS: Record<ActivityKind, unknown> = {
 } as Record<ActivityKind, unknown>;
 
 const LEGACY_LABELS: Partial<Record<ActivityKind, string>> = {
-  "quick-quiz": "Quick Quiz (Live)",
   "isometric-chatroom": "Pixel Chat (Live)",
 };
 

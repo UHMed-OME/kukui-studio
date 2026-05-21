@@ -104,46 +104,6 @@ const LIVE_SETTINGS_UI = {
 } as const;
 
 const LEGACY_UI_SCHEMAS: Partial<Record<ActivityKind, Record<string, unknown>>> = {
-  "quick-quiz": {
-    ...COMMON,
-    "ui:order": ["title", "prompt", "choices", "behaviour", "live", "ui", "*"],
-    title: TITLE,
-    author: AUTHOR,
-    prompt: f(
-      "Question",
-      "Single question. For multiple questions, run a few Quick Quizzes back-to-back.",
-      { "ui:widget": "textarea", "ui:options": { rows: 2 } },
-    ),
-    choices: {
-      "ui:title": "Choices",
-      "ui:help":
-        "2–6 options. Tick the box on the correct one. At least one choice must be marked correct.",
-      items: {
-        id: HIDDEN,
-        label: f("Choice text", "What the student sees on the answer button."),
-        correct: f(
-          "Correct answer",
-          "Check this on the right answer. At least one choice must be marked.",
-        ),
-      },
-    },
-    behaviour: {
-      "ui:title": "Behaviour",
-      showLiveResultsToStudents: f(
-        "Show live tally to students before reveal",
-        "Default off. Most quizzes want students to commit before seeing the herd.",
-      ),
-      revealCorrectAnswer: f("Highlight the correct answer at reveal", "Default on."),
-      allowChangeAnswer: f("Allow students to change their answer", "Default on; last tap wins."),
-      showNamesAtReveal: f(
-        "Show student names with correct answers at reveal",
-        "Default off (anonymous). Turn on for kahoot-style leaderboards.",
-      ),
-    },
-    ui: { "ui:title": "Button label overrides" },
-    live: LIVE_SETTINGS_UI,
-  },
-
   "isometric-chatroom": {
     ...COMMON,
     "ui:order": ["title", "prompt", "room", "characters", "rules", "emoji", "live", "appearance", "*"],

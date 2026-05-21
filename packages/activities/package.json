@@ -54,6 +54,8 @@
     "./qa-board/schema": "./qa-board/schema.ts",
     "./question-set/Component": "./question-set/Component.tsx",
     "./question-set/schema": "./question-set/schema.ts",
+    "./quick-quiz/Component": "./quick-quiz/Component.tsx",
+    "./quick-quiz/schema": "./quick-quiz/schema.ts",
     "./reflection-prompt/Component": "./reflection-prompt/Component.tsx",
     "./reflection-prompt/schema": "./reflection-prompt/schema.ts",
     "./sequence-steps/Component": "./sequence-steps/Component.tsx",
