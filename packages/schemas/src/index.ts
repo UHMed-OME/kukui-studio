@@ -54,7 +54,7 @@ export {
 export {
   AudioRecordingConfigSchema,
   type AudioRecordingConfig,
-} from "./audio-recording.js";
+} from "@kukui/activities/audio-recording/schema";
 export {
   BranchingScenarioConfigSchema,
   type BranchingScenarioConfig,
@@ -113,7 +113,7 @@ import { AnatomyLabelingConfigSchema } from "@kukui/activities/anatomy-labeling/
 import { MatchingPairsConfigSchema } from "@kukui/activities/matching-pairs/schema";
 import { HighlightTextConfigSchema } from "@kukui/activities/highlight-text/schema";
 import { InteractiveVideoConfigSchema } from "./interactive-video.js";
-import { AudioRecordingConfigSchema } from "./audio-recording.js";
+import { AudioRecordingConfigSchema } from "@kukui/activities/audio-recording/schema";
 import { BranchingScenarioConfigSchema } from "./branching-scenario.js";
 import { ImageAnnotationConfigSchema } from "@kukui/activities/image-annotation/schema";
 import { ConceptMapConfigSchema } from "@kukui/activities/concept-map/schema";

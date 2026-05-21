@@ -1,8 +1,7 @@
 import { useCallback, useEffect, useId, useRef, useState } from "react";
-import type { AudioRecordingConfig } from "@kukui/schemas";
-import type { ActivityProps } from "../../types.js";
-import { SafeHtml } from "../../safe-html.js";
-import "./AudioRecording.css";
+import type { AudioRecordingConfig } from "./schema.js";
+import { SafeHtml, type ActivityProps } from "@kukui/core";
+import "./Component.css";
 
 type Stage =
   | "idle"
@@ -101,7 +100,7 @@ function blobToDataUrl(blob: Blob): Promise<string> {
   });
 }
 
-export function AudioRecording({
+export default function Component({
   config,
   onSubmit,
   onPersist,

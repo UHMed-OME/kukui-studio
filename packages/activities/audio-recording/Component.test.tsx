@@ -1,8 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { act, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import type { AudioRecordingConfig } from "@kukui/schemas";
-import { AudioRecording } from "./AudioRecording.js";
+import type { AudioRecordingConfig } from "./schema.js";
+import Component from "./Component.js";
 
 /* ---------- MediaRecorder + getUserMedia stubs ---------- */
 
@@ -107,7 +107,7 @@ describe("AudioRecording", () => {
 
   it("renders the title, prompt, and an initial Record button", () => {
     installRecorderStubs();
-    render(<AudioRecording config={cfgBasic} onSubmit={vi.fn()} />);
+    render(<Component config={cfgBasic} onSubmit={vi.fn()} />);
     expect(
       screen.getByRole("heading", { level: 1, name: /pronounce/i }),
     ).toBeInTheDocument();
@@ -120,7 +120,7 @@ describe("AudioRecording", () => {
   it("shows an error and a Try Again button when getUserMedia is denied", async () => {
     installDeniedGetUserMedia();
     const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
-    render(<AudioRecording config={cfgBasic} onSubmit={vi.fn()} />);
+    render(<Component config={cfgBasic} onSubmit={vi.fn()} />);
 
     await user.click(screen.getByRole("button", { name: /record/i }));
 
@@ -135,7 +135,7 @@ describe("AudioRecording", () => {
   it("a mocked MediaRecorder run produces a recording in review state", async () => {
     installRecorderStubs();
     const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
-    render(<AudioRecording config={cfgBasic} onSubmit={vi.fn()} />);
+    render(<Component config={cfgBasic} onSubmit={vi.fn()} />);
 
     await user.click(screen.getByRole("button", { name: /record/i }));
 
@@ -165,7 +165,7 @@ describe("AudioRecording", () => {
       durationSeconds: 3,
     });
     render(
-      <AudioRecording
+      <Component
         config={cfgBasic}
         onSubmit={vi.fn()}
         suspendData={suspendData}
@@ -184,7 +184,7 @@ describe("AudioRecording", () => {
   it("falls back to idle when suspendData is malformed", () => {
     installRecorderStubs();
     render(
-      <AudioRecording
+      <Component
         config={cfgBasic}
         onSubmit={vi.fn()}
         suspendData="not-json"
@@ -197,7 +197,7 @@ describe("AudioRecording", () => {
     installRecorderStubs();
     const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
     const onSubmit = vi.fn();
-    render(<AudioRecording config={cfgBasic} onSubmit={onSubmit} />);
+    render(<Component config={cfgBasic} onSubmit={onSubmit} />);
 
     await user.click(screen.getByRole("button", { name: /record/i }));
     await waitFor(() => {

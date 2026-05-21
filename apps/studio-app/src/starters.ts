@@ -173,14 +173,6 @@ const LEGACY_STARTERS: Partial<Record<ActivityKind, unknown>> = {
     interactions: [],
     behaviour: { enableRetry: true },
   },
-  "audio-recording": {
-    version: "1.0",
-    title: "Audio Recording",
-    prompt: "Record yourself reading the passage.",
-    maxDurationSeconds: 60,
-    minDurationSeconds: 3,
-    behaviour: { allowReRecord: true },
-  },
   "straw-poll": {
     version: "1.0",
     title: "Pulse check",
@@ -334,7 +326,6 @@ const LEGACY_LABELS: Partial<Record<ActivityKind, string>> = {
   "virtual-tour": "Virtual Tour",
   "branching-scenario": "Branching Scenario",
   "interactive-video": "Interactive Video",
-  "audio-recording": "Audio Recording",
   "straw-poll": "Straw Poll (Live)",
   "confidence-meter": "Confidence Meter (Live)",
   "word-cloud": "Word Cloud (Live)",

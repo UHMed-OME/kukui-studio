@@ -410,35 +410,6 @@ const LEGACY_UI_SCHEMAS: Partial<Record<ActivityKind, Record<string, unknown>>> 
     },
   },
 
-  "audio-recording": {
-    ...COMMON,
-    "ui:order": ["title", "prompt", "sample", "minSeconds", "maxSeconds", "behaviour", "ui", "*"],
-    title: TITLE,
-    author: AUTHOR,
-    prompt: f("Prompt", "What the learner records.", {
-      "ui:widget": "html",
-      "ui:options": { rows: 3 },
-    }),
-    sample: {
-      "ui:title": "Reference sample (optional)",
-      src: f("Audio URL", "Optional sample for the learner to compare against."),
-      caption: f("Caption"),
-    },
-    minSeconds: f("Minimum seconds", "Optional. Submit disabled until met."),
-    maxSeconds: f(
-      "Maximum seconds",
-      "Optional. Recording auto-stops at this length. Note: SCORM 1.2 can only persist short clips (~5 seconds) across resume — longer recordings still submit and grade as completed, but won't replay if the learner returns to the activity.",
-    ),
-    behaviour: {
-      "ui:title": "Activity behaviour",
-      enableRetry: BEHAVIOUR_RETRY,
-    },
-    ui: {
-      "ui:title": "Button label overrides",
-      submitButtonLabel: f("'Submit' button text"),
-    },
-  },
-
   "straw-poll": {
     ...COMMON,
     "ui:order": ["title", "prompt", "choices", "behaviour", "live", "ui", "*"],

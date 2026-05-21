@@ -82,17 +82,6 @@ function BranchingScenarioIcon(props: SVGProps<SVGSVGElement>) {
   );
 }
 
-function AudioRecordingIcon(props: SVGProps<SVGSVGElement>) {
-  return (
-    <svg {...baseProps} {...props}>
-      <rect x="9" y="3" width="6" height="12" rx="3" />
-      <path d="M5 11a7 7 0 0 0 14 0" />
-      <line x1="12" y1="18" x2="12" y2="21" />
-      <line x1="9" y1="21" x2="15" y2="21" />
-    </svg>
-  );
-}
-
 function ConfidenceMeterIcon(props: SVGProps<SVGSVGElement>) {
   return (
     <svg {...baseProps} {...props}>
@@ -172,7 +161,6 @@ const LEGACY_ICONS: Partial<Record<ActivityKind, IconComponent>> = {
   "virtual-tour": VirtualTourIcon,
   "interactive-video": InteractiveVideoIcon,
   "branching-scenario": BranchingScenarioIcon,
-  "audio-recording": AudioRecordingIcon,
   "straw-poll": StrawPollIcon,
   "confidence-meter": ConfidenceMeterIcon,
   "word-cloud": WordCloudIcon,

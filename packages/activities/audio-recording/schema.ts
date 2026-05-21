@@ -1,7 +1,5 @@
 import { z } from "zod";
-import { ScoringSchema } from "./scoring.js";
-import { AppearanceSchema } from "./appearance.js";
-import { SAFE_MEDIA_URL } from "./url.js";
+import { ScoringSchema, AppearanceSchema, SAFE_MEDIA_URL } from "@kukui/schemas/shared";
 
 const versionRe = /^\d+\.\d+(\.\d+)?$/;
 

@@ -94,8 +94,6 @@ const LEGACY_BLOOM: Partial<Record<ActivityKind, BloomLevel>> = {
   // while the runtime is being reworked. Kind, schema, registry, and
   // existing configs all remain valid; this just hides the picker entry.
   "word-cloud": "remember",
-  // Create — produce original work
-  "audio-recording": "create",
 };
 
 const MANIFEST_BLOOM: Partial<Record<ActivityKind, BloomLevel>> =
