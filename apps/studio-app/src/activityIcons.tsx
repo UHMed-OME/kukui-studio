@@ -35,16 +35,6 @@ function FlashcardsIcon(props: SVGProps<SVGSVGElement>) {
   );
 }
 
-function MatchingPairsIcon(props: SVGProps<SVGSVGElement>) {
-  return (
-    <svg {...baseProps} {...props}>
-      <circle cx="5" cy="7" r="2.5" />
-      <circle cx="19" cy="17" r="2.5" />
-      <line x1="7" y1="8.5" x2="17" y2="15.5" />
-    </svg>
-  );
-}
-
 function Hotspot2dIcon(props: SVGProps<SVGSVGElement>) {
   return (
     <svg {...baseProps} {...props}>
@@ -327,7 +317,6 @@ type IconComponent = (props: SVGProps<SVGSVGElement>) => JSX.Element;
 
 const LEGACY_ICONS: Partial<Record<ActivityKind, IconComponent>> = {
   flashcards: FlashcardsIcon,
-  "matching-pairs": MatchingPairsIcon,
   "hotspot-2d": Hotspot2dIcon,
   "anatomy-labeling": AnatomyLabelingIcon,
   "highlight-text": HighlightTextIcon,

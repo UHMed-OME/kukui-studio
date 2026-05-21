@@ -135,16 +135,6 @@ const LEGACY_STARTERS: Partial<Record<ActivityKind, unknown>> = {
     completion: { mode: "manual" },
     behaviour: { enableRetry: true },
   },
-  "matching-pairs": {
-    version: "1.0",
-    title: "Matching Pairs",
-    prompt: "Match each item on the left to its partner on the right.",
-    pairs: [
-      { id: "p1", left: { text: "Left A" }, right: { text: "Right A" } },
-      { id: "p2", left: { text: "Left B" }, right: { text: "Right B" } },
-    ],
-    behaviour: { enableRetry: true, randomizeRight: true },
-  },
   categorization: {
     version: "1.0",
     title: "Categorization",
@@ -528,7 +518,6 @@ const LEGACY_LABELS: Partial<Record<ActivityKind, string>> = {
   "hotspot-3d": "3D Hotspots",
   "hotspot-2d": "Image Hotspots",
   "virtual-tour": "Virtual Tour",
-  "matching-pairs": "Matching Pairs",
   categorization: "Categorization",
   "anatomy-labeling": "Anatomy Labeling",
   "image-comparison-slider": "Image Comparison Slider",

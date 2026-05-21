@@ -42,7 +42,7 @@ export {
 export {
   MatchingPairsConfigSchema,
   type MatchingPairsConfig,
-} from "./matching-pairs.js";
+} from "@kukui/activities/matching-pairs/schema";
 export {
   HighlightTextConfigSchema,
   type HighlightTextConfig,
@@ -98,7 +98,7 @@ import { ReflectionPromptConfigSchema } from "./reflection-prompt.js";
 import { FlashcardsConfigSchema } from "./flashcards.js";
 import { ImageComparisonSliderConfigSchema } from "./image-comparison-slider.js";
 import { AnatomyLabelingConfigSchema } from "./anatomy-labeling.js";
-import { MatchingPairsConfigSchema } from "./matching-pairs.js";
+import { MatchingPairsConfigSchema } from "@kukui/activities/matching-pairs/schema";
 import { HighlightTextConfigSchema } from "./highlight-text.js";
 import { InteractiveVideoConfigSchema } from "./interactive-video.js";
 import { AudioRecordingConfigSchema } from "./audio-recording.js";

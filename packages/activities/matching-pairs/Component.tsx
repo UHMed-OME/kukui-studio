@@ -1,9 +1,9 @@
 import { useEffect, useId, useMemo, useState } from "react";
-import type { MatchingPairsConfig } from "@kukui/schemas/matching-pairs";
-import type { ActivityProps } from "../../types.js";
-import { SafeHtml } from "../../safe-html.js";
-import { resolveScoring } from "../../scoring.js";
-import "./MatchingPairs.css";
+import type { MatchingPairsConfig } from "./schema.js";
+import type { ActivityProps } from "@kukui/core/types";
+import { SafeHtml } from "@kukui/core";
+import { resolveScoring } from "@kukui/core/scoring";
+import "./Component.css";
 
 type Stage = "answering" | "submitted";
 
@@ -51,7 +51,7 @@ function buildInitial(config: MatchingPairsConfig): State {
   };
 }
 
-export function MatchingPairs({
+function Component({
   config,
   onSubmit,
   onPersist,
@@ -450,3 +450,5 @@ function parseSuspend(s: string | undefined, config: MatchingPairsConfig): State
     return null;
   }
 }
+
+export default Component;

@@ -332,44 +332,6 @@ const LEGACY_UI_SCHEMAS: Partial<Record<ActivityKind, Record<string, unknown>>> 
     },
   },
 
-  "matching-pairs": {
-    ...COMMON,
-    "ui:order": ["title", "prompt", "pairs", "behaviour", "ui", "*"],
-    title: TITLE,
-    author: AUTHOR,
-    prompt: f("Prompt", "Tells the learner what to match.", {
-      "ui:widget": "html",
-      "ui:options": { rows: 3 },
-    }),
-    pairs: {
-      "ui:title": "Pairs (left ↔ right)",
-      "ui:help":
-        "Each row defines a correct match between a left-column item and a right-column item.",
-      items: {
-        id: HIDDEN,
-        left: { "ui:title": "Left item", text: f("Text", "What the learner sees on the left side.") },
-        right: {
-          "ui:title": "Right item (correct partner)",
-          text: f("Text", "What the learner sees on the right side."),
-        },
-      },
-    },
-    behaviour: {
-      "ui:title": "Activity behaviour",
-      enableRetry: BEHAVIOUR_RETRY,
-      singlePoint: BEHAVIOUR_SINGLEPOINT,
-      randomizeRight: f(
-        "Shuffle the right column",
-        "Default on. The right side is shuffled so learners can't pair by position.",
-      ),
-    },
-    ui: {
-      "ui:title": "Button label overrides",
-      checkAnswerButton: f("'Check' button text"),
-      tryAgainButton: f("'Try Again' button text"),
-    },
-  },
-
   categorization: {
     ...COMMON,
     "ui:order": ["title", "prompt", "categories", "items", "behaviour", "ui", "*"],

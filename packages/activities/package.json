@@ -12,6 +12,8 @@
     "./drag-and-drop/schema": "./drag-and-drop/schema.ts",
     "./fill-in-the-blanks/Component": "./fill-in-the-blanks/Component.tsx",
     "./fill-in-the-blanks/schema": "./fill-in-the-blanks/schema.ts",
+    "./matching-pairs/Component": "./matching-pairs/Component.tsx",
+    "./matching-pairs/schema": "./matching-pairs/schema.ts",
     "./multiple-choice/Component": "./multiple-choice/Component.tsx",
     "./multiple-choice/schema": "./multiple-choice/schema.ts",
     "./sequence-steps/Component": "./sequence-steps/Component.tsx",

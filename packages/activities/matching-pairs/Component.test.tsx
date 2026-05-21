@@ -1,8 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import type { MatchingPairsConfig } from "@kukui/schemas/matching-pairs";
-import { MatchingPairs } from "./MatchingPairs.js";
+import type { MatchingPairsConfig } from "./schema.js";
+import Component from "./Component.js";
 
 const cfg: MatchingPairsConfig = {
   version: "1.0",
@@ -27,7 +27,7 @@ describe("MatchingPairs", () => {
   });
 
   it("renders title, prompt, both columns, and a fallback select per pair", () => {
-    render(<MatchingPairs config={cfg} onSubmit={vi.fn()} />);
+    render(<Component config={cfg} onSubmit={vi.fn()} />);
     expect(
       screen.getByRole("heading", { level: 1, name: /match drugs to their classes/i }),
     ).toBeInTheDocument();
@@ -43,7 +43,7 @@ describe("MatchingPairs", () => {
 
   it("Check is disabled until every left item is paired", async () => {
     const user = userEvent.setup();
-    render(<MatchingPairs config={cfg} onSubmit={vi.fn()} />);
+    render(<Component config={cfg} onSubmit={vi.fn()} />);
     const check = screen.getByRole("button", { name: /^check$/i });
     expect(check).toBeDisabled();
     const selects = screen.getAllByRole("combobox");
@@ -58,7 +58,7 @@ describe("MatchingPairs", () => {
   it("click-to-pair: select left, then click right, records the connection", async () => {
     const user = userEvent.setup();
     const onSubmit = vi.fn();
-    render(<MatchingPairs config={cfg} onSubmit={onSubmit} />);
+    render(<Component config={cfg} onSubmit={onSubmit} />);
     await user.click(screen.getByRole("button", { name: /atenolol/i }));
     await user.click(screen.getByRole("button", { name: /beta blocker/i }));
     await user.click(screen.getByRole("button", { name: /lisinopril/i }));
@@ -72,7 +72,7 @@ describe("MatchingPairs", () => {
 
   it("clicking a right that is already paired swaps the connection", async () => {
     const user = userEvent.setup();
-    render(<MatchingPairs config={cfg} onSubmit={vi.fn()} />);
+    render(<Component config={cfg} onSubmit={vi.fn()} />);
     // p1.left -> p1.right
     await user.click(screen.getByRole("button", { name: /atenolol/i }));
     await user.click(screen.getByRole("button", { name: /beta blocker/i }));
@@ -89,7 +89,7 @@ describe("MatchingPairs", () => {
   it("reveals the correct partner for incorrect pairings on submit", async () => {
     const user = userEvent.setup();
     const onSubmit = vi.fn();
-    render(<MatchingPairs config={cfg} onSubmit={onSubmit} />);
+    render(<Component config={cfg} onSubmit={onSubmit} />);
     const selects = screen.getAllByRole("combobox");
     // Two wrong pairings:
     await user.selectOptions(selects[0]!, "p2"); // Atenolol -> ACE inhibitor (wrong)
@@ -104,7 +104,7 @@ describe("MatchingPairs", () => {
 
   it("Try again resets connections", async () => {
     const user = userEvent.setup();
-    render(<MatchingPairs config={cfg} onSubmit={vi.fn()} />);
+    render(<Component config={cfg} onSubmit={vi.fn()} />);
     const selects = screen.getAllByRole("combobox");
     await user.selectOptions(selects[0]!, "p1");
     await user.selectOptions(selects[1]!, "p2");
@@ -119,7 +119,7 @@ describe("MatchingPairs", () => {
   it("calls onPersist on each connection change", async () => {
     const user = userEvent.setup();
     const onPersist = vi.fn();
-    render(<MatchingPairs config={cfg} onSubmit={vi.fn()} onPersist={onPersist} />);
+    render(<Component config={cfg} onSubmit={vi.fn()} onPersist={onPersist} />);
     const initialCalls = onPersist.mock.calls.length;
     await user.selectOptions(screen.getAllByRole("combobox")[0]!, "p1");
     expect(onPersist.mock.calls.length).toBeGreaterThan(initialCalls);
@@ -134,7 +134,7 @@ describe("MatchingPairs", () => {
       ...cfg,
       behaviour: { ...cfg.behaviour, singlePoint: true },
     };
-    render(<MatchingPairs config={single} onSubmit={onSubmit} />);
+    render(<Component config={single} onSubmit={onSubmit} />);
     const selects = screen.getAllByRole("combobox");
     // Two right, one wrong → singlePoint => 0 / 1.
     await user.selectOptions(selects[0]!, "p1");
@@ -147,7 +147,7 @@ describe("MatchingPairs", () => {
   });
 
   it("right column items each render in their own list region", () => {
-    render(<MatchingPairs config={cfg} onSubmit={vi.fn()} />);
+    render(<Component config={cfg} onSubmit={vi.fn()} />);
     const rightCol = screen.getByRole("list", { name: /right column items/i });
     expect(within(rightCol).getByRole("button", { name: /beta blocker/i })).toBeInTheDocument();
     expect(within(rightCol).getByRole("button", { name: /ace inhibitor/i })).toBeInTheDocument();

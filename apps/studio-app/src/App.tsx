@@ -80,7 +80,6 @@ type BloomLevel = "remember" | "understand" | "apply" | "analyze" | "evaluate" |
 const LEGACY_BLOOM: Partial<Record<ActivityKind, BloomLevel>> = {
   // Remember — recall facts, terminology
   flashcards: "remember",
-  "matching-pairs": "remember",
   crossword: "remember",
   // Understand — identify, explain, classify
   "hotspot-2d": "understand",
