@@ -79,7 +79,10 @@ export {
   OSCEConfigSchema,
   type OSCEConfig,
 } from "@kukui/activities/osce/schema";
-export { CrosswordConfigSchema, type CrosswordConfig } from "./crossword.js";
+export {
+  CrosswordConfigSchema,
+  type CrosswordConfig,
+} from "@kukui/activities/crossword/schema";
 export { StrawPollConfigSchema, type StrawPollConfig } from "./straw-poll.js";
 export {
   ConfidenceMeterConfigSchema,
@@ -117,7 +120,7 @@ import { ConceptMapConfigSchema } from "@kukui/activities/concept-map/schema";
 import { LabPanelConfigSchema } from "@kukui/activities/lab-panel/schema";
 import { DDxTreeConfigSchema } from "@kukui/activities/ddx-tree/schema";
 import { OSCEConfigSchema } from "@kukui/activities/osce/schema";
-import { CrosswordConfigSchema } from "./crossword.js";
+import { CrosswordConfigSchema } from "@kukui/activities/crossword/schema";
 import { StrawPollConfigSchema } from "./straw-poll.js";
 import { ConfidenceMeterConfigSchema } from "./confidence-meter.js";
 import { WordCloudConfigSchema } from "./word-cloud.js";

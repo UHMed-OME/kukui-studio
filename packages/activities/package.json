@@ -14,6 +14,8 @@
     "./categorization/schema": "./categorization/schema.ts",
     "./concept-map/Component": "./concept-map/Component.tsx",
     "./concept-map/schema": "./concept-map/schema.ts",
+    "./crossword/Component": "./crossword/Component.tsx",
+    "./crossword/schema": "./crossword/schema.ts",
     "./ddx-tree/Component": "./ddx-tree/Component.tsx",
     "./ddx-tree/schema": "./ddx-tree/schema.ts",
     "./drag-and-drop/Component": "./drag-and-drop/Component.tsx",

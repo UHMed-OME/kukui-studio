@@ -78,8 +78,6 @@ type BloomLevel = "remember" | "understand" | "apply" | "analyze" | "evaluate" |
 // Quiz-style kinds (multiple-choice, FIB, question-set) live in @kukui/core
 // but aren't surfaced in Studio, so they're omitted from the map.
 const LEGACY_BLOOM: Partial<Record<ActivityKind, BloomLevel>> = {
-  // Remember — recall facts, terminology
-  crossword: "remember",
   // Understand — identify, explain, classify
   "hotspot-2d": "understand",
   // Apply — use procedures in new contexts

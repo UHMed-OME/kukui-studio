@@ -7,9 +7,8 @@ import {
   useState,
   type KeyboardEvent,
 } from "react";
-import type { CrosswordConfig } from "@kukui/schemas";
-import type { ActivityProps } from "../../types.js";
-import { SafeHtml } from "../../safe-html.js";
+import type { CrosswordConfig } from "./schema.js";
+import { SafeHtml, type ActivityProps } from "@kukui/core";
 import {
   answerGrid,
   generateLayout,
@@ -17,7 +16,7 @@ import {
   type Layout,
   type Placement,
 } from "./generate.js";
-import "./Crossword.css";
+import "./Component.css";
 
 type CellCoord = { row: number; col: number };
 
@@ -65,7 +64,7 @@ function indexCells(layout: Layout): {
   return { active, across, down };
 }
 
-export function Crossword({
+export default function Component({
   config,
   onSubmit,
   onPersist,

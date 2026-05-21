@@ -14,7 +14,6 @@
     "./virtual-tour": "./src/virtual-tour.ts",
     "./branching-scenario": "./src/branching-scenario.ts",
     "./audio-recording": "./src/audio-recording.ts",
-    "./crossword": "./src/crossword.ts",
     "./straw-poll": "./src/straw-poll.ts",
     "./confidence-meter": "./src/confidence-meter.ts",
     "./word-cloud": "./src/word-cloud.ts",

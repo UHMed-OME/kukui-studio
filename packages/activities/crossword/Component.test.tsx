@@ -1,8 +1,8 @@
 import { describe, expect, it, vi } from "vitest";
 import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import type { CrosswordConfig } from "@kukui/schemas";
-import { Crossword } from "./Crossword.js";
+import type { CrosswordConfig } from "./schema.js";
+import Component from "./Component.js";
 
 const cfg: CrosswordConfig = {
   version: "1.0",
@@ -17,7 +17,7 @@ const cfg: CrosswordConfig = {
 
 describe("Crossword", () => {
   it("renders title, prompt, and across/down clue lists", () => {
-    render(<Crossword config={cfg} onSubmit={vi.fn()} />);
+    render(<Component config={cfg} onSubmit={vi.fn()} />);
     expect(
       screen.getByRole("heading", { level: 1, name: /cardio terms/i }),
     ).toBeInTheDocument();
@@ -31,7 +31,7 @@ describe("Crossword", () => {
 
   it("typing a letter stores it uppercase somewhere in the grid", async () => {
     const user = userEvent.setup();
-    render(<Crossword config={cfg} onSubmit={vi.fn()} />);
+    render(<Component config={cfg} onSubmit={vi.fn()} />);
     const inputs = screen.getAllByRole("textbox") as HTMLInputElement[];
     await user.type(inputs[0] as HTMLInputElement, "a");
     // After typing, the controlled input that owned (0,0) re-renders with
@@ -44,7 +44,7 @@ describe("Crossword", () => {
   it("submitting an empty board reports 0 raw and !success", async () => {
     const user = userEvent.setup();
     const onSubmit = vi.fn();
-    render(<Crossword config={cfg} onSubmit={onSubmit} />);
+    render(<Component config={cfg} onSubmit={onSubmit} />);
     await user.click(screen.getByRole("button", { name: /submit/i }));
     expect(onSubmit).toHaveBeenCalledTimes(1);
     const arg = onSubmit.mock.calls[0]?.[0];
@@ -55,7 +55,7 @@ describe("Crossword", () => {
 
   it("clicking a clue moves selection to that clue's starting cell", async () => {
     const user = userEvent.setup();
-    render(<Crossword config={cfg} onSubmit={vi.fn()} />);
+    render(<Component config={cfg} onSubmit={vi.fn()} />);
     // Pick the first clue button (number 1) and click it — its cell input
     // should receive focus.
     const clueButtons = screen.getAllByRole("button").filter((b) =>
