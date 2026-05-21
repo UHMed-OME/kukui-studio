@@ -36,16 +36,6 @@ function Hotspot2dIcon(props: SVGProps<SVGSVGElement>) {
   );
 }
 
-function HighlightTextIcon(props: SVGProps<SVGSVGElement>) {
-  return (
-    <svg {...baseProps} {...props}>
-      <line x1="4" y1="6" x2="20" y2="6" />
-      <rect x="3" y="10" width="18" height="4" rx="0.5" />
-      <line x1="4" y1="18" x2="20" y2="18" />
-    </svg>
-  );
-}
-
 function Hotspot3dIcon(props: SVGProps<SVGSVGElement>) {
   return (
     <svg {...baseProps} {...props}>
@@ -269,7 +259,6 @@ type IconComponent = (props: SVGProps<SVGSVGElement>) => JSX.Element;
 
 const LEGACY_ICONS: Partial<Record<ActivityKind, IconComponent>> = {
   "hotspot-2d": Hotspot2dIcon,
-  "highlight-text": HighlightTextIcon,
   "hotspot-3d": Hotspot3dIcon,
   "virtual-tour": VirtualTourIcon,
   "interactive-video": InteractiveVideoIcon,

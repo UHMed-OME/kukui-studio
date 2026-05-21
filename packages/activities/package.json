@@ -18,6 +18,8 @@
     "./fill-in-the-blanks/schema": "./fill-in-the-blanks/schema.ts",
     "./flashcards/Component": "./flashcards/Component.tsx",
     "./flashcards/schema": "./flashcards/schema.ts",
+    "./highlight-text/Component": "./highlight-text/Component.tsx",
+    "./highlight-text/schema": "./highlight-text/schema.ts",
     "./matching-pairs/Component": "./matching-pairs/Component.tsx",
     "./matching-pairs/schema": "./matching-pairs/schema.ts",
     "./multiple-choice/Component": "./multiple-choice/Component.tsx",

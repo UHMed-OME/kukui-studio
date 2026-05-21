@@ -1,8 +1,8 @@
 import { describe, expect, it, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import type { HighlightTextConfig } from "@kukui/schemas/highlight-text";
-import { HighlightText } from "./HighlightText.js";
+import type { HighlightTextConfig } from "./schema.js";
+import Component from "./Component.js";
 
 const cfg: HighlightTextConfig = {
   version: "1.0",
@@ -24,7 +24,7 @@ const cfg: HighlightTextConfig = {
 
 describe("HighlightText", () => {
   it("renders title, prompt and a button per token", () => {
-    render(<HighlightText config={cfg} onSubmit={vi.fn()} />);
+    render(<Component config={cfg} onSubmit={vi.fn()} />);
     expect(
       screen.getByRole("heading", { level: 1, name: /verbs/i }),
     ).toBeInTheDocument();
@@ -37,7 +37,7 @@ describe("HighlightText", () => {
 
   it("clicking a token toggles its highlighted/aria-pressed state", async () => {
     const user = userEvent.setup();
-    render(<HighlightText config={cfg} onSubmit={vi.fn()} />);
+    render(<Component config={cfg} onSubmit={vi.fn()} />);
     const ran = screen.getByRole("button", { name: /^ran,/i });
     expect(ran).toHaveAttribute("aria-pressed", "false");
     await user.click(ran);
@@ -49,7 +49,7 @@ describe("HighlightText", () => {
   it("partial credit: 1 correct + 1 wrong token nets raw=0/max=2 (default scoring)", async () => {
     const user = userEvent.setup();
     const onSubmit = vi.fn();
-    render(<HighlightText config={cfg} onSubmit={onSubmit} />);
+    render(<Component config={cfg} onSubmit={onSubmit} />);
     await user.click(screen.getByRole("button", { name: /^ran,/i })); // correct
     await user.click(screen.getByRole("button", { name: /^the,/i })); // wrong
     await user.click(screen.getByRole("button", { name: /^check$/i }));
@@ -65,7 +65,7 @@ describe("HighlightText", () => {
   it("all-correct selection produces success=true and shows the score", async () => {
     const user = userEvent.setup();
     const onSubmit = vi.fn();
-    render(<HighlightText config={cfg} onSubmit={onSubmit} />);
+    render(<Component config={cfg} onSubmit={onSubmit} />);
     await user.click(screen.getByRole("button", { name: /^ran,/i }));
     await user.click(screen.getByRole("button", { name: /^bought,/i }));
     await user.click(screen.getByRole("button", { name: /^check$/i }));
@@ -79,7 +79,7 @@ describe("HighlightText", () => {
 
   it("Try again clears selections and returns to the answering stage", async () => {
     const user = userEvent.setup();
-    render(<HighlightText config={cfg} onSubmit={vi.fn()} />);
+    render(<Component config={cfg} onSubmit={vi.fn()} />);
     await user.click(screen.getByRole("button", { name: /^the,/i }));
     await user.click(screen.getByRole("button", { name: /^check$/i }));
     await user.click(screen.getByRole("button", { name: /try again/i }));
@@ -93,7 +93,7 @@ describe("HighlightText", () => {
     const user = userEvent.setup();
     const onPersist = vi.fn();
     render(
-      <HighlightText config={cfg} onSubmit={vi.fn()} onPersist={onPersist} />,
+      <Component config={cfg} onSubmit={vi.fn()} onPersist={onPersist} />,
     );
     await user.click(screen.getByRole("button", { name: /^ran,/i }));
     expect(onPersist).toHaveBeenCalled();
@@ -108,7 +108,7 @@ describe("HighlightText", () => {
       ...cfg,
       behaviour: { ...cfg.behaviour, singlePoint: true },
     };
-    render(<HighlightText config={sp} onSubmit={onSubmit} />);
+    render(<Component config={sp} onSubmit={onSubmit} />);
     await user.click(screen.getByRole("button", { name: /^ran,/i }));
     await user.click(screen.getByRole("button", { name: /^check$/i }));
     expect(onSubmit.mock.calls[0]?.[0]).toMatchObject({
@@ -120,7 +120,7 @@ describe("HighlightText", () => {
 
   it("after submit, unselected correct tokens get the reveal class (dashed)", async () => {
     const user = userEvent.setup();
-    render(<HighlightText config={cfg} onSubmit={vi.fn()} />);
+    render(<Component config={cfg} onSubmit={vi.fn()} />);
     await user.click(screen.getByRole("button", { name: /^ran,/i })); // got one
     await user.click(screen.getByRole("button", { name: /^check$/i }));
     const missed = screen.getByRole("button", {

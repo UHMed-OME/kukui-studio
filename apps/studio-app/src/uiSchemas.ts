@@ -379,42 +379,6 @@ const LEGACY_UI_SCHEMAS: Partial<Record<ActivityKind, Record<string, unknown>>> 
     },
   },
 
-  "highlight-text": {
-    ...COMMON,
-    "ui:order": ["title", "prompt", "tokens", "behaviour", "ui", "overallFeedback", "*"],
-    title: TITLE,
-    author: AUTHOR,
-    prompt: f("Prompt", "Tells the learner what to highlight.", {
-      "ui:widget": "html",
-      "ui:options": { rows: 3 },
-    }),
-    tokens: {
-      "ui:title": "Tokens (each is clickable)",
-      "ui:help":
-        "Render order matters — tokens render with single spaces between unless a separator is set.",
-      items: {
-        id: HIDDEN,
-        text: f("Token text", "The word or phrase the learner sees."),
-        correct: f("Counts as correct", "Selecting this token contributes to the score."),
-        separator: f(
-          "Separator after token",
-          "Optional. Defaults to a single space. Set to an empty string for no space, or to ', ' / '. ' / etc.",
-        ),
-      },
-    },
-    behaviour: {
-      "ui:title": "Activity behaviour",
-      enableRetry: BEHAVIOUR_RETRY,
-      singlePoint: BEHAVIOUR_SINGLEPOINT,
-    },
-    ui: {
-      "ui:title": "Button label overrides",
-      checkAnswerButton: f("'Check' button text"),
-      tryAgainButton: f("'Try Again' button text"),
-    },
-    overallFeedback: HIDDEN,
-  },
-
   "image-annotation": {
     ...COMMON,
     "ui:order": [

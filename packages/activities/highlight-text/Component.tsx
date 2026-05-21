@@ -1,9 +1,9 @@
 import { useEffect, useId, useMemo, useState } from "react";
-import type { HighlightTextConfig } from "@kukui/schemas/highlight-text";
-import type { ActivityProps } from "../../types.js";
-import { bandMessage, percentage, resolveScoring, scoreSelection } from "../../scoring.js";
-import { SafeHtml } from "../../safe-html.js";
-import "./HighlightText.css";
+import type { HighlightTextConfig } from "./schema.js";
+import type { ActivityProps } from "@kukui/core/types";
+import { bandMessage, percentage, resolveScoring, scoreSelection } from "@kukui/core/scoring";
+import { SafeHtml } from "@kukui/core";
+import "./Component.css";
 
 type Stage = "answering" | "submitted";
 
@@ -15,7 +15,7 @@ type State = {
 
 const initialState: State = { stage: "answering", selected: [], attempts: 0 };
 
-export function HighlightText({
+export default function Component({
   config,
   onSubmit,
   onPersist,

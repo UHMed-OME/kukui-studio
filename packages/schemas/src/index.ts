@@ -46,7 +46,7 @@ export {
 export {
   HighlightTextConfigSchema,
   type HighlightTextConfig,
-} from "./highlight-text.js";
+} from "@kukui/activities/highlight-text/schema";
 export {
   InteractiveVideoConfigSchema,
   type InteractiveVideoConfig,
@@ -99,7 +99,7 @@ import { FlashcardsConfigSchema } from "@kukui/activities/flashcards/schema";
 import { ImageComparisonSliderConfigSchema } from "./image-comparison-slider.js";
 import { AnatomyLabelingConfigSchema } from "@kukui/activities/anatomy-labeling/schema";
 import { MatchingPairsConfigSchema } from "@kukui/activities/matching-pairs/schema";
-import { HighlightTextConfigSchema } from "./highlight-text.js";
+import { HighlightTextConfigSchema } from "@kukui/activities/highlight-text/schema";
 import { InteractiveVideoConfigSchema } from "./interactive-video.js";
 import { AudioRecordingConfigSchema } from "./audio-recording.js";
 import { BranchingScenarioConfigSchema } from "./branching-scenario.js";

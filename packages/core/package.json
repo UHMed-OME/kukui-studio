@@ -24,7 +24,6 @@
     "./components/virtual-tour": "./src/components/virtual-tour/index.ts",
     "./components/sequence-steps": "./src/components/sequence-steps/index.ts",
     "./components/matching-pairs": "./src/components/matching-pairs/index.ts",
-    "./components/highlight-text": "./src/components/highlight-text/index.ts",
     "./components/image-comparison-slider": "./src/components/image-comparison-slider/index.ts",
     "./components/flashcards": "./src/components/flashcards/index.ts",
     "./components/reflection-prompt": "./src/components/reflection-prompt/index.ts",

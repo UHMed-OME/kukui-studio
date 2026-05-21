@@ -148,18 +148,6 @@ const LEGACY_STARTERS: Partial<Record<ActivityKind, unknown>> = {
       alt: "After",
     },
   },
-  "highlight-text": {
-    version: "1.0",
-    title: "Highlight Text",
-    prompt: "Highlight the verbs in this sentence.",
-    tokens: [
-      { id: "t1", text: "The", correct: false },
-      { id: "t2", text: "cat", correct: false },
-      { id: "t3", text: "ran", correct: true },
-      { id: "t4", text: "quickly", correct: false },
-    ],
-    behaviour: { enableRetry: true },
-  },
   "branching-scenario": {
     version: "1.0",
     title: "Branching Scenario",
@@ -470,7 +458,6 @@ const LEGACY_LABELS: Partial<Record<ActivityKind, string>> = {
   "hotspot-2d": "Image Hotspots",
   "virtual-tour": "Virtual Tour",
   "image-comparison-slider": "Image Comparison Slider",
-  "highlight-text": "Highlight Text Spans",
   "branching-scenario": "Branching Scenario",
   "image-annotation": "Image Annotation",
   "concept-map": "Concept Map",
