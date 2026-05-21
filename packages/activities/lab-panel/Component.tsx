@@ -1,9 +1,8 @@
 import { useEffect, useId, useMemo, useState } from "react";
-import type { LabPanelConfig } from "@kukui/schemas/lab-panel";
-import type { ActivityProps } from "../../types.js";
-import { bandMessage, percentage, resolveScoring, scoreSelection } from "../../scoring.js";
-import { SafeHtml, htmlToText } from "../../safe-html.js";
-import "./LabPanel.css";
+import type { LabPanelConfig } from "./schema.js";
+import { bandMessage, percentage, scoreSelection, SafeHtml, htmlToText, type ActivityProps } from "@kukui/core";
+import { resolveScoring } from "@kukui/core/scoring";
+import "./Component.css";
 
 type Stage = "answering" | "submitted";
 
@@ -23,7 +22,7 @@ const initialState: State = {
   attempts: 0,
 };
 
-export function LabPanel({
+export default function Component({
   config,
   onSubmit,
   onPersist,

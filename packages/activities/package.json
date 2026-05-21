@@ -28,6 +28,8 @@
     "./image-annotation/schema": "./image-annotation/schema.ts",
     "./image-comparison-slider/Component": "./image-comparison-slider/Component.tsx",
     "./image-comparison-slider/schema": "./image-comparison-slider/schema.ts",
+    "./lab-panel/Component": "./lab-panel/Component.tsx",
+    "./lab-panel/schema": "./lab-panel/schema.ts",
     "./matching-pairs/Component": "./matching-pairs/Component.tsx",
     "./matching-pairs/schema": "./matching-pairs/schema.ts",
     "./multiple-choice/Component": "./multiple-choice/Component.tsx",

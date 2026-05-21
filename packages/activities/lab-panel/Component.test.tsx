@@ -1,8 +1,8 @@
 import { describe, expect, it, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import type { LabPanelConfig } from "@kukui/schemas/lab-panel";
-import { LabPanel } from "./LabPanel.js";
+import type { LabPanelConfig } from "./schema.js";
+import Component from "./Component.js";
 
 const cfg: LabPanelConfig = {
   version: "1.0",
@@ -77,7 +77,7 @@ const cfg: LabPanelConfig = {
 
 describe("LabPanel", () => {
   it("renders title, prompt, panel table, and the interpretation question", () => {
-    render(<LabPanel config={cfg} onSubmit={vi.fn()} />);
+    render(<Component config={cfg} onSubmit={vi.fn()} />);
     expect(
       screen.getByRole("heading", { level: 1, name: /abg pattern/i }),
     ).toBeInTheDocument();
@@ -105,7 +105,7 @@ describe("LabPanel", () => {
 
   it("clicking a row toggles its aria-pressed flag", async () => {
     const user = userEvent.setup();
-    render(<LabPanel config={cfg} onSubmit={vi.fn()} />);
+    render(<Component config={cfg} onSubmit={vi.fn()} />);
     const ph = screen.getByRole("button", { name: /^toggle ph,/i });
     expect(ph).toHaveAttribute("aria-pressed", "false");
     await user.click(ph);
@@ -122,7 +122,7 @@ describe("LabPanel", () => {
 
   it("Check is disabled until an interpretation is picked", async () => {
     const user = userEvent.setup();
-    render(<LabPanel config={cfg} onSubmit={vi.fn()} />);
+    render(<Component config={cfg} onSubmit={vi.fn()} />);
     const check = screen.getByRole("button", { name: /^check$/i });
     expect(check).toBeDisabled();
     // Toggling rows alone does not enable Check — interpretation is required.
@@ -139,7 +139,7 @@ describe("LabPanel", () => {
   it("scores 1 point per correctly classified row + 1 for the right interpretation", async () => {
     const user = userEvent.setup();
     const onSubmit = vi.fn();
-    render(<LabPanel config={cfg} onSubmit={onSubmit} />);
+    render(<Component config={cfg} onSubmit={onSubmit} />);
     // Mark all three abnormal values; leave Na alone.
     await user.click(screen.getByRole("button", { name: /^toggle ph,/i }));
     await user.click(screen.getByRole("button", { name: /^toggle paco2,/i }));
@@ -166,7 +166,7 @@ describe("LabPanel", () => {
   it("partial credit: one wrong row pick + correct interpretation nets less than full", async () => {
     const user = userEvent.setup();
     const onSubmit = vi.fn();
-    render(<LabPanel config={cfg} onSubmit={onSubmit} />);
+    render(<Component config={cfg} onSubmit={onSubmit} />);
     // 1 right (pH) + 1 wrong (Na) → row score earned = 0, max = 3
     await user.click(screen.getByRole("button", { name: /^toggle ph,/i }));
     await user.click(screen.getByRole("button", { name: /^toggle na,/i }));
@@ -186,7 +186,7 @@ describe("LabPanel", () => {
 
   it("Try again returns to the answering stage and clears selections", async () => {
     const user = userEvent.setup();
-    render(<LabPanel config={cfg} onSubmit={vi.fn()} />);
+    render(<Component config={cfg} onSubmit={vi.fn()} />);
     await user.click(screen.getByRole("button", { name: /^toggle ph,/i }));
     await user.click(
       screen.getByRole("radio", {
@@ -210,7 +210,7 @@ describe("LabPanel", () => {
     const user = userEvent.setup();
     const onPersist = vi.fn();
     render(
-      <LabPanel config={cfg} onSubmit={vi.fn()} onPersist={onPersist} />,
+      <Component config={cfg} onSubmit={vi.fn()} onPersist={onPersist} />,
     );
     await user.click(screen.getByRole("button", { name: /^toggle ph,/i }));
     expect(onPersist).toHaveBeenCalled();
@@ -232,7 +232,7 @@ describe("LabPanel", () => {
       ...cfg,
       behaviour: { ...cfg.behaviour, singlePoint: true },
     };
-    render(<LabPanel config={sp} onSubmit={onSubmit} />);
+    render(<Component config={sp} onSubmit={onSubmit} />);
     // Only mark pH; miss the other two abnormals.
     await user.click(screen.getByRole("button", { name: /^toggle ph,/i }));
     await user.click(
@@ -250,7 +250,7 @@ describe("LabPanel", () => {
 
   it("after submit, incorrectly classified rows pick up the is-incorrect class", async () => {
     const user = userEvent.setup();
-    render(<LabPanel config={cfg} onSubmit={vi.fn()} />);
+    render(<Component config={cfg} onSubmit={vi.fn()} />);
     // Mark Na (normal value) as abnormal — this should be flagged as incorrect after submit.
     await user.click(screen.getByRole("button", { name: /^toggle na,/i }));
     await user.click(

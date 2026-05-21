@@ -181,26 +181,6 @@ const LEGACY_STARTERS: Partial<Record<ActivityKind, unknown>> = {
     minDurationSeconds: 3,
     behaviour: { allowReRecord: true },
   },
-  "lab-panel": {
-    version: "1.0",
-    title: "Lab Panel",
-    prompt: "Identify abnormal values and pick the best interpretation.",
-    panel: {
-      name: "Sample panel",
-      values: [
-        { id: "v1", analyte: "Analyte A", result: "10", isAbnormal: false },
-        { id: "v2", analyte: "Analyte B", result: "100", isAbnormal: true },
-      ],
-    },
-    interpretation: {
-      question: "What's the best interpretation?",
-      choices: [
-        { id: "c1", text: "Option A", correct: true },
-        { id: "c2", text: "Option B", correct: false },
-      ],
-    },
-    behaviour: { enableRetry: true },
-  },
   "straw-poll": {
     version: "1.0",
     title: "Pulse check",
@@ -372,7 +352,6 @@ const LEGACY_LABELS: Partial<Record<ActivityKind, string>> = {
   "branching-scenario": "Branching Scenario",
   "interactive-video": "Interactive Video",
   "audio-recording": "Audio Recording",
-  "lab-panel": "Lab Panel Interpretation",
   crossword: "Crossword",
   "straw-poll": "Straw Poll (Live)",
   "confidence-meter": "Confidence Meter (Live)",

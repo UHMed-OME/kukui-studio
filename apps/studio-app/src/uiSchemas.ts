@@ -439,56 +439,6 @@ const LEGACY_UI_SCHEMAS: Partial<Record<ActivityKind, Record<string, unknown>>> 
     },
   },
 
-  "lab-panel": {
-    ...COMMON,
-    "ui:order": ["title", "prompt", "panel", "interpretation", "behaviour", "ui", "overallFeedback", "*"],
-    title: TITLE,
-    author: AUTHOR,
-    prompt: f("Clinical context", "Brief vignette shown above the lab panel.", {
-      "ui:widget": "html",
-      "ui:options": { rows: 4 },
-    }),
-    panel: {
-      "ui:title": "Lab panel",
-      name: f("Panel name", "e.g. 'Basic Metabolic Panel'."),
-      values: {
-        "ui:title": "Panel values",
-        items: {
-          id: HIDDEN,
-          analyte: f("Analyte", "e.g. 'Sodium', 'WBC'."),
-          result: f("Result", "Numeric or qualitative value."),
-          units: f("Units"),
-          reference: f("Reference range"),
-          flag: f("Flag", "high / low / normal — colour-codes the row."),
-        },
-      },
-    },
-    interpretation: {
-      "ui:title": "Interpretation question",
-      question: f("Question", "What the learner is asked after reading the panel."),
-      choices: {
-        "ui:title": "Answer choices",
-        items: {
-          id: HIDDEN,
-          text: f("Answer text"),
-          correct: f("Correct"),
-          feedback: f("Feedback", "Optional. Shown when this choice is picked."),
-        },
-      },
-    },
-    behaviour: {
-      "ui:title": "Activity behaviour",
-      enableRetry: BEHAVIOUR_RETRY,
-      singlePoint: BEHAVIOUR_SINGLEPOINT,
-    },
-    ui: {
-      "ui:title": "Button label overrides",
-      checkAnswerButton: f("'Check' button text"),
-      tryAgainButton: f("'Try Again' button text"),
-    },
-    overallFeedback: HIDDEN,
-  },
-
   "straw-poll": {
     ...COMMON,
     "ui:order": ["title", "prompt", "choices", "behaviour", "live", "ui", "*"],

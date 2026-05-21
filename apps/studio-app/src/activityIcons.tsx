@@ -70,16 +70,6 @@ function InteractiveVideoIcon(props: SVGProps<SVGSVGElement>) {
   );
 }
 
-function LabPanelIcon(props: SVGProps<SVGSVGElement>) {
-  return (
-    <svg {...baseProps} {...props}>
-      <path d="M9 3v13a3 3 0 0 0 6 0V3" />
-      <line x1="8" y1="3" x2="16" y2="3" />
-      <line x1="9" y1="12" x2="15" y2="12" />
-    </svg>
-  );
-}
-
 function BranchingScenarioIcon(props: SVGProps<SVGSVGElement>) {
   return (
     <svg {...baseProps} {...props}>
@@ -195,7 +185,6 @@ const LEGACY_ICONS: Partial<Record<ActivityKind, IconComponent>> = {
   "hotspot-3d": Hotspot3dIcon,
   "virtual-tour": VirtualTourIcon,
   "interactive-video": InteractiveVideoIcon,
-  "lab-panel": LabPanelIcon,
   "branching-scenario": BranchingScenarioIcon,
   "audio-recording": AudioRecordingIcon,
   crossword: CrosswordIcon,

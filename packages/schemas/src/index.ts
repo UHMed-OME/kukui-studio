@@ -67,7 +67,10 @@ export {
   ConceptMapConfigSchema,
   type ConceptMapConfig,
 } from "@kukui/activities/concept-map/schema";
-export { LabPanelConfigSchema, type LabPanelConfig } from "./lab-panel.js";
+export {
+  LabPanelConfigSchema,
+  type LabPanelConfig,
+} from "@kukui/activities/lab-panel/schema";
 export {
   DDxTreeConfigSchema,
   type DDxTreeConfig,
@@ -111,7 +114,7 @@ import { AudioRecordingConfigSchema } from "./audio-recording.js";
 import { BranchingScenarioConfigSchema } from "./branching-scenario.js";
 import { ImageAnnotationConfigSchema } from "@kukui/activities/image-annotation/schema";
 import { ConceptMapConfigSchema } from "@kukui/activities/concept-map/schema";
-import { LabPanelConfigSchema } from "./lab-panel.js";
+import { LabPanelConfigSchema } from "@kukui/activities/lab-panel/schema";
 import { DDxTreeConfigSchema } from "@kukui/activities/ddx-tree/schema";
 import { OSCEConfigSchema } from "@kukui/activities/osce/schema";
 import { CrosswordConfigSchema } from "./crossword.js";
