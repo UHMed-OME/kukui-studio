@@ -1,8 +1,8 @@
 import { describe, expect, it, vi } from "vitest";
 import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import type { OSCEConfig } from "@kukui/schemas/osce";
-import { OSCE } from "./OSCE.js";
+import type { OSCEConfig } from "./schema.js";
+import Component from "./Component.js";
 
 const cfg: OSCEConfig = {
   version: "1.0",
@@ -58,7 +58,7 @@ const cfg: OSCEConfig = {
 
 describe("OSCE", () => {
   it("renders title, case header, and the first phase by default", () => {
-    render(<OSCE config={cfg} onSubmit={vi.fn()} />);
+    render(<Component config={cfg} onSubmit={vi.fn()} />);
     expect(
       screen.getByRole("heading", { level: 1, name: /chest pain/i }),
     ).toBeInTheDocument();
@@ -79,7 +79,7 @@ describe("OSCE", () => {
 
   it("toggles action selection (multi-select) and updates aria-pressed", async () => {
     const user = userEvent.setup();
-    render(<OSCE config={cfg} onSubmit={vi.fn()} />);
+    render(<Component config={cfg} onSubmit={vi.fn()} />);
     const btn = screen.getByRole("button", { name: /pain character.*not selected/i });
     expect(btn).toHaveAttribute("aria-pressed", "false");
     await user.click(btn);
@@ -96,7 +96,7 @@ describe("OSCE", () => {
   it("advances through phases via Next phase, then submits aggregating per-phase + order", async () => {
     const user = userEvent.setup();
     const onSubmit = vi.fn();
-    render(<OSCE config={cfg} onSubmit={onSubmit} />);
+    render(<Component config={cfg} onSubmit={onSubmit} />);
 
     // Phase 1: History — pick both correct actions
     await user.click(screen.getByRole("button", { name: /pain character/i }));
@@ -131,7 +131,7 @@ describe("OSCE", () => {
   it("scores partial credit and order penalties when phases visited out of order", async () => {
     const user = userEvent.setup();
     const onSubmit = vi.fn();
-    render(<OSCE config={cfg} onSubmit={onSubmit} />);
+    render(<Component config={cfg} onSubmit={onSubmit} />);
 
     // Skip directly to Investigations via the stepper (allowSkipPhase=true)
     const stepper = screen.getByRole("navigation", { name: /OSCE phases/i });
@@ -154,7 +154,7 @@ describe("OSCE", () => {
 
   it("Try again resets to the first phase with no selections after submit", async () => {
     const user = userEvent.setup();
-    render(<OSCE config={cfg} onSubmit={vi.fn()} />);
+    render(<Component config={cfg} onSubmit={vi.fn()} />);
 
     // Walk through quickly and submit
     await user.click(screen.getByRole("button", { name: /pain character/i }));
@@ -182,7 +182,7 @@ describe("OSCE", () => {
     const user = userEvent.setup();
     const onPersist = vi.fn();
     const { unmount } = render(
-      <OSCE config={cfg} onSubmit={vi.fn()} onPersist={onPersist} />,
+      <Component config={cfg} onSubmit={vi.fn()} onPersist={onPersist} />,
     );
 
     await user.click(screen.getByRole("button", { name: /pain character/i }));
@@ -197,14 +197,14 @@ describe("OSCE", () => {
 
     // Remount with the suspendData — should land on phase 2 with phase-1
     // selection preserved.
-    render(<OSCE config={cfg} onSubmit={vi.fn()} suspendData={lastSuspend} />);
+    render(<Component config={cfg} onSubmit={vi.fn()} suspendData={lastSuspend} />);
     expect(
       screen.getByRole("heading", { level: 2, name: /physical exam/i }),
     ).toBeInTheDocument();
   });
 
   it("when headingLevel=2 is passed, the activity title renders as h2", () => {
-    render(<OSCE config={cfg} onSubmit={vi.fn()} headingLevel={2} />);
+    render(<Component config={cfg} onSubmit={vi.fn()} headingLevel={2} />);
     expect(
       screen.getByRole("heading", { level: 2, name: /chest pain/i }),
     ).toBeInTheDocument();
@@ -217,7 +217,7 @@ describe("OSCE", () => {
       ...cfg,
       behaviour: { ...cfg.behaviour, guessPenalty: 0 },
     };
-    render(<OSCE config={noPenalty} onSubmit={onSubmit} />);
+    render(<Component config={noPenalty} onSubmit={onSubmit} />);
 
     // Phase 1: pick BOTH correct actions AND the wrong "tropical travel" one.
     // With guessPenalty=1 (default), that'd be 2 - 1 = 1/2. With 0, it stays 2/2.

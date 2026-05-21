@@ -201,31 +201,6 @@ const LEGACY_STARTERS: Partial<Record<ActivityKind, unknown>> = {
     },
     behaviour: { enableRetry: true },
   },
-  osce: {
-    version: "1.0",
-    title: "OSCE Encounter",
-    caseHeader: "Patient presentation: …",
-    phases: [
-      {
-        id: "history",
-        name: "History",
-        actions: [
-          { id: "a1", text: "Ask about chest pain", correct: true },
-          { id: "a2", text: "Ask about diet preferences", correct: false },
-        ],
-      },
-      {
-        id: "exam",
-        name: "Exam",
-        actions: [
-          { id: "a3", text: "Auscultate the heart", correct: true },
-          { id: "a4", text: "Palpate the calves", correct: true },
-        ],
-      },
-    ],
-    expectedOrder: ["history", "exam"],
-    behaviour: { enableRetry: true },
-  },
   "straw-poll": {
     version: "1.0",
     title: "Pulse check",
@@ -398,7 +373,6 @@ const LEGACY_LABELS: Partial<Record<ActivityKind, string>> = {
   "interactive-video": "Interactive Video",
   "audio-recording": "Audio Recording",
   "lab-panel": "Lab Panel Interpretation",
-  osce: "OSCE Clinical Encounter",
   crossword: "Crossword",
   "straw-poll": "Straw Poll (Live)",
   "confidence-meter": "Confidence Meter (Live)",

@@ -1,9 +1,8 @@
 import { useEffect, useId, useMemo, useState } from "react";
-import type { OSCEConfig } from "@kukui/schemas/osce";
-import type { ActivityProps, ScoreState } from "../../types.js";
-import { aggregate, percentage } from "../../scoring.js";
-import { SafeHtml, htmlToText } from "../../safe-html.js";
-import "./OSCE.css";
+import type { OSCEConfig } from "./schema.js";
+import type { ActivityProps, ScoreState } from "@kukui/core/types";
+import { aggregate, percentage, SafeHtml, htmlToText } from "@kukui/core";
+import "./Component.css";
 
 type Stage = "answering" | "submitted";
 
@@ -29,7 +28,7 @@ function buildInitialState(config: OSCEConfig): State {
   };
 }
 
-export function OSCE({
+export default function Component({
   config,
   onSubmit,
   onPersist,

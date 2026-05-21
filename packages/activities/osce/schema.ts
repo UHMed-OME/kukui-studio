@@ -1,6 +1,5 @@
 import { z } from "zod";
-import { ScoringSchema } from "./scoring.js";
-import { AppearanceSchema } from "./appearance.js";
+import { ScoringSchema, AppearanceSchema } from "@kukui/schemas/shared";
 
 const versionRe = /^\d+\.\d+(\.\d+)?$/;
 

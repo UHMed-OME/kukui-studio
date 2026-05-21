@@ -72,7 +72,10 @@ export {
   DDxTreeConfigSchema,
   type DDxTreeConfig,
 } from "@kukui/activities/ddx-tree/schema";
-export { OSCEConfigSchema, type OSCEConfig } from "./osce.js";
+export {
+  OSCEConfigSchema,
+  type OSCEConfig,
+} from "@kukui/activities/osce/schema";
 export { CrosswordConfigSchema, type CrosswordConfig } from "./crossword.js";
 export { StrawPollConfigSchema, type StrawPollConfig } from "./straw-poll.js";
 export {
@@ -110,7 +113,7 @@ import { ImageAnnotationConfigSchema } from "@kukui/activities/image-annotation/
 import { ConceptMapConfigSchema } from "@kukui/activities/concept-map/schema";
 import { LabPanelConfigSchema } from "./lab-panel.js";
 import { DDxTreeConfigSchema } from "@kukui/activities/ddx-tree/schema";
-import { OSCEConfigSchema } from "./osce.js";
+import { OSCEConfigSchema } from "@kukui/activities/osce/schema";
 import { CrosswordConfigSchema } from "./crossword.js";
 import { StrawPollConfigSchema } from "./straw-poll.js";
 import { ConfidenceMeterConfigSchema } from "./confidence-meter.js";

@@ -489,44 +489,6 @@ const LEGACY_UI_SCHEMAS: Partial<Record<ActivityKind, Record<string, unknown>>> 
     overallFeedback: HIDDEN,
   },
 
-  osce: {
-    ...COMMON,
-    "ui:order": ["title", "phases", "expectedOrder", "behaviour", "ui", "*"],
-    title: TITLE,
-    author: AUTHOR,
-    phases: {
-      "ui:title": "Encounter phases",
-      "ui:help":
-        "Each phase has a name and a list of actions the learner can take. Author marks which actions are correct.",
-      items: {
-        id: HIDDEN,
-        name: f("Phase name", "e.g. 'History', 'Examination', 'Closure'."),
-        description: f("Description", "Optional. Shown when the phase opens."),
-      },
-    },
-    expectedOrder: f(
-      "Expected phase order",
-      "Optional. Phase ids in the order the learner should perform them.",
-    ),
-    behaviour: {
-      "ui:title": "Activity behaviour",
-      enableRetry: BEHAVIOUR_RETRY,
-      allowSkipPhase: f(
-        "Allow free phase navigation",
-        "Lets the learner jump between phases via the stepper. Off = linear (next/back) only.",
-      ),
-      guessPenalty: f(
-        "Wrong-answer penalty (0..1)",
-        "How much each wrong selection subtracts from a phase's earned points. Default 1; set to 0 to remove the penalty entirely.",
-        { "ui:options": { step: 0.1, min: 0, max: 1 } },
-      ),
-    },
-    ui: {
-      "ui:title": "Button label overrides",
-      submitButtonLabel: f("'Submit' button text"),
-    },
-  },
-
   "straw-poll": {
     ...COMMON,
     "ui:order": ["title", "prompt", "choices", "behaviour", "live", "ui", "*"],

@@ -92,18 +92,6 @@ function BranchingScenarioIcon(props: SVGProps<SVGSVGElement>) {
   );
 }
 
-function OsceIcon(props: SVGProps<SVGSVGElement>) {
-  return (
-    <svg {...baseProps} {...props}>
-      <rect x="5" y="4" width="14" height="17" rx="1.5" />
-      <rect x="9" y="2" width="6" height="3" rx="0.5" />
-      <polyline points="8 11 10 13 13 9" />
-      <line x1="15" y1="11" x2="17" y2="11" />
-      <line x1="8" y1="16" x2="17" y2="16" />
-    </svg>
-  );
-}
-
 function AudioRecordingIcon(props: SVGProps<SVGSVGElement>) {
   return (
     <svg {...baseProps} {...props}>
@@ -209,7 +197,6 @@ const LEGACY_ICONS: Partial<Record<ActivityKind, IconComponent>> = {
   "interactive-video": InteractiveVideoIcon,
   "lab-panel": LabPanelIcon,
   "branching-scenario": BranchingScenarioIcon,
-  osce: OsceIcon,
   "audio-recording": AudioRecordingIcon,
   crossword: CrosswordIcon,
   "straw-poll": StrawPollIcon,

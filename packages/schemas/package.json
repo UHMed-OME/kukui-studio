@@ -15,7 +15,6 @@
     "./branching-scenario": "./src/branching-scenario.ts",
     "./audio-recording": "./src/audio-recording.ts",
     "./lab-panel": "./src/lab-panel.ts",
-    "./osce": "./src/osce.ts",
     "./crossword": "./src/crossword.ts",
     "./straw-poll": "./src/straw-poll.ts",
     "./confidence-meter": "./src/confidence-meter.ts",
