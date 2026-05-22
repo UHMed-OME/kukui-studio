@@ -1,3 +1,4 @@
+import type { ComponentType, LazyExoticComponent } from "react";
 import type { z } from "zod";
 import type { ActivityManifest } from "./types.js";
 
@@ -35,6 +36,20 @@ export const ACTIVITY_MANIFESTS_SCHEMAS: Record<string, z.ZodTypeAny> =
   Object.fromEntries(
     Object.values(ACTIVITY_MANIFESTS).map((m) => [m.kind, m.schema]),
   );
+
+/**
+ * Map from activity kind to its lazy React component. Derived from
+ * {@link ACTIVITY_MANIFESTS} so the component dispatch table stays in
+ * lockstep with the built activity catalog — no hand-maintained registry
+ * to drift. Consumed by `@kukui/core`'s ACTIVITY_REGISTRY which adds the
+ * `BuiltActivityKind` literal-union typing on top.
+ */
+export const ACTIVITY_COMPONENTS: Record<
+  string,
+  LazyExoticComponent<ComponentType<unknown>>
+> = Object.fromEntries(
+  Object.values(ACTIVITY_MANIFESTS).map((m) => [m.kind, m.Component]),
+);
 
 /**
  * Sorted list of all built activity kinds. Use for catalog iteration.

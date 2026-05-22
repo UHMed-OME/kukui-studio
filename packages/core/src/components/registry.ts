@@ -1,18 +1,19 @@
 import { lazy, type ComponentType, type LazyExoticComponent } from "react";
-import type { BuiltActivityKind } from "../types.js";
-import type { ActivityProps } from "../types.js";
+import { ACTIVITY_COMPONENTS } from "@kukui/activities";
+import type { ActivityProps, BuiltActivityKind } from "../types.js";
 
 /**
- * Shared dispatch table from `BuiltActivityKind` -> lazy component. Used by
- * both `<ActivityHost>` (engine context) and Studio's `<Preview>` (authoring
- * context). Keeping it in one place means:
+ * Shared dispatch table from `BuiltActivityKind` -> lazy component. Derived
+ * from `@kukui/activities`' ACTIVITY_COMPONENTS map at module load (which is
+ * itself built from the per-activity manifest glob), so adding a new
+ * activity only touches its own dir — no hand-maintained switch table or
+ * literal here that can drift.
  *
- * 1. Adding a new activity kind only touches this file + the per-kind dirs,
- *    not every consumer's switch statement.
- * 2. Each entry imports from its own subpath, so Vite/Rollup emits one chunk
- *    per activity instead of one giant bundle that drags every other
- *    activity in. Engine HTML pages each lazy-load only the kind they host;
- *    Studio Preview only fetches the kind currently being previewed.
+ * Used by both `<ActivityHost>` (engine context) and Studio's `<Preview>`
+ * (authoring context). Each manifest's `Component` is a `React.lazy(...)`,
+ * so Vite/Rollup still emits one chunk per activity: engine HTML pages each
+ * lazy-load only the kind they host; Studio Preview only fetches the kind
+ * currently being previewed.
  *
  * The wide `any` on props is the same compromise as the old switch table:
  * runtime Zod validation narrows config to the right shape, but TypeScript
@@ -21,38 +22,8 @@ import type { ActivityProps } from "../types.js";
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type ActivityComponent = LazyExoticComponent<ComponentType<ActivityProps<any>>>;
 
-export const ACTIVITY_REGISTRY: Record<BuiltActivityKind, ActivityComponent> = {
-  "multiple-choice": lazy(() => import("@kukui/activities/multiple-choice/Component")),
-  "fill-in-the-blanks": lazy(() => import("@kukui/activities/fill-in-the-blanks/Component")),
-  "drag-and-drop": lazy(() => import("@kukui/activities/drag-and-drop/Component")),
-  "question-set": lazy(() => import("@kukui/activities/question-set/Component")),
-  "hotspot-3d": lazy(() => import("@kukui/activities/hotspot-3d/Component")),
-  "hotspot-2d": lazy(() => import("@kukui/activities/hotspot-2d/Component")),
-  "virtual-tour": lazy(() => import("@kukui/activities/virtual-tour/Component")),
-  "sequence-steps": lazy(() => import("@kukui/activities/sequence-steps/Component")),
-  "matching-pairs": lazy(() => import("@kukui/activities/matching-pairs/Component")),
-  "categorization": lazy(() => import("@kukui/activities/categorization/Component")),
-  "image-comparison-slider": lazy(() => import("@kukui/activities/image-comparison-slider/Component")),
-  "anatomy-labeling": lazy(() => import("@kukui/activities/anatomy-labeling/Component")),
-  "highlight-text": lazy(() => import("@kukui/activities/highlight-text/Component")),
-  "flashcards": lazy(() => import("@kukui/activities/flashcards/Component")),
-  "reflection-prompt": lazy(() => import("@kukui/activities/reflection-prompt/Component")),
-  "branching-scenario": lazy(() => import("@kukui/activities/branching-scenario/Component")),
-  "image-annotation": lazy(() => import("@kukui/activities/image-annotation/Component")),
-  "concept-map": lazy(() => import("@kukui/activities/concept-map/Component")),
-  "interactive-video": lazy(() => import("@kukui/activities/interactive-video/Component")),
-  "audio-recording": lazy(() => import("@kukui/activities/audio-recording/Component")),
-  "lab-panel": lazy(() => import("@kukui/activities/lab-panel/Component")),
-  "ddx-tree": lazy(() => import("@kukui/activities/ddx-tree/Component")),
-  "osce": lazy(() => import("@kukui/activities/osce/Component")),
-  "crossword": lazy(() => import("@kukui/activities/crossword/Component")),
-  "straw-poll": lazy(() => import("@kukui/activities/straw-poll/Component")),
-  "confidence-meter": lazy(() => import("@kukui/activities/confidence-meter/Component")),
-  "word-cloud": lazy(() => import("@kukui/activities/word-cloud/Component")),
-  "qa-board": lazy(() => import("@kukui/activities/qa-board/Component")),
-  "quick-quiz": lazy(() => import("@kukui/activities/quick-quiz/Component")),
-  "isometric-chatroom": lazy(() => import("@kukui/activities/isometric-chatroom/Component")),
-};
+export const ACTIVITY_REGISTRY: Record<BuiltActivityKind, ActivityComponent> =
+  ACTIVITY_COMPONENTS as Record<BuiltActivityKind, ActivityComponent>;
 
 /**
  * Lazy stub fallback. Used by ActivityHost when the requested kind isn't yet
