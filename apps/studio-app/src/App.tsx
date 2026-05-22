@@ -227,7 +227,7 @@ export function App() {
   }, [value, save]);
 
   const validation = useMemo(
-    () => SchemaRegistry[kind as SchemaRegistryKey].safeParse(value),
+    () => SchemaRegistry[kind as SchemaRegistryKey]!.safeParse(value),
     [kind, value],
   );
 

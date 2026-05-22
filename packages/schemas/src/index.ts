@@ -121,75 +121,20 @@ export {
 } from "@kukui/activities/isometric-chatroom/schema";
 export { StubConfigSchema, type StubConfig } from "./stub.js";
 
-import { MultipleChoiceConfigSchema } from "@kukui/activities/multiple-choice/schema";
-import { FillInTheBlanksConfigSchema } from "@kukui/activities/fill-in-the-blanks/schema";
-import { DragAndDropConfigSchema } from "@kukui/activities/drag-and-drop/schema";
-import { QuestionSetConfigSchema } from "@kukui/activities/question-set/schema";
-import { Hotspot3DConfigSchema } from "@kukui/activities/hotspot-3d/schema";
-import { Hotspot2DConfigSchema } from "@kukui/activities/hotspot-2d/schema";
-import { VirtualTourConfigSchema } from "@kukui/activities/virtual-tour/schema";
-import { CategorizationConfigSchema } from "@kukui/activities/categorization/schema";
-import { SequenceStepsConfigSchema } from "@kukui/activities/sequence-steps/schema";
-import { ReflectionPromptConfigSchema } from "@kukui/activities/reflection-prompt/schema";
-import { FlashcardsConfigSchema } from "@kukui/activities/flashcards/schema";
-import { ImageComparisonSliderConfigSchema } from "@kukui/activities/image-comparison-slider/schema";
-import { AnatomyLabelingConfigSchema } from "@kukui/activities/anatomy-labeling/schema";
-import { MatchingPairsConfigSchema } from "@kukui/activities/matching-pairs/schema";
-import { HighlightTextConfigSchema } from "@kukui/activities/highlight-text/schema";
-import { InteractiveVideoConfigSchema } from "@kukui/activities/interactive-video/schema";
-import { AudioRecordingConfigSchema } from "@kukui/activities/audio-recording/schema";
-import { BranchingScenarioConfigSchema } from "@kukui/activities/branching-scenario/schema";
-import { ImageAnnotationConfigSchema } from "@kukui/activities/image-annotation/schema";
-import { ConceptMapConfigSchema } from "@kukui/activities/concept-map/schema";
-import { LabPanelConfigSchema } from "@kukui/activities/lab-panel/schema";
-import { DDxTreeConfigSchema } from "@kukui/activities/ddx-tree/schema";
-import { OSCEConfigSchema } from "@kukui/activities/osce/schema";
-import { CrosswordConfigSchema } from "@kukui/activities/crossword/schema";
-import { StrawPollConfigSchema } from "@kukui/activities/straw-poll/schema";
-import { ConfidenceMeterConfigSchema } from "@kukui/activities/confidence-meter/schema";
-import { WordCloudConfigSchema } from "@kukui/activities/word-cloud/schema";
-import { QABoardConfigSchema } from "@kukui/activities/qa-board/schema";
-import { QuickQuizConfigSchema } from "@kukui/activities/quick-quiz/schema";
-import { IsometricChatroomConfigSchema } from "@kukui/activities/isometric-chatroom/schema";
+import { ACTIVITY_MANIFESTS_SCHEMAS } from "@kukui/activities";
 
 /**
- * Map of activity-kind → Zod schema. Keys match `ActivityKind` in
- * @kukui/core/types. ActivityHost validates JSON against the matching
- * schema before handing it to the activity component. All 24 first-pass
- * activities now have real schemas.
+ * Map of activity-kind → Zod schema. Derived from `@kukui/activities`
+ * manifests so the registry stays in lockstep with the built activity
+ * catalog — no hand-maintained list to drift. ActivityHost validates JSON
+ * against the matching schema before handing it to the activity component.
+ *
+ * Typed as `Record<string, z.ZodTypeAny>` (not a literal union) to avoid a
+ * workspace cycle: literal-union narrowing would require `BuiltActivityKind`
+ * from core, which already depends on this package. Consumers narrow at the
+ * call site via `kind as SchemaRegistryKey` against a runtime guard.
  */
-export const SchemaRegistry = {
-  "multiple-choice": MultipleChoiceConfigSchema,
-  "fill-in-the-blanks": FillInTheBlanksConfigSchema,
-  "drag-and-drop": DragAndDropConfigSchema,
-  "question-set": QuestionSetConfigSchema,
-  "hotspot-3d": Hotspot3DConfigSchema,
-  "hotspot-2d": Hotspot2DConfigSchema,
-  "virtual-tour": VirtualTourConfigSchema,
-  "sequence-steps": SequenceStepsConfigSchema,
-  "matching-pairs": MatchingPairsConfigSchema,
-  categorization: CategorizationConfigSchema,
-  "image-comparison-slider": ImageComparisonSliderConfigSchema,
-  "anatomy-labeling": AnatomyLabelingConfigSchema,
-  "highlight-text": HighlightTextConfigSchema,
-  flashcards: FlashcardsConfigSchema,
-  "reflection-prompt": ReflectionPromptConfigSchema,
-  "branching-scenario": BranchingScenarioConfigSchema,
-  "image-annotation": ImageAnnotationConfigSchema,
-  "concept-map": ConceptMapConfigSchema,
-  "interactive-video": InteractiveVideoConfigSchema,
-  "audio-recording": AudioRecordingConfigSchema,
-  "lab-panel": LabPanelConfigSchema,
-  "ddx-tree": DDxTreeConfigSchema,
-  osce: OSCEConfigSchema,
-  crossword: CrosswordConfigSchema,
-  "straw-poll": StrawPollConfigSchema,
-  "confidence-meter": ConfidenceMeterConfigSchema,
-  "word-cloud": WordCloudConfigSchema,
-  "qa-board": QABoardConfigSchema,
-  "quick-quiz": QuickQuizConfigSchema,
-  "isometric-chatroom": IsometricChatroomConfigSchema,
-} as const;
+export const SchemaRegistry = ACTIVITY_MANIFESTS_SCHEMAS;
 
 export type SchemaRegistryKey = keyof typeof SchemaRegistry;
 

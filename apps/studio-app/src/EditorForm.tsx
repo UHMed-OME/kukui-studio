@@ -58,7 +58,7 @@ export function EditorForm({
   extraErrors?: ErrorSchema;
 }) {
   const jsonSchema = useMemo<RJSFSchema>(() => {
-    const zod = SchemaRegistry[kind as SchemaRegistryKey];
+    const zod = SchemaRegistry[kind as SchemaRegistryKey]!;
     // Zod 4 ships its own JSON-Schema export. RJSF + AJV speak draft-7,
     // so target that explicitly (the default is draft-2020-12).
     const raw = z.toJSONSchema(zod, { target: "draft-7" }) as RJSFSchema;

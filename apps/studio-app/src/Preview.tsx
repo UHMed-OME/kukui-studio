@@ -52,7 +52,7 @@ export function Preview({
 }) {
   const localValidation = useMemo(
     () =>
-      validation ?? SchemaRegistry[kind as SchemaRegistryKey].safeParse(value),
+      validation ?? SchemaRegistry[kind as SchemaRegistryKey]!.safeParse(value),
     [validation, kind, value],
   );
   const result = localValidation;

@@ -1,3 +1,4 @@
+import type { z } from "zod";
 import type { ActivityManifest } from "./types.js";
 
 export type { ActivityManifest, BloomLevel } from "./types.js";
@@ -23,6 +24,16 @@ const modules = import.meta.glob<{ activity: ActivityManifest<string> }>(
 export const ACTIVITY_MANIFESTS: Record<string, ActivityManifest<string>> =
   Object.fromEntries(
     Object.values(modules).map((m) => [m.activity.kind, m.activity]),
+  );
+
+/**
+ * Map from activity kind to its Zod schema. Derived from
+ * {@link ACTIVITY_MANIFESTS} so the schema list stays in lockstep with the
+ * built activity catalog — no hand-maintained registry to drift.
+ */
+export const ACTIVITY_MANIFESTS_SCHEMAS: Record<string, z.ZodTypeAny> =
+  Object.fromEntries(
+    Object.values(ACTIVITY_MANIFESTS).map((m) => [m.kind, m.schema]),
   );
 
 /**

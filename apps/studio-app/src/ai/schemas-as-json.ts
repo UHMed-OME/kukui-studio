@@ -18,7 +18,7 @@ const cache = new Map<SchemaRegistryKey, Record<string, unknown>>();
 export function getJsonSchema(kind: SchemaRegistryKey): Record<string, unknown> {
   const cached = cache.get(kind);
   if (cached) return cached;
-  const schema = SchemaRegistry[kind];
+  const schema = SchemaRegistry[kind]!;
   // `target: "draft-07"` is the dialect OpenAI's structured-output endpoint
   // actually consumes. `unrepresentable: "any"` keeps the conversion alive
   // when a deep Zod construct doesn't have a JSON Schema equivalent (gets

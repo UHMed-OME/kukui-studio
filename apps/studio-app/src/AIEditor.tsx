@@ -227,7 +227,7 @@ export function AIEditor({
   value: unknown;
   onChange: (next: unknown) => void;
   /**
-   * Whether the current activity has diverged from STARTERS[kind]. App.tsx
+   * Whether the current activity has diverged from STARTERS[kind as keyof typeof STARTERS]. App.tsx
    * owns this — flipped true on any mutation, reset on kind change / reset.
    * Drives generate-vs-edit inference without a per-render deep compare.
    */
@@ -382,7 +382,7 @@ export function AIEditor({
       setSettings(result.nextSettings);
 
       // Zod-validate the model's output against the canonical schema.
-      const validation = SchemaRegistry[kind].safeParse(result.json);
+      const validation = SchemaRegistry[kind]!.safeParse(result.json);
       if (!validation.success) {
         // Automatic one-shot retry with the Zod error fed back to the model.
         const issue = validation.error.issues[0];
@@ -395,10 +395,10 @@ export function AIEditor({
             currentJson: includeCurrent ? value : undefined,
             refinement,
           });
-          const retryValid = SchemaRegistry[kind].safeParse(retry.json);
+          const retryValid = SchemaRegistry[kind]!.safeParse(retry.json);
           if (retryValid.success) {
             setSettings(retry.nextSettings);
-            const baseline = includeCurrent ? value : STARTERS[kind];
+            const baseline = includeCurrent ? value : STARTERS[kind as keyof typeof STARTERS];
             finalizeProposal(
               activeMode,
               baseline,
@@ -426,7 +426,7 @@ export function AIEditor({
         }
       }
 
-      const baseline = includeCurrent ? value : STARTERS[kind];
+      const baseline = includeCurrent ? value : STARTERS[kind as keyof typeof STARTERS];
       finalizeProposal(
         activeMode,
         baseline,
@@ -464,7 +464,7 @@ export function AIEditor({
         refinement: "Please refine the previous output further based on the same request.",
       });
       setSettings(result.nextSettings);
-      const validation = SchemaRegistry[kind].safeParse(result.json);
+      const validation = SchemaRegistry[kind]!.safeParse(result.json);
       if (!validation.success) {
         setResponse({
           kind: "error",
