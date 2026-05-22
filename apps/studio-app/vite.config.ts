@@ -1,6 +1,7 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
+import { activitySamplesPlugin } from "./vite-plugin-activity-samples.js";
 
 /*
  * GitHub Pages serves the studio at https://<user>.github.io/<repo>/, so
@@ -13,7 +14,7 @@ const base = process.env.KUKUI_BASE ?? "./";
 
 export default defineConfig({
   base,
-  plugins: [react(), tailwindcss()],
+  plugins: [react(), activitySamplesPlugin(), tailwindcss()],
   server: {
     port: 5174,
     strictPort: false,
