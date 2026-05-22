@@ -8,22 +8,11 @@ import {
 import {
   SchemaRegistry,
   type SchemaRegistryKey,
-  type StrawPollConfig,
-  type ConfidenceMeterConfig,
-  type WordCloudConfig,
-  type QABoardConfig,
-  type QuickQuizConfig,
-  type IsometricChatroomConfig,
 } from "@kukui/schemas";
 import type { LiveRoomHandle, Presence } from "@kukui/live";
 import { InstructorConsole, type ConfigSummary } from "./InstructorConsole.js";
 import { StudentParticipant } from "./StudentParticipant.js";
-import { StrawPollLive } from "./activities/StrawPollLive.js";
-import { ConfidenceMeterLive } from "./activities/ConfidenceMeterLive.js";
-import { WordCloudLive } from "./activities/WordCloudLive.js";
-import { QABoardLive } from "./activities/QABoardLive.js";
-import { QuickQuizLive } from "./activities/QuickQuizLive.js";
-import { IsometricChatroomLive } from "./activities/IsometricChatroomLive.js";
+import { getLiveActivity } from "./activities/index.js";
 
 export type LiveHostProps = {
   /** Activity kind to host. Must be a key in `SchemaRegistry`. */
@@ -186,42 +175,13 @@ export function LiveHost({
       role,
       onLeave,
     } as const;
-    if (kind === "straw-poll") {
-      return (
-        <StrawPollLive {...liveProps} config={loadState.config as StrawPollConfig} />
-      );
+    const live = getLiveActivity(kind);
+    if (live) {
+      const LiveComponent = live.Component;
+      return <LiveComponent {...liveProps} config={loadState.config} />;
     }
-    if (kind === "confidence-meter") {
-      return (
-        <ConfidenceMeterLive
-          {...liveProps}
-          config={loadState.config as ConfidenceMeterConfig}
-        />
-      );
-    }
-    if (kind === "word-cloud") {
-      return (
-        <WordCloudLive {...liveProps} config={loadState.config as WordCloudConfig} />
-      );
-    }
-    if (kind === "qa-board") {
-      return (
-        <QABoardLive {...liveProps} config={loadState.config as QABoardConfig} />
-      );
-    }
-    if (kind === "quick-quiz") {
-      return (
-        <QuickQuizLive {...liveProps} config={loadState.config as QuickQuizConfig} />
-      );
-    }
-    if (kind === "isometric-chatroom") {
-      return (
-        <IsometricChatroomLive
-          {...liveProps}
-          config={loadState.config as IsometricChatroomConfig}
-        />
-      );
-    }
+    // Fall-through: kind has no registered Live runtime. Drop to the
+    // generic instructor/student split below.
   }
 
   if (role === "instructor") {
