@@ -32,8 +32,6 @@ const PLANNED_STARTERS = Object.fromEntries(
   PLANNED_ACTIVITY_KINDS.map((k) => [k, stubStarter(PLANNED_LABELS[k], PLANNED_DESCRIPTIONS[k])]),
 ) as Record<(typeof PLANNED_ACTIVITY_KINDS)[number], unknown>;
 
-const LEGACY_STARTERS: Partial<Record<ActivityKind, unknown>> = {};
-
 const MANIFEST_STARTERS: Partial<Record<ActivityKind, unknown>> =
   Object.fromEntries(
     Object.values(ACTIVITY_MANIFESTS).map((m) => [m.kind, m.starter]),
@@ -41,11 +39,8 @@ const MANIFEST_STARTERS: Partial<Record<ActivityKind, unknown>> =
 
 export const STARTERS: Record<ActivityKind, unknown> = {
   ...PLANNED_STARTERS,
-  ...LEGACY_STARTERS,
   ...MANIFEST_STARTERS,
 } as Record<ActivityKind, unknown>;
-
-const LEGACY_LABELS: Partial<Record<ActivityKind, string>> = {};
 
 const MANIFEST_LABELS: Partial<Record<ActivityKind, string>> =
   Object.fromEntries(
@@ -54,7 +49,6 @@ const MANIFEST_LABELS: Partial<Record<ActivityKind, string>> =
 
 export const ACTIVITY_LABELS: Record<ActivityKind, string> = {
   ...PLANNED_LABELS,
-  ...LEGACY_LABELS,
   ...MANIFEST_LABELS,
 } as Record<ActivityKind, string>;
 
