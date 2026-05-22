@@ -75,14 +75,6 @@ type Tab = "form" | "scoring" | "json" | "ai";
  */
 type BloomLevel = "remember" | "understand" | "apply" | "analyze" | "evaluate" | "create";
 
-// Quiz-style kinds (multiple-choice, FIB, question-set) live in @kukui/core
-// but aren't surfaced in Studio, so they're omitted from the map.
-const LEGACY_BLOOM: Partial<Record<ActivityKind, BloomLevel>> = {
-  // "isometric-chatroom": "evaluate", — hidden from the Studio sidebar
-  // while the runtime is being reworked. Kind, schema, registry, and
-  // existing configs all remain valid; this just hides the picker entry.
-};
-
 const MANIFEST_BLOOM: Partial<Record<ActivityKind, BloomLevel>> =
   Object.fromEntries(
     Object.values(ACTIVITY_MANIFESTS).map((m) => [m.kind, m.bloom]),
@@ -103,8 +95,9 @@ const STUDIO_SUPPRESSED = new Set<ActivityKind>([
 ]);
 
 const BLOOM_BY_KIND: Partial<Record<ActivityKind, BloomLevel>> = Object.fromEntries(
-  Object.entries({ ...LEGACY_BLOOM, ...MANIFEST_BLOOM })
-    .filter(([kind]) => !STUDIO_SUPPRESSED.has(kind as ActivityKind))
+  Object.entries(MANIFEST_BLOOM).filter(
+    ([kind]) => !STUDIO_SUPPRESSED.has(kind as ActivityKind),
+  ),
 ) as Partial<Record<ActivityKind, BloomLevel>>;
 
 const BLOOM_ORDER: readonly BloomLevel[] = [
