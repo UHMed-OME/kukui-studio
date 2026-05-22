@@ -1,5 +1,6 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, type ComponentType } from "react";
 import type { LiveRoomHandle, Presence } from "@kukui/live";
+import type { LiveActivityManifest, LiveActivityProps } from "./types.js";
 import type { WordCloudConfig } from "@kukui/schemas";
 import { usePhase } from "../usePhase.js";
 import { useWordCloud, type WordTally } from "./useWordCloud.js";
@@ -248,3 +249,8 @@ function Cloud({
     </div>
   );
 }
+
+export const liveActivity: LiveActivityManifest<"word-cloud"> = {
+  kind: "word-cloud",
+  Component: WordCloudLive as ComponentType<LiveActivityProps>,
+};

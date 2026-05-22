@@ -1,5 +1,6 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, type ComponentType } from "react";
 import type { LiveRoomHandle, Presence } from "@kukui/live";
+import type { LiveActivityManifest, LiveActivityProps } from "./types.js";
 import type { ConfidenceMeterConfig } from "@kukui/schemas";
 import { usePhase } from "../usePhase.js";
 import { useConfidenceMeter, type RatingSnapshot } from "./useConfidenceMeter.js";
@@ -237,3 +238,8 @@ function Histogram({
     </section>
   );
 }
+
+export const liveActivity: LiveActivityManifest<"confidence-meter"> = {
+  kind: "confidence-meter",
+  Component: ConfidenceMeterLive as ComponentType<LiveActivityProps>,
+};

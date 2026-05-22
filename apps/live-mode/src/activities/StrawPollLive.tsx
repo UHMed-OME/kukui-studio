@@ -1,5 +1,6 @@
-import { useMemo } from "react";
+import { useMemo, type ComponentType } from "react";
 import type { LiveRoomHandle, Presence } from "@kukui/live";
+import type { LiveActivityManifest, LiveActivityProps } from "./types.js";
 import type { StrawPollConfig } from "@kukui/schemas";
 import { usePhase } from "../usePhase.js";
 import { useStrawPoll, type Tally } from "./useStrawPoll.js";
@@ -377,3 +378,8 @@ function TallyBars({
     </ol>
   );
 }
+
+export const liveActivity: LiveActivityManifest<"straw-poll"> = {
+  kind: "straw-poll",
+  Component: StrawPollLive as ComponentType<LiveActivityProps>,
+};

@@ -1,5 +1,6 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, type ComponentType } from "react";
 import type { LiveRoomHandle, Presence } from "@kukui/live";
+import type { LiveActivityManifest, LiveActivityProps } from "./types.js";
 import type { IsometricChatroomConfig } from "@kukui/schemas";
 import { usePhase } from "../usePhase.js";
 import {
@@ -746,3 +747,8 @@ function getEmojiSet(
   };
   return (presets[preset] ?? presets.minimal) as string[];
 }
+
+export const liveActivity: LiveActivityManifest<"isometric-chatroom"> = {
+  kind: "isometric-chatroom",
+  Component: IsometricChatroomLive as ComponentType<LiveActivityProps>,
+};

@@ -1,7 +1,8 @@
-import { useMemo } from "react";
+import { useMemo, type ComponentType } from "react";
 import type * as Y from "yjs";
 import { useEffect, useState } from "react";
 import type { LiveRoomHandle, Presence } from "@kukui/live";
+import type { LiveActivityManifest, LiveActivityProps } from "./types.js";
 import type { QuickQuizConfig } from "@kukui/schemas";
 import { usePhase } from "../usePhase.js";
 import "./LiveCommon.css";
@@ -278,3 +279,8 @@ export function QuickQuizLive({
     </div>
   );
 }
+
+export const liveActivity: LiveActivityManifest<"quick-quiz"> = {
+  kind: "quick-quiz",
+  Component: QuickQuizLive as ComponentType<LiveActivityProps>,
+};

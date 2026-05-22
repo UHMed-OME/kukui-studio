@@ -1,5 +1,6 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, type ComponentType } from "react";
 import type { LiveRoomHandle, Presence } from "@kukui/live";
+import type { LiveActivityManifest, LiveActivityProps } from "./types.js";
 import type { QABoardConfig } from "@kukui/schemas";
 import { usePhase } from "../usePhase.js";
 import { useQABoard, type QAQuestion } from "./useQABoard.js";
@@ -283,3 +284,8 @@ function QuestionList({
     </ol>
   );
 }
+
+export const liveActivity: LiveActivityManifest<"qa-board"> = {
+  kind: "qa-board",
+  Component: QABoardLive as ComponentType<LiveActivityProps>,
+};
