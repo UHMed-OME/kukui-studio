@@ -18,7 +18,7 @@ The canonical living spec is in Notion: <https://www.notion.so/357ee4627a7481c68
 
 ## Status
 
-Empty repo. Scaffolding pending — Vite + React + TypeScript + Tailwind + react-three-fiber + Zod, in a pnpm-workspaces monorepo.
+Actively developed. Studio is live at https://kukuistudio.com. Engine and Live are progressing in parallel; see `AGENTS.md` for the current alignment snapshot and which areas are in flight.
 
 ## License
 
@@ -26,21 +26,23 @@ MIT. See `LICENSE`.
 
 ## Hard rules — apply to every artifact written in this repo
 
-1. **Follow the Kukui design system** (canonical at `~/OME Projects/docs/design-system.md`, mirroring planned to `docs/design-system.md` in this repo once copied). Don't invent hex values, spacing, font sizes, or border widths that aren't in the documented tokens. Add tokens to the doc *before* using new values. WCAG 2.2 AA is non-negotiable for educational content.
+1. **Follow the Kukui design system** (canonical at `docs/design-system.md`). Don't invent hex values, spacing, font sizes, or border widths that aren't in the documented tokens. Add tokens to the doc *before* using new values. WCAG 2.2 AA is non-negotiable for educational content.
 2. **Layout-stable interactions.** State changes (selected / correct / incorrect) must not reflow neighbors. Reserve space; change colors only. Border widths constant across states.
 3. **Tap targets ≥ 44 × 44 px** (WCAG 2.5.5).
 4. **Color is never the sole signal** — pair every color cue with text, icon, or position.
+5. **Never write "H5P"** in any file you author. Field names that happen to mirror H5P conventions are fine; just don't comment on the inheritance.
 
-## Reference (in the Unity repo)
+## Where things live
 
-- Spec: `~/OME Projects/docs/superpowers/specs/2026-05-04-interactive-learning-activities-design.md`
-- Design system: `~/OME Projects/docs/design-system.md`
-- Lessons learned (Unity gotchas, kept for posterity): `~/OME Projects/docs/lessons-learned/uss-and-ui-toolkit-runtime.md`
-- JSON schemas: `~/OME Projects/docs/schemas/`
-- Sample fixtures: `~/OME Projects/samples/`
-- /kukui authoring command: `~/OME Projects/.claude/commands/kukui.md`
-
-These will get copied or symlinked into this repo as scaffolding lands.
+- Visual canon: `docs/design-system.md`
+- Modus & audience: `docs/ux-design.md`
+- Pedagogical grounding: `docs/research-foundations.md`
+- Per-feature design specs: `docs/superpowers/specs/`
+- Per-activity bundle: `packages/activities/{slug}/` — co-locates `schema.ts`, `Component.tsx`, `samples/`, `ui-schema.ts`, `starter.ts`, `meta.ts`, and `manifest.ts` for one activity kind. Third-party sample-asset attribution lives at `packages/activities/NOTICE.md`.
+- Activity sample fixtures: served at the `/samples/{slug}/` URL by both `apps/engine-web/` and `apps/studio-app/` via their `vite-plugin-activity-samples.ts` — no files under `apps/*/public/samples/` anymore.
+- Cross-activity glue: `packages/activities/src/index.ts` derives `ACTIVITY_MANIFESTS`, `ACTIVITY_MANIFESTS_SCHEMAS`, and `ACTIVITY_COMPONENTS` from each bundle's `manifest.ts` via `import.meta.glob`. `@kukui/core`'s `ACTIVITY_REGISTRY` and `@kukui/schemas`' `SchemaRegistry` are thin typed wrappers on top — do not hand-edit a central registry.
+- Live activity variants: `apps/live-mode/src/activities/{Slug}Live.tsx`, auto-discovered by the local `index.ts` barrel (see its own CLAUDE.md for conventions).
+- `/kukui` slash command (JSON fixture authoring): `.claude/commands/kukui.md`
 
 ## Stack pin (locked in 2026-05-05)
 
