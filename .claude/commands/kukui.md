@@ -89,7 +89,7 @@ Then in the running Studio, click **Import** and select the JSON you just wrote.
 
 ## Scaffold flow (new activity type)
 
-You are designing a brand-new activity type from a learning objective. The design pass (S1–S5) happens entirely in conversation. The write phase (the "Scaffold write" section below) is a single folder; no shared files to edit.
+You are designing a brand-new activity type from a learning objective. The design pass (S1–S5) happens entirely in conversation. Write one folder only — no shared-file edits required beyond a possible `packages/activities/package.json` exports entry (see the "Package.json exports edit" section below for when that's needed).
 
 ### S1 — Learning objective intake
 
@@ -195,6 +195,8 @@ Pre-answer based on the activity's nature:
 
 Phrase the question as: *"Based on what we've built, this {does / doesn't} look like a fit for a Live classroom variant because {reason}. Want me to scaffold one anyway?"* User can override either way.
 
+**Record the answer.** Set `live: true` in `meta.ts` if yes; `live: false` if no. This single field drives Studio's "Test in Live" launcher, the `LIVE_ACTIVITY_REGISTRY` cross-reference test (`apps/live-mode/src/activities/registry.test.ts`), and whether you write the Live wrapper file in the next phase.
+
 ---
 
 ## Scaffold write
@@ -217,19 +219,31 @@ packages/activities/{slug}/
 │       └── missing-required-field.json   # OPTIONAL (if user opted in at end of S4).
 ├── ui-schema.ts            # RJSF uiSchema for Studio. Starts as a generated stub derived from the Zod shape. Hand-tuning is a follow-up TODO.
 ├── starter.ts              # Minimal valid config matching the schema.
-├── starter.test.ts         # Asserts `starter` parses against the schema (one-line Vitest test).
+├── starter.test.ts         # Asserts `starter` parses against the schema. Template:
+│                           #   import { describe, it, expect } from "vitest";
+│                           #   import { {SlugCamel}ConfigSchema } from "./schema.js";
+│                           #   import starter from "./starter.js";
+│                           #   describe("{slug} starter", () => {
+│                           #     it("parses against the schema", () => {
+│                           #       expect({SlugCamel}ConfigSchema.safeParse(starter).success).toBe(true);
+│                           #     });
+│                           #   });
 ├── icon.tsx                # OPTIONAL placeholder SVG. If you skip it, omit `Icon` from the manifest.
 └── meta.ts                 # `label`, `description` (cites S1 objective verbatim), `bloom: BloomLevel`, `live: boolean` (from S5).
 ```
 
-### Package.json exports edit
+### Package.json exports edit (often skippable)
 
-Edit `packages/activities/package.json` and add two entries to the `exports` block (alphabetically among siblings):
+First check `packages/activities/package.json`'s `exports` block for a wildcard catch-all like `"./*": "./*"`. If present, **no edit needed** — the wildcard resolves `./{slug}/Component` and `./{slug}/schema` automatically.
+
+Only if the wildcard is absent (or you have a reason to prefer explicit entries) add:
 
 ```json
 "./{slug}/Component": "./{slug}/Component.tsx",
 "./{slug}/schema": "./{slug}/schema.ts",
 ```
+
+Alphabetically among siblings. Don't duplicate entries the wildcard already covers — duplicates create confusion about whether the explicit entries are load-bearing.
 
 ### Optional Live variant (only if S5 = yes)
 
@@ -245,7 +259,7 @@ The local barrel `apps/live-mode/src/activities/index.ts` picks it up via glob.
 
 You do NOT edit any of these. Glob picks the new manifest up on the next typecheck:
 
-- `SchemaRegistry` (in `@kukui/schemas`)
+- `SchemaRegistry` runtime map (in `@kukui/schemas`) — derives from `ACTIVITY_MANIFESTS_SCHEMAS`. Note: the explicit per-kind **named** re-exports near the top of `packages/schemas/src/index.ts` (e.g. `export { MultipleChoiceConfigSchema } from "@kukui/activities/multiple-choice/schema"`) are back-compat for existing consumers that import via `@kukui/schemas`. New activities don't need one by default — consumers can import directly from `@kukui/activities/{slug}/schema`. Only add a named re-export if you discover a downstream file that needs it.
 - `ACTIVITY_REGISTRY` (in `@kukui/core`)
 - `UI_SCHEMAS`, `STARTERS`, `ACTIVITY_LABELS`, `BLOOM_BY_KIND`, `ActivityIcon` (in `apps/studio-app/src/`)
 - `fixtures.test.ts` (in `@kukui/schemas`) — auto-asserts `basic.json` parses, `full.json` parses, `_invalid/*.json` rejects
