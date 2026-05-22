@@ -65,9 +65,10 @@ Related copy:
 
 ## Current Alignment Notes
 
-As of 2026-05-11:
+As of 2026-05-22:
 
-- Studio is not a placeholder; it is actively built.
-- The README lists 24 activity types, with quiz primitives hidden from the Studio catalog.
-- Recent work has focused on Studio polish: sidebar search, activity icons, tooltips, AI tab naming, Download button affordance, and GitHub Pages deploys.
-- There are currently no GitHub issues or PRs listed for the repo.
+- The activity co-location refactor (Plans 1–3 in `docs/superpowers/plans/`) has landed. All 30 activities live in `packages/activities/{slug}/` with a co-located schema, Component, samples, ui-schema, starter, icon (optional), meta, and manifest. The `@kukui/schemas` SchemaRegistry, `@kukui/core` ACTIVITY_REGISTRY, Studio's UI_SCHEMAS / STARTERS / ACTIVITY_LABELS / activityIcons / BLOOM_BY_KIND, and the engine-web + studio-app sample-serving plugins are all derived from manifests via `import.meta.glob`.
+- Live variants stay in `apps/live-mode/src/activities/{Slug}Live.tsx`; `LiveHost` dispatch uses a barrel-driven `LIVE_ACTIVITY_REGISTRY` with a cross-reference test that enforces `manifest.live === true ↔ registered Live wrapper`.
+- Studio still hides quiz primitives (`multiple-choice`, `fill-in-the-blanks`, `question-set`) from its catalog via `STUDIO_SUPPRESSED` in `App.tsx`.
+- The README's 24-activity figure pre-dates the refactor; the SchemaRegistry now covers 30 kinds (5 lack `basic.json` fixtures and are skipped by the auto-discovered fixtures test until samples land).
+- Plan 4 (rewrite the `/kukui` slash command for the new layout) is pending.

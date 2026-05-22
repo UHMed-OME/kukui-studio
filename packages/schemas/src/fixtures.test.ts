@@ -7,21 +7,16 @@ import { SchemaRegistry, type SchemaRegistryKey } from "./index.js";
 
 const REPO_ROOT = resolve(fileURLToPath(import.meta.url), "../../../..");
 const ACTIVITIES_ROOT = join(REPO_ROOT, "packages", "activities");
-const LEGACY_SAMPLES_ROOT = join(REPO_ROOT, "apps", "engine-web", "public", "samples");
 
 /**
- * For each kind in SchemaRegistry, find its samples directory — either the
- * new co-located location (packages/activities/<slug>/samples/) or the
- * legacy mirror (apps/engine-web/public/samples/<slug>/). Returns null if
- * neither exists (the kind has no fixtures yet — common during the
- * 25-activity migration).
+ * For each kind in SchemaRegistry, find its samples directory at
+ * packages/activities/<slug>/samples/. Returns null when the kind has no
+ * fixtures yet — 5 of 30 activities currently lack samples and exit each
+ * test early via this path.
  */
 async function findSamplesDir(kind: string): Promise<string | null> {
-  const newDir = join(ACTIVITIES_ROOT, kind, "samples");
-  if (existsSync(newDir)) return newDir;
-  const oldDir = join(LEGACY_SAMPLES_ROOT, kind);
-  if (existsSync(oldDir)) return oldDir;
-  return null;
+  const dir = join(ACTIVITIES_ROOT, kind, "samples");
+  return existsSync(dir) ? dir : null;
 }
 
 async function readJson(path: string): Promise<unknown> {
