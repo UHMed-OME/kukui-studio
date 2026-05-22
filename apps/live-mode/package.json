@@ -9,6 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@kukui/activities": "workspace:*",
     "@kukui/core": "workspace:*",
     "@kukui/live": "workspace:*",
     "@kukui/schemas": "workspace:*",
