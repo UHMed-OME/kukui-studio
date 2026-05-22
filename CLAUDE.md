@@ -42,7 +42,7 @@ MIT. See `LICENSE`.
 - Activity sample fixtures: served at the `/samples/{slug}/` URL by both `apps/engine-web/` and `apps/studio-app/` via their `vite-plugin-activity-samples.ts` — no files under `apps/*/public/samples/` anymore.
 - Cross-activity glue: `packages/activities/src/index.ts` derives `ACTIVITY_MANIFESTS`, `ACTIVITY_MANIFESTS_SCHEMAS`, and `ACTIVITY_COMPONENTS` from each bundle's `manifest.ts` via `import.meta.glob`. `@kukui/core`'s `ACTIVITY_REGISTRY` and `@kukui/schemas`' `SchemaRegistry` are thin typed wrappers on top — do not hand-edit a central registry.
 - Live activity variants: `apps/live-mode/src/activities/{Slug}Live.tsx`, auto-discovered by the local `index.ts` barrel (see its own CLAUDE.md for conventions).
-- `/kukui` slash command (JSON fixture authoring): `.claude/commands/kukui.md`
+- `/kukui` slash command (content authoring + new-activity scaffolding): `.claude/commands/kukui.md`
 
 ## Stack pin (locked in 2026-05-05)
 
