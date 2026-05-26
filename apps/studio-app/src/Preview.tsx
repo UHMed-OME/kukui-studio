@@ -1,4 +1,4 @@
-import { Suspense, useMemo, useRef, useState } from "react";
+import { Component, Suspense, useMemo, useRef, useState, type ReactNode } from "react";
 import { SchemaRegistry, type SchemaRegistryKey } from "@kukui/schemas";
 import { type ActivityKind, PLANNED_ACTIVITY_KINDS } from "@kukui/core";
 import {
@@ -30,6 +30,46 @@ export type PreviewValidation = ReturnType<
  * activity's chunk; 2D activities never pull three.js + r3f unless the user
  * opens a 3D preview.
  */
+
+class PreviewErrorBoundary extends Component<
+  { children: ReactNode; resetKey: string },
+  { error: Error | null; resetKey: string }
+> {
+  constructor(props: { children: ReactNode; resetKey: string }) {
+    super(props);
+    this.state = { error: null, resetKey: props.resetKey };
+  }
+  static getDerivedStateFromProps(
+    props: { children: ReactNode; resetKey: string },
+    state: { error: Error | null; resetKey: string },
+  ) {
+    if (state.error && props.resetKey !== state.resetKey) {
+      return { error: null, resetKey: props.resetKey };
+    }
+    return { resetKey: props.resetKey };
+  }
+  static getDerivedStateFromError(error: Error) {
+    return { error };
+  }
+  override componentDidCatch(error: Error, info: { componentStack: string }) {
+    console.error("[Preview] Activity render error:", error, info.componentStack);
+  }
+  override render() {
+    if (this.state.error) {
+      return (
+        <div className="kukui-studio-preview-error" role="alert">
+          <strong>Preview error</strong>
+          <p>{this.state.error.message}</p>
+          <p style={{ fontSize: 12, color: "var(--color-text-secondary)" }}>
+            Switch activity types or fix the config to recover the preview.
+          </p>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
 export function Preview({
   kind,
   value,
@@ -128,25 +168,27 @@ export function Preview({
           (fallbackConfig as any).appearance.theme
         : undefined;
     return (
-      <Suspense fallback={<PreviewLoading />}>
-        <div className="kukui-studio-preview-stale" role="status" aria-live="polite">
-          <strong>Form has unresolved errors</strong> — preview is paused at the last valid
-          state. Fix the highlighted fields on the left to resume live updates.
-        </div>
-        <div
-          className="kukui-studio-preview-scheme"
-          data-color-scheme={fallbackScheme}
-        >
-          {isPlanned || !Component ? (
-            <Stub config={fallbackConfig} kind={kind as never} onSubmit={() => {}} />
-          ) : (
-            <Component config={fallbackConfig} onSubmit={() => {}} />
-          )}
-          {isLiveActivity(kind) ? (
-            <LiveTestLauncher kind={kind} config={fallbackConfig} onChange={onChange} />
-          ) : null}
-        </div>
-      </Suspense>
+      <PreviewErrorBoundary resetKey={kind}>
+        <Suspense fallback={<PreviewLoading />}>
+          <div className="kukui-studio-preview-stale" role="status" aria-live="polite">
+            <strong>Form has unresolved errors</strong> — preview is paused at the last valid
+            state. Fix the highlighted fields on the left to resume live updates.
+          </div>
+          <div
+            className="kukui-studio-preview-scheme"
+            data-color-scheme={fallbackScheme}
+          >
+            {isPlanned || !Component ? (
+              <Stub config={fallbackConfig} kind={kind as never} onSubmit={() => {}} />
+            ) : (
+              <Component config={fallbackConfig} onSubmit={() => {}} />
+            )}
+            {isLiveActivity(kind) ? (
+              <LiveTestLauncher kind={kind} config={fallbackConfig} onChange={onChange} />
+            ) : null}
+          </div>
+        </Suspense>
+      </PreviewErrorBoundary>
     );
   }
 
@@ -180,21 +222,23 @@ export function Preview({
       : undefined;
 
   return (
-    <Suspense fallback={<PreviewLoading />}>
-      <div
-        className="kukui-studio-preview-scheme"
-        data-color-scheme={pinnedScheme}
-      >
-        {isPlanned || !Component ? (
-          <Stub config={config} kind={kind as never} onSubmit={noop} />
-        ) : (
-          <Component config={config} onSubmit={noop} />
-        )}
-        {isLiveActivity(kind) ? (
-          <LiveTestLauncher kind={kind} config={config} onChange={onChange} />
-        ) : null}
-      </div>
-    </Suspense>
+    <PreviewErrorBoundary resetKey={kind}>
+      <Suspense fallback={<PreviewLoading />}>
+        <div
+          className="kukui-studio-preview-scheme"
+          data-color-scheme={pinnedScheme}
+        >
+          {isPlanned || !Component ? (
+            <Stub config={config} kind={kind as never} onSubmit={noop} />
+          ) : (
+            <Component config={config} onSubmit={noop} />
+          )}
+          {isLiveActivity(kind) ? (
+            <LiveTestLauncher kind={kind} config={config} onChange={onChange} />
+          ) : null}
+        </div>
+      </Suspense>
+    </PreviewErrorBoundary>
   );
 }
 
