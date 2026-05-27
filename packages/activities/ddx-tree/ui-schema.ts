@@ -78,17 +78,47 @@ const uiSchema = {
       ),
       choices: {
         "ui:title": "Choices",
+        "ui:help":
+          "Leave Choices empty on the final step(s) of a branch — those are terminal steps and need a Final diagnosis instead.",
         items: {
           id: HIDDEN,
           text: f("Choice text"),
           nextNodeId: f("Goes to step", "Which step this choice leads to.", {
             "ui:widget": "nodeSelect",
           }),
+          addsToCase: f(
+            "Adds to 'Case so far' (optional)",
+            "HTML fragment appended to the running case panel when the learner picks this choice. Models the new clinical detail the picked test reveals.",
+            { "ui:widget": "html" },
+          ),
           feedback: f("Feedback (optional)", undefined, {
             "ui:widget": "textarea",
             "ui:options": { rows: 2 },
           }),
         },
+      },
+      diagnosis: {
+        "ui:title": "Final diagnosis (terminal step only)",
+        "ui:help":
+          "Required when this step has no choices — the diagnosis the learner reaches at the end of this branch. Empty name auto-fills with a 'New diagnosis' placeholder so the activity stays valid while you're authoring.",
+        name: f(
+          "Diagnosis name",
+          "Display name shown when the learner reaches this terminal step.",
+        ),
+        correct: f(
+          "Correct diagnosis?",
+          "Whether reaching this terminal represents correct reasoning. Drives the success/failure outcome reported to the LMS.",
+        ),
+        score: f(
+          "Score (0–1)",
+          "0 = fully wrong path, 1 = textbook reasoning. Maps directly to the 0..1 score reported to SCORM.",
+          { "ui:widget": "updown" },
+        ),
+        explanation: f(
+          "Explanation (optional)",
+          "Rationale shown alongside the diagnosis at the terminal. HTML allowed.",
+          { "ui:widget": "html" },
+        ),
       },
     },
   },

@@ -5,10 +5,21 @@ const versionRe = /^\d+\.\d+(\.\d+)?$/;
 
 const Diagnosis = z
   .object({
-    name: z.string().min(1),
-    correct: z.boolean(),
+    /**
+     * Display name of the final diagnosis. Authoring-friendly: empty-string
+     * input (e.g. a freshly-added diagnosis in Studio's form) gets a
+     * "New diagnosis" placeholder so the activity validates immediately;
+     * authors then overwrite it with the real name. Min length 1 is still
+     * enforced on the parsed output.
+     */
+    name: z.preprocess(
+      (v) => (typeof v === "string" && v.length === 0 ? undefined : v),
+      z.string().min(1).default("New diagnosis"),
+    ),
+    /** Whether reaching this diagnosis represents correct reasoning. */
+    correct: z.boolean().default(false),
     /** 0..1 score awarded when this terminal is reached. */
-    score: z.number().min(0).max(1),
+    score: z.number().min(0).max(1).default(0),
     /** Optional HTML rationale shown alongside the diagnosis. */
     explanation: z.string().optional(),
   })
