@@ -112,7 +112,10 @@ const uiSchema = {
         score: f(
           "Score (0–1)",
           "0 = fully wrong path, 1 = textbook reasoning. Maps directly to the 0..1 score reported to SCORM.",
-          { "ui:widget": "updown" },
+          {
+            "ui:widget": "updown",
+            "ui:options": { step: 0.1, min: 0, max: 1 },
+          },
         ),
         explanation: f(
           "Explanation (optional)",

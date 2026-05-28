@@ -41,6 +41,35 @@ describe("ddx-tree authoring-friendliness", () => {
     }
   });
 
+  // The exact payload RJSF emits when an author toggles on the optional
+  // `diagnosis` sub-object — bare `{}` with no keys at all. All three fields
+  // must default so the schema accepts the draft and Preview keeps rendering.
+  it("accepts a bare diagnosis:{} and fills all three defaults", () => {
+    const draft = {
+      version: "1.0",
+      title: "Draft",
+      caseHeader: "Patient.",
+      startNodeId: "n1",
+      nodes: [
+        {
+          id: "n1",
+          presentation: "Step.",
+          choices: null,
+          diagnosis: {},
+        },
+      ],
+    };
+    const result = DDxTreeConfigSchema.safeParse(draft);
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.nodes[0]?.diagnosis).toEqual({
+        name: "New diagnosis",
+        correct: false,
+        score: 0,
+      });
+    }
+  });
+
   // The other Diagnosis fields default to safe placeholders too, so a
   // freshly-added terminal node validates without any author intervention.
   it("fills in correct/score defaults when a diagnosis is added with no values", () => {
