@@ -1,3 +1,4 @@
+/// <reference types="vite/client" />
 import type { ComponentType, LazyExoticComponent } from "react";
 import type { z } from "zod";
 import type { ActivityManifest } from "./types.js";
