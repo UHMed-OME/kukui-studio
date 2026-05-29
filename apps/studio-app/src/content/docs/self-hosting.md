@@ -2,7 +2,7 @@
 title: Self-hosting
 description: Fork the repo and run your institution's own instance of Kukui Studio on GitHub Pages — free, in about five minutes.
 order: 5
-updated: 2026-05-12
+updated: 2026-05-29
 ---
 
 # Self-hosting
@@ -78,6 +78,10 @@ git push
 ```
 
 The workflow will rebuild and redeploy automatically.
+
+## Live mode and TURN
+
+Self-hosting covers Studio (and Live, which is served the same static way). One thing GitHub Pages *can't* host is a **TURN server** — the relay Live needs for students on restrictive campus or guest Wi-Fi. That's a small always-on VPS, separate from your Pages deploy. If your classes hit "waiting for the instructor" across devices, see [Hosting a TURN server](/docs/turn-server).
 
 ## Contributing back
 

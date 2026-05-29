@@ -2,7 +2,7 @@
 title: Live mode (alpha)
 description: Synchronous in-class activities — students join with a 6-digit code, instructor controls the pace.
 order: 4
-updated: 2026-05-12
+updated: 2026-05-29
 ---
 
 # Live mode (alpha)
@@ -39,6 +39,12 @@ Live mode shines when you want **everyone moving together**. Examples:
 
 More live-compatible activities are planned.
 
+## When students can't connect
+
+If Live works between tabs on your own computer but other devices just sit on **"waiting for the instructor,"** the network is blocking the direct device-to-device connection. This is common on eduroam, guest Wi-Fi with client isolation, and networks that block UDP.
+
+Live always uses public STUN servers, which handle most home and single-LAN setups automatically. Restrictive networks need a **TURN relay** as a fallback — see **[Hosting a TURN server](/docs/turn-server)** for the full setup. Once a TURN server is configured (per-session via `?turn=` in the URL, in the lobby's **Advanced → connection** panel, or as a build-wide default), cross-network rooms connect reliably.
+
 ## Limitations (alpha)
 
 - **One instructor per session.** No co-host yet.
@@ -48,7 +54,7 @@ More live-compatible activities are planned.
 
 ## Privacy
 
-Live sessions transit through a peer-to-peer relay we don't operate (default: Nostr-based). No student data hits a server we run. Names are optional — students can join anonymously.
+Live sessions transit through a peer-to-peer relay we don't operate (default: Nostr-based). No student data hits a server we run. Names are optional — students can join anonymously. If you configure a [TURN server](/docs/turn-server) for restrictive networks, session traffic that can't connect directly is relayed through *your* TURN server — so it stays on infrastructure you control, never a third party.
 
 ## What's next
 

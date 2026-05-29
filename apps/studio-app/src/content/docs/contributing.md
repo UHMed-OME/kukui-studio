@@ -1,7 +1,7 @@
 ---
 title: Contributing
 description: Architecture overview and how to add a new activity type.
-order: 6
+order: 7
 updated: 2026-05-12
 ---
 
