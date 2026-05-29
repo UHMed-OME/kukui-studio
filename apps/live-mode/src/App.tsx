@@ -6,12 +6,14 @@ import {
   SIGNALING_BACKEND_LABELS,
   type LiveRoomHandle,
   type SignalingBackend,
+  type TurnConfig,
 } from "@kukui/live";
 import type { Presence } from "@kukui/live";
 import type { ActivityKind } from "@kukui/core";
 import { LiveHost } from "./LiveHost.js";
 
 const SIGNALING_STORAGE_KEY = "kukui-live:signaling-backend";
+const TURN_STORAGE_KEY = "kukui-live:custom-turn";
 
 /**
  * Footer rendered under every live screen: who made this (a link to
@@ -91,7 +93,83 @@ function readPreloadedConfig(): unknown | null {
 type PreloadedConfigLive = {
   signaling?: SignalingBackend;
   relayUrls?: string[];
+  turn?: TurnConfig;
 };
+
+/**
+ * Read a TURN relay config from the URL: `?turn=<url>` with optional
+ * `?turnUser=` / `?turnCred=`. TURN is the fallback that makes Live work
+ * across different networks/devices when symmetric NATs or UDP-blocking
+ * campus firewalls defeat plain STUN (issue #8) — without one, peers that
+ * aren't on the same LAN can't establish a WebRTC connection. The lobby
+ * footer documents this param. Returns null when no `?turn=` is present.
+ */
+function readTurnFromUrl(): TurnConfig | null {
+  if (typeof window === "undefined") return null;
+  const params = new URLSearchParams(window.location.search);
+  const url = params.get("turn");
+  if (!url) return null;
+  const username = params.get("turnUser") ?? undefined;
+  const credential = params.get("turnCred") ?? undefined;
+  return {
+    url,
+    ...(username !== undefined ? { username } : {}),
+    ...(credential !== undefined ? { credential } : {}),
+  };
+}
+
+/**
+ * Build-time TURN default, baked in from CI env. Set
+ * `VITE_KUKUI_TURN_URL` (+ optional `VITE_KUKUI_TURN_USER` /
+ * `VITE_KUKUI_TURN_CRED`) to point every deployed build at your own TURN
+ * VPS, so cross-network classrooms work without each instructor
+ * configuring one. A per-session `?turn=` or an authored
+ * `config.live.turn` still wins over this baseline. Returns null when the
+ * env var is unset (the default for local/dev builds).
+ */
+function readTurnFromEnv(): TurnConfig | null {
+  const env = (import.meta as unknown as { env?: Record<string, string> }).env ?? {};
+  const url = env.VITE_KUKUI_TURN_URL;
+  if (!url) return null;
+  const username = env.VITE_KUKUI_TURN_USER;
+  const credential = env.VITE_KUKUI_TURN_CRED;
+  return {
+    url,
+    ...(username ? { username } : {}),
+    ...(credential ? { credential } : {}),
+  };
+}
+
+/** True when a build-time TURN default ("ours") is baked into this build. */
+function hasEnvTurn(): boolean {
+  return readTurnFromEnv() !== null;
+}
+
+/** The instructor's saved custom TURN (lobby setting), or null. */
+function readCustomTurnPreference(): TurnConfig | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = window.localStorage.getItem(TURN_STORAGE_KEY);
+    if (!raw) return null;
+    return readTurnConfig(JSON.parse(raw));
+  } catch {
+    return null;
+  }
+}
+
+/** Extract a `{ url, username?, credential? }` TURN config from a value. */
+function readTurnConfig(value: unknown): TurnConfig | null {
+  if (!value || typeof value !== "object") return null;
+  const url = (value as Record<string, unknown>).url;
+  if (typeof url !== "string" || url.length === 0) return null;
+  const username = (value as Record<string, unknown>).username;
+  const credential = (value as Record<string, unknown>).credential;
+  return {
+    url,
+    ...(typeof username === "string" ? { username } : {}),
+    ...(typeof credential === "string" ? { credential } : {}),
+  };
+}
 
 /**
  * Generate a per-session anonymous handle ("Guest-A37"). Used as the
@@ -175,6 +253,20 @@ export function App() {
   const [signalingBackend, setSignalingBackend] = useState<SignalingBackend>(
     () => readBackendPreference(),
   );
+  // TURN relay choice: "builtin" uses whatever the build was configured
+  // with (the VITE_KUKUI_TURN_* env default, "ours"); "custom" lets the
+  // instructor point at their own server when the built-in is missing or
+  // blocked. Persisted so a working choice survives reloads. Seeded to
+  // "custom" only when a saved custom server already exists.
+  const savedCustomTurn = useRef<TurnConfig | null>(readCustomTurnPreference());
+  const [turnMode, setTurnMode] = useState<"builtin" | "custom">(
+    () => (savedCustomTurn.current ? "custom" : "builtin"),
+  );
+  const [turnUrl, setTurnUrl] = useState(() => savedCustomTurn.current?.url ?? "");
+  const [turnUser, setTurnUser] = useState(() => savedCustomTurn.current?.username ?? "");
+  const [turnCred, setTurnCred] = useState(
+    () => savedCustomTurn.current?.credential ?? "",
+  );
   // The activity choice doubles as both "what kind to host" and "what
   // sample to auto-load". URL ?activity=<kind> is honoured so an
   // instructor can paste a deeplink that already names the activity.
@@ -229,6 +321,39 @@ export function App() {
       let effectiveBackend: SignalingBackend = signalingBackend;
       let effectiveRelays: string[] | undefined;
       let activityForConfig: ActivityKind = activityKind;
+      // TURN resolution, most- to least-specific: a `?turn=` URL param
+      // (ephemeral per-session override) → the instructor's saved custom
+      // server (lobby setting) → an authored `config.live.turn` → the
+      // build-time env default ("ours"). First match wins.
+      let effectiveTurn: TurnConfig | undefined = readTurnFromUrl() ?? undefined;
+      if (!effectiveTurn && turnMode === "custom") {
+        const trimmed = turnUrl.trim();
+        if (trimmed) {
+          effectiveTurn = {
+            url: trimmed,
+            ...(turnUser.trim() ? { username: turnUser.trim() } : {}),
+            ...(turnCred ? { credential: turnCred } : {}),
+          };
+        }
+      }
+      // Persist the lobby's TURN choice so a working setup survives a
+      // reload (e.g. an instructor who joins, drops, and rejoins).
+      try {
+        if (turnMode === "custom" && turnUrl.trim()) {
+          window.localStorage.setItem(
+            TURN_STORAGE_KEY,
+            JSON.stringify({
+              url: turnUrl.trim(),
+              username: turnUser.trim() || undefined,
+              credential: turnCred || undefined,
+            }),
+          );
+        } else {
+          window.localStorage.removeItem(TURN_STORAGE_KEY);
+        }
+      } catch {
+        /* private mode / SCORM sandbox — non-fatal */
+      }
 
       if (preloadedConfig) {
         const cfg = preloadedConfig as Record<string, unknown>;
@@ -245,6 +370,10 @@ export function App() {
           effectiveRelays = live.relayUrls.filter(
             (u): u is string => typeof u === "string",
           );
+        }
+        if (!effectiveTurn) {
+          const configTurn = readTurnConfig(live.turn);
+          if (configTurn) effectiveTurn = configTurn;
         }
         const sentAdmin = adminKeyFromUrl.current;
         const expectedAdmin =
@@ -264,10 +393,18 @@ export function App() {
         roomCode = await deriveRoomCode(code.trim());
       }
 
+      // Fall back to the build-time TURN default when neither the URL
+      // nor the authored config supplied one.
+      if (!effectiveTurn) {
+        const envTurn = readTurnFromEnv();
+        if (envTurn) effectiveTurn = envTurn;
+      }
+
       const handle = joinLiveRoom(roomCode, {
         appId: "kukui-live",
         backend: effectiveBackend,
         ...(effectiveRelays ? { relayUrls: effectiveRelays } : {}),
+        ...(effectiveTurn ? { turn: effectiveTurn } : {}),
       });
 
       try {
@@ -486,7 +623,7 @@ export function App() {
               userSelect: "none",
             }}
           >
-            Advanced: signaling backend
+            Advanced: connection
           </summary>
           <div style={{ marginTop: 8 }}>
             <label htmlFor="signal" style={{ fontSize: 13 }}>
@@ -511,6 +648,80 @@ export function App() {
                 </option>
               ))}
             </select>
+          </div>
+          <div style={{ marginTop: 16 }}>
+            <label htmlFor="turn-mode" style={{ fontSize: 13 }}>
+              TURN relay — needed when a network blocks direct connections
+              (many campus / guest Wi-Fi networks do)
+            </label>
+            <select
+              id="turn-mode"
+              value={turnMode}
+              onChange={(e) => setTurnMode(e.target.value as "builtin" | "custom")}
+              style={{
+                marginTop: 4,
+                minHeight: 44,
+                padding: "10px 12px",
+                border: "2px solid var(--color-border)",
+                borderRadius: 8,
+                width: "100%",
+              }}
+            >
+              <option value="builtin">
+                {hasEnvTurn()
+                  ? "Use built-in relay (recommended)"
+                  : "Built-in relay (none configured — direct P2P only)"}
+              </option>
+              <option value="custom">Use a custom TURN server</option>
+            </select>
+            {turnMode === "custom" ? (
+              <div style={{ marginTop: 8, display: "flex", flexDirection: "column", gap: 8 }}>
+                <input
+                  type="text"
+                  value={turnUrl}
+                  onChange={(e) => setTurnUrl(e.target.value)}
+                  placeholder="turns:turn.example.edu:5349"
+                  aria-label="TURN server URL"
+                  style={{
+                    minHeight: 44,
+                    padding: "10px 12px",
+                    border: "2px solid var(--color-border)",
+                    borderRadius: 8,
+                    fontSize: "var(--font-size-prompt)",
+                  }}
+                />
+                <input
+                  type="text"
+                  value={turnUser}
+                  onChange={(e) => setTurnUser(e.target.value)}
+                  placeholder="Username (optional)"
+                  aria-label="TURN username"
+                  autoComplete="off"
+                  style={{
+                    minHeight: 44,
+                    padding: "10px 12px",
+                    border: "2px solid var(--color-border)",
+                    borderRadius: 8,
+                    fontSize: "var(--font-size-prompt)",
+                  }}
+                />
+                <input
+                  type="password"
+                  value={turnCred}
+                  onChange={(e) => setTurnCred(e.target.value)}
+                  placeholder="Credential (optional)"
+                  aria-label="TURN credential"
+                  autoComplete="off"
+                  style={{
+                    minHeight: 44,
+                    padding: "10px 12px",
+                    border: "2px solid var(--color-border)",
+                    borderRadius: 8,
+                    fontSize: "var(--font-size-prompt)",
+                  }}
+                />
+              </div>
+            ) : null}
           </div>
         </details>
         {error ? (

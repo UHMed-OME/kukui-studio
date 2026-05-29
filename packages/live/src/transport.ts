@@ -116,6 +116,19 @@ const DEFAULT_RELAYS_BY_BACKEND: Record<SignalingBackend, readonly string[]> = {
   mqtt: DEFAULT_MQTT_RELAYS,
 };
 
+/**
+ * Public STUN servers used for ICE candidate discovery. A short list of
+ * well-known, free, no-auth Google STUN endpoints — enough redundancy
+ * that one being unreachable doesn't block candidate gathering. STUN
+ * only reveals a peer's public reflexive address; no media or data flows
+ * through it, so there's no privacy cost to using public servers (unlike
+ * TURN, which relays traffic and is therefore opt-in via `options.turn`).
+ */
+const DEFAULT_STUN_SERVERS: readonly RTCIceServer[] = [
+  { urls: "stun:stun.l.google.com:19302" },
+  { urls: "stun:stun1.l.google.com:19302" },
+];
+
 function realRoomFactory(
   code: string,
   options: TransportOptions,
@@ -136,24 +149,27 @@ function realRoomFactory(
     options.relayUrls && options.relayUrls.length > 0
       ? options.relayUrls
       : [...DEFAULT_RELAYS_BY_BACKEND[backend]];
+  // Always set an explicit ICE server list. STUN is required for NAT
+  // traversal between peers on different networks/devices — without it,
+  // only same-machine/same-LAN peers connect (the symptom in issue #8).
+  // A configured TURN server is appended as a relay fallback for the
+  // restrictive symmetric-NAT / UDP-blocked networks common on campuses,
+  // where STUN alone can't punch through.
+  const iceServers: RTCIceServer[] = [...DEFAULT_STUN_SERVERS];
+  if (options.turn?.url) {
+    iceServers.push({
+      urls: options.turn.url,
+      ...(options.turn.username !== undefined ? { username: options.turn.username } : {}),
+      ...(options.turn.credential !== undefined
+        ? { credential: options.turn.credential }
+        : {}),
+    });
+  }
   const room: TrysteroRoom = joinFn(
     {
       appId,
       relayUrls,
-      ...(options.turn?.url
-        ? {
-            rtcConfig: {
-              iceServers: [
-                { urls: "stun:stun.l.google.com:19302" },
-                {
-                  urls: options.turn.url,
-                  username: options.turn.username,
-                  credential: options.turn.credential,
-                },
-              ],
-            },
-          }
-        : {}),
+      rtcConfig: { iceServers },
     },
     code,
   );
