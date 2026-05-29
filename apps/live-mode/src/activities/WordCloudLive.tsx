@@ -38,19 +38,23 @@ export function WordCloudLive({
   const studentSeesCloud =
     isRevealed || (showLive && snapshot.mySubmissions.length > 0);
 
+  const trimmedDraft = draft.trim();
+  const draftWordCount = trimmedDraft ? trimmedDraft.split(/\s+/).length : 0;
+  const tooManyWords = draftWordCount > maxWords;
+
   const handleSubmit = () => {
-    const trimmed = draft.trim();
-    if (!trimmed) return;
-    if (trimmed.length > maxChars) return;
-    if (trimmed.split(/\s+/).length > maxWords) return;
+    if (!trimmedDraft) return;
+    if (trimmedDraft.length > maxChars) return;
+    if (tooManyWords) return;
     if (snapshot.mySubmissions.length >= maxSubmissions) return;
-    submit(trimmed);
+    submit(trimmedDraft);
     setDraft("");
   };
 
   if (role === "instructor") {
     const studentCount = [...presence.values()].filter((p) => p.role === "student").length;
     const reset = () => {
+      if (!window.confirm("Reset and clear all submissions? This can't be undone.")) return;
       clearAll();
       setPhase("lobby");
     };
@@ -158,14 +162,23 @@ export function WordCloudLive({
                 type="button"
                 className="live-btn live-btn--primary"
                 onClick={handleSubmit}
-                disabled={remaining <= 0 || draft.trim().length === 0}
+                disabled={remaining <= 0 || trimmedDraft.length === 0 || tooManyWords}
               >
                 Submit
               </button>
             </div>
-            <p style={{ fontSize: "var(--font-size-meta, 13px)", color: "var(--color-text-secondary)" }}>
-              {remaining} submission{remaining === 1 ? "" : "s"} remaining
-            </p>
+            {tooManyWords ? (
+              <p
+                role="alert"
+                style={{ fontSize: "var(--font-size-meta, 13px)", color: "var(--color-error)" }}
+              >
+                Keep it to {maxWords} word{maxWords === 1 ? "" : "s"} — you have {draftWordCount}.
+              </p>
+            ) : (
+              <p style={{ fontSize: "var(--font-size-meta, 13px)", color: "var(--color-text-secondary)" }}>
+                {remaining} submission{remaining === 1 ? "" : "s"} remaining
+              </p>
+            )}
             {snapshot.mySubmissions.length > 0 ? (
               <div className="kukui-wc__submissions" aria-label="Your submissions">
                 {snapshot.mySubmissions.map((s, i) => (
@@ -237,7 +250,9 @@ function Cloud({
             className="kukui-wc__word"
             style={{
               fontSize,
-              color: highlight ? "var(--color-accent, #b69b5d)" : undefined,
+              // Signal the revealed/final state with weight, not an accent
+              // color — gold text on the cream cloud fails AA at small sizes.
+              fontWeight: highlight ? 800 : 700,
             }}
             title={`${count} mention${count === 1 ? "" : "s"}`}
           >

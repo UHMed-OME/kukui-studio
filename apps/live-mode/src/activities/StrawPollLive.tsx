@@ -107,6 +107,7 @@ function InstructorView({
   const studentCount = [...presence.values()].filter((p) => p.role === "student").length;
 
   const reset = () => {
+    if (!window.confirm("Reset the poll and clear all votes? This can't be undone.")) return;
     clearAll();
     setPhase("lobby");
   };

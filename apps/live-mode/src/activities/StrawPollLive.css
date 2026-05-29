@@ -76,7 +76,9 @@
 
 .kukui-sp-live__choice-btn.is-selected .kukui-sp-live__choice-marker {
   background: var(--color-accent, #b69b5d);
-  color: #ffffff;
+  /* Dark ink, not white: white on the gold accent is ~2.7:1 (fails AA);
+     #1c1917 on #b69b5d is ~6.6:1. */
+  color: #1c1917;
 }
 
 .kukui-sp-live__choice-text {
@@ -188,7 +190,8 @@
   padding: 2px 6px;
   border-radius: 999px;
   background: var(--color-accent, #b69b5d);
-  color: #ffffff;
+  /* Dark ink for AA on the gold accent (white is ~2.7:1). */
+  color: #1c1917;
 }
 
 .kukui-sp-live__bar-track {

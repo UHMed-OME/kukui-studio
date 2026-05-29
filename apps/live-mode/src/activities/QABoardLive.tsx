@@ -64,6 +64,7 @@ export function QABoardLive({
   if (role === "instructor") {
     const studentCount = [...presence.values()].filter((p) => p.role === "student").length;
     const reset = () => {
+      if (!window.confirm("Reset and clear all questions and votes? This can't be undone.")) return;
       clearAll();
       setPhase("lobby");
     };
@@ -147,9 +148,13 @@ export function QABoardLive({
         <section className="kukui-live-prompt">
           <p>{config.prompt}</p>
         </section>
-        {!isOpen ? (
+        {phase === "lobby" ? (
           <div className="kukui-live-status" role="status" aria-live="polite">
             Waiting for the instructor to open the board…
+          </div>
+        ) : !isOpen ? (
+          <div className="kukui-live-status" role="status" aria-live="polite">
+            The board is closed — no new questions, but you can still read and upvote.
           </div>
         ) : null}
         {isOpen ? (
@@ -256,13 +261,21 @@ function QuestionList({
               onClick={() => onUpvote(q.id)}
               disabled={upvoteDisabled}
               aria-pressed={voted}
-              aria-label={`Upvote — currently ${votes} votes`}
+              title={upvoteDisabled ? "You can't upvote your own question" : undefined}
+              aria-label={
+                upvoteDisabled
+                  ? `${votes} votes — you can't upvote your own question`
+                  : `Upvote — currently ${votes} votes`
+              }
             >
               <span className="kukui-qa__upvote-arrow" aria-hidden="true">▲</span>
               <span className="kukui-qa__upvote-count">{votes}</span>
             </button>
             <div>
               <p className="kukui-qa__text">{q.text}</p>
+              {q.answered ? (
+                <span className="kukui-qa__answered-badge">✓ Answered</span>
+              ) : null}
               {showAuthor ? (
                 <span className="kukui-qa__author">
                   {isMine ? "You" : q.authorName}

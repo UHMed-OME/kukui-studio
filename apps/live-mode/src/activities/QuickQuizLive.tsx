@@ -12,6 +12,7 @@ const ANSWERS_KEY = "quick-quiz-answers";
 type AnswerSnapshot = {
   values: string[]; // each entry = chosen choiceId
   myAnswer: string | undefined;
+  byParticipant: Record<string, string>; // participantId → chosen choiceId
 };
 
 function useAnswers(room: LiveRoomHandle): {
@@ -43,13 +44,15 @@ function useAnswers(room: LiveRoomHandle): {
 
 function read(map: Y.Map<string>, myId: string): AnswerSnapshot {
   const values: string[] = [];
+  const byParticipant: Record<string, string> = {};
   let myAnswer: string | undefined;
   map.forEach((v: string, k: string) => {
     if (typeof v !== "string") return;
     values.push(v);
+    byParticipant[k] = v;
     if (k === myId) myAnswer = v;
   });
-  return { values, myAnswer };
+  return { values, myAnswer, byParticipant };
 }
 
 export type QuickQuizLiveProps = {
@@ -94,14 +97,21 @@ export function QuickQuizLive({
 
   if (role === "instructor") {
     const studentCount = [...presence.values()].filter((p) => p.role === "student").length;
-    const correctNames = showNames
-      ? [...presence.values()]
-          .filter((p) => p.role === "student")
-          .filter(() => false /* TODO: per-participant correct names — needs presence linkage */)
-          .map((p) => p.name)
-      : [];
-    void correctNames;
+    // At reveal, optionally name the students who picked a correct answer.
+    // Answers and presence are both keyed by participantId, so we can join
+    // them directly. Names are anonymous handles (e.g. "Guest-A37").
+    const correctNames =
+      showNames && isRevealed
+        ? [...presence.values()]
+            .filter((p) => p.role === "student")
+            .filter((p) => {
+              const ans = snapshot.byParticipant[p.id];
+              return ans !== undefined && correctIds.has(ans);
+            })
+            .map((p) => p.name)
+        : [];
     const reset = () => {
+      if (!window.confirm("Reset and clear all answers? This can't be undone.")) return;
       clearAll();
       setPhase("lobby");
     };
@@ -143,6 +153,13 @@ export function QuickQuizLive({
               );
             })}
           </fieldset>
+          {showNames && isRevealed ? (
+            <p className="kukui-live-status" role="status" aria-live="polite">
+              {correctNames.length > 0
+                ? `Answered correctly (${correctNames.length}): ${correctNames.join(", ")}`
+                : "No correct answers yet."}
+            </p>
+          ) : null}
           <div className="kukui-live-controls" aria-label="Quick Quiz controls">
             {phase === "lobby" ? (
               <button

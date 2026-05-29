@@ -35,7 +35,7 @@ Live mode shines when you want **everyone moving together**. Examples:
 | Confidence Meter | Slider from "no clue" to "got it"; live distribution |
 | Word Cloud | Free-text short responses, aggregated into a live word cloud |
 | Q&A Board | Students submit questions, others upvote; instructor can mark answered |
-| Quick Quiz | Synchronized multiple-choice with countdown timer |
+| Quick Quiz | Synchronized multiple-choice; instructor reveals the correct answer and the live response distribution |
 
 More live-compatible activities are planned.
 

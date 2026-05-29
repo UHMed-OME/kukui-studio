@@ -295,7 +295,6 @@ export function App() {
       ? new URLSearchParams(window.location.search).get("adminKey")
       : null,
   );
-  const subscribed = useRef(false);
 
   const join = async () => {
     setError(null);
@@ -438,10 +437,12 @@ export function App() {
     }
   };
 
-  // Subscribe to presence changes once a room is open.
+  // Subscribe to presence changes once a room is open. Keyed on `room`,
+  // so it re-subscribes cleanly on any room change (and survives a
+  // StrictMode mount/unmount/remount cycle — an earlier ref guard here
+  // wasn't reset on cleanup, which froze presence on the second mount).
   useEffect(() => {
-    if (!room || subscribed.current) return;
-    subscribed.current = true;
+    if (!room) return;
     const tick = () => setPresence(new Map(room.presence()));
     tick();
     const interval = window.setInterval(tick, 750);
@@ -462,7 +463,6 @@ export function App() {
     setRoom(null);
     setPresence(new Map());
     setConfigUrl(undefined);
-    subscribed.current = false;
   };
 
   if (room) {

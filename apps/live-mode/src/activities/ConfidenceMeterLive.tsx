@@ -43,6 +43,7 @@ export function ConfidenceMeterLive({
   if (role === "instructor") {
     const studentCount = [...presence.values()].filter((p) => p.role === "student").length;
     const reset = () => {
+      if (!window.confirm("Reset and clear all ratings? This can't be undone.")) return;
       clearAll();
       setPhase("lobby");
     };
@@ -157,12 +158,20 @@ export function ConfidenceMeterLive({
               </span>
             </div>
             <div className="kukui-cm__slider-value" aria-live="polite">
-              Your rating:{" "}
-              <strong>
-                {sliderValue}
-                {scale.unit ?? ""}
-              </strong>
-              {hasRated ? " (saved)" : ""}
+              {hasRated ? (
+                <>
+                  Your rating:{" "}
+                  <strong>
+                    {snapshot.myRating}
+                    {scale.unit ?? ""}
+                  </strong>{" "}
+                  (saved)
+                </>
+              ) : (
+                <span style={{ color: "var(--color-text-secondary)" }}>
+                  Drag the slider to set your rating
+                </span>
+              )}
             </div>
           </div>
         ) : null}
@@ -195,7 +204,12 @@ function Histogram({
     const width = range / count;
     const out = Array<number>(count).fill(0);
     for (const v of snapshot.values) {
-      const idx = Math.min(count - 1, Math.max(0, Math.floor((v - scale.min) / width)));
+      // Guard a degenerate scale (min === max → width 0 → NaN index): drop
+      // everything into the first bin instead of producing NaN.
+      const idx =
+        width > 0
+          ? Math.min(count - 1, Math.max(0, Math.floor((v - scale.min) / width)))
+          : 0;
       out[idx] = (out[idx] ?? 0) + 1;
     }
     return out;

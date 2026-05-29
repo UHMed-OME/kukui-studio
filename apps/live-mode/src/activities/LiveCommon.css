@@ -243,9 +243,28 @@
   border-radius: var(--radius-sm, 6px);
 }
 
+/* Answered questions: a subtle green tint + an "Answered" badge instead
+   of opacity + line-through, which pushed the question text below AA. */
 .kukui-qa__item.is-answered {
-  opacity: 0.65;
-  text-decoration: line-through;
+  background: var(--color-success-soft, rgb(46 110 65 / 0.1));
+  border-color: color-mix(in srgb, var(--color-success, #2e6e41) 30%, var(--color-border, #dad2c6));
+}
+
+.kukui-qa__answered-badge {
+  display: inline-block;
+  margin-top: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-success, #2e6e41);
+}
+
+/* Disabled upvote (your own question, when allowUpvoteOwn is off). The
+   reduced contrast is acceptable per WCAG's inactive-control exception. */
+.kukui-qa__upvote:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .kukui-qa__upvote {
@@ -262,7 +281,8 @@
 
 .kukui-qa__upvote.is-voted {
   background: var(--color-accent, #b69b5d);
-  color: #ffffff;
+  /* Dark ink for AA on the gold accent — white is ~2.7:1, fails. */
+  color: #1c1917;
   border-color: var(--color-accent, #b69b5d);
 }
 
@@ -358,7 +378,8 @@
 
 .kukui-qq__choice.is-selected .kukui-qq__letter {
   background: var(--color-accent, #b69b5d);
-  color: #ffffff;
+  /* Dark ink for AA on the gold accent — white is ~2.7:1, fails. */
+  color: #1c1917;
 }
 
 .kukui-qq__choice.is-correct .kukui-qq__letter {
