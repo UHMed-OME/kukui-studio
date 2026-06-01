@@ -1,0 +1,292 @@
+/*
+ * Video Reflection — completion-only recorded-video response activity.
+ * Layout-stable: the preview stage and action row reserve their height so
+ * moving between idle / recording / reviewing doesn't reflow. Borders stay
+ * constant width; state changes are color-only.
+ */
+
+.kukui-vr {
+  display: flex;
+  justify-content: center;
+  padding: var(--spacing-2xl, 24px);
+}
+
+.kukui-vr__card {
+  width: 100%;
+  max-width: 720px;
+  background: var(--color-surface, #ffffff);
+  border: 1px solid var(--color-border, #dad2c6);
+  border-radius: var(--radius-card, 12px);
+  padding: var(--spacing-3xl, 28px);
+}
+
+.kukui-vr__title {
+  margin: 0 0 var(--spacing-lg, 16px);
+  font-family: var(--font-family-display, "Iowan Old Style", "Apple Garamond", Baskerville, "Times New Roman", serif);
+  font-size: var(--font-size-title, 24px);
+  font-weight: 500;
+  letter-spacing: -0.005em;
+  color: var(--color-text-primary, #1c1e20);
+}
+
+.kukui-vr__prompt {
+  margin: 0 0 var(--spacing-lg, 16px);
+  font-size: var(--font-size-prompt, 16px);
+  line-height: 1.5;
+  color: var(--color-text-primary, #1c1e20);
+}
+
+/* Pre-record options */
+.kukui-vr__options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-md, 12px) var(--spacing-xl, 20px);
+  margin: 0 0 var(--spacing-lg, 16px);
+  padding: var(--spacing-md, 12px);
+  background: var(--color-tip-bg, #f2f0e8);
+  border-radius: var(--radius-md, 8px);
+}
+
+.kukui-vr__option {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-sm, 8px);
+  min-height: 44px;
+  font-size: var(--font-size-meta, 13px);
+  color: var(--color-text-primary, #1c1e20);
+  cursor: pointer;
+}
+
+.kukui-vr__option input {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+.kukui-vr__camera-pick {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-md, 12px);
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.kukui-vr__camera-legend {
+  padding: 0;
+  font-size: var(--font-size-meta, 13px);
+  font-weight: 700;
+  color: var(--color-text-secondary, #606069);
+}
+
+/* Preview stage — reserves space so the card doesn't jump on first record. */
+.kukui-vr__stage {
+  position: relative;
+  display: none;
+  margin-bottom: var(--spacing-md, 12px);
+  background: #000000;
+  border-radius: var(--radius-md, 8px);
+  overflow: hidden;
+  aspect-ratio: 16 / 9;
+}
+
+.kukui-vr__stage.is-visible {
+  display: block;
+}
+
+.kukui-vr__canvas,
+.kukui-vr__live,
+.kukui-vr__playback {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  background: #000000;
+}
+
+/* Camera-only live preview is mirrored, like a selfie cam. */
+.kukui-vr__live {
+  transform: scaleX(-1);
+}
+
+.kukui-vr__canvas.is-hidden,
+.kukui-vr__live.is-hidden {
+  display: none;
+}
+
+/* Offscreen source <video>s that feed the compositing canvas. Kept in the
+   DOM and rendering (not display:none, which can pause frame production in
+   some browsers) but visually removed. */
+.kukui-vr__offscreen {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.kukui-vr__status {
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm, 8px);
+  padding: var(--spacing-sm, 8px) var(--spacing-md, 12px);
+  margin-bottom: var(--spacing-md, 12px);
+  background: var(--color-tip-bg, #f2f0e8);
+  border-radius: var(--radius-md, 8px);
+  font-size: var(--font-size-meta, 13px);
+  color: var(--color-text-secondary, #606069);
+}
+
+.kukui-vr__rec-dot {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--color-error, #c34132);
+  flex-shrink: 0;
+}
+
+.kukui-vr__rec-dot.is-pulsing {
+  animation: kukui-vr-pulse 1s ease-in-out infinite;
+}
+
+@keyframes kukui-vr-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
+}
+
+.kukui-vr__rec-label {
+  font-weight: 700;
+  color: var(--color-error, #c34132);
+}
+
+.kukui-vr__timer {
+  margin-left: auto;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text-primary, #1c1e20);
+}
+
+.kukui-vr__error {
+  color: var(--color-error, #c34132);
+}
+
+.kukui-vr__error-icon {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  text-align: center;
+  font-weight: 700;
+  color: var(--color-error, #c34132);
+}
+
+.kukui-vr__submit-note {
+  margin: 0 0 var(--spacing-md, 12px);
+  padding: var(--spacing-md, 12px);
+  background: var(--color-tip-bg, #f2f0e8);
+  border-left: 3px solid var(--color-primary, #7b4324);
+  border-radius: var(--radius-md, 8px);
+  font-size: var(--font-size-meta, 13px);
+  line-height: 1.5;
+  color: var(--color-text-primary, #1c1e20);
+}
+
+.kukui-vr__actions {
+  margin-top: var(--spacing-xl, 20px);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--spacing-md, 12px);
+}
+
+.kukui-vr__primary,
+.kukui-vr__secondary {
+  min-height: 44px;
+  min-width: 44px;
+  padding: 10px 20px;
+  border-radius: var(--radius-md, 8px);
+  font-size: var(--font-size-answer, 15px);
+  font-weight: 700;
+  cursor: pointer;
+  transition: background-color 150ms ease;
+}
+
+.kukui-vr__primary {
+  background: var(--color-primary, #7b4324);
+  color: #ffffff;
+  border: none;
+}
+
+.kukui-vr__primary:hover:not(:disabled) {
+  background: var(--color-primary-hover, #9b5830);
+}
+
+.kukui-vr__primary:focus-visible,
+.kukui-vr__secondary:focus-visible {
+  outline: 2px solid var(--color-primary, #7b4324);
+  outline-offset: 2px;
+}
+
+.kukui-vr__primary:disabled,
+.kukui-vr__secondary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.kukui-vr__secondary {
+  background: transparent;
+  color: var(--color-primary, #7b4324);
+  border: 2px solid var(--color-primary, #7b4324);
+}
+
+.kukui-vr__secondary:hover:not(:disabled) {
+  background: var(--color-tip-bg, #f2f0e8);
+}
+
+.kukui-vr__primary.is-stop {
+  background: var(--color-error, #c34132);
+}
+
+.kukui-vr__primary.is-stop:hover:not(:disabled) {
+  filter: brightness(1.1);
+}
+
+.kukui-vr__confirmation {
+  margin-top: var(--spacing-md, 12px);
+  min-height: 28px;
+  padding: var(--spacing-sm, 8px) var(--spacing-md, 12px);
+  display: flex;
+  align-items: center;
+  font-size: var(--font-size-meta, 13px);
+  color: var(--color-success, #2e6e41);
+  background: var(--color-success-soft);
+  border-radius: var(--radius-md, 8px);
+  opacity: 0;
+  transition: opacity 200ms ease;
+}
+
+.kukui-vr__confirmation.is-visible {
+  opacity: 1;
+}
+
+.kukui-vr__credit {
+  margin: var(--spacing-lg, 16px) 0 0;
+  font-size: var(--font-size-meta, 13px);
+  color: var(--color-text-secondary, #606069);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kukui-vr__rec-dot.is-pulsing {
+    animation: none;
+  }
+  .kukui-vr__primary,
+  .kukui-vr__secondary,
+  .kukui-vr__confirmation {
+    transition: none;
+  }
+}

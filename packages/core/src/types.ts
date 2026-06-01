@@ -62,6 +62,7 @@ export type BuiltActivityKind =
   | "concept-map"
   | "interactive-video"
   | "audio-recording"
+  | "video-reflection"
   | "lab-panel"
   | "ddx-tree"
   | "osce"
@@ -99,6 +100,7 @@ export const BUILT_ACTIVITY_KINDS: readonly BuiltActivityKind[] = [
   "concept-map",
   "interactive-video",
   "audio-recording",
+  "video-reflection",
   "lab-panel",
   "ddx-tree",
   "osce",
