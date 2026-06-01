@@ -92,6 +92,10 @@ const STUDIO_SUPPRESSED = new Set<ActivityKind>([
   "multiple-choice",
   "fill-in-the-blanks",
   "question-set",
+  // Pixel Chat (isometric-chatroom): hidden while its Live runtime is
+  // being overhauled — authoring it now produces a non-working activity.
+  // Remove from this set once the Live variant works end-to-end.
+  "isometric-chatroom",
 ]);
 
 const BLOOM_BY_KIND: Partial<Record<ActivityKind, BloomLevel>> = Object.fromEntries(
