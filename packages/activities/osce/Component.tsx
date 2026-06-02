@@ -2,6 +2,7 @@ import { useEffect, useId, useMemo, useState } from "react";
 import type { OSCEConfig } from "./schema.js";
 import type { ActivityProps, ScoreState } from "@kukui/core/types";
 import { aggregate, percentage, SafeHtml, htmlToText } from "@kukui/core";
+import { resolveScoring } from "@kukui/core/scoring";
 import "./Component.css";
 
 type Stage = "answering" | "submitted";
@@ -394,7 +395,11 @@ function computeScoring(config: OSCEConfig, state: State): Scoring {
     success: orderMax === 0 ? true : orderRaw === orderMax,
   };
 
-  const total = aggregate([...phaseScores, order]);
+  // Honor the authored pass threshold (config.scoring.passPercentage) instead
+  // of aggregate's hard-coded 50% default. Falls back to 50 when no scoring
+  // block is present, preserving prior behaviour for legacy fixtures.
+  const passPercentage = resolveScoring(config, { mode: "points" }).passPercentage;
+  const total = aggregate([...phaseScores, order], passPercentage);
 
   return { byPhase, order, total };
 }

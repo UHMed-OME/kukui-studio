@@ -25,6 +25,23 @@ const DEFAULT_MAX_SECONDS = 60;
 const DEFAULT_MIN_SECONDS = 1;
 
 /**
+ * Recording needs `getUserMedia` (mic) and `MediaRecorder` (encoding). Some
+ * locked-down LMS webviews / older Safari builds lack one or both, and on a
+ * non-secure `http://` origin `navigator.mediaDevices` is undefined entirely.
+ * Feature-detect at render time so we can show guidance instead of an
+ * affordance that throws a developer-facing error after the mic has already
+ * been requested.
+ */
+function isRecordingSupported(): boolean {
+  return (
+    typeof navigator !== "undefined" &&
+    !!navigator.mediaDevices &&
+    typeof navigator.mediaDevices.getUserMedia === "function" &&
+    typeof MediaRecorder !== "undefined"
+  );
+}
+
+/**
  * Restore state from persisted suspend data so reload picks up where the
  * learner left off. Submit writes a full payload with `audioDataUrl` (see
  * `submit` below); the in-progress hint persisted on every stage change is
@@ -156,6 +173,13 @@ export default function Component({
   const startedAtRef = useRef<number>(0);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const recordButtonRef = useRef<HTMLButtonElement | null>(null);
+  // The current take's decoded Blob, captured at `onstop`. Submit encodes
+  // this directly rather than re-`fetch`ing the blob: URL (which some
+  // sandboxed LMS iframes block via CSP).
+  const blobRef = useRef<Blob | null>(null);
+  // Mirror the live blob URL so unmount cleanup revokes the current take,
+  // not the `null` captured at first render.
+  const blobUrlRef = useRef<string | null>(null);
 
   const stopMediaTracks = useCallback(() => {
     if (streamRef.current) {
@@ -171,6 +195,12 @@ export default function Component({
     }
   }, []);
 
+  // Keep the blob-URL ref in sync with state so unmount cleanup revokes the
+  // current take rather than a stale value.
+  useEffect(() => {
+    blobUrlRef.current = state.blobUrl;
+  }, [state.blobUrl]);
+
   // Cleanup on unmount: stop tracks, clear timer, revoke blob URL.
   useEffect(() => {
     return () => {
@@ -183,8 +213,8 @@ export default function Component({
           /* noop */
         }
       }
-      if (state.blobUrl && typeof URL.revokeObjectURL === "function") {
-        URL.revokeObjectURL(state.blobUrl);
+      if (blobUrlRef.current && typeof URL.revokeObjectURL === "function") {
+        URL.revokeObjectURL(blobUrlRef.current);
       }
     };
     // We intentionally only run on unmount.
@@ -233,6 +263,7 @@ export default function Component({
         // pass the type through; downstream <audio> handles it.
         const mimeType = recorder.mimeType || "audio/webm";
         const blob = new Blob(chunksRef.current, { type: mimeType });
+        blobRef.current = blob;
         chunksRef.current = [];
         stopMediaTracks();
         const blobUrl =
@@ -287,6 +318,7 @@ export default function Component({
     if (state.blobUrl && typeof URL.revokeObjectURL === "function") {
       URL.revokeObjectURL(state.blobUrl);
     }
+    blobRef.current = null;
     setState({
       stage: "idle",
       blobUrl: null,
@@ -296,6 +328,7 @@ export default function Component({
   }, [state.blobUrl]);
 
   const tryAgain = useCallback(() => {
+    blobRef.current = null;
     setState({
       stage: "idle",
       blobUrl: null,
@@ -317,8 +350,8 @@ export default function Component({
     // longer ones submit cleanly but aren't replayable after a resume.
     const SUSPEND_BUDGET_CHARS = 3500;
     try {
-      const resp = await fetch(state.blobUrl ?? "");
-      const blob = await resp.blob();
+      const blob = blobRef.current;
+      if (!blob) return;
       const audioDataUrl = await blobToDataUrl(blob);
       const withAudio = JSON.stringify({
         audioDataUrl,
@@ -352,7 +385,7 @@ export default function Component({
           : "Could not encode the recording.";
       setState((s) => ({ ...s, stage: "error", errorMessage: message }));
     }
-  }, [state.stage, state.durationSeconds, state.blobUrl, minSeconds, onSubmit]);
+  }, [state.stage, state.durationSeconds, minSeconds, onSubmit]);
 
   // Keyboard: Space toggles record/stop while focused on the Record button.
   // (Native button activation already triggers click on Space, but we want
@@ -383,6 +416,7 @@ export default function Component({
   const isSubmitted = state.stage === "submitted";
   const isError = state.stage === "error";
   const meetsMin = state.durationSeconds >= minSeconds;
+  const recordingSupported = isRecordingSupported();
 
   return (
     <div className="kukui-ar">
@@ -446,6 +480,8 @@ export default function Component({
             </>
           ) : isSubmitted ? (
             <span>Recording submitted.</span>
+          ) : !recordingSupported ? (
+            <span>Audio recording isn't supported in this browser.</span>
           ) : (
             <span>Press Record when you are ready.</span>
           )}
@@ -502,7 +538,14 @@ export default function Component({
                 {submitLabel}
               </button>
             </>
-          ) : isSubmitted ? null : (
+          ) : isSubmitted ? null : !recordingSupported ? (
+            <p className="kukui-ar__unsupported" role="alert">
+              Audio recording isn't available in this browser. Open this
+              activity in a recent version of Chrome, Edge, Firefox, or Safari
+              (over a secure <code>https</code> connection) to record your
+              response.
+            </p>
+          ) : (
             <button
               type="button"
               className="kukui-ar__primary"

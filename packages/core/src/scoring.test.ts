@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { aggregate, bandMessage, percentage, scoreSelection } from "./scoring.js";
+import { aggregate, bandMessage, percentage, resolveScoring, scoreSelection } from "./scoring.js";
 
 describe("scoreSelection", () => {
   const correct = new Set([0, 2]);
@@ -55,6 +55,46 @@ describe("scoreSelection", () => {
       totalAnswers: 3,
     });
     expect(r).toEqual({ raw: 1, max: 1, success: true });
+  });
+});
+
+describe("resolveScoring", () => {
+  it("honors behaviour.passPercentage (nested legacy shape) — S11 regression", () => {
+    // interactive-video (and similar) nest the pass threshold under
+    // `behaviour`. Before the fix the resolver only read a root-level
+    // `passPercentage`, so the authored threshold was silently dropped and
+    // pass/fail always used the default — a learner could "pass" below the
+    // configured cut score.
+    const r = resolveScoring(
+      { behaviour: { passPercentage: 80 } },
+      { mode: "points", passPercentage: 50 },
+    );
+    expect(r.passPercentage).toBe(80);
+  });
+
+  it("prefers root passPercentage over behaviour when both are present", () => {
+    const r = resolveScoring(
+      { passPercentage: 70, behaviour: { passPercentage: 30 } },
+      { mode: "points" },
+    );
+    expect(r.passPercentage).toBe(70);
+  });
+
+  it("falls back to the default pass percentage when none is configured", () => {
+    expect(resolveScoring({}, { passPercentage: 50 }).passPercentage).toBe(50);
+    expect(resolveScoring({}).passPercentage).toBe(50);
+  });
+
+  it("config.scoring (points) takes precedence and supplies its own passPercentage", () => {
+    const r = resolveScoring(
+      {
+        scoring: { mode: "points", passPercentage: 65 },
+        behaviour: { passPercentage: 30 },
+      },
+      { passPercentage: 50 },
+    );
+    expect(r.mode).toBe("points");
+    expect(r.passPercentage).toBe(65);
   });
 });
 

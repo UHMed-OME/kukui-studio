@@ -4,9 +4,11 @@ import type { ScoreBand, ScoreState } from "./types.js";
 /**
  * Effective scoring view for an activity runtime. Reads `config.scoring`
  * when present (new shape after Scoring-tab migration), and falls back to
- * legacy `behaviour.singlePoint` + root `passPercentage` + root
- * `overallFeedback` (old shape) so existing fixtures + samples that
- * haven't been re-saved through Studio still play correctly.
+ * legacy `behaviour.singlePoint` + `behaviour.passPercentage` / root
+ * `passPercentage` + root `overallFeedback` (old shape) so existing
+ * fixtures + samples that haven't been re-saved through Studio still play
+ * correctly. (Some schemas — e.g. interactive-video — nest the pass
+ * threshold under `behaviour.passPercentage`; that is honored here.)
  *
  * Activities call this once per render with the relevant slice of their
  * config; the resolved view is the single source of truth for retry /
@@ -28,6 +30,7 @@ export function resolveScoring(
       enableRetry?: boolean;
       enableSolutionsButton?: boolean;
       showSolutionsButton?: boolean;
+      passPercentage?: number;
     };
     passPercentage?: number;
     overallFeedback?: readonly ScoreBand[];
@@ -53,7 +56,7 @@ export function resolveScoring(
   const mode: ResolvedScoring["mode"] = b.singlePoint ? "all-or-nothing" : defaultMode;
   return {
     mode,
-    passPercentage: source.passPercentage ?? defaultPass,
+    passPercentage: source.passPercentage ?? b.passPercentage ?? defaultPass,
     bands: source.overallFeedback ?? undefined,
     enableRetry,
     enableSolutionsButton,

@@ -6,6 +6,15 @@ import "./Component.css";
 
 type Stage = "writing" | "submitted";
 
+/**
+ * Default character cap. Plain prose at this length LZ-compresses to well
+ * under SCORM 1.2's 4096-char `cmi.suspend_data` ceiling (even worst-case
+ * incompressible text stays within budget), so a reflection up to this size
+ * always survives a save/resume round-trip. Authors can override via
+ * `config.maxChars`.
+ */
+const DEFAULT_MAX_CHARS = 4000;
+
 type State = {
   stage: Stage;
   text: string;
@@ -65,11 +74,18 @@ function Component({
   }, [config]);
 
   const minWords = config.minWords ?? 0;
+  const maxChars = config.maxChars ?? DEFAULT_MAX_CHARS;
   const placeholder = config.placeholder ?? "";
   const submitLabel = config.ui?.submitButtonLabel ?? "Submit";
 
   const wordCount = useMemo(() => countWords(state.text), [state.text]);
   const meetsMin = wordCount >= minWords;
+  // Surface the character budget only as the learner approaches it, so short
+  // reflections see an uncluttered field. The textarea's `maxLength` hard-caps
+  // input at `maxChars`, so the limit can be reached but never exceeded.
+  const charsUsed = state.text.length;
+  const nearCharLimit = charsUsed >= maxChars * 0.85;
+  const atCharLimit = charsUsed >= maxChars;
 
   useEffect(() => {
     if (!onPersist) return;
@@ -116,6 +132,7 @@ function Component({
           placeholder={placeholder}
           readOnly={submitted}
           disabled={submitted}
+          maxLength={maxChars}
           aria-describedby={wordCountId}
           aria-label="Your reflection"
         />
@@ -133,6 +150,20 @@ function Component({
             <span className="kukui-rp__wordcount-min">
               {" "}
               (min: {minWords} words)
+            </span>
+          ) : null}
+          {nearCharLimit ? (
+            <span
+              className={[
+                "kukui-rp__charcount",
+                atCharLimit ? "is-limit" : "",
+              ]
+                .filter(Boolean)
+                .join(" ")}
+            >
+              {" · "}
+              {charsUsed} / {maxChars} characters
+              {atCharLimit ? " (limit reached)" : ""}
             </span>
           ) : null}
         </div>

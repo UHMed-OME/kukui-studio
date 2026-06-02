@@ -152,6 +152,29 @@ describe("OSCE", () => {
     expect(score).toMatchObject({ raw: 1, max: 8, success: false });
   });
 
+  it("honors config.scoring.passPercentage for pass/fail (S11 regression)", async () => {
+    const user = userEvent.setup();
+    const onSubmit = vi.fn();
+    // Same partial scenario as the test above: raw 1 / max 8 ≈ 12.5%. With the
+    // default 50% threshold this fails; an authored 10% threshold must pass.
+    // Before the fix, computeScoring ignored config.scoring and always used
+    // aggregate's hard-coded 50%, so this could never pass.
+    const lowBar: OSCEConfig = {
+      ...cfg,
+      scoring: { mode: "points", passPercentage: 10 },
+    };
+    render(<Component config={lowBar} onSubmit={onSubmit} />);
+
+    const stepper = screen.getByRole("navigation", { name: /OSCE phases/i });
+    const investigationsStep = within(stepper).getAllByRole("button")[2];
+    if (!investigationsStep) throw new Error("missing stepper button");
+    await user.click(investigationsStep);
+    await user.click(screen.getByRole("button", { name: /submit OSCE/i }));
+
+    const score = onSubmit.mock.calls[0]?.[0];
+    expect(score).toMatchObject({ raw: 1, max: 8, success: true });
+  });
+
   it("Try again resets to the first phase with no selections after submit", async () => {
     const user = userEvent.setup();
     render(<Component config={cfg} onSubmit={vi.fn()} />);

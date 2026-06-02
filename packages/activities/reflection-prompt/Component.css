@@ -92,6 +92,15 @@
   color: var(--color-text-secondary, #606069);
 }
 
+.kukui-rp__charcount {
+  color: var(--color-text-secondary, #606069);
+}
+
+.kukui-rp__charcount.is-limit {
+  color: var(--color-error, #c34132);
+  font-weight: 600;
+}
+
 /* Pre-allocate confirmation row so toggle doesn't reflow neighbors. */
 .kukui-rp__confirmation {
   margin-top: var(--spacing-md, 12px);
