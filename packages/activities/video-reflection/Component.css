@@ -196,6 +196,21 @@
   color: var(--color-text-primary, #1c1e20);
 }
 
+.kukui-vr__unsupported {
+  margin: 0;
+  padding: var(--spacing-md, 12px);
+  background: var(--color-tip-bg, #f2f0e8);
+  border-left: 3px solid var(--color-error, #c34132);
+  border-radius: var(--radius-md, 8px);
+  font-size: var(--font-size-meta, 13px);
+  line-height: 1.5;
+  color: var(--color-text-primary, #1c1e20);
+}
+
+.kukui-vr__unsupported code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
 .kukui-vr__actions {
   margin-top: var(--spacing-xl, 20px);
   display: flex;
