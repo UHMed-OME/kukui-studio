@@ -31,21 +31,34 @@ class MockMediaRecorder {
 
 class MockMediaStream {
   getTracks() {
-    return [{ stop: () => undefined }];
+    return [...this.getAudioTracks(), ...this.getVideoTracks()];
   }
   getAudioTracks() {
-    return [] as MediaStreamTrack[];
+    return [mockTrack()] as unknown as MediaStreamTrack[];
   }
   getVideoTracks() {
-    return [{ stop: () => undefined, addEventListener: () => undefined }];
+    return [mockTrack()] as unknown as MediaStreamTrack[];
   }
+}
+
+function mockTrack() {
+  return {
+    stop: () => undefined,
+    addEventListener: () => undefined,
+    enabled: true,
+    readyState: "live" as const,
+    getSettings: () => ({ deviceId: "mock-device" }),
+  };
 }
 
 function installRecorderStubs(getUserMedia: ReturnType<typeof vi.fn>) {
   vi.stubGlobal("MediaRecorder", MockMediaRecorder as unknown as typeof MediaRecorder);
   vi.stubGlobal("navigator", {
     ...globalThis.navigator,
-    mediaDevices: { getUserMedia },
+    mediaDevices: {
+      getUserMedia,
+      enumerateDevices: vi.fn().mockResolvedValue([]),
+    },
   });
   vi.stubGlobal("URL", {
     ...URL,
@@ -87,15 +100,10 @@ describe("video-reflection Component", () => {
 
     expect(screen.getByText(/reflect on the case/i)).toBeInTheDocument();
 
-    // Idle → press Record to acquire the camera and enter the framing step.
+    // One-click Record: acquires the camera + mic, runs the 3-2-1 countdown
+    // (real 1s ticks), then records.
     await user.click(screen.getByRole("button", { name: /^record$/i }));
-    await waitFor(() =>
-      expect(screen.getByRole("button", { name: /start recording/i })).toBeInTheDocument(),
-    );
-    expect(getUserMedia).toHaveBeenCalledTimes(1);
-
-    // Start recording → 3-2-1 countdown (real 1s ticks) → recording.
-    await user.click(screen.getByRole("button", { name: /start recording/i }));
+    expect(getUserMedia).toHaveBeenCalled();
     await waitFor(
       () => expect(screen.getByRole("button", { name: /stop/i })).toBeInTheDocument(),
       { timeout: 6000 },

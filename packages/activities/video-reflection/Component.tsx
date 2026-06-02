@@ -309,6 +309,49 @@ function safePlay(el: HTMLVideoElement | null): void {
   }
 }
 
+/** Shared stroke-SVG props for the small control glyphs. */
+const glyphProps = {
+  width: 18,
+  height: 18,
+  viewBox: "0 0 24 24",
+  fill: "none",
+  stroke: "currentColor",
+  strokeWidth: 1.8,
+  strokeLinecap: "round" as const,
+  strokeLinejoin: "round" as const,
+  "aria-hidden": true,
+};
+
+function MicGlyph({ on }: { on: boolean }) {
+  return (
+    <svg {...glyphProps}>
+      <rect x="9" y="3" width="6" height="11" rx="3" />
+      <path d="M5 11a7 7 0 0 0 14 0" />
+      <line x1="12" y1="18" x2="12" y2="21" />
+      {!on ? <line x1="3" y1="3" x2="21" y2="21" /> : null}
+    </svg>
+  );
+}
+
+function CamGlyph({ on }: { on: boolean }) {
+  return (
+    <svg {...glyphProps}>
+      <rect x="2" y="6" width="13" height="12" rx="2" />
+      <path d="M15 10l6-3v10l-6-3" />
+      {!on ? <line x1="3" y1="3" x2="21" y2="21" /> : null}
+    </svg>
+  );
+}
+
+function GearGlyph() {
+  return (
+    <svg {...glyphProps}>
+      <circle cx="12" cy="12" r="3" />
+      <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+    </svg>
+  );
+}
+
 export default function Component({
   config,
   onSubmit,
@@ -346,11 +389,21 @@ export default function Component({
 
   // Author-time options the learner picks before recording.
   const [useScreen, setUseScreen] = useState(false);
-  const [facingMode, setFacingMode] = useState<"user" | "environment">("user");
   // Which composition is live right now — drives which preview surface shows.
   const [activeScreen, setActiveScreen] = useState(false);
   // Countdown value shown over the preview before recording starts (3→2→1).
   const [countdown, setCountdown] = useState(0);
+  // Pre-join controls (start OFF): camera + mic enabled state, acquiring
+  // flag, device lists/selection, settings disclosure, and mic input level.
+  const [micOn, setMicOn] = useState(false);
+  const [camOn, setCamOn] = useState(false);
+  const [preparing, setPreparing] = useState(false);
+  const [videoDevices, setVideoDevices] = useState<MediaDeviceInfo[]>([]);
+  const [audioDevices, setAudioDevices] = useState<MediaDeviceInfo[]>([]);
+  const [selectedVideoId, setSelectedVideoId] = useState<string>("");
+  const [selectedAudioId, setSelectedAudioId] = useState<string>("");
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [micLevel, setMicLevel] = useState(0);
   // On-device captioning state for the review step.
   const [cc, setCc] = useState<{
     status: "idle" | "transcribing" | "ready" | "burning" | "error";
@@ -401,6 +454,13 @@ export default function Component({
   // Mirror the live blob URL so the unmount cleanup (empty deps) revokes the
   // *current* URL, not the `null` captured at first render.
   const blobUrlRef = useRef<string | null>(null);
+  // Sync mirrors of the toggle state so async acquire callbacks read the
+  // current intent rather than a stale closure value.
+  const micOnRef = useRef(false);
+  const camOnRef = useRef(false);
+  // Mic level-meter (preview only): its own AudioContext + rAF loop.
+  const meterCtxRef = useRef<AudioContext | null>(null);
+  const meterRafRef = useRef<number | null>(null);
 
   const stopMediaTracks = useCallback(() => {
     // Include recordStreamRef: in the composite path it's the canvas
@@ -420,11 +480,76 @@ export default function Component({
       }
       audioCtxRef.current = null;
     }
+    if (meterRafRef.current !== null) {
+      cancelAnimationFrame(meterRafRef.current);
+      meterRafRef.current = null;
+    }
+    if (meterCtxRef.current) {
+      try {
+        void meterCtxRef.current.close();
+      } catch {
+        /* already closed */
+      }
+      meterCtxRef.current = null;
+    }
     if (rafRef.current !== null) {
       cancelAnimationFrame(rafRef.current);
       rafRef.current = null;
     }
   }, []);
+
+  const stopMeter = useCallback(() => {
+    if (meterRafRef.current !== null) {
+      cancelAnimationFrame(meterRafRef.current);
+      meterRafRef.current = null;
+    }
+    if (meterCtxRef.current) {
+      try {
+        void meterCtxRef.current.close();
+      } catch {
+        /* already closed */
+      }
+      meterCtxRef.current = null;
+    }
+    setMicLevel(0);
+  }, []);
+
+  // Drive a simple RMS level meter from the live mic track (preview only).
+  const startMeter = useCallback(
+    (stream: MediaStream) => {
+      stopMeter();
+      const Ctor =
+        typeof AudioContext !== "undefined"
+          ? AudioContext
+          : (globalThis as unknown as { webkitAudioContext?: typeof AudioContext })
+              .webkitAudioContext;
+      if (!Ctor || stream.getAudioTracks().length === 0) return;
+      try {
+        const ctx = new Ctor();
+        meterCtxRef.current = ctx;
+        const source = ctx.createMediaStreamSource(stream);
+        const analyser = ctx.createAnalyser();
+        analyser.fftSize = 256;
+        source.connect(analyser);
+        const data = new Uint8Array(analyser.frequencyBinCount);
+        const tick = () => {
+          analyser.getByteTimeDomainData(data);
+          let sum = 0;
+          for (let i = 0; i < data.length; i += 1) {
+            const v = (data[i] ?? 128) / 128 - 1;
+            sum += v * v;
+          }
+          const rms = Math.sqrt(sum / data.length);
+          setMicLevel(Math.min(1, rms * 2.5));
+          meterRafRef.current = requestAnimationFrame(tick);
+        };
+        meterRafRef.current = requestAnimationFrame(tick);
+      } catch {
+        stopMeter();
+      }
+    },
+    [stopMeter],
+  );
 
   const clearTimer = useCallback(() => {
     if (timerRef.current !== null) {
@@ -599,101 +724,206 @@ export default function Component({
     }, 1000);
   }, [beginRecorder, stopMediaTracks, countdownSeconds]);
 
-  // Acquire camera (+ optional screen), wire up the live preview, and stop in
-  // the "ready" framing step. Recording itself doesn't start until the learner
-  // hits "Start recording" → countdown. Mirrors the Loom/Flip ready-check.
-  const startSetup = useCallback(async () => {
-    setState((s) => ({ ...s, stage: "requesting", errorMessage: "" }));
-    try {
-      const cam = await navigator.mediaDevices.getUserMedia({
-        video: videoConstraints(facingMode),
-        audio: AUDIO_CONSTRAINTS,
-      });
-      camStreamRef.current = cam;
-
-      // Try the screen-share composite path only when offered + opted in.
-      // If the user cancels the screen picker, fall back to camera-only.
-      let usingScreen = false;
-      if (useScreen && screenShareOffered) {
+  // Lazily acquire the camera + mic with the selected devices, applying the
+  // current toggle state to each track, wiring the preview, and populating the
+  // device lists. `force` re-acquires after a device change. Returns the stream
+  // or null on failure (error state is set). Camera/mic start OFF, so this only
+  // runs once the learner turns something on or presses Record.
+  const acquireCameraStream = useCallback(
+    async (force = false): Promise<MediaStream | null> => {
+      if (camStreamRef.current && !force) return camStreamRef.current;
+      setPreparing(true);
+      try {
+        if (force && camStreamRef.current) {
+          for (const t of camStreamRef.current.getTracks()) t.stop();
+          camStreamRef.current = null;
+        }
+        const stream = await navigator.mediaDevices.getUserMedia({
+          audio: {
+            ...AUDIO_CONSTRAINTS,
+            ...(selectedAudioId ? { deviceId: { exact: selectedAudioId } } : {}),
+          },
+          video: {
+            ...videoConstraints("user"),
+            ...(selectedVideoId ? { deviceId: { exact: selectedVideoId } } : {}),
+          },
+        });
+        camStreamRef.current = stream;
+        for (const t of stream.getAudioTracks()) t.enabled = micOnRef.current;
+        for (const t of stream.getVideoTracks()) t.enabled = camOnRef.current;
+        attachStream(liveVideoRef.current, stream);
+        safePlay(liveVideoRef.current);
+        if (micOnRef.current) startMeter(stream);
+        // Device labels populate only after permission is granted.
         try {
-          const screen = await navigator.mediaDevices.getDisplayMedia({
-            video: { frameRate: { ideal: 30 } },
-            audio: true,
-          });
-          screenStreamRef.current = screen;
-          usingScreen = true;
-          // Stopping the share from the browser chrome ends the recording.
-          const screenTrack = screen.getVideoTracks()[0];
-          if (screenTrack) screenTrack.addEventListener("ended", () => stopRecording());
+          const devs = await navigator.mediaDevices.enumerateDevices();
+          setVideoDevices(devs.filter((d) => d.kind === "videoinput"));
+          setAudioDevices(devs.filter((d) => d.kind === "audioinput"));
+          const vId = stream.getVideoTracks()[0]?.getSettings?.().deviceId;
+          const aId = stream.getAudioTracks()[0]?.getSettings?.().deviceId;
+          if (vId) setSelectedVideoId((cur) => cur || vId);
+          if (aId) setSelectedAudioId((cur) => cur || aId);
         } catch {
-          usingScreen = false;
+          /* enumerateDevices unavailable — pickers stay on the default */
         }
+        return stream;
+      } catch (err) {
+        const message =
+          err instanceof Error && err.message
+            ? err.message
+            : "Camera and microphone access was denied.";
+        stopMediaTracks();
+        camOnRef.current = false;
+        micOnRef.current = false;
+        setCamOn(false);
+        setMicOn(false);
+        setState({
+          stage: "error",
+          blobUrl: null,
+          durationSeconds: 0,
+          downloaded: false,
+          errorMessage: message,
+        });
+        return null;
+      } finally {
+        setPreparing(false);
       }
+    },
+    [selectedAudioId, selectedVideoId, startMeter, stopMediaTracks],
+  );
 
-      if (usingScreen && screenStreamRef.current) {
-        attachStream(camElRef.current, cam);
-        attachStream(screenElRef.current, screenStreamRef.current);
-        safePlay(camElRef.current);
-        safePlay(screenElRef.current);
-        startCompositeLoop();
-        const canvas = canvasRef.current;
-        const canvasStream =
-          canvas && typeof canvas.captureStream === "function"
-            ? canvas.captureStream(30)
-            : null;
-        if (canvasStream) {
-          // Mix the mic with any shared screen/tab audio into one track.
-          const { track, ctx } = mixAudioTracks([cam, screenStreamRef.current]);
-          audioCtxRef.current = ctx;
-          if (track) canvasStream.addTrack(track);
-          recordStreamRef.current = canvasStream;
-          setActiveScreen(true);
-          setState((s) => ({ ...s, stage: "ready" }));
-          return;
-        }
-        // captureStream unavailable — fall through to camera-only.
+  const toggleCamera = useCallback(async () => {
+    const next = !camOnRef.current;
+    camOnRef.current = next;
+    setCamOn(next);
+    if (next) {
+      const stream = await acquireCameraStream();
+      for (const t of stream?.getVideoTracks() ?? []) t.enabled = true;
+    } else {
+      for (const t of camStreamRef.current?.getVideoTracks() ?? []) t.enabled = false;
+    }
+  }, [acquireCameraStream]);
+
+  const toggleMic = useCallback(async () => {
+    const next = !micOnRef.current;
+    micOnRef.current = next;
+    setMicOn(next);
+    if (next) {
+      const stream = await acquireCameraStream();
+      if (stream) {
+        for (const t of stream.getAudioTracks()) t.enabled = true;
+        startMeter(stream);
+      }
+    } else {
+      for (const t of camStreamRef.current?.getAudioTracks() ?? []) t.enabled = false;
+      stopMeter();
+    }
+  }, [acquireCameraStream, startMeter, stopMeter]);
+
+  const onChangeDevice = useCallback(
+    (kind: "audio" | "video", id: string) => {
+      if (kind === "audio") setSelectedAudioId(id);
+      else setSelectedVideoId(id);
+      if (camStreamRef.current) void acquireCameraStream(true);
+    },
+    [acquireCameraStream],
+  );
+
+  // One-click record (the primary CTA): make sure camera + mic are on, build
+  // the record stream (camera, or screen-share composite), then count down.
+  const startRecording = useCallback(async () => {
+    camOnRef.current = true;
+    micOnRef.current = true;
+    setCamOn(true);
+    setMicOn(true);
+    const cam = await acquireCameraStream();
+    if (!cam) return; // error state already set
+    for (const t of cam.getTracks()) t.enabled = true;
+    stopMeter(); // the recording path manages its own audio
+
+    let usingScreen = false;
+    if (useScreen && screenShareOffered) {
+      try {
+        const screen = await navigator.mediaDevices.getDisplayMedia({
+          video: { frameRate: { ideal: 30 } },
+          audio: true,
+        });
+        screenStreamRef.current = screen;
+        usingScreen = true;
+        const screenTrack = screen.getVideoTracks()[0];
+        if (screenTrack) screenTrack.addEventListener("ended", () => stopRecording());
+      } catch {
         usingScreen = false;
       }
-
-      // Camera-only path (also the iOS path).
-      attachStream(liveVideoRef.current, cam);
-      safePlay(liveVideoRef.current);
-      recordStreamRef.current = cam;
-      setActiveScreen(false);
-      setState((s) => ({ ...s, stage: "ready" }));
-    } catch (err) {
-      const message =
-        err instanceof Error && err.message
-          ? err.message
-          : "Camera and microphone access was denied.";
-      stopMediaTracks();
-      setState({
-        stage: "error",
-        blobUrl: null,
-        durationSeconds: 0,
-        downloaded: false,
-        errorMessage: message,
-      });
     }
+
+    if (usingScreen && screenStreamRef.current) {
+      attachStream(camElRef.current, cam);
+      attachStream(screenElRef.current, screenStreamRef.current);
+      safePlay(camElRef.current);
+      safePlay(screenElRef.current);
+      startCompositeLoop();
+      const canvas = canvasRef.current;
+      const canvasStream =
+        canvas && typeof canvas.captureStream === "function" ? canvas.captureStream(30) : null;
+      if (canvasStream) {
+        const { track, ctx } = mixAudioTracks([cam, screenStreamRef.current]);
+        audioCtxRef.current = ctx;
+        if (track) canvasStream.addTrack(track);
+        recordStreamRef.current = canvasStream;
+        setActiveScreen(true);
+        beginCountdown();
+        return;
+      }
+      usingScreen = false;
+    }
+
+    // Camera-only path (also the iOS path).
+    attachStream(liveVideoRef.current, cam);
+    safePlay(liveVideoRef.current);
+    recordStreamRef.current = cam;
+    setActiveScreen(false);
+    beginCountdown();
   }, [
-    facingMode,
-    useScreen,
+    acquireCameraStream,
+    beginCountdown,
     screenShareOffered,
     startCompositeLoop,
-    stopMediaTracks,
+    stopMeter,
     stopRecording,
+    useScreen,
   ]);
 
-  // Back out of the ready/countdown step without recording.
-  const cancelSetup = useCallback(() => {
+  // Cancel an in-progress countdown back to the start screen, keeping the
+  // camera/mic preview live (only the screen-share/composite is torn down).
+  const cancelCountdown = useCallback(() => {
     if (countdownTimerRef.current !== null) {
       clearInterval(countdownTimerRef.current);
       countdownTimerRef.current = null;
     }
-    stopMediaTracks();
+    if (rafRef.current !== null) {
+      cancelAnimationFrame(rafRef.current);
+      rafRef.current = null;
+    }
+    if (screenStreamRef.current) {
+      for (const t of screenStreamRef.current.getTracks()) t.stop();
+      screenStreamRef.current = null;
+    }
+    recordStreamRef.current = null;
     setActiveScreen(false);
+    if (micOnRef.current && camStreamRef.current) startMeter(camStreamRef.current);
     setState((s) => ({ ...s, stage: "idle", errorMessage: "" }));
-  }, [stopMediaTracks]);
+  }, [startMeter]);
+
+  const resetToStartScreen = useCallback(() => {
+    stopMediaTracks();
+    stopMeter();
+    camOnRef.current = false;
+    micOnRef.current = false;
+    setCamOn(false);
+    setMicOn(false);
+    setActiveScreen(false);
+  }, [stopMediaTracks, stopMeter]);
 
   const reRecord = useCallback(() => {
     if (state.blobUrl && typeof URL.revokeObjectURL === "function") {
@@ -702,7 +932,7 @@ export default function Component({
     recordedBlobRef.current = null;
     ccGenRef.current += 1; // invalidate any in-flight transcribe/burn job
     setCc({ status: "idle", progress: 0, cues: [], error: "" });
-    setActiveScreen(false);
+    resetToStartScreen();
     setState({
       stage: "idle",
       blobUrl: null,
@@ -710,9 +940,10 @@ export default function Component({
       downloaded: false,
       errorMessage: "",
     });
-  }, [state.blobUrl]);
+  }, [state.blobUrl, resetToStartScreen]);
 
   const tryAgain = useCallback(() => {
+    resetToStartScreen();
     setState({
       stage: "idle",
       blobUrl: null,
@@ -720,7 +951,7 @@ export default function Component({
       downloaded: false,
       errorMessage: "",
     });
-  }, []);
+  }, [resetToStartScreen]);
 
   const onDownload = useCallback(() => {
     if (!state.blobUrl) return;
@@ -862,7 +1093,6 @@ export default function Component({
       return;
     }
     if (
-      state.stage === "ready" ||
       state.stage === "recording" ||
       state.stage === "reviewing" ||
       state.stage === "error"
@@ -873,8 +1103,6 @@ export default function Component({
 
   const isIdle = state.stage === "idle";
   const recordingSupported = isRecordingSupported();
-  const isRequesting = state.stage === "requesting";
-  const isReady = state.stage === "ready";
   const isCountdown = state.stage === "countdown";
   const isRecording = state.stage === "recording";
   const isReviewing = state.stage === "reviewing";
@@ -885,18 +1113,14 @@ export default function Component({
   const nearEnd = isRecording && remaining <= 10;
   const recordProgress = maxSeconds > 0 ? Math.min(1, state.durationSeconds / maxSeconds) : 0;
   const submissionTarget = config.submissionTarget?.trim();
-  // The live preview surface is shown from framing through recording.
-  const showPreview = isReady || isCountdown || isRecording;
-  // Idle/acquiring: show a placeholder in the reserved stage instead of a
-  // black video, so the opening screen reads as a recorder.
-  const showPlaceholder = isIdle || isRequesting;
+  // Preview surfaces: the camera-only <video>, the screen-share composite
+  // canvas, or — when the camera is off (the default) or still acquiring —
+  // a placeholder, so the start screen always reads as a recorder.
+  const inCaptureStage = isIdle || isCountdown || isRecording;
+  const showCanvas = activeScreen && (isCountdown || isRecording);
+  const showLive = inCaptureStage && !activeScreen && camOn;
+  const showPlaceholder = inCaptureStage && !showCanvas && !showLive;
   const canBurnIn = burnInSupported();
-  // Front/back only makes sense where there's likely more than one camera
-  // (phones/tablets); on a desktop "Back" does nothing, so hide the picker.
-  const showCameraPick =
-    typeof window !== "undefined" &&
-    typeof window.matchMedia === "function" &&
-    window.matchMedia("(pointer: coarse)").matches;
   const ccBusy = cc.status === "transcribing" || cc.status === "burning";
   const transcriptText = cc.cues.map((c) => c.text).join("\n");
 
@@ -946,9 +1170,11 @@ export default function Component({
                 <path d="M15 10l6-3v10l-6-3" />
               </svg>
               <span>
-                {isRequesting
+                {preparing
                   ? "Starting your camera…"
-                  : "Your camera preview will appear here"}
+                  : isIdle
+                    ? "Camera is off — turn it on to see yourself"
+                    : "Your camera preview will appear here"}
               </span>
             </div>
           ) : null}
@@ -959,21 +1185,15 @@ export default function Component({
             ref={canvasRef}
             width={CANVAS_W}
             height={CANVAS_H}
-            className={[
-              "kukui-vr__canvas",
-              showPreview && activeScreen ? "" : "is-hidden",
-            ]
+            className={["kukui-vr__canvas", showCanvas ? "" : "is-hidden"]
               .filter(Boolean)
               .join(" ")}
             aria-label="Live recording preview"
-            aria-hidden={showPreview && activeScreen ? undefined : true}
+            aria-hidden={showCanvas ? undefined : true}
           />
           <video
             ref={liveVideoRef}
-            className={[
-              "kukui-vr__live",
-              showPreview && !activeScreen ? "" : "is-hidden",
-            ]
+            className={["kukui-vr__live", showLive ? "" : "is-hidden"]
               .filter(Boolean)
               .join(" ")}
             muted
@@ -1003,50 +1223,123 @@ export default function Component({
           ) : null}
         </div>
 
-        {/* Before-you-start controls + reassurance, shown on the opening screen. */}
-        {isIdle && recordingSupported ? (
+        {/* Mic / camera toggles — available on the start screen and while
+            recording (mute / hide mid-take). Camera + mic start OFF. */}
+        {inCaptureStage && recordingSupported ? (
           <div className="kukui-vr__setup">
-            <div className="kukui-vr__setup-controls">
-              {showCameraPick ? (
-                <fieldset className="kukui-vr__camera-pick">
-                  <legend className="kukui-vr__camera-legend">Camera</legend>
-                  <label className="kukui-vr__option">
-                    <input
-                      type="radio"
-                      name="vr-facing"
-                      checked={facingMode === "user"}
-                      onChange={() => setFacingMode("user")}
-                    />
-                    <span>Front</span>
-                  </label>
-                  <label className="kukui-vr__option">
-                    <input
-                      type="radio"
-                      name="vr-facing"
-                      checked={facingMode === "environment"}
-                      onChange={() => setFacingMode("environment")}
-                    />
-                    <span>Back</span>
-                  </label>
-                </fieldset>
-              ) : null}
-              {screenShareOffered ? (
-                <label className="kukui-vr__option kukui-vr__option--screen">
-                  <input
-                    type="checkbox"
-                    checked={useScreen}
-                    onChange={(e) => setUseScreen(e.target.checked)}
-                  />
-                  <span>Share my screen (webcam picture-in-picture)</span>
-                </label>
+            <div className="kukui-vr__cam-controls" role="group" aria-label="Camera and microphone">
+              <button
+                type="button"
+                className={["kukui-vr__toggle", micOn ? "is-on" : "is-off"].join(" ")}
+                onClick={toggleMic}
+                aria-pressed={micOn}
+                aria-label={micOn ? "Mute microphone" : "Turn microphone on"}
+                disabled={preparing}
+              >
+                <MicGlyph on={micOn} />
+                <span>{micOn ? "Mic on" : "Mic off"}</span>
+              </button>
+              <button
+                type="button"
+                className={["kukui-vr__toggle", camOn ? "is-on" : "is-off"].join(" ")}
+                onClick={toggleCamera}
+                aria-pressed={camOn}
+                aria-label={camOn ? "Turn camera off" : "Turn camera on"}
+                disabled={preparing}
+              >
+                <CamGlyph on={camOn} />
+                <span>{camOn ? "Camera on" : "Camera off"}</span>
+              </button>
+              {isIdle ? (
+                <button
+                  type="button"
+                  className="kukui-vr__toggle"
+                  onClick={() => setSettingsOpen((o) => !o)}
+                  aria-expanded={settingsOpen}
+                  aria-label="Device settings"
+                >
+                  <GearGlyph />
+                  <span>Settings</span>
+                </button>
               ) : null}
             </div>
-            <p className="kukui-vr__meta">
-              <span className="kukui-vr__meta-dot" aria-hidden="true" /> Up to{" "}
-              {formatTime(maxSeconds)}
-              <span aria-hidden="true"> · </span>
-              Records on your device — your video isn't uploaded
-            </p>
+
+            {micOn ? (
+              <div
+                className="kukui-vr__meter"
+                role="meter"
+                aria-label="Microphone input level"
+                aria-valuenow={Math.round(micLevel * 100)}
+                aria-valuemin={0}
+                aria-valuemax={100}
+              >
+                <div
+                  className="kukui-vr__meter-fill"
+                  style={{ width: `${Math.round(micLevel * 100)}%` }}
+                />
+              </div>
+            ) : null}
+
+            {isIdle && settingsOpen ? (
+              <div className="kukui-vr__settings">
+                <label className="kukui-vr__field">
+                  <span>Microphone</span>
+                  <select
+                    value={selectedAudioId}
+                    onChange={(e) => onChangeDevice("audio", e.target.value)}
+                  >
+                    {audioDevices.length === 0 ? (
+                      <option value="">Default microphone</option>
+                    ) : (
+                      audioDevices.map((d, i) => (
+                        <option key={d.deviceId || i} value={d.deviceId}>
+                          {d.label || `Microphone ${i + 1}`}
+                        </option>
+                      ))
+                    )}
+                  </select>
+                </label>
+                <label className="kukui-vr__field">
+                  <span>Camera</span>
+                  <select
+                    value={selectedVideoId}
+                    onChange={(e) => onChangeDevice("video", e.target.value)}
+                  >
+                    {videoDevices.length === 0 ? (
+                      <option value="">Default camera</option>
+                    ) : (
+                      videoDevices.map((d, i) => (
+                        <option key={d.deviceId || i} value={d.deviceId}>
+                          {d.label || `Camera ${i + 1}`}
+                        </option>
+                      ))
+                    )}
+                  </select>
+                </label>
+                {screenShareOffered ? (
+                  <label className="kukui-vr__option kukui-vr__option--screen">
+                    <input
+                      type="checkbox"
+                      checked={useScreen}
+                      onChange={(e) => setUseScreen(e.target.checked)}
+                    />
+                    <span>Share my screen (webcam picture-in-picture)</span>
+                  </label>
+                ) : null}
+                <p className="kukui-vr__settings-note">
+                  Pick a different microphone or camera if the default isn't right.
+                </p>
+              </div>
+            ) : null}
+
+            {isIdle ? (
+              <p className="kukui-vr__meta">
+                <span className="kukui-vr__meta-dot" aria-hidden="true" /> Up to{" "}
+                {formatTime(maxSeconds)}
+                <span aria-hidden="true"> · </span>
+                Records on your device — your video isn't uploaded
+              </p>
+            ) : null}
           </div>
         ) : null}
 
@@ -1066,10 +1359,6 @@ export default function Component({
                 </span>
                 <span className="kukui-vr__error">{state.errorMessage}</span>
               </>
-            ) : isRequesting ? (
-              <span>Requesting camera &amp; microphone…</span>
-            ) : isReady ? (
-              <span>Camera ready — frame yourself, then Start recording.</span>
             ) : isCountdown ? (
               <span aria-hidden="true">Starting in {countdown}…</span>
             ) : isRecording ? (
@@ -1225,22 +1514,8 @@ export default function Component({
             >
               Try again
             </button>
-          ) : isReady ? (
-            <>
-              <button
-                type="button"
-                className="kukui-vr__primary"
-                ref={actionRef}
-                onClick={beginCountdown}
-              >
-                Start recording
-              </button>
-              <button type="button" className="kukui-vr__secondary" onClick={cancelSetup}>
-                Cancel
-              </button>
-            </>
           ) : isCountdown ? (
-            <button type="button" className="kukui-vr__secondary" onClick={cancelSetup}>
+            <button type="button" className="kukui-vr__secondary" onClick={cancelCountdown}>
               Cancel
             </button>
           ) : isRecording ? (
@@ -1300,11 +1575,11 @@ export default function Component({
               type="button"
               className="kukui-vr__primary kukui-vr__record-cta"
               ref={recordButtonRef}
-              onClick={startSetup}
-              disabled={isRequesting}
+              onClick={startRecording}
+              disabled={preparing}
             >
               <span className="kukui-vr__record-cta-dot" aria-hidden="true" />
-              {recordLabel}
+              {preparing ? "Starting…" : recordLabel}
             </button>
           )}
         </div>

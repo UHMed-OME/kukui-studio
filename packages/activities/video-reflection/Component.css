@@ -66,19 +66,105 @@
   flex-shrink: 0;
 }
 
-.kukui-vr__camera-pick {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--spacing-md, 12px);
-  margin: 0;
-  padding: 0;
-  border: 0;
+/* Mic / camera / settings toggle buttons (pre-join + during recording). */
+.kukui-vr__cam-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-sm, 8px);
 }
 
-.kukui-vr__camera-legend {
-  padding: 0;
+.kukui-vr__toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  padding: 8px 14px;
+  border-radius: var(--radius-md, 8px);
+  border: 2px solid var(--color-border, #dad2c6);
+  background: var(--color-surface, #ffffff);
+  color: var(--color-text-primary, #1c1e20);
   font-size: var(--font-size-meta, 13px);
   font-weight: 700;
+  cursor: pointer;
+}
+
+.kukui-vr__toggle:hover:not(:disabled) {
+  background: var(--color-tip-bg, #f2f0e8);
+}
+
+.kukui-vr__toggle:focus-visible {
+  outline: 2px solid var(--color-primary, #7b4324);
+  outline-offset: 2px;
+}
+
+.kukui-vr__toggle:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* "On" = active (primary tint); "off" = muted/disabled look. */
+.kukui-vr__toggle.is-on {
+  border-color: var(--color-primary, #7b4324);
+  color: var(--color-primary, #7b4324);
+  background: var(--color-primary-soft, rgb(123 67 36 / 0.07));
+}
+
+.kukui-vr__toggle.is-off {
+  color: var(--color-text-secondary, #606069);
+}
+
+/* Mic input level meter. */
+.kukui-vr__meter {
+  height: 6px;
+  margin-top: var(--spacing-sm, 8px);
+  background: var(--color-tip-bg, #f2f0e8);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.kukui-vr__meter-fill {
+  height: 100%;
+  background: var(--color-success, #2e6e41);
+  border-radius: 999px;
+  transition: width 80ms linear;
+}
+
+/* Device-picker settings panel. */
+.kukui-vr__settings {
+  margin-top: var(--spacing-md, 12px);
+  padding: var(--spacing-md, 12px);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm, 8px);
+  background: var(--color-tip-bg, #f2f0e8);
+  border-radius: var(--radius-md, 8px);
+}
+
+.kukui-vr__field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: var(--font-size-meta, 13px);
+  font-weight: 700;
+  color: var(--color-text-secondary, #606069);
+}
+
+.kukui-vr__field select {
+  min-height: 44px;
+  padding: 8px 12px;
+  border: 2px solid var(--color-border, #dad2c6);
+  border-radius: var(--radius-md, 8px);
+  background: var(--color-surface, #ffffff);
+  font: inherit;
+  font-size: var(--font-size-meta, 13px);
+  font-weight: 400;
+  color: var(--color-text-primary, #1c1e20);
+}
+
+.kukui-vr__settings-note {
+  margin: 0;
+  font-size: var(--font-size-meta, 13px);
+  font-weight: 400;
   color: var(--color-text-secondary, #606069);
 }
 
@@ -167,13 +253,6 @@
 /* Before-you-start controls + reassurance on the opening screen. */
 .kukui-vr__setup {
   margin-top: var(--spacing-md, 12px);
-}
-
-.kukui-vr__setup-controls {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--spacing-sm, 8px) var(--spacing-xl, 20px);
 }
 
 .kukui-vr__meta {
@@ -487,7 +566,8 @@
   }
   .kukui-vr__primary,
   .kukui-vr__secondary,
-  .kukui-vr__confirmation {
+  .kukui-vr__confirmation,
+  .kukui-vr__meter-fill {
     transition: none;
   }
 }
