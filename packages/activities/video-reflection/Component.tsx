@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useId, useRef, useState } from "react";
 import type { VideoReflectionConfig } from "./schema.js";
 import { SafeHtml, type ActivityProps } from "@kukui/core";
+import { cuesToVtt, transcribe, type Cue, type TranscribeProgress } from "./transcribe.js";
+import { burnCaptions, burnInSupported } from "./burn.js";
 import "./Component.css";
 
 type Stage =
@@ -348,6 +350,13 @@ export default function Component({
   const [activeScreen, setActiveScreen] = useState(false);
   // Countdown value shown over the preview before recording starts (3→2→1).
   const [countdown, setCountdown] = useState(0);
+  // On-device captioning state for the review step.
+  const [cc, setCc] = useState<{
+    status: "idle" | "transcribing" | "ready" | "burning" | "error";
+    progress: number;
+    cues: Cue[];
+    error: string;
+  }>({ status: "idle", progress: 0, cues: [], error: "" });
 
   // Reset when `config` changes externally (Studio Preview edits).
   useEffect(() => {
@@ -373,6 +382,8 @@ export default function Component({
   const audioCtxRef = useRef<AudioContext | null>(null);
   // Mime type of the finished recording, for the download file extension.
   const recordedMimeRef = useRef<string>("video/webm");
+  // The finished recording Blob — needed for transcription + caption burn-in.
+  const recordedBlobRef = useRef<Blob | null>(null);
   const chunksRef = useRef<BlobPart[]>([]);
   const startedAtRef = useRef<number>(0);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -498,6 +509,7 @@ export default function Component({
         const mimeType = recorder.mimeType || "video/webm";
         recordedMimeRef.current = mimeType;
         const blob = new Blob(chunksRef.current, { type: mimeType });
+        recordedBlobRef.current = blob;
         chunksRef.current = [];
         stopMediaTracks();
         const blobUrl =
@@ -644,6 +656,8 @@ export default function Component({
     if (state.blobUrl && typeof URL.revokeObjectURL === "function") {
       URL.revokeObjectURL(state.blobUrl);
     }
+    recordedBlobRef.current = null;
+    setCc({ status: "idle", progress: 0, cues: [], error: "" });
     setActiveScreen(false);
     setState({
       stage: "idle",
@@ -678,6 +692,91 @@ export default function Component({
     }
     setState((s) => ({ ...s, downloaded: true }));
   }, [state.blobUrl, config.title]);
+
+  /** Trigger a file download for a Blob (used for the .vtt and burned-in video). */
+  const downloadBlob = useCallback((blob: Blob, filename: string) => {
+    try {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+    } catch {
+      /* download blocked — non-fatal */
+    }
+  }, []);
+
+  const generateCaptions = useCallback(async () => {
+    const blob = recordedBlobRef.current;
+    if (!blob) return;
+    setCc({ status: "transcribing", progress: 0, cues: [], error: "" });
+    try {
+      const cues = await transcribe(blob, (p: TranscribeProgress) => {
+        setCc((s) => ({ ...s, progress: p.phase === "download" ? p.progress : 1 }));
+      });
+      setCc({ status: "ready", progress: 1, cues, error: "" });
+    } catch (err) {
+      setCc({
+        status: "error",
+        progress: 0,
+        cues: [],
+        error:
+          err instanceof Error && err.message
+            ? err.message
+            : "Could not generate captions.",
+      });
+    }
+  }, []);
+
+  // Edit the transcript as one cue per line, keeping each cue's timing by index.
+  const onEditTranscript = useCallback((value: string) => {
+    const lines = value.split("\n");
+    setCc((s) => {
+      const old = s.cues;
+      const lastEnd = old.length ? (old[old.length - 1]?.end ?? 0) : 0;
+      const cues: Cue[] = lines.map((text, i) => {
+        const existing = old[i];
+        if (existing) return { ...existing, text };
+        const start = i > 0 ? (old[i - 1]?.end ?? lastEnd) : lastEnd;
+        return { start, end: start, text };
+      });
+      return { ...s, cues };
+    });
+  }, []);
+
+  const downloadVtt = useCallback(() => {
+    if (cc.cues.length === 0) return;
+    downloadBlob(
+      new Blob([cuesToVtt(cc.cues)], { type: "text/vtt" }),
+      `${slugify(config.title)}.vtt`,
+    );
+  }, [cc.cues, config.title, downloadBlob]);
+
+  const downloadBurnedIn = useCallback(async () => {
+    const blob = recordedBlobRef.current;
+    if (!blob || cc.cues.length === 0) return;
+    setCc((s) => ({ ...s, status: "burning", progress: 0, error: "" }));
+    try {
+      const out = await burnCaptions(blob, cc.cues, (p) =>
+        setCc((s) => ({ ...s, progress: p })),
+      );
+      const ext = out.type.includes("mp4") ? "mp4" : "webm";
+      downloadBlob(out, `${slugify(config.title)}-captioned.${ext}`);
+      setCc((s) => ({ ...s, status: "ready", progress: 1 }));
+    } catch (err) {
+      setCc((s) => ({
+        ...s,
+        status: "error",
+        error:
+          err instanceof Error && err.message
+            ? err.message
+            : "Could not burn in captions.",
+      }));
+    }
+  }, [cc.cues, config.title, downloadBlob]);
 
   const submit = useCallback(() => {
     if (state.stage !== "reviewing") return;
@@ -717,6 +816,9 @@ export default function Component({
   const submissionTarget = config.submissionTarget?.trim();
   // The live preview surface is shown from framing through recording.
   const showPreview = isReady || isCountdown || isRecording;
+  const canBurnIn = burnInSupported();
+  const ccBusy = cc.status === "transcribing" || cc.status === "burning";
+  const transcriptText = cc.cues.map((c) => c.text).join("\n");
 
   return (
     <div className="kukui-vr">
@@ -873,6 +975,97 @@ export default function Component({
             file{submissionTarget ? <> to {submissionTarget}</> : <> to your course dropbox</>}.
             Then {submitLabel.toLowerCase()} here to record that you finished.
           </p>
+        ) : null}
+
+        {/* Captions — on-device transcription + .vtt / burned-in downloads. */}
+        {isReviewing ? (
+          <section className="kukui-vr__cc" aria-label="Captions">
+            {cc.status === "idle" ? (
+              <>
+                <button
+                  type="button"
+                  className="kukui-vr__secondary"
+                  onClick={generateCaptions}
+                >
+                  Generate captions
+                </button>
+                <p className="kukui-vr__cc-hint">
+                  Runs on your device (your video isn't uploaded). The speech model
+                  downloads once on first use, so this can take a moment.
+                </p>
+              </>
+            ) : null}
+
+            {cc.status === "transcribing" ? (
+              <p className="kukui-vr__cc-status" role="status" aria-live="polite">
+                {cc.progress > 0 && cc.progress < 1
+                  ? `Downloading speech model… ${Math.round(cc.progress * 100)}%`
+                  : "Transcribing your reflection…"}
+              </p>
+            ) : null}
+
+            {cc.status === "error" ? (
+              <div role="alert">
+                <p className="kukui-vr__error">{cc.error}</p>
+                <button
+                  type="button"
+                  className="kukui-vr__secondary"
+                  onClick={generateCaptions}
+                >
+                  Try captions again
+                </button>
+              </div>
+            ) : null}
+
+            {(cc.status === "ready" || cc.status === "burning") && cc.cues.length > 0 ? (
+              <>
+                <label className="kukui-vr__cc-label" htmlFor={`${headingId}-transcript`}>
+                  Transcript — edit any mistakes (one caption per line)
+                </label>
+                <textarea
+                  id={`${headingId}-transcript`}
+                  className="kukui-vr__cc-transcript"
+                  value={transcriptText}
+                  onChange={(e) => onEditTranscript(e.target.value)}
+                  rows={Math.min(10, Math.max(3, cc.cues.length))}
+                  disabled={cc.status === "burning"}
+                />
+                <div className="kukui-vr__cc-actions">
+                  <button
+                    type="button"
+                    className="kukui-vr__secondary"
+                    onClick={downloadVtt}
+                    disabled={ccBusy}
+                  >
+                    Download captions (.vtt)
+                  </button>
+                  {canBurnIn ? (
+                    <button
+                      type="button"
+                      className="kukui-vr__secondary"
+                      onClick={downloadBurnedIn}
+                      disabled={ccBusy}
+                    >
+                      {cc.status === "burning"
+                        ? `Burning in captions… ${Math.round(cc.progress * 100)}%`
+                        : "Download video with captions"}
+                    </button>
+                  ) : null}
+                </div>
+                <p className="kukui-vr__cc-hint">
+                  Upload the <code>.vtt</code> alongside your video so captions can be
+                  turned on
+                  {canBurnIn ? (
+                    <>
+                      , or download the video with captions burned in (one file, plays
+                      anywhere)
+                    </>
+                  ) : null}
+                  .
+                </p>
+              </>
+            ) : null}
+          </section>
         ) : null}
 
         <div className="kukui-vr__actions">

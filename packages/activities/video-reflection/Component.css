@@ -226,6 +226,58 @@
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
 }
 
+/* Captions block in the review step. */
+.kukui-vr__cc {
+  margin-top: var(--spacing-lg, 16px);
+  padding: var(--spacing-md, 12px);
+  background: var(--color-tip-bg, #f2f0e8);
+  border-radius: var(--radius-md, 8px);
+}
+
+.kukui-vr__cc-hint {
+  margin: var(--spacing-sm, 8px) 0 0;
+  font-size: var(--font-size-meta, 13px);
+  line-height: 1.5;
+  color: var(--color-text-secondary, #606069);
+}
+
+.kukui-vr__cc-hint code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+.kukui-vr__cc-status {
+  margin: 0;
+  font-size: var(--font-size-meta, 13px);
+  color: var(--color-text-primary, #1c1e20);
+}
+
+.kukui-vr__cc-label {
+  display: block;
+  margin-bottom: var(--spacing-xs, 4px);
+  font-size: var(--font-size-meta, 13px);
+  font-weight: 700;
+  color: var(--color-text-primary, #1c1e20);
+}
+
+.kukui-vr__cc-transcript {
+  width: 100%;
+  padding: var(--spacing-sm, 8px) var(--spacing-md, 12px);
+  border: 2px solid var(--color-border, #dad2c6);
+  border-radius: var(--radius-md, 8px);
+  background: var(--color-surface, #ffffff);
+  font: inherit;
+  font-size: var(--font-size-meta, 13px);
+  line-height: 1.5;
+  resize: vertical;
+}
+
+.kukui-vr__cc-actions {
+  margin-top: var(--spacing-sm, 8px);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-sm, 8px);
+}
+
 .kukui-vr__actions {
   margin-top: var(--spacing-xl, 20px);
   display: flex;
