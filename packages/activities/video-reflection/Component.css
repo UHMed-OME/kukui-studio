@@ -229,6 +229,35 @@
   text-shadow: 0 2px 16px rgba(0, 0, 0, 0.6);
 }
 
+/* Teleprompter — the prompt over the top of the preview while recording. */
+.kukui-vr__teleprompter {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  max-height: 45%;
+  overflow-y: auto;
+  padding: var(--spacing-md, 12px) var(--spacing-lg, 16px);
+  background: linear-gradient(
+    180deg,
+    rgba(0, 0, 0, 0.72) 0%,
+    rgba(0, 0, 0, 0.5) 80%,
+    transparent 100%
+  );
+  color: #ffffff;
+  font-size: clamp(15px, 2.2vw, 20px);
+  line-height: 1.5;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.85);
+}
+
+.kukui-vr__teleprompter p {
+  margin: 0 0 0.5em;
+}
+
+.kukui-vr__teleprompter :last-child {
+  margin-bottom: 0;
+}
+
 /* Opening-screen placeholder shown in the reserved stage before recording. */
 .kukui-vr__placeholder {
   position: absolute;

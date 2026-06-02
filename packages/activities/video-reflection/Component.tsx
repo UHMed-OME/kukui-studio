@@ -404,6 +404,9 @@ export default function Component({
   const [selectedAudioId, setSelectedAudioId] = useState<string>("");
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [micLevel, setMicLevel] = useState(0);
+  // Pause/resume + teleprompter (prompt over the preview).
+  const [paused, setPaused] = useState(false);
+  const [showPrompt, setShowPrompt] = useState(true);
   // On-device captioning state for the review step.
   const [cc, setCc] = useState<{
     status: "idle" | "transcribing" | "ready" | "burning" | "error";
@@ -443,6 +446,9 @@ export default function Component({
   const ccGenRef = useRef(0);
   const chunksRef = useRef<BlobPart[]>([]);
   const startedAtRef = useRef<number>(0);
+  // Pause bookkeeping so paused time doesn't count toward the duration.
+  const pausedAtRef = useRef<number | null>(null);
+  const pausedMsRef = useRef<number>(0);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const countdownTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const rafRef = useRef<number | null>(null);
@@ -631,16 +637,27 @@ export default function Component({
     rafRef.current = requestAnimationFrame(draw);
   }, [cameraShape]);
 
+  // Recorded seconds so far, excluding any paused time.
+  const elapsedRecorded = useCallback((): number => {
+    const pausedTotal =
+      pausedMsRef.current +
+      (pausedAtRef.current !== null ? Date.now() - pausedAtRef.current : 0);
+    return Math.max(0, (Date.now() - startedAtRef.current - pausedTotal) / 1000);
+  }, []);
+
   const beginRecorder = useCallback(
     (stream: MediaStream) => {
       chunksRef.current = [];
+      pausedMsRef.current = 0;
+      pausedAtRef.current = null;
+      setPaused(false);
       const recorder = new MediaRecorder(stream, pickRecorderOptions());
       recorderRef.current = recorder;
       recorder.ondataavailable = (ev: BlobEvent) => {
         if (ev.data && ev.data.size > 0) chunksRef.current.push(ev.data);
       };
       recorder.onstop = () => {
-        const elapsed = Math.max(0, Math.round((Date.now() - startedAtRef.current) / 1000));
+        const elapsed = Math.round(elapsedRecorded());
         const mimeType = recorder.mimeType || "video/webm";
         recordedMimeRef.current = mimeType;
         const blob = new Blob(chunksRef.current, { type: mimeType });
@@ -677,13 +694,39 @@ export default function Component({
       recorder.start(1000);
       setState((s) => ({ ...s, stage: "recording", durationSeconds: 0, errorMessage: "" }));
       timerRef.current = setInterval(() => {
-        const elapsed = Math.floor((Date.now() - startedAtRef.current) / 1000);
+        if (recorderRef.current?.state === "paused") return;
+        const elapsed = Math.floor(elapsedRecorded());
         setState((s) => (s.stage === "recording" ? { ...s, durationSeconds: elapsed } : s));
         if (elapsed >= maxSeconds) stopRecording();
       }, 250);
     },
-    [maxSeconds, stopMediaTracks, stopRecording],
+    [maxSeconds, stopMediaTracks, stopRecording, elapsedRecorded],
   );
+
+  const togglePause = useCallback(() => {
+    const recorder = recorderRef.current;
+    if (!recorder) return;
+    if (recorder.state === "recording") {
+      try {
+        recorder.pause();
+      } catch {
+        return;
+      }
+      pausedAtRef.current = Date.now();
+      setPaused(true);
+    } else if (recorder.state === "paused") {
+      if (pausedAtRef.current !== null) {
+        pausedMsRef.current += Date.now() - pausedAtRef.current;
+        pausedAtRef.current = null;
+      }
+      try {
+        recorder.resume();
+      } catch {
+        /* noop */
+      }
+      setPaused(false);
+    }
+  }, []);
 
   // Count down over the live preview, then start the recorder. A configured
   // duration of 0 skips straight to recording.
@@ -920,8 +963,11 @@ export default function Component({
     stopMeter();
     camOnRef.current = false;
     micOnRef.current = false;
+    pausedAtRef.current = null;
+    pausedMsRef.current = 0;
     setCamOn(false);
     setMicOn(false);
+    setPaused(false);
     setActiveScreen(false);
   }, [stopMediaTracks, stopMeter]);
 
@@ -1101,6 +1147,28 @@ export default function Component({
     }
   }, [state.stage]);
 
+  // Keyboard shortcut: M toggles the mic on the start/recording screens
+  // (ignored while typing in a field).
+  useEffect(() => {
+    const captureStage =
+      state.stage === "idle" || state.stage === "countdown" || state.stage === "recording";
+    if (!captureStage) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.metaKey || e.ctrlKey || e.altKey) return;
+      const t = e.target as HTMLElement | null;
+      const tag = t?.tagName;
+      if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT" || t?.isContentEditable) {
+        return;
+      }
+      if (e.key === "m" || e.key === "M") {
+        e.preventDefault();
+        void toggleMic();
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [state.stage, toggleMic]);
+
   const isIdle = state.stage === "idle";
   const recordingSupported = isRecordingSupported();
   const isCountdown = state.stage === "countdown";
@@ -1205,6 +1273,15 @@ export default function Component({
           <video ref={camElRef} className="kukui-vr__offscreen" muted playsInline aria-hidden="true" />
           <video ref={screenElRef} className="kukui-vr__offscreen" muted playsInline aria-hidden="true" />
 
+          {/* Teleprompter: the prompt over the preview so the learner can
+              read while looking at the camera. aria-hidden — the prompt is
+              already in the card for screen readers. */}
+          {(isCountdown || isRecording) && showPrompt ? (
+            <div className="kukui-vr__teleprompter" aria-hidden="true">
+              <SafeHtml html={config.prompt} />
+            </div>
+          ) : null}
+
           {isCountdown ? (
             <div className="kukui-vr__countdown" aria-hidden="true">
               {countdown}
@@ -1249,6 +1326,17 @@ export default function Component({
               >
                 <CamGlyph on={camOn} />
                 <span>{camOn ? "Camera on" : "Camera off"}</span>
+              </button>
+              <button
+                type="button"
+                className={["kukui-vr__toggle", showPrompt ? "is-on" : "is-off"].join(" ")}
+                onClick={() => setShowPrompt((o) => !o)}
+                aria-pressed={showPrompt}
+                aria-label={
+                  showPrompt ? "Hide the prompt over the video" : "Show the prompt over the video"
+                }
+              >
+                <span>Prompt</span>
               </button>
               {isIdle ? (
                 <button
@@ -1363,8 +1451,13 @@ export default function Component({
               <span aria-hidden="true">Starting in {countdown}…</span>
             ) : isRecording ? (
               <>
-                <span className="kukui-vr__rec-dot is-pulsing" aria-hidden="true" />
-                <span className="kukui-vr__rec-label">Recording</span>
+                <span
+                  className={["kukui-vr__rec-dot", paused ? "" : "is-pulsing"]
+                    .filter(Boolean)
+                    .join(" ")}
+                  aria-hidden="true"
+                />
+                <span className="kukui-vr__rec-label">{paused ? "Paused" : "Recording"}</span>
                 {/* aria-hidden: these tick every 250ms and would otherwise
                     spam the live region with time announcements. */}
                 <span className="kukui-vr__timer" aria-hidden="true">
@@ -1519,14 +1612,24 @@ export default function Component({
               Cancel
             </button>
           ) : isRecording ? (
-            <button
-              type="button"
-              className="kukui-vr__primary is-stop"
-              ref={actionRef}
-              onClick={stopRecording}
-            >
-              {stopLabel}
-            </button>
+            <>
+              <button
+                type="button"
+                className="kukui-vr__primary is-stop"
+                ref={actionRef}
+                onClick={stopRecording}
+              >
+                {stopLabel}
+              </button>
+              <button
+                type="button"
+                className="kukui-vr__secondary"
+                onClick={togglePause}
+                aria-pressed={paused}
+              >
+                {paused ? "Resume" : "Pause"}
+              </button>
+            </>
           ) : isReviewing ? (
             <>
               {allowReRecord ? (
