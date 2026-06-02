@@ -234,6 +234,32 @@
   flex-shrink: 0;
 }
 
+/* Recording time progress bar (time used vs. max). */
+.kukui-vr__progress {
+  height: 6px;
+  margin-bottom: var(--spacing-md, 12px);
+  background: var(--color-tip-bg, #f2f0e8);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.kukui-vr__progress-fill {
+  height: 100%;
+  background: var(--color-primary, #7b4324);
+  border-radius: 999px;
+  transition: width 250ms linear;
+}
+
+.kukui-vr__progress.is-near-end .kukui-vr__progress-fill {
+  background: var(--color-error, #c34132);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kukui-vr__progress-fill {
+    transition: none;
+  }
+}
+
 .kukui-vr__rec-dot.is-pulsing {
   animation: kukui-vr-pulse 1s ease-in-out infinite;
 }

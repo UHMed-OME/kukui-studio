@@ -81,6 +81,10 @@ const uiSchema = {
       "Shape of the webcam picture-in-picture when sharing a screen: a rounded-corner frame (keeps the full camera view) or a circle (a cropped face bubble).",
       { "ui:widget": "radio" },
     ),
+    countdownSeconds: f(
+      "Countdown seconds",
+      "How long the 3-2-1 countdown runs before recording starts (default 3). Set to 0 to skip it and record immediately.",
+    ),
   },
   ui: {
     "ui:title": "Button label overrides",

@@ -45,6 +45,11 @@ export const VideoReflectionConfigSchema = z
          * "circle" crops to a centered face bubble. Defaults to "rounded".
          */
         cameraShape: z.enum(["rounded", "circle"]).optional(),
+        /**
+         * Seconds of 3-2-1 countdown before recording starts. Defaults to 3.
+         * Set to 0 to skip the countdown and record immediately.
+         */
+        countdownSeconds: z.number().int().min(0).max(10).optional(),
       })
       .strict()
       .optional(),

@@ -325,6 +325,7 @@ export default function Component({
   const screenShareOffered =
     (config.behaviour?.allowScreenShare ?? true) && SCREEN_SHARE_SUPPORTED;
   const cameraShape = config.behaviour?.cameraShape ?? "rounded";
+  const countdownSeconds = config.behaviour?.countdownSeconds ?? 3;
 
   const recordLabel = config.ui?.recordButton ?? "Record";
   const stopLabel = config.ui?.stopButton ?? "Stop";
@@ -559,13 +560,18 @@ export default function Component({
     [maxSeconds, stopMediaTracks, stopRecording],
   );
 
-  // Count 3→2→1 over the live preview, then start the recorder.
+  // Count down over the live preview, then start the recorder. A configured
+  // duration of 0 skips straight to recording.
   const beginCountdown = useCallback(() => {
     const stream = recordStreamRef.current;
     if (!stream) return;
-    setCountdown(3);
+    if (countdownSeconds <= 0) {
+      beginRecorder(stream);
+      return;
+    }
+    setCountdown(countdownSeconds);
     setState((s) => ({ ...s, stage: "countdown" }));
-    let n = 3;
+    let n = countdownSeconds;
     countdownTimerRef.current = setInterval(() => {
       n -= 1;
       if (n <= 0) {
@@ -591,7 +597,7 @@ export default function Component({
         setCountdown(n);
       }
     }, 1000);
-  }, [beginRecorder, stopMediaTracks]);
+  }, [beginRecorder, stopMediaTracks, countdownSeconds]);
 
   // Acquire camera (+ optional screen), wire up the live preview, and stop in
   // the "ready" framing step. Recording itself doesn't start until the learner
@@ -875,6 +881,9 @@ export default function Component({
   const isSubmitted = state.stage === "submitted";
   const isError = state.stage === "error";
   const meetsMin = state.durationSeconds >= minSeconds;
+  const remaining = Math.max(0, maxSeconds - state.durationSeconds);
+  const nearEnd = isRecording && remaining <= 10;
+  const recordProgress = maxSeconds > 0 ? Math.min(1, state.durationSeconds / maxSeconds) : 0;
   const submissionTarget = config.submissionTarget?.trim();
   // The live preview surface is shown from framing through recording.
   const showPreview = isReady || isCountdown || isRecording;
@@ -903,7 +912,11 @@ export default function Component({
         {/* Dedicated assertive announcer (not nested in the polite status
             region, which has undefined behavior across screen readers). */}
         <div className="kukui-vr__sr-only" role="status" aria-live="assertive">
-          {isCountdown ? `Recording starts in ${countdown}` : ""}
+          {isCountdown
+            ? `Recording starts in ${countdown}`
+            : nearEnd && remaining === 10
+              ? "10 seconds left"
+              : ""}
         </div>
 
         {/* Preview stage — reserved from the very first paint (placeholder
@@ -1063,10 +1076,11 @@ export default function Component({
               <>
                 <span className="kukui-vr__rec-dot is-pulsing" aria-hidden="true" />
                 <span className="kukui-vr__rec-label">Recording</span>
-                {/* aria-hidden: this ticks every 250ms and would otherwise
+                {/* aria-hidden: these tick every 250ms and would otherwise
                     spam the live region with time announcements. */}
                 <span className="kukui-vr__timer" aria-hidden="true">
-                  {formatTime(state.durationSeconds)} / {formatTime(maxSeconds)}
+                  {formatTime(state.durationSeconds)} / {formatTime(maxSeconds)} ·{" "}
+                  {formatTime(remaining)} left
                 </span>
               </>
             ) : isReviewing ? (
@@ -1081,6 +1095,23 @@ export default function Component({
             )}
           </div>
         )}
+
+        {/* Recording progress: time used vs. max, turning amber in the last
+            10 seconds before auto-stop. aria-hidden (it ticks); the elapsed/
+            remaining and the "10 seconds left" cue are announced elsewhere. */}
+        {isRecording ? (
+          <div
+            className={["kukui-vr__progress", nearEnd ? "is-near-end" : ""]
+              .filter(Boolean)
+              .join(" ")}
+            aria-hidden="true"
+          >
+            <div
+              className="kukui-vr__progress-fill"
+              style={{ width: `${Math.round(recordProgress * 100)}%` }}
+            />
+          </div>
+        ) : null}
 
         {/* After a take: the submission instruction (download → upload). */}
         {isReviewing ? (
