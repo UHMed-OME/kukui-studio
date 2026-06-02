@@ -816,6 +816,9 @@ export default function Component({
   const submissionTarget = config.submissionTarget?.trim();
   // The live preview surface is shown from framing through recording.
   const showPreview = isReady || isCountdown || isRecording;
+  // Idle/acquiring: show a placeholder in the reserved stage instead of a
+  // black video, so the opening screen reads as a recorder.
+  const showPlaceholder = isIdle || isRequesting;
   const canBurnIn = burnInSupported();
   const ccBusy = cc.status === "transcribing" || cc.status === "burning";
   const transcriptText = cc.cues.map((c) => c.text).join("\n");
@@ -829,53 +832,39 @@ export default function Component({
 
         <SafeHtml html={config.prompt} className="kukui-vr__prompt" />
 
-        {/* Pre-record options. */}
-        {isIdle ? (
-          <div className="kukui-vr__options">
-            {screenShareOffered ? (
-              <label className="kukui-vr__option">
-                <input
-                  type="checkbox"
-                  checked={useScreen}
-                  onChange={(e) => setUseScreen(e.target.checked)}
-                />
-                <span>Share my screen (with a webcam picture-in-picture)</span>
-              </label>
-            ) : null}
-            <fieldset className="kukui-vr__camera-pick">
-              <legend className="kukui-vr__camera-legend">Camera</legend>
-              <label className="kukui-vr__option">
-                <input
-                  type="radio"
-                  name="vr-facing"
-                  checked={facingMode === "user"}
-                  onChange={() => setFacingMode("user")}
-                />
-                <span>Front</span>
-              </label>
-              <label className="kukui-vr__option">
-                <input
-                  type="radio"
-                  name="vr-facing"
-                  checked={facingMode === "environment"}
-                  onChange={() => setFacingMode("environment")}
-                />
-                <span>Back</span>
-              </label>
-            </fieldset>
-          </div>
-        ) : null}
-
-        {/* Live preview from framing through recording. Canvas for the
-            composite path, a mirrored <video> for camera-only. */}
+        {/* Preview stage — reserved from the very first paint (placeholder
+            in idle) so it reads as a recorder and the layout never jumps.
+            Live preview while framing/recording; playback in review. */}
         <div
           className={[
             "kukui-vr__stage",
-            showPreview || isReviewing || isSubmitted ? "is-visible" : "",
+            !isError ? "is-visible" : "",
           ]
             .filter(Boolean)
             .join(" ")}
         >
+          {showPlaceholder ? (
+            <div className="kukui-vr__placeholder">
+              <svg
+                className="kukui-vr__placeholder-icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={1.5}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
+                <rect x="2" y="6" width="13" height="12" rx="2" />
+                <path d="M15 10l6-3v10l-6-3" />
+              </svg>
+              <span>
+                {isRequesting
+                  ? "Starting your camera…"
+                  : "Your camera preview will appear here"}
+              </span>
+            </div>
+          ) : null}
           {/* Canvas (screen-share composite) and the camera-only <video> are
               always mounted so their refs are stable when recording starts —
               visibility is toggled with CSS, not conditional mounting. */}
@@ -927,46 +916,93 @@ export default function Component({
           ) : null}
         </div>
 
-        <div
-          className="kukui-vr__status"
-          role="status"
-          aria-live="polite"
-          data-stage={state.stage}
-        >
-          {isError ? (
-            <>
-              <span className="kukui-vr__error-icon" aria-hidden="true">
-                !
-              </span>
-              <span className="kukui-vr__error">{state.errorMessage}</span>
-            </>
-          ) : isRequesting ? (
-            <span>Requesting camera &amp; microphone…</span>
-          ) : isReady ? (
-            <span>Camera ready — frame yourself, then Start recording.</span>
-          ) : isCountdown ? (
-            <span aria-live="assertive">Starting in {countdown}…</span>
-          ) : isRecording ? (
-            <>
-              <span className="kukui-vr__rec-dot is-pulsing" aria-hidden="true" />
-              <span className="kukui-vr__rec-label">Recording</span>
-              <span className="kukui-vr__timer">
-                {formatTime(state.durationSeconds)} / {formatTime(maxSeconds)}
-              </span>
-            </>
-          ) : isReviewing ? (
-            <>
-              <span>Recording captured.</span>
-              <span className="kukui-vr__timer">{formatTime(state.durationSeconds)}</span>
-            </>
-          ) : isSubmitted ? (
-            <span>Marked complete.</span>
-          ) : !recordingSupported ? (
-            <span>Video recording isn't supported in this browser.</span>
-          ) : (
-            <span>Press {recordLabel} when you are ready.</span>
-          )}
-        </div>
+        {/* Before-you-start controls + reassurance, shown on the opening screen. */}
+        {isIdle && recordingSupported ? (
+          <div className="kukui-vr__setup">
+            <div className="kukui-vr__setup-controls">
+              <fieldset className="kukui-vr__camera-pick">
+                <legend className="kukui-vr__camera-legend">Camera</legend>
+                <label className="kukui-vr__option">
+                  <input
+                    type="radio"
+                    name="vr-facing"
+                    checked={facingMode === "user"}
+                    onChange={() => setFacingMode("user")}
+                  />
+                  <span>Front</span>
+                </label>
+                <label className="kukui-vr__option">
+                  <input
+                    type="radio"
+                    name="vr-facing"
+                    checked={facingMode === "environment"}
+                    onChange={() => setFacingMode("environment")}
+                  />
+                  <span>Back</span>
+                </label>
+              </fieldset>
+              {screenShareOffered ? (
+                <label className="kukui-vr__option kukui-vr__option--screen">
+                  <input
+                    type="checkbox"
+                    checked={useScreen}
+                    onChange={(e) => setUseScreen(e.target.checked)}
+                  />
+                  <span>Share my screen (webcam picture-in-picture)</span>
+                </label>
+              ) : null}
+            </div>
+            <p className="kukui-vr__meta">
+              <span className="kukui-vr__meta-dot" aria-hidden="true" /> Up to{" "}
+              {formatTime(maxSeconds)}
+              <span aria-hidden="true"> · </span>
+              Records on your device — your video isn't uploaded
+            </p>
+          </div>
+        ) : null}
+
+        {/* Status bar — suppressed on the (supported) opening screen, where the
+            CTA + meta line carry the message instead. */}
+        {isIdle && recordingSupported ? null : (
+          <div
+            className="kukui-vr__status"
+            role="status"
+            aria-live="polite"
+            data-stage={state.stage}
+          >
+            {isError ? (
+              <>
+                <span className="kukui-vr__error-icon" aria-hidden="true">
+                  !
+                </span>
+                <span className="kukui-vr__error">{state.errorMessage}</span>
+              </>
+            ) : isRequesting ? (
+              <span>Requesting camera &amp; microphone…</span>
+            ) : isReady ? (
+              <span>Camera ready — frame yourself, then Start recording.</span>
+            ) : isCountdown ? (
+              <span aria-live="assertive">Starting in {countdown}…</span>
+            ) : isRecording ? (
+              <>
+                <span className="kukui-vr__rec-dot is-pulsing" aria-hidden="true" />
+                <span className="kukui-vr__rec-label">Recording</span>
+                <span className="kukui-vr__timer">
+                  {formatTime(state.durationSeconds)} / {formatTime(maxSeconds)}
+                </span>
+              </>
+            ) : isReviewing ? (
+              <>
+                <span>Recording captured.</span>
+                <span className="kukui-vr__timer">{formatTime(state.durationSeconds)}</span>
+              </>
+            ) : isSubmitted ? (
+              <span>Marked complete.</span>
+            ) : (
+              <span>Video recording isn't supported in this browser.</span>
+            )}
+          </div>
+        )}
 
         {/* After a take: the submission instruction (download → upload). */}
         {isReviewing ? (
@@ -1138,11 +1174,12 @@ export default function Component({
           ) : (
             <button
               type="button"
-              className="kukui-vr__primary"
+              className="kukui-vr__primary kukui-vr__record-cta"
               ref={recordButtonRef}
               onClick={startSetup}
               disabled={isRequesting}
             >
+              <span className="kukui-vr__record-cta-dot" aria-hidden="true" />
               {recordLabel}
             </button>
           )}

@@ -140,6 +140,75 @@
   text-shadow: 0 2px 16px rgba(0, 0, 0, 0.6);
 }
 
+/* Opening-screen placeholder shown in the reserved stage before recording. */
+.kukui-vr__placeholder {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-sm, 8px);
+  padding: var(--spacing-lg, 16px);
+  color: rgba(255, 255, 255, 0.62);
+  font-size: var(--font-size-meta, 13px);
+  text-align: center;
+}
+
+.kukui-vr__placeholder-icon {
+  width: 56px;
+  height: 56px;
+  opacity: 0.75;
+}
+
+/* Before-you-start controls + reassurance on the opening screen. */
+.kukui-vr__setup {
+  margin-top: var(--spacing-md, 12px);
+}
+
+.kukui-vr__setup-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--spacing-sm, 8px) var(--spacing-xl, 20px);
+}
+
+.kukui-vr__meta {
+  margin: var(--spacing-md, 12px) 0 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--font-size-meta, 13px);
+  color: var(--color-text-secondary, #606069);
+}
+
+.kukui-vr__meta-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-text-secondary, #606069);
+  display: inline-block;
+}
+
+/* Prominent Record CTA on the opening screen. */
+.kukui-vr__record-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-sm, 8px);
+  min-height: 52px;
+  padding: 12px 28px;
+  font-size: var(--font-size-prompt, 16px);
+}
+
+.kukui-vr__record-cta-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #ffffff;
+  flex-shrink: 0;
+}
+
 .kukui-vr__status {
   min-height: 48px;
   display: flex;
