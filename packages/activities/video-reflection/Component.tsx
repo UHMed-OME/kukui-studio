@@ -6,6 +6,8 @@ import "./Component.css";
 type Stage =
   | "idle"
   | "requesting"
+  | "ready"
+  | "countdown"
   | "recording"
   | "reviewing"
   | "submitted"
@@ -58,6 +60,86 @@ function isRecordingSupported(): boolean {
     typeof navigator.mediaDevices.getUserMedia === "function" &&
     typeof MediaRecorder !== "undefined"
   );
+}
+
+/** Mic constraints that clean up speech (Loom/Flip lean on these heavily). */
+const AUDIO_CONSTRAINTS: MediaTrackConstraints = {
+  echoCancellation: true,
+  noiseSuppression: true,
+  autoGainControl: true,
+};
+
+/** Camera constraints — ask for 720p/30fps; the browser clamps to what it has. */
+function videoConstraints(facingMode: "user" | "environment"): MediaTrackConstraints {
+  return {
+    facingMode,
+    width: { ideal: 1280 },
+    height: { ideal: 720 },
+    frameRate: { ideal: 30 },
+  };
+}
+
+/**
+ * Preferred recorder mime types, MP4 first (far more portable for upload —
+ * Safari and recent Chrome support it; Firefox/older Chrome fall back to
+ * WebM). Returns options with an explicit bitrate so quality doesn't depend
+ * on the browser's low default.
+ */
+const RECORDER_MIME_CANDIDATES = [
+  "video/mp4;codecs=avc1.640028,mp4a.40.2",
+  "video/mp4",
+  "video/webm;codecs=vp9,opus",
+  "video/webm;codecs=vp8,opus",
+  "video/webm",
+] as const;
+
+function pickRecorderOptions(): MediaRecorderOptions {
+  const base: MediaRecorderOptions = {
+    videoBitsPerSecond: 2_500_000,
+    audioBitsPerSecond: 128_000,
+  };
+  if (
+    typeof MediaRecorder !== "undefined" &&
+    typeof MediaRecorder.isTypeSupported === "function"
+  ) {
+    for (const mimeType of RECORDER_MIME_CANDIDATES) {
+      if (MediaRecorder.isTypeSupported(mimeType)) return { ...base, mimeType };
+    }
+  }
+  return base;
+}
+
+function extForMime(mime: string): string {
+  return mime.includes("mp4") ? "mp4" : "webm";
+}
+
+/**
+ * Combine the audio tracks from several streams into one track. With a
+ * single source we return its track directly; with multiple (mic + shared
+ * screen/tab audio) we mix them through a Web Audio destination so the
+ * recorder captures both. Returns the AudioContext so the caller can close
+ * it on teardown.
+ */
+function mixAudioTracks(streams: Array<MediaStream | null>): {
+  track: MediaStreamTrack | null;
+  ctx: AudioContext | null;
+} {
+  const sources = streams.filter(
+    (s): s is MediaStream => !!s && s.getAudioTracks().length > 0,
+  );
+  if (sources.length === 0) return { track: null, ctx: null };
+  const first = sources[0]?.getAudioTracks()[0] ?? null;
+  if (sources.length === 1) return { track: first, ctx: null };
+  const Ctor =
+    typeof AudioContext !== "undefined"
+      ? AudioContext
+      : (globalThis as unknown as { webkitAudioContext?: typeof AudioContext })
+          .webkitAudioContext;
+  if (!Ctor) return { track: first, ctx: null };
+  const ctx = new Ctor();
+  const dest = ctx.createMediaStreamDestination();
+  for (const s of sources) ctx.createMediaStreamSource(s).connect(dest);
+  return { track: dest.stream.getAudioTracks()[0] ?? first, ctx };
 }
 
 function parseSuspend(s: string | undefined): State | null {
@@ -264,6 +346,8 @@ export default function Component({
   const [facingMode, setFacingMode] = useState<"user" | "environment">("user");
   // Which composition is live right now — drives which preview surface shows.
   const [activeScreen, setActiveScreen] = useState(false);
+  // Countdown value shown over the preview before recording starts (3→2→1).
+  const [countdown, setCountdown] = useState(0);
 
   // Reset when `config` changes externally (Studio Preview edits).
   useEffect(() => {
@@ -282,9 +366,17 @@ export default function Component({
   const recorderRef = useRef<MediaRecorder | null>(null);
   const camStreamRef = useRef<MediaStream | null>(null);
   const screenStreamRef = useRef<MediaStream | null>(null);
+  // The exact stream handed to MediaRecorder (camera, or the composite
+  // canvas stream). Built during setup, consumed when the countdown ends.
+  const recordStreamRef = useRef<MediaStream | null>(null);
+  // AudioContext used to mix mic + screen audio; closed on teardown.
+  const audioCtxRef = useRef<AudioContext | null>(null);
+  // Mime type of the finished recording, for the download file extension.
+  const recordedMimeRef = useRef<string>("video/webm");
   const chunksRef = useRef<BlobPart[]>([]);
   const startedAtRef = useRef<number>(0);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const countdownTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const rafRef = useRef<number | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const liveVideoRef = useRef<HTMLVideoElement | null>(null);
@@ -301,6 +393,15 @@ export default function Component({
         for (const track of ref.current.getTracks()) track.stop();
         ref.current = null;
       }
+    }
+    recordStreamRef.current = null;
+    if (audioCtxRef.current) {
+      try {
+        void audioCtxRef.current.close();
+      } catch {
+        /* already closed */
+      }
+      audioCtxRef.current = null;
     }
     if (rafRef.current !== null) {
       cancelAnimationFrame(rafRef.current);
@@ -326,6 +427,10 @@ export default function Component({
     return () => {
       stopMediaTracks();
       clearTimer();
+      if (countdownTimerRef.current !== null) {
+        clearInterval(countdownTimerRef.current);
+        countdownTimerRef.current = null;
+      }
       if (recorderRef.current && recorderRef.current.state !== "inactive") {
         try {
           recorderRef.current.stop();
@@ -381,9 +486,9 @@ export default function Component({
   }, [cameraShape]);
 
   const beginRecorder = useCallback(
-    (stream: MediaStream, usingScreen: boolean) => {
+    (stream: MediaStream) => {
       chunksRef.current = [];
-      const recorder = new MediaRecorder(stream);
+      const recorder = new MediaRecorder(stream, pickRecorderOptions());
       recorderRef.current = recorder;
       recorder.ondataavailable = (ev: BlobEvent) => {
         if (ev.data && ev.data.size > 0) chunksRef.current.push(ev.data);
@@ -391,6 +496,7 @@ export default function Component({
       recorder.onstop = () => {
         const elapsed = Math.max(0, Math.round((Date.now() - startedAtRef.current) / 1000));
         const mimeType = recorder.mimeType || "video/webm";
+        recordedMimeRef.current = mimeType;
         const blob = new Blob(chunksRef.current, { type: mimeType });
         chunksRef.current = [];
         stopMediaTracks();
@@ -406,7 +512,6 @@ export default function Component({
       };
       startedAtRef.current = Date.now();
       recorder.start();
-      setActiveScreen(usingScreen);
       setState((s) => ({ ...s, stage: "recording", durationSeconds: 0, errorMessage: "" }));
       timerRef.current = setInterval(() => {
         const elapsed = Math.floor((Date.now() - startedAtRef.current) / 1000);
@@ -417,12 +522,37 @@ export default function Component({
     [maxSeconds, stopMediaTracks, stopRecording],
   );
 
-  const startRecording = useCallback(async () => {
+  // Count 3→2→1 over the live preview, then start the recorder.
+  const beginCountdown = useCallback(() => {
+    const stream = recordStreamRef.current;
+    if (!stream) return;
+    setCountdown(3);
+    setState((s) => ({ ...s, stage: "countdown" }));
+    let n = 3;
+    countdownTimerRef.current = setInterval(() => {
+      n -= 1;
+      if (n <= 0) {
+        if (countdownTimerRef.current !== null) {
+          clearInterval(countdownTimerRef.current);
+          countdownTimerRef.current = null;
+        }
+        const s = recordStreamRef.current;
+        if (s) beginRecorder(s);
+      } else {
+        setCountdown(n);
+      }
+    }, 1000);
+  }, [beginRecorder]);
+
+  // Acquire camera (+ optional screen), wire up the live preview, and stop in
+  // the "ready" framing step. Recording itself doesn't start until the learner
+  // hits "Start recording" → countdown. Mirrors the Loom/Flip ready-check.
+  const startSetup = useCallback(async () => {
     setState((s) => ({ ...s, stage: "requesting", errorMessage: "" }));
     try {
       const cam = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode },
-        audio: true,
+        video: videoConstraints(facingMode),
+        audio: AUDIO_CONSTRAINTS,
       });
       camStreamRef.current = cam;
 
@@ -431,7 +561,10 @@ export default function Component({
       let usingScreen = false;
       if (useScreen && screenShareOffered) {
         try {
-          const screen = await navigator.mediaDevices.getDisplayMedia({ video: true });
+          const screen = await navigator.mediaDevices.getDisplayMedia({
+            video: { frameRate: { ideal: 30 } },
+            audio: true,
+          });
           screenStreamRef.current = screen;
           usingScreen = true;
           // Stopping the share from the browser chrome ends the recording.
@@ -454,9 +587,13 @@ export default function Component({
             ? canvas.captureStream(30)
             : null;
         if (canvasStream) {
-          const micTrack = cam.getAudioTracks()[0];
-          if (micTrack) canvasStream.addTrack(micTrack);
-          beginRecorder(canvasStream, true);
+          // Mix the mic with any shared screen/tab audio into one track.
+          const { track, ctx } = mixAudioTracks([cam, screenStreamRef.current]);
+          audioCtxRef.current = ctx;
+          if (track) canvasStream.addTrack(track);
+          recordStreamRef.current = canvasStream;
+          setActiveScreen(true);
+          setState((s) => ({ ...s, stage: "ready" }));
           return;
         }
         // captureStream unavailable — fall through to camera-only.
@@ -466,7 +603,9 @@ export default function Component({
       // Camera-only path (also the iOS path).
       attachStream(liveVideoRef.current, cam);
       safePlay(liveVideoRef.current);
-      beginRecorder(cam, false);
+      recordStreamRef.current = cam;
+      setActiveScreen(false);
+      setState((s) => ({ ...s, stage: "ready" }));
     } catch (err) {
       const message =
         err instanceof Error && err.message
@@ -485,11 +624,21 @@ export default function Component({
     facingMode,
     useScreen,
     screenShareOffered,
-    beginRecorder,
     startCompositeLoop,
     stopMediaTracks,
     stopRecording,
   ]);
+
+  // Back out of the ready/countdown step without recording.
+  const cancelSetup = useCallback(() => {
+    if (countdownTimerRef.current !== null) {
+      clearInterval(countdownTimerRef.current);
+      countdownTimerRef.current = null;
+    }
+    stopMediaTracks();
+    setActiveScreen(false);
+    setState((s) => ({ ...s, stage: "idle", errorMessage: "" }));
+  }, [stopMediaTracks]);
 
   const reRecord = useCallback(() => {
     if (state.blobUrl && typeof URL.revokeObjectURL === "function") {
@@ -520,7 +669,7 @@ export default function Component({
     try {
       const a = document.createElement("a");
       a.href = state.blobUrl;
-      a.download = `${slugify(config.title)}.webm`;
+      a.download = `${slugify(config.title)}.${extForMime(recordedMimeRef.current)}`;
       document.body.appendChild(a);
       a.click();
       a.remove();
@@ -558,12 +707,16 @@ export default function Component({
   const isIdle = state.stage === "idle";
   const recordingSupported = isRecordingSupported();
   const isRequesting = state.stage === "requesting";
+  const isReady = state.stage === "ready";
+  const isCountdown = state.stage === "countdown";
   const isRecording = state.stage === "recording";
   const isReviewing = state.stage === "reviewing";
   const isSubmitted = state.stage === "submitted";
   const isError = state.stage === "error";
   const meetsMin = state.durationSeconds >= minSeconds;
   const submissionTarget = config.submissionTarget?.trim();
+  // The live preview surface is shown from framing through recording.
+  const showPreview = isReady || isCountdown || isRecording;
 
   return (
     <div className="kukui-vr">
@@ -611,12 +764,12 @@ export default function Component({
           </div>
         ) : null}
 
-        {/* Live preview while recording. Canvas for the composite path, a
-            mirrored <video> for camera-only. */}
+        {/* Live preview from framing through recording. Canvas for the
+            composite path, a mirrored <video> for camera-only. */}
         <div
           className={[
             "kukui-vr__stage",
-            isRecording || isReviewing || isSubmitted ? "is-visible" : "",
+            showPreview || isReviewing || isSubmitted ? "is-visible" : "",
           ]
             .filter(Boolean)
             .join(" ")}
@@ -630,18 +783,18 @@ export default function Component({
             height={CANVAS_H}
             className={[
               "kukui-vr__canvas",
-              isRecording && activeScreen ? "" : "is-hidden",
+              showPreview && activeScreen ? "" : "is-hidden",
             ]
               .filter(Boolean)
               .join(" ")}
             aria-label="Live recording preview"
-            aria-hidden={isRecording && activeScreen ? undefined : true}
+            aria-hidden={showPreview && activeScreen ? undefined : true}
           />
           <video
             ref={liveVideoRef}
             className={[
               "kukui-vr__live",
-              isRecording && !activeScreen ? "" : "is-hidden",
+              showPreview && !activeScreen ? "" : "is-hidden",
             ]
               .filter(Boolean)
               .join(" ")}
@@ -653,6 +806,12 @@ export default function Component({
           {/* Offscreen source <video>s that feed the compositing canvas. */}
           <video ref={camElRef} className="kukui-vr__offscreen" muted playsInline aria-hidden="true" />
           <video ref={screenElRef} className="kukui-vr__offscreen" muted playsInline aria-hidden="true" />
+
+          {isCountdown ? (
+            <div className="kukui-vr__countdown" aria-hidden="true">
+              {countdown}
+            </div>
+          ) : null}
 
           {(isReviewing || isSubmitted) && state.blobUrl ? (
             <video
@@ -681,6 +840,10 @@ export default function Component({
             </>
           ) : isRequesting ? (
             <span>Requesting camera &amp; microphone…</span>
+          ) : isReady ? (
+            <span>Camera ready — frame yourself, then Start recording.</span>
+          ) : isCountdown ? (
+            <span aria-live="assertive">Starting in {countdown}…</span>
           ) : isRecording ? (
             <>
               <span className="kukui-vr__rec-dot is-pulsing" aria-hidden="true" />
@@ -716,6 +879,23 @@ export default function Component({
           {isError ? (
             <button type="button" className="kukui-vr__primary" onClick={tryAgain}>
               Try again
+            </button>
+          ) : isReady ? (
+            <>
+              <button
+                type="button"
+                className="kukui-vr__primary"
+                onClick={beginCountdown}
+              >
+                Start recording
+              </button>
+              <button type="button" className="kukui-vr__secondary" onClick={cancelSetup}>
+                Cancel
+              </button>
+            </>
+          ) : isCountdown ? (
+            <button type="button" className="kukui-vr__secondary" onClick={cancelSetup}>
+              Cancel
             </button>
           ) : isRecording ? (
             <button
@@ -767,7 +947,7 @@ export default function Component({
               type="button"
               className="kukui-vr__primary"
               ref={recordButtonRef}
-              onClick={startRecording}
+              onClick={startSetup}
               disabled={isRequesting}
             >
               {recordLabel}

@@ -86,11 +86,19 @@ describe("video-reflection Component", () => {
 
     expect(screen.getByText(/reflect on the case/i)).toBeInTheDocument();
 
-    await user.click(screen.getByRole("button", { name: /record/i }));
+    // Idle → press Record to acquire the camera and enter the framing step.
+    await user.click(screen.getByRole("button", { name: /^record$/i }));
     await waitFor(() =>
-      expect(screen.getByRole("button", { name: /stop/i })).toBeInTheDocument(),
+      expect(screen.getByRole("button", { name: /start recording/i })).toBeInTheDocument(),
     );
     expect(getUserMedia).toHaveBeenCalledTimes(1);
+
+    // Start recording → 3-2-1 countdown (real 1s ticks) → recording.
+    await user.click(screen.getByRole("button", { name: /start recording/i }));
+    await waitFor(
+      () => expect(screen.getByRole("button", { name: /stop/i })).toBeInTheDocument(),
+      { timeout: 6000 },
+    );
 
     now += 5000; // 5 seconds elapsed
     await user.click(screen.getByRole("button", { name: /stop/i }));

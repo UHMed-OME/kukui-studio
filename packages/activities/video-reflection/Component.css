@@ -125,6 +125,21 @@
   pointer-events: none;
 }
 
+/* 3-2-1 countdown number over the live preview before recording starts. */
+.kukui-vr__countdown {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: clamp(64px, 18vw, 160px);
+  font-weight: 800;
+  line-height: 1;
+  color: #ffffff;
+  background: rgba(0, 0, 0, 0.35);
+  text-shadow: 0 2px 16px rgba(0, 0, 0, 0.6);
+}
+
 .kukui-vr__status {
   min-height: 48px;
   display: flex;
