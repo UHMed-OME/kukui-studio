@@ -71,6 +71,7 @@ afterEach(() => {
 });
 
 describe("video-reflection Component", () => {
+  // Real-time 3-2-1 countdown runs in this flow, so allow extra headroom.
   it("records, reviews, and marks complete", async () => {
     const getUserMedia = vi
       .fn()
@@ -112,7 +113,7 @@ describe("video-reflection Component", () => {
     const arg = onSubmit.mock.calls[0]?.[0];
     expect(arg).toMatchObject({ raw: 1, max: 1, success: true });
     expect(JSON.parse(arg.suspendData)).toMatchObject({ submitted: true, recorded: true });
-  });
+  }, 15000);
 
   it("surfaces an error when camera/mic access is denied", async () => {
     const getUserMedia = vi.fn().mockRejectedValue(new Error("Permission denied"));

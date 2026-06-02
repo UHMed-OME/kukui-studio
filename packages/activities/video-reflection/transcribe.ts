@@ -115,12 +115,13 @@ function formatTimestamp(t: number): string {
   return `${pad(h)}:${pad(m)}:${pad(s)}.${pad(ms % 1000, 3)}`;
 }
 
-/** Serialize cues to a WebVTT document. */
+/** Serialize cues to a WebVTT document (empty/zero-length cues are dropped). */
 export function cuesToVtt(cues: Cue[]): string {
   const body = cues
+    .filter((c) => c.text.trim().length > 0 && c.end > c.start)
     .map(
       (c, i) =>
-        `${i + 1}\n${formatTimestamp(c.start)} --> ${formatTimestamp(c.end)}\n${c.text}`,
+        `${i + 1}\n${formatTimestamp(c.start)} --> ${formatTimestamp(c.end)}\n${c.text.trim()}`,
     )
     .join("\n\n");
   return `WEBVTT\n\n${body}\n`;

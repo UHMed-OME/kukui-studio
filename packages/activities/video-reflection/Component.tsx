@@ -384,6 +384,9 @@ export default function Component({
   const recordedMimeRef = useRef<string>("video/webm");
   // The finished recording Blob — needed for transcription + caption burn-in.
   const recordedBlobRef = useRef<Blob | null>(null);
+  // Bumped whenever the take changes (re-record); async caption jobs capture
+  // it and bail out of state writes if it moved on under them.
+  const ccGenRef = useRef(0);
   const chunksRef = useRef<BlobPart[]>([]);
   const startedAtRef = useRef<number>(0);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -399,13 +402,15 @@ export default function Component({
   const blobUrlRef = useRef<string | null>(null);
 
   const stopMediaTracks = useCallback(() => {
-    for (const ref of [camStreamRef, screenStreamRef]) {
+    // Include recordStreamRef: in the composite path it's the canvas
+    // captureStream (its own video track) plus the mixed-audio destination
+    // track — none of which live on cam/screen, so they'd otherwise leak.
+    for (const ref of [camStreamRef, screenStreamRef, recordStreamRef]) {
       if (ref.current) {
         for (const track of ref.current.getTracks()) track.stop();
         ref.current = null;
       }
     }
-    recordStreamRef.current = null;
     if (audioCtxRef.current) {
       try {
         void audioCtxRef.current.close();
@@ -456,10 +461,14 @@ export default function Component({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Persist a lightweight resume hint (stage only). The actual video is never
-  // persisted — it's downloaded + uploaded to the LMS out of band.
+  // Persist a lightweight resume hint. The actual video is never persisted —
+  // it's downloaded + uploaded to the LMS out of band. Skip the "submitted"
+  // stage: submit() already wrote the richer completion record (with
+  // `submitted`/`durationSeconds`) via onSubmit, and overwriting it with a
+  // bare `{stage}` would lose the completion flag on resume.
   useEffect(() => {
     if (!onPersist) return;
+    if (state.stage === "submitted") return;
     onPersist(JSON.stringify({ stage: state.stage }));
   }, [state.stage, onPersist]);
 
@@ -509,9 +518,23 @@ export default function Component({
         const mimeType = recorder.mimeType || "video/webm";
         recordedMimeRef.current = mimeType;
         const blob = new Blob(chunksRef.current, { type: mimeType });
-        recordedBlobRef.current = blob;
         chunksRef.current = [];
         stopMediaTracks();
+        // Guard against an empty recording (encoder produced nothing) so we
+        // don't drop the learner into a review screen with no playback.
+        if (blob.size === 0) {
+          recordedBlobRef.current = null;
+          setState({
+            stage: "error",
+            blobUrl: null,
+            durationSeconds: 0,
+            downloaded: false,
+            errorMessage:
+              "The recording came back empty. Please try again, and check that this browser supports video recording.",
+          });
+          return;
+        }
+        recordedBlobRef.current = blob;
         const blobUrl =
           typeof URL.createObjectURL === "function" ? URL.createObjectURL(blob) : "";
         setState({
@@ -523,7 +546,9 @@ export default function Component({
         });
       };
       startedAtRef.current = Date.now();
-      recorder.start();
+      // Timeslice so chunks flush incrementally (lower peak memory; a crash
+      // mid-recording leaves recoverable data rather than losing everything).
+      recorder.start(1000);
       setState((s) => ({ ...s, stage: "recording", durationSeconds: 0, errorMessage: "" }));
       timerRef.current = setInterval(() => {
         const elapsed = Math.floor((Date.now() - startedAtRef.current) / 1000);
@@ -549,12 +574,24 @@ export default function Component({
           countdownTimerRef.current = null;
         }
         const s = recordStreamRef.current;
-        if (s) beginRecorder(s);
+        // Abort only if a source track has actually ended (e.g. the user
+        // stopped the screen share); a missing readyState counts as live.
+        const healthy = !!s && s.getTracks().every((t) => t.readyState !== "ended");
+        if (s && healthy) {
+          beginRecorder(s);
+        } else {
+          // A source (e.g. the shared screen) ended during the countdown —
+          // abort cleanly to the opening screen instead of recording a dead
+          // stream.
+          stopMediaTracks();
+          setActiveScreen(false);
+          setState((st) => ({ ...st, stage: "idle", errorMessage: "" }));
+        }
       } else {
         setCountdown(n);
       }
     }, 1000);
-  }, [beginRecorder]);
+  }, [beginRecorder, stopMediaTracks]);
 
   // Acquire camera (+ optional screen), wire up the live preview, and stop in
   // the "ready" framing step. Recording itself doesn't start until the learner
@@ -657,6 +694,7 @@ export default function Component({
       URL.revokeObjectURL(state.blobUrl);
     }
     recordedBlobRef.current = null;
+    ccGenRef.current += 1; // invalidate any in-flight transcribe/burn job
     setCc({ status: "idle", progress: 0, cues: [], error: "" });
     setActiveScreen(false);
     setState({
@@ -712,13 +750,18 @@ export default function Component({
   const generateCaptions = useCallback(async () => {
     const blob = recordedBlobRef.current;
     if (!blob) return;
+    const gen = ccGenRef.current;
     setCc({ status: "transcribing", progress: 0, cues: [], error: "" });
     try {
       const cues = await transcribe(blob, (p: TranscribeProgress) => {
-        setCc((s) => ({ ...s, progress: p.phase === "download" ? p.progress : 1 }));
+        if (ccGenRef.current !== gen) return;
+        // progress 0..1 during model download; -1 = running (indeterminate).
+        setCc((s) => ({ ...s, progress: p.phase === "download" ? p.progress : -1 }));
       });
+      if (ccGenRef.current !== gen) return;
       setCc({ status: "ready", progress: 1, cues, error: "" });
     } catch (err) {
+      if (ccGenRef.current !== gen) return;
       setCc({
         status: "error",
         progress: 0,
@@ -758,15 +801,20 @@ export default function Component({
   const downloadBurnedIn = useCallback(async () => {
     const blob = recordedBlobRef.current;
     if (!blob || cc.cues.length === 0) return;
+    const gen = ccGenRef.current;
+    const cuesForBurn = cc.cues;
     setCc((s) => ({ ...s, status: "burning", progress: 0, error: "" }));
     try {
-      const out = await burnCaptions(blob, cc.cues, (p) =>
-        setCc((s) => ({ ...s, progress: p })),
-      );
+      const out = await burnCaptions(blob, cuesForBurn, (p) => {
+        if (ccGenRef.current !== gen) return;
+        setCc((s) => ({ ...s, progress: p }));
+      });
+      if (ccGenRef.current !== gen) return;
       const ext = out.type.includes("mp4") ? "mp4" : "webm";
       downloadBlob(out, `${slugify(config.title)}-captioned.${ext}`);
       setCc((s) => ({ ...s, status: "ready", progress: 1 }));
     } catch (err) {
+      if (ccGenRef.current !== gen) return;
       setCc((s) => ({
         ...s,
         status: "error",
@@ -792,15 +840,29 @@ export default function Component({
     onSubmit({ raw: 1, max: 1, success: true, suspendData });
   }, [state.stage, state.durationSeconds, minSeconds, onSubmit]);
 
-  // Auto-focus Record on entering idle (after the first paint).
+  // Move focus to the stage's primary action on each major transition so a
+  // keyboard/screen-reader user isn't stranded on a button that just
+  // unmounted (e.g. after Stop). Idle is skipped on the very first paint so
+  // we don't hijack focus when the activity loads.
   const isInitialRef = useRef(true);
+  const actionRef = useRef<HTMLButtonElement | null>(null);
   useEffect(() => {
-    if (state.stage !== "idle") return;
-    if (isInitialRef.current) {
-      isInitialRef.current = false;
+    if (state.stage === "idle") {
+      if (isInitialRef.current) {
+        isInitialRef.current = false;
+        return;
+      }
+      recordButtonRef.current?.focus();
       return;
     }
-    recordButtonRef.current?.focus();
+    if (
+      state.stage === "ready" ||
+      state.stage === "recording" ||
+      state.stage === "reviewing" ||
+      state.stage === "error"
+    ) {
+      actionRef.current?.focus();
+    }
   }, [state.stage]);
 
   const isIdle = state.stage === "idle";
@@ -820,6 +882,12 @@ export default function Component({
   // black video, so the opening screen reads as a recorder.
   const showPlaceholder = isIdle || isRequesting;
   const canBurnIn = burnInSupported();
+  // Front/back only makes sense where there's likely more than one camera
+  // (phones/tablets); on a desktop "Back" does nothing, so hide the picker.
+  const showCameraPick =
+    typeof window !== "undefined" &&
+    typeof window.matchMedia === "function" &&
+    window.matchMedia("(pointer: coarse)").matches;
   const ccBusy = cc.status === "transcribing" || cc.status === "burning";
   const transcriptText = cc.cues.map((c) => c.text).join("\n");
 
@@ -831,6 +899,12 @@ export default function Component({
         </HeadingTag>
 
         <SafeHtml html={config.prompt} className="kukui-vr__prompt" />
+
+        {/* Dedicated assertive announcer (not nested in the polite status
+            region, which has undefined behavior across screen readers). */}
+        <div className="kukui-vr__sr-only" role="status" aria-live="assertive">
+          {isCountdown ? `Recording starts in ${countdown}` : ""}
+        </div>
 
         {/* Preview stage — reserved from the very first paint (placeholder
             in idle) so it reads as a recorder and the layout never jumps.
@@ -920,27 +994,29 @@ export default function Component({
         {isIdle && recordingSupported ? (
           <div className="kukui-vr__setup">
             <div className="kukui-vr__setup-controls">
-              <fieldset className="kukui-vr__camera-pick">
-                <legend className="kukui-vr__camera-legend">Camera</legend>
-                <label className="kukui-vr__option">
-                  <input
-                    type="radio"
-                    name="vr-facing"
-                    checked={facingMode === "user"}
-                    onChange={() => setFacingMode("user")}
-                  />
-                  <span>Front</span>
-                </label>
-                <label className="kukui-vr__option">
-                  <input
-                    type="radio"
-                    name="vr-facing"
-                    checked={facingMode === "environment"}
-                    onChange={() => setFacingMode("environment")}
-                  />
-                  <span>Back</span>
-                </label>
-              </fieldset>
+              {showCameraPick ? (
+                <fieldset className="kukui-vr__camera-pick">
+                  <legend className="kukui-vr__camera-legend">Camera</legend>
+                  <label className="kukui-vr__option">
+                    <input
+                      type="radio"
+                      name="vr-facing"
+                      checked={facingMode === "user"}
+                      onChange={() => setFacingMode("user")}
+                    />
+                    <span>Front</span>
+                  </label>
+                  <label className="kukui-vr__option">
+                    <input
+                      type="radio"
+                      name="vr-facing"
+                      checked={facingMode === "environment"}
+                      onChange={() => setFacingMode("environment")}
+                    />
+                    <span>Back</span>
+                  </label>
+                </fieldset>
+              ) : null}
               {screenShareOffered ? (
                 <label className="kukui-vr__option kukui-vr__option--screen">
                   <input
@@ -982,12 +1058,14 @@ export default function Component({
             ) : isReady ? (
               <span>Camera ready — frame yourself, then Start recording.</span>
             ) : isCountdown ? (
-              <span aria-live="assertive">Starting in {countdown}…</span>
+              <span aria-hidden="true">Starting in {countdown}…</span>
             ) : isRecording ? (
               <>
                 <span className="kukui-vr__rec-dot is-pulsing" aria-hidden="true" />
                 <span className="kukui-vr__rec-label">Recording</span>
-                <span className="kukui-vr__timer">
+                {/* aria-hidden: this ticks every 250ms and would otherwise
+                    spam the live region with time announcements. */}
+                <span className="kukui-vr__timer" aria-hidden="true">
                   {formatTime(state.durationSeconds)} / {formatTime(maxSeconds)}
                 </span>
               </>
@@ -1034,9 +1112,10 @@ export default function Component({
 
             {cc.status === "transcribing" ? (
               <p className="kukui-vr__cc-status" role="status" aria-live="polite">
+                <span className="kukui-vr__spinner" aria-hidden="true" />
                 {cc.progress > 0 && cc.progress < 1
                   ? `Downloading speech model… ${Math.round(cc.progress * 100)}%`
-                  : "Transcribing your reflection…"}
+                  : "Transcribing your reflection… this can take a little while on phones/tablets."}
               </p>
             ) : null}
 
@@ -1056,7 +1135,8 @@ export default function Component({
             {(cc.status === "ready" || cc.status === "burning") && cc.cues.length > 0 ? (
               <>
                 <label className="kukui-vr__cc-label" htmlFor={`${headingId}-transcript`}>
-                  Transcript — edit any mistakes (one caption per line)
+                  Transcript — fix any wording on each line. Keep the line breaks
+                  so captions stay in sync.
                 </label>
                 <textarea
                   id={`${headingId}-transcript`}
@@ -1106,7 +1186,12 @@ export default function Component({
 
         <div className="kukui-vr__actions">
           {isError ? (
-            <button type="button" className="kukui-vr__primary" onClick={tryAgain}>
+            <button
+              type="button"
+              className="kukui-vr__primary"
+              ref={actionRef}
+              onClick={tryAgain}
+            >
               Try again
             </button>
           ) : isReady ? (
@@ -1114,6 +1199,7 @@ export default function Component({
               <button
                 type="button"
                 className="kukui-vr__primary"
+                ref={actionRef}
                 onClick={beginCountdown}
               >
                 Start recording
@@ -1130,6 +1216,7 @@ export default function Component({
             <button
               type="button"
               className="kukui-vr__primary is-stop"
+              ref={actionRef}
               onClick={stopRecording}
             >
               {stopLabel}
@@ -1137,7 +1224,12 @@ export default function Component({
           ) : isReviewing ? (
             <>
               {allowReRecord ? (
-                <button type="button" className="kukui-vr__secondary" onClick={reRecord}>
+                <button
+                  type="button"
+                  className="kukui-vr__secondary"
+                  onClick={reRecord}
+                  disabled={ccBusy}
+                >
                   {reRecordLabel}
                 </button>
               ) : null}
@@ -1153,6 +1245,7 @@ export default function Component({
               <button
                 type="button"
                 className="kukui-vr__primary"
+                ref={actionRef}
                 disabled={!meetsMin}
                 onClick={submit}
                 title={

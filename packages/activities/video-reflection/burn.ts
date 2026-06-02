@@ -105,6 +105,9 @@ export async function burnCaptions(
   video.src = url;
   video.muted = true;
   video.playsInline = true;
+  let canvasStream: MediaStream | null = null;
+  let recorder: MediaRecorder | null = null;
+  let raf = 0;
   try {
     await new Promise<void>((resolve, reject) => {
       video.onloadedmetadata = () => resolve();
@@ -118,26 +121,26 @@ export async function burnCaptions(
     const ctx = canvas.getContext("2d");
     if (!ctx) throw new Error("Canvas 2D context unavailable.");
 
-    const canvasStream = canvas.captureStream(30);
+    canvasStream = canvas.captureStream(30);
     const srcStream = video.captureStream?.();
     const audioTrack = srcStream?.getAudioTracks?.()[0];
     if (audioTrack) canvasStream.addTrack(audioTrack);
 
     const mime = pickMime();
-    const recorder = new MediaRecorder(
+    recorder = new MediaRecorder(
       canvasStream,
       mime ? { mimeType: mime, videoBitsPerSecond: 2_500_000, audioBitsPerSecond: 128_000 } : undefined,
     );
+    const rec = recorder;
     const chunks: BlobPart[] = [];
-    recorder.ondataavailable = (e) => {
+    rec.ondataavailable = (e) => {
       if (e.data && e.data.size > 0) chunks.push(e.data);
     };
     const finished = new Promise<Blob>((resolve) => {
-      recorder.onstop = () =>
-        resolve(new Blob(chunks, { type: recorder.mimeType || mime || "video/webm" }));
+      rec.onstop = () =>
+        resolve(new Blob(chunks, { type: rec.mimeType || mime || "video/webm" }));
     });
 
-    let raf = 0;
     const draw = () => {
       ctx.drawImage(video, 0, 0, w, h);
       drawCaption(ctx, activeCueText(cues, video.currentTime), w, h);
@@ -145,19 +148,48 @@ export async function burnCaptions(
       raf = requestAnimationFrame(draw);
     };
 
-    recorder.start();
+    rec.start(1000);
     await video.play();
     draw();
+    // Resolve on natural end, or via a watchdog (poll currentTime + a hard
+    // cap) so a missing 'ended' event — corrupt blob, throttled background
+    // tab — can't hang the burn forever.
     await new Promise<void>((resolve) => {
-      video.onended = () => resolve();
+      let settled = false;
+      let poll = 0;
+      const finish = () => {
+        if (settled) return;
+        settled = true;
+        if (poll) window.clearInterval(poll);
+        resolve();
+      };
+      video.onended = finish;
+      const dur = Number.isFinite(video.duration) && video.duration > 0 ? video.duration : 0;
+      const maxMs = (dur > 0 ? dur * 1500 : 60000) + 5000;
+      const now = () => (typeof performance !== "undefined" ? performance.now() : Date.now());
+      const startedAt = now();
+      poll = window.setInterval(() => {
+        if ((dur > 0 && video.currentTime >= dur - 0.1) || now() - startedAt > maxMs) finish();
+      }, 250);
     });
-    cancelAnimationFrame(raf);
-    recorder.stop();
+
+    rec.stop();
     const out = await finished;
-    for (const t of canvasStream.getTracks()) t.stop();
     onProgress?.(1);
     return out;
   } finally {
+    if (raf) cancelAnimationFrame(raf);
+    try {
+      if (recorder && recorder.state !== "inactive") recorder.stop();
+    } catch {
+      /* already stopped */
+    }
+    if (canvasStream) for (const t of canvasStream.getTracks()) t.stop();
+    try {
+      video.pause();
+    } catch {
+      /* noop */
+    }
     URL.revokeObjectURL(url);
   }
 }
