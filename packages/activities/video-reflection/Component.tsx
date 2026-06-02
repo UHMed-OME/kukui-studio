@@ -41,6 +41,25 @@ const SCREEN_SHARE_SUPPORTED =
   typeof HTMLCanvasElement !== "undefined" &&
   typeof HTMLCanvasElement.prototype.captureStream === "function";
 
+/**
+ * The core record path needs both `getUserMedia` (camera/mic) and
+ * `MediaRecorder` (encoding). Some locked-down LMS webviews and older iOS
+ * Safari builds lack one or both; calling `new MediaRecorder` there throws
+ * *after* the camera has already been turned on. Feature-detect at render
+ * time so we can show an unsupported notice instead of an affordance that
+ * crashes. Note: `getUserMedia` also requires a secure context, so
+ * `mediaDevices` is undefined on plain `http://` — covered by the
+ * `!!navigator.mediaDevices` check.
+ */
+function isRecordingSupported(): boolean {
+  return (
+    typeof navigator !== "undefined" &&
+    !!navigator.mediaDevices &&
+    typeof navigator.mediaDevices.getUserMedia === "function" &&
+    typeof MediaRecorder !== "undefined"
+  );
+}
+
 function parseSuspend(s: string | undefined): State | null {
   if (!s) return null;
   try {
@@ -83,6 +102,108 @@ function slugify(title: string): string {
   );
 }
 
+const PIP_MARGIN = 28;
+
+/** Rounded-rectangle path, with a manual fallback for engines lacking roundRect. */
+function roundRectPath(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+  r: number,
+): void {
+  if (typeof ctx.roundRect === "function") {
+    ctx.beginPath();
+    ctx.roundRect(x, y, w, h, r);
+    return;
+  }
+  const rr = Math.min(r, w / 2, h / 2);
+  ctx.beginPath();
+  ctx.moveTo(x + rr, y);
+  ctx.arcTo(x + w, y, x + w, y + h, rr);
+  ctx.arcTo(x + w, y + h, x, y + h, rr);
+  ctx.arcTo(x, y + h, x, y, rr);
+  ctx.arcTo(x, y, x + w, y, rr);
+  ctx.closePath();
+}
+
+/**
+ * Draw the webcam as a masked picture-in-picture in the bottom-right corner,
+ * with a soft drop shadow and a white ring so it lifts off the shared screen.
+ * "circle" crops a centered square to a face bubble; "rounded" keeps the full
+ * 16:9 frame with rounded corners.
+ */
+function drawCameraPip(
+  ctx: CanvasRenderingContext2D,
+  cam: HTMLVideoElement,
+  shape: "rounded" | "circle",
+): void {
+  const vw = cam.videoWidth;
+  const vh = cam.videoHeight;
+  if (vw <= 0 || vh <= 0) return;
+
+  if (shape === "circle") {
+    const d = Math.round(CANVAS_W * 0.2);
+    const x = CANVAS_W - d - PIP_MARGIN;
+    const y = CANVAS_H - d - PIP_MARGIN;
+    const cx = x + d / 2;
+    const cy = y + d / 2;
+    const radius = d / 2;
+    // Shadow caster (filled disc), then turn the shadow off for image + ring.
+    ctx.save();
+    ctx.shadowColor = "rgba(0, 0, 0, 0.45)";
+    ctx.shadowBlur = 28;
+    ctx.shadowOffsetY = 8;
+    ctx.beginPath();
+    ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+    ctx.fillStyle = "#000000";
+    ctx.fill();
+    ctx.restore();
+    // Clip to the circle and cover-fit a centered square crop of the camera.
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+    ctx.clip();
+    const side = Math.min(vw, vh);
+    const sx = (vw - side) / 2;
+    const sy = (vh - side) / 2;
+    ctx.drawImage(cam, sx, sy, side, side, x, y, d, d);
+    ctx.restore();
+    // White ring.
+    ctx.beginPath();
+    ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+    ctx.lineWidth = 4;
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.92)";
+    ctx.stroke();
+    return;
+  }
+
+  const w = Math.round(CANVAS_W * 0.25);
+  const h = Math.round(w * (vh / vw));
+  const x = CANVAS_W - w - PIP_MARGIN;
+  const y = CANVAS_H - h - PIP_MARGIN;
+  const r = 20;
+  ctx.save();
+  ctx.shadowColor = "rgba(0, 0, 0, 0.45)";
+  ctx.shadowBlur = 28;
+  ctx.shadowOffsetY = 8;
+  roundRectPath(ctx, x, y, w, h, r);
+  ctx.fillStyle = "#000000";
+  ctx.fill();
+  ctx.restore();
+  ctx.save();
+  roundRectPath(ctx, x, y, w, h, r);
+  ctx.clip();
+  ctx.drawImage(cam, x, y, w, h);
+  ctx.restore();
+  // White ring.
+  roundRectPath(ctx, x, y, w, h, r);
+  ctx.lineWidth = 4;
+  ctx.strokeStyle = "rgba(255, 255, 255, 0.92)";
+  ctx.stroke();
+}
+
 /** Set a MediaStream on a media element, ignoring environments (jsdom) that lack support. */
 function attachStream(el: HTMLVideoElement | null, stream: MediaStream | null): void {
   if (!el) return;
@@ -119,6 +240,7 @@ export default function Component({
   const allowReRecord = config.behaviour?.allowReRecord ?? true;
   const screenShareOffered =
     (config.behaviour?.allowScreenShare ?? true) && SCREEN_SHARE_SUPPORTED;
+  const cameraShape = config.behaviour?.cameraShape ?? "rounded";
 
   const recordLabel = config.ui?.recordButton ?? "Record";
   const stopLabel = config.ui?.stopButton ?? "Stop";
@@ -169,6 +291,9 @@ export default function Component({
   const camElRef = useRef<HTMLVideoElement | null>(null);
   const screenElRef = useRef<HTMLVideoElement | null>(null);
   const recordButtonRef = useRef<HTMLButtonElement | null>(null);
+  // Mirror the live blob URL so the unmount cleanup (empty deps) revokes the
+  // *current* URL, not the `null` captured at first render.
+  const blobUrlRef = useRef<string | null>(null);
 
   const stopMediaTracks = useCallback(() => {
     for (const ref of [camStreamRef, screenStreamRef]) {
@@ -190,6 +315,12 @@ export default function Component({
     }
   }, []);
 
+  // Keep the blob-URL ref in sync with state so unmount cleanup revokes the
+  // current take rather than a stale value.
+  useEffect(() => {
+    blobUrlRef.current = state.blobUrl;
+  }, [state.blobUrl]);
+
   // Cleanup on unmount.
   useEffect(() => {
     return () => {
@@ -202,8 +333,8 @@ export default function Component({
           /* noop */
         }
       }
-      if (state.blobUrl && typeof URL.revokeObjectURL === "function") {
-        URL.revokeObjectURL(state.blobUrl);
+      if (blobUrlRef.current && typeof URL.revokeObjectURL === "function") {
+        URL.revokeObjectURL(blobUrlRef.current);
       }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -242,14 +373,12 @@ export default function Component({
         ctx.drawImage(screenEl, 0, 0, CANVAS_W, CANVAS_H);
       }
       if (camEl && camEl.readyState >= 2 && camEl.videoWidth > 0) {
-        const pipW = CANVAS_W * 0.25;
-        const pipH = pipW * (camEl.videoHeight / camEl.videoWidth);
-        ctx.drawImage(camEl, CANVAS_W - pipW - 24, CANVAS_H - pipH - 24, pipW, pipH);
+        drawCameraPip(ctx, camEl, cameraShape);
       }
       rafRef.current = requestAnimationFrame(draw);
     };
     rafRef.current = requestAnimationFrame(draw);
-  }, []);
+  }, [cameraShape]);
 
   const beginRecorder = useCallback(
     (stream: MediaStream, usingScreen: boolean) => {
@@ -427,6 +556,7 @@ export default function Component({
   }, [state.stage]);
 
   const isIdle = state.stage === "idle";
+  const recordingSupported = isRecordingSupported();
   const isRequesting = state.stage === "requesting";
   const isRecording = state.stage === "recording";
   const isReviewing = state.stage === "reviewing";
@@ -566,6 +696,8 @@ export default function Component({
             </>
           ) : isSubmitted ? (
             <span>Marked complete.</span>
+          ) : !recordingSupported ? (
+            <span>Video recording isn't supported in this browser.</span>
           ) : (
             <span>Press {recordLabel} when you are ready.</span>
           )}
@@ -623,7 +755,14 @@ export default function Component({
                 {submitLabel}
               </button>
             </>
-          ) : isSubmitted ? null : (
+          ) : isSubmitted ? null : !recordingSupported ? (
+            <p className="kukui-vr__unsupported" role="alert">
+              Video recording isn't available in this browser. Open this
+              activity in a recent version of Chrome, Edge, Firefox, or Safari
+              (over a secure <code>https</code> connection) to record your
+              reflection.
+            </p>
+          ) : (
             <button
               type="button"
               className="kukui-vr__primary"

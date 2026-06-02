@@ -39,6 +39,12 @@ export const VideoReflectionConfigSchema = z
         allowReRecord: z.boolean().optional(),
         /** Offer screen-share + picture-in-picture where the browser supports it. */
         allowScreenShare: z.boolean().optional(),
+        /**
+         * Shape of the webcam picture-in-picture over a shared screen.
+         * "rounded" keeps the full 16:9 frame with rounded corners;
+         * "circle" crops to a centered face bubble. Defaults to "rounded".
+         */
+        cameraShape: z.enum(["rounded", "circle"]).optional(),
       })
       .strict()
       .optional(),

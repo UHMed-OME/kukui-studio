@@ -76,6 +76,11 @@ const uiSchema = {
       "Offer screen share",
       "Where the browser supports it (desktop), let the learner share their screen with a webcam picture-in-picture. Ignored on devices without screen capture (e.g. iPhone/iPad), which fall back to camera-only.",
     ),
+    cameraShape: f(
+      "Webcam bubble shape",
+      "Shape of the webcam picture-in-picture when sharing a screen: a rounded-corner frame (keeps the full camera view) or a circle (a cropped face bubble).",
+      { "ui:widget": "radio" },
+    ),
   },
   ui: {
     "ui:title": "Button label overrides",
