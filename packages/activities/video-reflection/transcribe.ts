@@ -28,6 +28,25 @@ const MODEL_ID = "Xenova/whisper-tiny.en";
 // ("Missing required scale … weight_transposed_DequantizeLinear").
 const DTYPES = ["q8", "fp32"] as const;
 
+/**
+ * Engine builds set VITE_KUKUI_LOCAL_MODELS so the model + onnxruntime-web
+ * wasm load from same-origin bundled files (offline, under the strict SCORM
+ * CSP). Studio leaves it unset and fetches from the HuggingFace CDN.
+ */
+const LOCAL_MODELS =
+  (import.meta as unknown as { env?: Record<string, string> }).env
+    ?.VITE_KUKUI_LOCAL_MODELS === "1";
+
+type TransformersEnv = {
+  allowLocalModels: boolean;
+  localModelPath?: string;
+  backends?: {
+    onnx?: {
+      wasm?: { numThreads?: number; proxy?: boolean };
+    };
+  };
+};
+
 let pipelinePromise: Promise<unknown> | null = null;
 
 async function buildPipeline(
@@ -35,14 +54,35 @@ async function buildPipeline(
 ): Promise<unknown> {
   const mod = (await import("@huggingface/transformers")) as unknown as {
     pipeline: (task: string, model: string, opts?: Record<string, unknown>) => Promise<unknown>;
-    env: { allowLocalModels: boolean };
+    env: TransformersEnv;
   };
-  mod.env.allowLocalModels = false;
   const progress_callback = (info: { status?: string; progress?: number }) => {
     if (info?.status === "progress" && typeof info.progress === "number") {
       onProgress?.({ phase: "download", progress: info.progress / 100 });
     }
   };
+
+  if (LOCAL_MODELS) {
+    // Bundled, same-origin model (see packaging/fetch-whisper-assets.mjs). The
+    // ORT wasm is already bundled by Vite into assets/ (same origin), so we
+    // don't override wasmPaths — just keep ORT single-threaded + un-proxied so
+    // it needs no Worker / SharedArrayBuffer (no cross-origin isolation in the
+    // LMS iframe).
+    mod.env.allowLocalModels = true;
+    mod.env.localModelPath = "whisper/models";
+    const wasm = (mod.env.backends ??= {}).onnx?.wasm ?? {};
+    mod.env.backends.onnx = { wasm };
+    wasm.numThreads = 1;
+    wasm.proxy = false;
+    // Only q8 is bundled; force CPU wasm (LMS iframes rarely allow WebGPU).
+    return mod.pipeline("automatic-speech-recognition", MODEL_ID, {
+      dtype: "q8",
+      device: "wasm",
+      progress_callback,
+    });
+  }
+
+  mod.env.allowLocalModels = false;
   let lastError: unknown;
   for (const dtype of DTYPES) {
     try {

@@ -214,6 +214,26 @@ async function packActivity(opts) {
       await cp(src, stagedSamples, { recursive: true });
     }
 
+    // Caption-stack trimming. Only video-reflection uses on-device
+    // transcription, so for every OTHER package strip the parts that would
+    // otherwise bloat it: the bundled model (whisper/, ~40 MB), the
+    // onnxruntime-web wasm Vite emits into assets/ (~22 MB), and the
+    // transformers.js chunk. video-reflection keeps all three.
+    if (activity !== "video-reflection") {
+      const whisperDir = join(stageDir, "whisper");
+      if (await pathExists(whisperDir)) {
+        await rm(whisperDir, { recursive: true, force: true });
+      }
+      const assetsDir = join(stageDir, "assets");
+      if (await pathExists(assetsDir)) {
+        for (const name of await readdir(assetsDir)) {
+          if (/^ort-wasm.*\.wasm$/.test(name) || /^transformers\.web-.*\.js$/.test(name)) {
+            await rm(join(assetsDir, name), { force: true });
+          }
+        }
+      }
+    }
+
     // Render imsmanifest.xml.
     const tmpl = await readFile(TEMPLATE, "utf8");
     const manifestVars = {

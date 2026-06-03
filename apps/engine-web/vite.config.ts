@@ -24,10 +24,15 @@ import { activitySamplesPlugin } from "./vite-plugin-activity-samples.js";
  */
 const CSP_CONTENT =
   "default-src 'self'; " +
-  "script-src 'self'; " +
+  // 'wasm-unsafe-eval' lets onnxruntime-web compile its WebAssembly for the
+  // on-device caption model (video-reflection). It permits WASM compilation
+  // only — not arbitrary eval().
+  "script-src 'self' 'wasm-unsafe-eval'; " +
   "connect-src 'self'; " +
   "img-src 'self' data: https:; " +
-  "media-src 'self' data: https:; " +
+  // blob: is required for recorded-media playback (<video src="blob:…">) and
+  // the canvas capture streams used by the recording activities.
+  "media-src 'self' data: blob: https:; " +
   "style-src 'self' 'unsafe-inline'; " +
   "font-src 'self' data:; " +
   "object-src 'none'; " +
@@ -64,6 +69,12 @@ export default defineConfig({
   // Relative base so the same Vite build can be packaged into SCORM zips that
   // D2L serves from a sub-path. Without this, `/assets/...` 404s on the LMS.
   base: "./",
+  // Engine builds bundle the Whisper model + ORT wasm (staged under
+  // public/whisper) and load them same-origin, so captions work offline under
+  // the strict engine CSP. Studio doesn't set this flag and uses the CDN.
+  define: {
+    "import.meta.env.VITE_KUKUI_LOCAL_MODELS": JSON.stringify("1"),
+  },
   plugins: [react(), activitySamplesPlugin(), tailwindcss(), cspMetaPlugin()],
   build: {
     rollupOptions: {

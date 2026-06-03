@@ -43,3 +43,7 @@ test-results/
 # SCORM zips (built artifacts)
 packaging/build/
 *.scorm.zip
+
+# On-device Whisper model + ORT wasm, staged at build time by
+# packaging/fetch-whisper-assets.mjs (large binaries; not committed).
+apps/engine-web/public/whisper/
