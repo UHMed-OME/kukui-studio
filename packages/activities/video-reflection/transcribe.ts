@@ -21,28 +21,57 @@ export type TranscribeProgress =
 // which is why the transcript is editable downstream.
 const MODEL_ID = "Xenova/whisper-tiny.en";
 
+// Quantization to try, in order. "q8" is small + widely supported on
+// onnxruntime-web; "fp32" is unquantized (no DequantizeLinear nodes at all),
+// so it's the guaranteed fallback. We deliberately avoid the default, which
+// can resolve to a 4-bit (q4/MatMulNBits) variant that ORT-web fails to load
+// ("Missing required scale … weight_transposed_DequantizeLinear").
+const DTYPES = ["q8", "fp32"] as const;
+
 let pipelinePromise: Promise<unknown> | null = null;
+
+async function buildPipeline(
+  onProgress?: (p: TranscribeProgress) => void,
+): Promise<unknown> {
+  const mod = (await import("@huggingface/transformers")) as unknown as {
+    pipeline: (task: string, model: string, opts?: Record<string, unknown>) => Promise<unknown>;
+    env: { allowLocalModels: boolean };
+  };
+  mod.env.allowLocalModels = false;
+  const progress_callback = (info: { status?: string; progress?: number }) => {
+    if (info?.status === "progress" && typeof info.progress === "number") {
+      onProgress?.({ phase: "download", progress: info.progress / 100 });
+    }
+  };
+  let lastError: unknown;
+  for (const dtype of DTYPES) {
+    try {
+      return await mod.pipeline("automatic-speech-recognition", MODEL_ID, {
+        dtype,
+        progress_callback,
+      });
+    } catch (err) {
+      lastError = err;
+    }
+  }
+  throw lastError instanceof Error
+    ? lastError
+    : new Error("Could not load the speech model.");
+}
 
 async function getTranscriber(
   onProgress?: (p: TranscribeProgress) => void,
 ): Promise<unknown> {
   if (!pipelinePromise) {
-    pipelinePromise = (async () => {
-      const mod = (await import("@huggingface/transformers")) as unknown as {
-        pipeline: (task: string, model: string, opts?: Record<string, unknown>) => Promise<unknown>;
-        env: { allowLocalModels: boolean };
-      };
-      mod.env.allowLocalModels = false;
-      return mod.pipeline("automatic-speech-recognition", MODEL_ID, {
-        progress_callback: (info: { status?: string; progress?: number }) => {
-          if (info?.status === "progress" && typeof info.progress === "number") {
-            onProgress?.({ phase: "download", progress: info.progress / 100 });
-          }
-        },
-      });
-    })();
+    pipelinePromise = buildPipeline(onProgress);
   }
-  return pipelinePromise;
+  try {
+    return await pipelinePromise;
+  } catch (err) {
+    // Don't cache a failed load — let "Try captions again" re-attempt.
+    pipelinePromise = null;
+    throw err;
+  }
 }
 
 /** Decode a recorded media Blob to 16 kHz mono Float32 PCM (what Whisper wants). */
