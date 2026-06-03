@@ -2,10 +2,12 @@
 /**
  * pack-scorm.js
  *
- * Wraps a Vite build of one Kukui activity into a SCORM 1.2 zip ready for
- * upload to D2L Brightspace.
+ * Wraps a Vite build of one Kukui activity into a distributable package.
+ * Two targets:
+ *   --target scorm  (default) → SCORM 1.2 zip for an LMS (Brightspace, etc.)
+ *   --target web              → portable zip for any static host, no LMS
  *
- * Pipeline:
+ * SCORM pipeline:
  *   1. Read the Vite build dir (default: apps/engine-web/dist).
  *   2. Stage into a temp directory.
  *   3. Rename {activity}.html → index.html (the entrypoint D2L launches).
@@ -15,14 +17,19 @@
  *   7. Render imsmanifest.xml from packaging/templates/imsmanifest.xml.tmpl.
  *   8. Zip to {out}/kukui-{activity}.scorm.zip.
  *
- * CLI:
- *   node packaging/pack-scorm.js \
- *       --activity multiple-choice \
- *       --build apps/engine-web/dist \
- *       --out packaging/build
+ * Web target differs at steps 5/7/8:
+ *   - drops pipwerks.SCORM.min.js (there is no LMS API to talk to),
+ *   - drops imsmanifest.xml,
+ *   - tags #root with data-mode="web" so the engine uses LocalDriver
+ *     (localStorage persistence + the learner-facing completion panel),
+ *   - optionally bakes a data-collect="<json>" results-collection config,
+ *   - relaxes the CSP connect-src so an opt-in webhook can POST out,
+ *   - zips to {out}/kukui-{activity}.web.zip.
  *
- * Or pack every Phase-1 activity at once:
- *   node packaging/pack-scorm.js --all
+ * CLI:
+ *   node packaging/pack-scorm.js --activity multiple-choice
+ *   node packaging/pack-scorm.js --activity multiple-choice --target web
+ *   node packaging/pack-scorm.js --all --target web
  *
  * --engine flag (Phase 1.5): [react|unity|godot|articulate|raw]
  * Currently only "react" is implemented; the flag is parsed for forward
@@ -92,6 +99,40 @@ const PHASE_1_ACTIVITIES = discoverActivitySlugs();
 const SLUG_PATTERN = /^[a-z0-9][a-z0-9-]*$/;
 
 const SUPPORTED_ENGINES = new Set(["react", "unity", "godot", "articulate", "raw"]);
+const SUPPORTED_TARGETS = new Set(["scorm", "web"]);
+
+/**
+ * Rewrite a built engine HTML entry for the non-LMS "web" target:
+ *   - drop the pipwerks SCORM wrapper <script> (no LMS API to bind),
+ *   - tag #root with data-mode="web" (→ LocalDriver) and, if provided,
+ *     data-collect with the results-collection JSON,
+ *   - relax the CSP connect-src to allow an opt-in webhook POST over https.
+ * Pure string transform so it stays trivially testable.
+ */
+function transformHtmlForWeb(html, collectJson) {
+  let out = html;
+
+  // 1. Remove the pipwerks loader script (matches the line in every entry).
+  out = out.replace(
+    /\s*<script[^>]*src=["']\.\/pipwerks\.SCORM\.min\.js["'][^>]*><\/script>/i,
+    "",
+  );
+
+  // 2. Add data-mode (and optional data-collect) to the #root div. The built
+  //    div is `<div id="root" data-activity="..." data-config="...">`.
+  const rootAttrs =
+    ` data-mode="web"` +
+    (collectJson
+      ? ` data-collect="${collectJson.replace(/"/g, "&quot;").replace(/'/g, "&#39;")}"`
+      : "");
+  out = out.replace(/(<div\s+id=["']root["'])/i, `$1${rootAttrs}`);
+
+  // 3. Relax the CSP so a configured webhook can POST out. The engine's CSP
+  //    pins connect-src to 'self'; web mode may talk to an external endpoint.
+  out = out.replace(/connect-src 'self';/i, "connect-src 'self' https:;");
+
+  return out;
+}
 
 function titleize(slug) {
   return slug
@@ -148,6 +189,8 @@ async function packActivity(opts) {
     defaultConfig,
     identifier,
     engine,
+    target,
+    collectJson,
   } = opts;
 
   if (!SLUG_PATTERN.test(activity)) {
@@ -234,25 +277,36 @@ async function packActivity(opts) {
       }
     }
 
-    // Render imsmanifest.xml.
-    const tmpl = await readFile(TEMPLATE, "utf8");
-    const manifestVars = {
-      IDENTIFIER: identifier,
-      TITLE: title,
-      DEFAULT_CONFIG: defaultConfig,
-      MASTERY_SCORE: String(masteryScore),
-    };
-    await writeFile(
-      join(stageDir, "imsmanifest.xml"),
-      fillTemplate(tmpl, manifestVars),
-      "utf8",
-    );
+    const indexPath = join(stageDir, "index.html");
 
-    // Zip → {out}/kukui-{activity}.scorm.zip
-    const zipPath = join(outDir, `kukui-${activity}.scorm.zip`);
+    if (target === "web") {
+      // Web target: no LMS API, no manifest. Rewrite the entry for LocalDriver
+      // (data-mode="web" + optional data-collect) and drop pipwerks.
+      const html = await readFile(indexPath, "utf8");
+      await writeFile(indexPath, transformHtmlForWeb(html, collectJson), "utf8");
+      const pipwerks = join(stageDir, "pipwerks.SCORM.min.js");
+      if (await pathExists(pipwerks)) await rm(pipwerks, { force: true });
+    } else {
+      // SCORM target: render imsmanifest.xml.
+      const tmpl = await readFile(TEMPLATE, "utf8");
+      const manifestVars = {
+        IDENTIFIER: identifier,
+        TITLE: title,
+        DEFAULT_CONFIG: defaultConfig,
+        MASTERY_SCORE: String(masteryScore),
+      };
+      await writeFile(
+        join(stageDir, "imsmanifest.xml"),
+        fillTemplate(tmpl, manifestVars),
+        "utf8",
+      );
+    }
+
+    // Zip → {out}/kukui-{activity}.{scorm|web}.zip
+    const zipPath = join(outDir, `kukui-${activity}.${target}.zip`);
     const bytes = await zipDirectory(stageDir, zipPath);
     console.log(
-      `[pack-scorm] ${activity}: ${zipPath} (${(bytes / 1024).toFixed(1)} KB)`,
+      `[pack-scorm] ${activity} (${target}): ${zipPath} (${(bytes / 1024).toFixed(1)} KB)`,
     );
   } finally {
     await rm(stageDir, { recursive: true, force: true });
@@ -285,6 +339,15 @@ async function main() {
       "--engine <kind>",
       `content engine (one of ${[...SUPPORTED_ENGINES].join(", ")})`,
       "react",
+    )
+    .option(
+      "--target <kind>",
+      `distribution target (one of ${[...SUPPORTED_TARGETS].join(", ")})`,
+      "scorm",
+    )
+    .option(
+      "--collect <json>",
+      'web target only: results-collection JSON, e.g. \'{"email":"prof@uh.edu"}\'',
     );
 
   program.parse(process.argv);
@@ -295,6 +358,30 @@ async function main() {
       `Unsupported --engine: ${opts.engine}. Expected one of ${[...SUPPORTED_ENGINES].join(", ")}.`,
     );
     process.exit(2);
+  }
+
+  if (!SUPPORTED_TARGETS.has(opts.target)) {
+    console.error(
+      `Unsupported --target: ${opts.target}. Expected one of ${[...SUPPORTED_TARGETS].join(", ")}.`,
+    );
+    process.exit(2);
+  }
+
+  // Validate --collect now so a typo fails fast rather than baking broken
+  // JSON into the package. Only meaningful for the web target.
+  let collectJson;
+  if (opts.collect) {
+    if (opts.target !== "web") {
+      console.warn("[pack-scorm] --collect is ignored unless --target web");
+    } else {
+      try {
+        JSON.parse(opts.collect);
+        collectJson = opts.collect;
+      } catch {
+        console.error(`Invalid --collect JSON: ${opts.collect}`);
+        process.exit(2);
+      }
+    }
   }
 
   const targets = opts.all
@@ -325,6 +412,8 @@ async function main() {
       defaultConfig,
       identifier,
       engine: opts.engine,
+      target: opts.target,
+      collectJson,
     });
   }
 }
