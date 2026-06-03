@@ -33,6 +33,34 @@ type ScormWindow = Window & {
 
 const SUSPEND_DATA_MAX = 4096;
 
+/**
+ * Which persistence backend a page wants.
+ *   "lms"    — an LMS supplied a SCORM API; always wins when present.
+ *   "web"    — no LMS, but persist + collect locally (LocalDriver).
+ *   "memory" — dev / Studio preview / tests; nothing persists (MemoryDriver).
+ * The actual driver is still chosen by capability first: if a SCORM API is on
+ * the page we use it regardless of the requested mode.
+ */
+export type DriverMode = "lms" | "web" | "memory";
+
+export interface ScormDriverOptions {
+  mode?: DriverMode;
+  /** localStorage namespace for "web" mode. Defaults to "kukui:web". */
+  storageKey?: string;
+}
+
+/**
+ * A learner's locally-stored run, surfaced to the web-mode completion panel
+ * and the "download my results" affordance. Only LocalDriver populates this.
+ */
+export interface WebResults {
+  score?: { raw: number; max: number; success: boolean };
+  interactions: InteractionRecord[];
+  name?: string;
+  /** ISO-ish timestamp set when the score was last written. */
+  finishedAt?: string;
+}
+
 export interface ScormDriver {
   initialize(): boolean;
   finish(): boolean;
@@ -44,6 +72,8 @@ export interface ScormDriver {
   getStudentId(): string | undefined;
   isLive(): boolean;
   recordInteraction(record: InteractionRecord): void;
+  /** Web mode only — the locally-persisted run for the completion panel. */
+  getWebResults?(): WebResults | undefined;
 }
 
 class PipwerksDriver implements ScormDriver {
@@ -143,15 +173,105 @@ class MemoryDriver implements ScormDriver {
   }
 }
 
+/**
+ * Persists a learner's run to localStorage so progress survives reloads on
+ * the same device — the backbone of the non-LMS "web" distribution. There is
+ * no LMS API to post back to, so scores, suspend data, and interactions are
+ * mirrored into a single namespaced record that the completion panel and the
+ * "download my results" affordance read back out.
+ *
+ * If localStorage is unavailable (private mode, disabled cookies, SSR), the
+ * record lives only in memory for the session — the activity still works,
+ * it just won't resume after a reload. We never throw on storage failure.
+ */
+class LocalDriver implements ScormDriver {
+  private record: WebResults = { interactions: [] };
+  private suspend?: string;
+
+  constructor(private readonly storageKey: string) {
+    const raw = this.readStore();
+    if (raw) {
+      this.record = { interactions: [], ...raw.results };
+      this.suspend = raw.suspend;
+    }
+  }
+
+  private readStore(): { suspend?: string; results?: WebResults } | undefined {
+    try {
+      const text = window.localStorage.getItem(this.storageKey);
+      if (!text) return undefined;
+      return JSON.parse(text) as { suspend?: string; results?: WebResults };
+    } catch {
+      return undefined;
+    }
+  }
+
+  private writeStore() {
+    try {
+      window.localStorage.setItem(
+        this.storageKey,
+        JSON.stringify({ suspend: this.suspend, results: this.record }),
+      );
+    } catch {
+      // Quota or private-mode failure — keep the in-memory copy and move on.
+    }
+  }
+
+  initialize() {
+    return true;
+  }
+  finish() {
+    return true;
+  }
+  postScore(raw: number, max: number, success: boolean) {
+    this.record.score = { raw, max, success };
+    this.record.finishedAt = new Date().toISOString();
+    this.writeStore();
+  }
+  saveSuspendData(json: string) {
+    this.suspend = json;
+    this.writeStore();
+  }
+  loadSuspendData() {
+    return this.suspend;
+  }
+  getStudentName() {
+    return this.record.name;
+  }
+  getStudentId() {
+    return undefined;
+  }
+  isLive() {
+    return false;
+  }
+  recordInteraction(record: InteractionRecord) {
+    this.record.interactions.push(record);
+    this.writeStore();
+  }
+  getWebResults(): WebResults {
+    return this.record;
+  }
+}
+
 let driver: ScormDriver | undefined;
 
-/** Returns the active SCORM driver, instantiating once per page. */
-export function getScormDriver(): ScormDriver {
+/**
+ * Returns the active driver, instantiating once per page. Capability wins
+ * over preference: a SCORM API on the page always selects PipwerksDriver,
+ * even if `mode: "web"` was requested. Only the first call's options take
+ * effect (the driver is a per-page singleton); later argless calls — e.g.
+ * from ActivityHost's render — return the same instance.
+ */
+export function getScormDriver(opts?: ScormDriverOptions): ScormDriver {
   if (driver) return driver;
   const w = typeof window !== "undefined" ? (window as ScormWindow) : undefined;
   const api = w?.pipwerks?.SCORM;
   if (api) {
     const d = new PipwerksDriver(api);
+    d.initialize();
+    driver = d;
+  } else if (opts?.mode === "web" && w) {
+    const d = new LocalDriver(opts.storageKey ?? "kukui:web");
     d.initialize();
     driver = d;
   } else {

@@ -68,6 +68,85 @@ describe("getScormDriver — pipwerks driver", () => {
   });
 });
 
+describe("getScormDriver — web (LocalDriver) mode", () => {
+  const KEY = "kukui:web:test";
+  const clearStorage = () => {
+    if (typeof window !== "undefined" && window?.localStorage) {
+      window.localStorage.clear();
+    }
+  };
+  beforeEach(() => {
+    __setScormDriverForTest(undefined);
+    clearStorage();
+  });
+  afterEach(() => {
+    __setScormDriverForTest(undefined);
+    // Restore any stubbed `window` (some tests set it to undefined) BEFORE
+    // touching localStorage, and guard in case it's still absent.
+    vi.unstubAllGlobals();
+    clearStorage();
+  });
+
+  it("selects LocalDriver when mode is 'web' and no LMS API present", () => {
+    const driver = getScormDriver({ mode: "web", storageKey: KEY });
+    expect(driver.isLive()).toBe(false);
+    expect(typeof driver.getWebResults).toBe("function");
+  });
+
+  it("persists score + suspend data to localStorage and survives a reload", () => {
+    const driver = getScormDriver({ mode: "web", storageKey: KEY });
+    driver.postScore(8, 10, true);
+    driver.saveSuspendData("resume-state");
+
+    // Simulate a reload: drop the singleton, re-create against the same key.
+    __setScormDriverForTest(undefined);
+    const reloaded = getScormDriver({ mode: "web", storageKey: KEY });
+    expect(reloaded.loadSuspendData()).toBe("resume-state");
+    const results = reloaded.getWebResults?.();
+    expect(results?.score).toEqual({ raw: 8, max: 10, success: true });
+    expect(results?.finishedAt).toBeTruthy();
+  });
+
+  it("accumulates interactions in the web results record", () => {
+    const driver = getScormDriver({ mode: "web", storageKey: KEY });
+    driver.recordInteraction({
+      id: "q1",
+      type: "choice",
+      studentResponse: "a",
+      result: { kind: "correct" },
+    });
+    driver.recordInteraction({
+      id: "q2",
+      type: "choice",
+      studentResponse: "b",
+      result: { kind: "wrong" },
+    });
+    expect(driver.getWebResults?.()?.interactions).toHaveLength(2);
+  });
+
+  it("falls back to MemoryDriver when mode is 'web' but window is absent", () => {
+    vi.stubGlobal("window", undefined);
+    const driver = getScormDriver({ mode: "web", storageKey: KEY });
+    expect(driver.isLive()).toBe(false);
+    expect(driver.getWebResults).toBeUndefined();
+  });
+
+  it("does not throw when localStorage access fails", () => {
+    const throwingStorage = {
+      getItem: () => {
+        throw new Error("blocked");
+      },
+      setItem: () => {
+        throw new Error("blocked");
+      },
+    };
+    vi.stubGlobal("window", { ...globalThis.window, localStorage: throwingStorage });
+    const driver = getScormDriver({ mode: "web", storageKey: KEY });
+    expect(() => driver.postScore(5, 10, false)).not.toThrow();
+    expect(driver.getWebResults?.()?.score).toEqual({ raw: 5, max: 10, success: false });
+  });
+});
+
 describe("MemoryDriver.recordInteraction", () => {
   beforeEach(() => {
     __setScormDriverForTest(undefined);

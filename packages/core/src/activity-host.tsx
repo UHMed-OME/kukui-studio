@@ -1,13 +1,21 @@
 import { Suspense, useEffect, useState, type CSSProperties } from "react";
 import { SchemaRegistry, type SchemaRegistryKey } from "@kukui/schemas";
 import { loadContent, ContentLoadError } from "./content.js";
-import { getScormDriver } from "./scorm.js";
+import { getScormDriver, type DriverMode } from "./scorm.js";
+import type { CollectConfig } from "./collect.js";
 import type { ActivityKind, BuiltActivityKind, InteractionRecord, ScoreState } from "./types.js";
 import { ACTIVITY_REGISTRY, StubActivityLazy } from "./components/registry.js";
 import { PLANNED_ACTIVITY_KINDS } from "./planned.js";
 import { applyColorScheme, type ResolvedColorScheme } from "./colorScheme.js";
+import { WebCompletionPanel } from "./WebCompletionPanel.js";
 
 export type { ActivityKind };
+
+/** Stable localStorage namespace for a web-mode run on this page. */
+function webStorageKey(kind: ActivityKind): string {
+  const path = typeof window !== "undefined" ? window.location.pathname : "";
+  return `kukui:web:${kind}:${path}`;
+}
 
 type LoadState =
   | { status: "loading" }
@@ -17,12 +25,32 @@ type LoadState =
 export type ActivityHostProps = {
   kind: ActivityKind;
   configUrl: string;
+  /**
+   * Distribution mode. "web" turns on localStorage persistence and the
+   * learner-facing completion panel; omitted/"memory" keeps the silent
+   * dev/preview behaviour. Engine-web sets this from `data-mode` on #root.
+   */
+  mode?: DriverMode;
+  /**
+   * Optional results-collection wiring for web mode (mailto / webhook /
+   * external form). A deployment-time concern set by whoever hosts the
+   * package — NOT part of the authored activity JSON — so the 24 activity
+   * schemas stay untouched. Engine-web reads it from `data-collect` on #root.
+   */
+  collect?: CollectConfig;
   /** Test seam: replace the loader. */
   loader?: typeof loadContent;
 };
 
-export function ActivityHost({ kind, configUrl, loader = loadContent }: ActivityHostProps) {
+export function ActivityHost({
+  kind,
+  configUrl,
+  mode,
+  collect,
+  loader = loadContent,
+}: ActivityHostProps) {
   const [state, setState] = useState<LoadState>({ status: "loading" });
+  const [completion, setCompletion] = useState<ScoreState | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -64,11 +92,14 @@ export function ActivityHost({ kind, configUrl, loader = loadContent }: Activity
     };
   }, [kind, configUrl, loader]);
 
-  const scorm = getScormDriver();
+  const scorm = getScormDriver(
+    mode === "web" ? { mode, storageKey: webStorageKey(kind) } : undefined,
+  );
 
   const handleSubmit = (score: ScoreState) => {
     scorm.postScore(score.raw, score.max, score.success);
     if (score.suspendData !== undefined) scorm.saveSuspendData(score.suspendData);
+    if (mode === "web") setCompletion(score);
   };
 
   const handlePersist = (suspendData: string) => {
@@ -135,6 +166,15 @@ export function ActivityHost({ kind, configUrl, loader = loadContent }: Activity
           <Component config={cfg} {...callbackProps} />
         )}
       </Suspense>
+      {mode === "web" && completion ? (
+        <WebCompletionPanel
+          score={completion}
+          kind={kind}
+          title={cfg?.title}
+          collect={collect}
+          getResults={scorm.getWebResults?.bind(scorm)}
+        />
+      ) : null}
       <ActivityFooter author={cfg?.author} />
     </>
   );
