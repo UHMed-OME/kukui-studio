@@ -49,9 +49,11 @@ export async function downloadScormZip(kind: ActivityKind, config: unknown): Pro
         .replace(/&/g, "&amp;")
         .replace(/</g, "&lt;")
         .replace(/>/g, "&gt;");
+      // Replacer function so `$&` / `$'` etc. in the author's title are
+      // treated literally, not as String.replace substitution patterns.
       const next = manifest.replace(
         /<title>[^<]*<\/title>/g,
-        `<title>${escaped}</title>`,
+        () => `<title>${escaped}</title>`,
       );
       zip.file("imsmanifest.xml", next);
     }
@@ -82,7 +84,7 @@ export async function downloadScormZip(kind: ActivityKind, config: unknown): Pro
  *
  * For any other activity kind or model type the config is returned unchanged.
  */
-async function embedSketchfabImports(
+export async function embedSketchfabImports(
   kind: ActivityKind,
   config: unknown,
   zip: JSZipType,

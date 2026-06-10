@@ -3,6 +3,7 @@ import type { AISettings } from "../ai/settings.js";
 import { ConnectionsPane } from "./panes/ConnectionsPane.js";
 import { AboutPane } from "./panes/AboutPane.js";
 import { AppearancePane } from "./panes/AppearancePane.js";
+import { ResultsPane } from "./panes/ResultsPane.js";
 import "./SettingsDialog.css";
 
 /**
@@ -15,11 +16,12 @@ import "./SettingsDialog.css";
  * external integration (AI providers, Google Drive, future
  * connectors) lives behind a single tab.
  */
-export type SettingsPane = "appearance" | "connections" | "about";
+export type SettingsPane = "appearance" | "connections" | "results" | "about";
 
 const PANES: Array<{ id: SettingsPane; label: string }> = [
   { id: "appearance", label: "Appearance" },
   { id: "connections", label: "Connections" },
+  { id: "results", label: "Results" },
   { id: "about", label: "About" },
 ];
 
@@ -110,6 +112,7 @@ export function SettingsDialog({
             {pane === "connections" ? (
               <ConnectionsPane onAISaved={onAISaved} />
             ) : null}
+            {pane === "results" ? <ResultsPane /> : null}
             {pane === "about" ? <AboutPane /> : null}
           </div>
         </div>

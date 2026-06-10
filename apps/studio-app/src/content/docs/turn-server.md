@@ -1,7 +1,7 @@
 ---
 title: Hosting a TURN server
 description: Set up a TURN relay so Live works across devices on restrictive campus and guest Wi-Fi networks.
-order: 6
+order: 7
 updated: 2026-05-29
 ---
 

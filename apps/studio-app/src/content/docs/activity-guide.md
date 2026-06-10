@@ -1,13 +1,13 @@
 ---
 title: Activity catalog
-description: All 24 activity types organized by Bloom's taxonomy, with pedagogical notes on when each one shines.
-order: 3
-updated: 2026-05-12
+description: The activity types organized by Bloom's taxonomy, with pedagogical notes on when each one shines.
+order: 4
+updated: 2026-06-10
 ---
 
 # Activity catalog
 
-Kukui Studio ships with 24 interactive activity types, organized by **Bloom's revised taxonomy** — six cognitive levels that climb from "recall" through "create." Picking the right activity starts with knowing what cognitive work you want learners to do.
+Kukui Studio ships with more than two dozen interactive activity types, organized by **Bloom's revised taxonomy** — six cognitive levels that climb from "recall" through "create." This guide covers the core catalog. Picking the right activity starts with knowing what cognitive work you want learners to do.
 
 ## Remember — recall facts and terminology
 

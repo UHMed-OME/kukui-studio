@@ -130,7 +130,6 @@ function Preview({ kind, src }: { kind: "image" | "model" | "audio" | "any"; src
   if (kind === "image") {
     return (
       <div className="ks-file__preview">
-        {/* eslint-disable-next-line jsx-a11y/alt-text */}
         <img src={src} alt="" className="ks-file__preview-img" />
       </div>
     );

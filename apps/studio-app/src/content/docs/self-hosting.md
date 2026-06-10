@@ -1,8 +1,8 @@
 ---
 title: Self-hosting
 description: Fork the repo and run your institution's own instance of Kukui Studio on GitHub Pages — free, in about five minutes.
-order: 5
-updated: 2026-05-29
+order: 6
+updated: 2026-06-10
 ---
 
 # Self-hosting
@@ -40,11 +40,13 @@ In your fork:
 
 The repo ships with a pre-configured workflow (`.github/workflows/pages.yml`) that builds and deploys Studio on every push to `main`. The first push (which already happened when you forked) triggers a build automatically — check the **Actions** tab to watch it.
 
-Once the workflow finishes, your instance is live at:
+The workflow figures out the right URL paths on its own: a fork is built with `/<repo-name>/` as the base path, so once the workflow finishes your instance is live at:
 
 ```
-https://<your-github-username>.github.io/kukui-studio/
+https://<your-github-username>.github.io/<repo-name>/
 ```
+
+(If you kept the default repo name, that's `https://<your-github-username>.github.io/kukui-studio/`.) Renaming the repo is fine — the base path follows the repo name automatically on the next deploy.
 
 ### 4. (Optional) Custom domain
 
@@ -52,7 +54,8 @@ If you want your own domain (e.g. `kukui.<your-institution>.edu`):
 
 1. In **Settings → Pages**, add your custom domain.
 2. Create a CNAME DNS record pointing your subdomain to `<your-github-username>.github.io`.
-3. Wait a few minutes for DNS to propagate and the cert to issue.
+3. Add a `CNAME` file containing your domain to `apps/studio-app/public/` in your fork. This is what tells the build to use `/` as the base path instead of `/<repo-name>/` — without it, the deploy still assumes it lives under the repo-name subpath and assets won't resolve on your domain.
+4. Wait a few minutes for DNS to propagate and the cert to issue.
 
 ## Customization
 
@@ -63,7 +66,7 @@ The places to change in a fork:
 | Brand wordmark text | `apps/studio-app/src/App.tsx` (the header) and `apps/studio-app/src/pages/Landing.tsx` |
 | Logo | Replace `apps/studio-app/public/kukui-logo.svg` |
 | Color palette | `apps/studio-app/src/styles.css` (the `@theme {}` block at the top) |
-| Which activities appear in the sidebar | `apps/studio-app/src/App.tsx` (`BLOOM_BY_KIND` constant) |
+| Which activities appear in the sidebar | `apps/studio-app/src/App.tsx` (the `STUDIO_SUPPRESSED` set — add a kind to hide it). Labels, descriptions, and Bloom placement come from each activity's `packages/activities/<slug>/meta.ts` |
 | Footer copy | `apps/studio-app/src/pages/Landing.tsx` and the footer in `App.tsx` |
 
 ## Updating from upstream

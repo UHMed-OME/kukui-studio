@@ -63,7 +63,7 @@ The preview has two modes for some activities:
 
 Once your activity reads **Valid**, click the **Download SCORM 1.2 ZIP** button in the top right. Studio packages your activity into a `.zip` file named after your title.
 
-Drop that zip into your LMS. See [Upload to your LMS](/docs/upload-to-lms) for the steps in Brightspace, Canvas, and Moodle.
+Drop that zip into your LMS. See [Upload to your LMS](/docs/upload-to-lms) for the steps in Brightspace, Canvas, and Moodle. Not using an LMS? The download menu also offers a web package you can put on any static site — see [Host on the web](/docs/host-on-the-web).
 
 ## What's next
 

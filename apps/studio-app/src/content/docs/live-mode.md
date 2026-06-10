@@ -1,7 +1,7 @@
 ---
 title: Live mode (alpha)
 description: Synchronous in-class activities — students join with a 6-digit code, instructor controls the pace.
-order: 4
+order: 5
 updated: 2026-05-29
 ---
 

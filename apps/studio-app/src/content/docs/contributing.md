@@ -1,8 +1,8 @@
 ---
 title: Contributing
 description: Architecture overview and how to add a new activity type.
-order: 7
-updated: 2026-05-12
+order: 8
+updated: 2026-06-10
 ---
 
 # Contributing
@@ -15,28 +15,44 @@ Kukui is MIT-licensed and we welcome contributions — bug fixes, new activity t
 kukui-studio/
 ├── apps/
 │   ├── studio-app/          authoring tool (Vite + React)
-│   ├── engine-web/          per-activity SCORM entries
+│   ├── engine-web/          per-activity runtime entries
 │   └── live-mode/           Live mode (alpha)
 ├── packages/
-│   ├── core/                activity components + scoring + ActivityHost
-│   ├── schemas/             one Zod schema per activity kind
+│   ├── activities/          one bundle per activity kind ({slug}/schema.ts,
+│   │                        Component.tsx, ui-schema.ts, starter.ts, meta.ts,
+│   │                        samples/, manifest.ts)
+│   ├── core/                ActivityHost runtime + scoring + SCORM/web drivers
+│   ├── schemas/             cross-activity schema scaffolding + SchemaRegistry
 │   ├── bridge/              SCORM 1.2 wrapper
-│   └── live/                Live transport (Trystero + Y.js)
+│   ├── live/                Live transport (Trystero + Y.js)
+│   └── embed/               <kukui-activity> custom element for web packages
 ├── packaging/
-│   ├── pack-scorm.js        builds each kukui-<kind>.scorm.zip
+│   ├── pack-scorm.js        builds SCORM zips and web packages per kind
 │   └── templates/imsmanifest.xml.tmpl
 └── docs/
 ```
 
-Three apps, four shared packages. Activities are React components in `packages/core/src/components/<kind>/`; they consume Zod-validated config from `packages/schemas/<kind>.ts` and emit a `ScoreState` on submit.
+Three apps, six shared packages. Everything that defines one activity lives in a single bundle folder, `packages/activities/<slug>/`: its Zod schema, React component, Studio form metadata, starter config, and sample fixtures. Each bundle exports an `ActivityManifest` from its `manifest.ts`, and `packages/activities/src/index.ts` discovers all manifests via `import.meta.glob` — Studio's catalog, the schema registry, and the engine's activity router all derive from them automatically. The component consumes a Zod-validated config and emits a `ScoreState` on submit.
 
 ## Adding a new activity type
 
-Roughly seven files to touch. Plan on a half-day for a simple activity, longer for ones with canvas editors or 3D rendering.
+One bundle folder plus one HTML entry. Plan on a half-day for a simple activity, longer for ones with canvas editors or 3D rendering. The easiest path is to copy an existing bundle (`packages/activities/multiple-choice/` is the simplest) and adapt it. If you develop with Claude Code, the repo's `/kukui` slash command scaffolds a new bundle for you.
 
-### 1. Define the schema
+### 1. Create the bundle folder
 
-Create `packages/schemas/src/<kind>.ts`. Use Zod, add a JSDoc header explaining what the activity is.
+Everything lives in `packages/activities/<slug>/`:
+
+| File | Purpose |
+|---|---|
+| `schema.ts` | The Zod config schema (add a JSDoc header explaining what the activity is) |
+| `Component.tsx` | The React component |
+| `meta.ts` | Label, description, Bloom level, `live` flag |
+| `starter.ts` | Minimal valid config — the form's initial value when an author picks the activity |
+| `ui-schema.ts` | RJSF form hints (can be minimal if defaults are fine) |
+| `samples/basic.json` | Sample fixture, served at `/samples/<slug>/` in dev and used as the packaging default |
+| `manifest.ts` | Assembles the above into an `ActivityManifest` export |
+
+A schema looks like:
 
 ```ts
 import { z } from "zod";
@@ -52,41 +68,24 @@ export const MyActivityConfig = z.object({
 export type MyActivityConfig = z.infer<typeof MyActivityConfig>;
 ```
 
-Register it in `packages/schemas/src/index.ts`.
+The component receives a `config: MyActivityConfig` and an `onSubmit({ raw, max, success, suspendData })` prop. Keep accessibility tier-one: keyboard fallback for drag interactions, ARIA labels, `prefers-reduced-motion` respected.
 
-### 2. Build the React component
+### 2. There is no step 2 (registration is automatic)
 
-Create `packages/core/src/components/<kind>/MyActivity.tsx`. The component receives a `config: MyActivityConfig` and an `onSubmit({ raw, max, success, suspendData })` prop.
+`packages/activities/src/index.ts` discovers every bundle's `manifest.ts` via `import.meta.glob`. Studio's sidebar, the schema registry, the activity-host router, and packaging all derive from the manifests — there is no central registry file to hand-edit.
 
-Keep accessibility tier-one: keyboard fallback for drag interactions, ARIA labels, `prefers-reduced-motion` respected.
+### 3. Add an engine-web entry
 
-### 3. Hook it into the activity host
+`apps/engine-web/<slug>.html` is the per-activity runtime entry that ships inside each package. Copy any existing one (e.g. `flashcards.html`) and change the `data-activity` / `data-config` attributes.
 
-`packages/core/src/activity-host.tsx` is the runtime router. Add your kind to the discriminated union there.
-
-### 4. Add a starter to Studio
-
-`apps/studio-app/src/starters.ts` carries a minimal valid config per kind — the form's initial value when an author picks the activity.
-
-### 5. Add a uiSchema (optional)
-
-`apps/studio-app/src/uiSchemas.ts` controls how RJSF renders each field. Skip if defaults are fine.
-
-### 6. Add an engine-web entry
-
-`apps/engine-web/<kind>.html` is the per-activity SCORM bundle entry. Copy any existing one (e.g. `flashcards.html`) and change the kind reference.
-
-### 7. Wire packaging
-
-`packaging/pack-scorm.js` has a `PHASE_1_ACTIVITIES` list — add your kind. Running `node packaging/pack-scorm.js --all` after that produces `packaging/build/kukui-<kind>.scorm.zip`.
-
-### 8. Build and test
+### 4. Build and test
 
 ```bash
 pnpm typecheck
-pnpm test
-pnpm dev:studio                   # author the activity locally
-node packaging/pack-scorm.js --all  # build the SCORM zip
+pnpm test                           # cross-reference tests check manifest completeness
+pnpm dev:studio                     # author the activity locally
+node packaging/pack-scorm.js --all  # SCORM zips (packaging auto-discovers slugs)
+node packaging/pack-scorm.js --all --target web   # non-LMS web packages
 ```
 
 ## Style and conventions
@@ -99,19 +98,19 @@ node packaging/pack-scorm.js --all  # build the SCORM zip
 
 ## Tests
 
-Each activity should have a test in `packages/core/src/components/<kind>/<Kind>.test.tsx` covering at least:
+Each activity should have a test co-located in its bundle at `packages/activities/<slug>/Component.test.tsx` covering at least:
 
 - Renders title + prompt
 - The "keyboard fallback" path works (for drag-and-drop-style activities)
 - Submission with a winning and losing state produces the right score
 
-We use Vitest + React Testing Library. See `Flashcards.test.tsx` for a complete reference.
+We use Vitest + React Testing Library. See `packages/activities/flashcards/Component.test.tsx` for a complete reference.
 
 ## Documentation
 
 When you add an activity, please also:
 
-1. Add an entry to `docs/docs/activity-guide.md` (this site)
+1. Add an entry to `apps/studio-app/src/content/docs/activity-guide.md` (the [Activity catalog](/docs/activity-guide) page on this site)
 2. Update the activity catalog count if it changes
 3. Open a PR with screenshots
 

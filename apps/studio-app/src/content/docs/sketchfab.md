@@ -1,7 +1,7 @@
 ---
 title: Sketchfab integration
 description: Sign in to Sketchfab and import your Creative Commons–licensed 3D models into Hotspot 3D activities.
-order: 8
+order: 9
 updated: 2026-05-15
 ---
 

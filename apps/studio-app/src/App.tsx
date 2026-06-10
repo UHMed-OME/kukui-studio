@@ -51,6 +51,7 @@ import { ActivityIcon } from "./activityIcons.js";
 import { ACTIVITY_LABELS, STARTERS, ensureFreshKeys } from "./starters.js";
 import { clearDraft, debouncedSaver, loadDraft } from "./drafts.js";
 import { downloadScormZip } from "./scormDownload.js";
+import { downloadWebZip } from "./webDownload.js";
 import { importFromFile } from "./scormImport.js";
 import { driveEnabled } from "./drive/config.js";
 import { saveJsonToDrive } from "./drive/saveToDrive.js";
@@ -179,6 +180,12 @@ export function App() {
    * states auto-clear after ~3s; error states require explicit dismissal.
    */
   const [asyncStatus, setAsyncStatus] = useState<AsyncStatus | null>(null);
+  // True while a build or import is in flight. The download buttons and
+  // import/export actions all share the one asyncStatus strip, so letting a
+  // second op start mid-flight would clobber the first one's status (and
+  // race the history/kind state on imports). Buttons disable on this, and
+  // the async handlers early-return as a belt-and-braces guard.
+  const busy = asyncStatus?.kind === "building" || asyncStatus?.kind === "importing";
   const [confirmReset, setConfirmReset] = useState(false);
   const [settingsPane, setSettingsPane] = useState<SettingsPane | null>(null);
   const [confirmResetAll, setConfirmResetAll] = useState(false);
@@ -212,12 +219,22 @@ export function App() {
     window.history.replaceState(null, "", url.toString());
   }, [kind]);
 
+  // Set by the import paths right before they setKind() to a different
+  // activity: the kind-change hydration effect below would otherwise fire
+  // on the next commit and clobber the just-imported config with the
+  // target kind's stale draft/starter. One-shot — the effect clears it.
+  const skipNextHydrateRef = useRef(false);
+
   // Hydrate from draft when kind changes. Dirty-state tracks whether the
   // restored value differs from the starter — a stored draft is by
   // definition dirty (otherwise it wouldn't have been saved). Resets the
   // undo history because undoing past a kind switch would produce config
   // shaped for the wrong activity.
   useEffect(() => {
+    if (skipNextHydrateRef.current) {
+      skipNextHydrateRef.current = false;
+      return;
+    }
     const draft = loadDraft(kind);
     history.reset(applySchemaDefaults(kind, ensureFreshKeys(kind, draft ?? STARTERS[kind])));
     setIsDirty(draft != null);
@@ -388,6 +405,7 @@ export function App() {
   const triggerImport = () => fileInputRef.current?.click();
 
   const saveToDrive = async () => {
+    if (busy) return;
     if (!validation.success) {
       flash("Fix the highlighted validation errors first.");
       return;
@@ -418,6 +436,7 @@ export function App() {
   };
 
   const openFromDrive = async () => {
+    if (busy) return;
     setAsyncStatus({
       kind: "importing",
       message: "Opening Google Drive…",
@@ -441,6 +460,10 @@ export function App() {
         });
         return;
       }
+      // Only arm the skip when the kind actually changes — the hydration
+      // effect won't fire otherwise, and a stale flag would swallow the
+      // next genuine kind switch.
+      if (result.kind !== kind) skipNextHydrateRef.current = true;
       setKind(result.kind);
       history.reset(applySchemaDefaults(result.kind, migrateToScoring(result.config, result.kind)));
       setIsDirty(true);
@@ -461,7 +484,7 @@ export function App() {
   const handleImportFile = async (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     e.target.value = ""; // allow re-selecting the same file later
-    if (!file) return;
+    if (!file || busy) return;
     setAsyncStatus({
       kind: "importing",
       message: `Importing ${file.name}…`,
@@ -476,8 +499,12 @@ export function App() {
       });
       return;
     }
+    // Only arm the skip when the kind actually changes — the hydration
+    // effect won't fire otherwise, and a stale flag would swallow the
+    // next genuine kind switch.
+    if (result.kind !== kind) skipNextHydrateRef.current = true;
     setKind(result.kind);
-    history.reset(migrateToScoring(result.config, result.kind));
+    history.reset(applySchemaDefaults(result.kind, migrateToScoring(result.config, result.kind)));
     setIsDirty(true);
     setAsyncStatus({
       kind: "success",
@@ -489,6 +516,7 @@ export function App() {
   const isPlanned = (STUDIO_PLANNED as readonly string[]).includes(kind);
 
   const downloadScorm = async () => {
+    if (busy) return;
     if (isPlanned) {
       flash("This activity is in design — SCORM download will work once it ships.");
       return;
@@ -507,6 +535,41 @@ export function App() {
       setAsyncStatus({
         kind: "success",
         message: "SCORM zip downloaded.",
+        dismissable: true,
+      });
+    } catch (err) {
+      console.error(err);
+      setAsyncStatus({
+        kind: "error",
+        message:
+          err instanceof Error
+            ? `Download failed: ${err.message}`
+            : "Download failed.",
+        dismissable: true,
+      });
+    }
+  };
+
+  const downloadWeb = async () => {
+    if (busy) return;
+    if (isPlanned) {
+      flash("This activity is in design — web download will work once it ships.");
+      return;
+    }
+    if (!validation.success) {
+      flash("Fix the highlighted validation errors first.");
+      return;
+    }
+    setAsyncStatus({
+      kind: "building",
+      message: "Building web package…",
+      dismissable: false,
+    });
+    try {
+      await downloadWebZip(kind, validation.data);
+      setAsyncStatus({
+        kind: "success",
+        message: "Web package downloaded. See Docs → Host on the web.",
         dismissable: true,
       });
     } catch (err) {
@@ -558,6 +621,7 @@ export function App() {
           <button
             type="button"
             onClick={downloadScorm}
+            disabled={busy}
             className="kukui-studio-btn kukui-studio-btn--primary kukui-studio-btn--with-subtext kukui-studio-btn--nut-bg"
             title="Download a SCORM 1.2 zip ready to upload into Lamakū or any SCORM 1.2 compatible LMS"
           >
@@ -569,6 +633,19 @@ export function App() {
             <span className="kukui-studio-btn__stack">
               <span className="kukui-studio-btn__main">Download</span>
               <span className="kukui-studio-btn__sub">SCORM 1.2 zip</span>
+            </span>
+          </button>
+          <button
+            type="button"
+            onClick={downloadWeb}
+            disabled={busy}
+            className="kukui-studio-btn kukui-studio-btn--with-subtext"
+            title="Download a portable web package to host anywhere — no LMS required (see Docs → Host on the web)"
+          >
+            <DownloadIcon />
+            <span className="kukui-studio-btn__stack">
+              <span className="kukui-studio-btn__main">Download</span>
+              <span className="kukui-studio-btn__sub">For the web</span>
             </span>
           </button>
         </div>
@@ -823,6 +900,7 @@ export function App() {
                     icon: <UploadIcon />,
                     onClick: triggerImport,
                     title: "Open a JSON or SCORM zip from this computer",
+                    disabled: busy,
                   },
                   ...(driveEnabled()
                     ? ([
@@ -831,6 +909,7 @@ export function App() {
                           icon: <UploadIcon />,
                           onClick: openFromDrive,
                           title: "Pick a JSON file from your Google Drive",
+                          disabled: busy,
                         },
                       ] satisfies MenuItem[])
                     : []),
@@ -846,6 +925,7 @@ export function App() {
                     icon: <DownloadIcon />,
                     onClick: exportJson,
                     title: "Download a portable JSON snapshot",
+                    disabled: busy,
                   },
                   ...(driveEnabled()
                     ? ([
@@ -854,6 +934,7 @@ export function App() {
                           icon: <DownloadIcon />,
                           onClick: saveToDrive,
                           title: "Save this activity to your Google Drive",
+                          disabled: busy,
                         },
                       ] satisfies MenuItem[])
                     : []),
