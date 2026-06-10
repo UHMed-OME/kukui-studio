@@ -175,6 +175,11 @@ function CollectionSection({
  * Fires a single POST of the results JSON to an author-supplied endpoint on
  * mount, with a manual retry. The endpoint must send CORS headers; a network
  * rejection (including CORS failure) surfaces as "couldn't send" with retry.
+ *
+ * "Once" is enforced with a localStorage flag keyed by run (finishedAt), so
+ * remounts — StrictMode double-mounting, reloads of a completed page — don't
+ * re-POST. A re-submission gets a new finishedAt and posts again. In-flight
+ * requests abort on unmount so we never setState on an unmounted component.
  */
 function WebhookSender({
   webhook,
@@ -189,25 +194,42 @@ function WebhookSender({
   score: ScoreState;
   results?: WebResults;
 }) {
-  const [status, setStatus] = useState<"sending" | "sent" | "error">("sending");
-  const sentRef = useRef(false);
+  const sentKey = `kukui:web:webhook-sent:${kind}:${results?.finishedAt ?? ""}`;
+  const [status, setStatus] = useState<"sending" | "sent" | "error">(() =>
+    readFlag(sentKey) ? "sent" : "sending",
+  );
+  const controllerRef = useRef<AbortController | null>(null);
 
   const send = () => {
+    controllerRef.current?.abort();
+    const controller = new AbortController();
+    controllerRef.current = controller;
     setStatus("sending");
     const doc = buildResultsDocument(kind, title, score, results);
     fetch(webhook, {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify(doc),
+      signal: controller.signal,
     })
-      .then((res) => setStatus(res.ok ? "sent" : "error"))
-      .catch(() => setStatus("error"));
+      .then((res) => {
+        if (res.ok) {
+          writeFlag(sentKey);
+          setStatus("sent");
+        } else {
+          setStatus("error");
+        }
+      })
+      .catch((err: unknown) => {
+        // Aborted means we're unmounting — don't touch state.
+        if ((err as Error | undefined)?.name === "AbortError") return;
+        setStatus("error");
+      });
   };
 
   useEffect(() => {
-    if (sentRef.current) return;
-    sentRef.current = true;
-    send();
+    if (!readFlag(sentKey)) send();
+    return () => controllerRef.current?.abort();
     // Intentionally fire once on mount; retry is manual.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -227,6 +249,24 @@ function WebhookSender({
       ) : null}
     </p>
   );
+}
+
+// localStorage guards for the webhook "sent once" flag. Storage can be
+// blocked (private mode) — then the flag degrades to per-mount semantics.
+function readFlag(key: string): boolean {
+  try {
+    return window.localStorage.getItem(key) !== null;
+  } catch {
+    return false;
+  }
+}
+
+function writeFlag(key: string): void {
+  try {
+    window.localStorage.setItem(key, "1");
+  } catch {
+    // Best effort only.
+  }
 }
 
 function mailtoHref(email: string, kind: string, title: string | undefined, score: ScoreState): string {

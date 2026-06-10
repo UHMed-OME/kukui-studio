@@ -1,5 +1,6 @@
 import LZString from "lz-string";
 import {
+  MAX_RESPONSE_CHARS,
   encodeLatency,
   encodeResult,
   encodeTimeOfDay,
@@ -67,7 +68,6 @@ export interface ScormDriver {
   postScore(raw: number, max: number, success: boolean): void;
   saveSuspendData(json: string): void;
   loadSuspendData(): string | undefined;
-  setStudentName?(): string | undefined;
   getStudentName(): string | undefined;
   getStudentId(): string | undefined;
   isLive(): boolean;
@@ -87,7 +87,10 @@ class PipwerksDriver implements ScormDriver {
   }
   postScore(raw: number, max: number, success: boolean) {
     const scaled = max === 0 ? 0 : (raw / max) * 100;
-    this.api.set("cmi.core.score.raw", String(Math.round(scaled)));
+    // SCORM 1.2 CMIDecimal score range is 0–100; clamp so an out-of-range
+    // raw (bonus points, negative scoring) never produces an LMS write error.
+    const clamped = Math.min(100, Math.max(0, Math.round(scaled)));
+    this.api.set("cmi.core.score.raw", String(clamped));
     this.api.set("cmi.core.score.min", "0");
     this.api.set("cmi.core.score.max", "100");
     this.api.set("cmi.core.lesson_status", success ? "passed" : "failed");
@@ -96,18 +99,24 @@ class PipwerksDriver implements ScormDriver {
   saveSuspendData(json: string) {
     const compressed = LZString.compressToUTF16(json);
     if (compressed.length > SUSPEND_DATA_MAX) {
+      // Never truncate an LZ stream — a sliced stream decompresses to
+      // garbage, so the whole save (and resume) would be lost. Keep the
+      // last good value on the LMS instead.
       console.warn(
-        `[kukui:scorm] suspend_data ${compressed.length} > ${SUSPEND_DATA_MAX} cap; truncating`,
+        `[kukui:scorm] suspend_data ${compressed.length} > ${SUSPEND_DATA_MAX} cap; skipping save to preserve the previous state`,
       );
+      return;
     }
-    this.api.set("cmi.suspend_data", compressed.slice(0, SUSPEND_DATA_MAX));
+    this.api.set("cmi.suspend_data", compressed);
     this.api.save();
   }
   loadSuspendData(): string | undefined {
     const raw = this.api.get("cmi.suspend_data");
     if (!raw) return undefined;
+    // `|| undefined` also maps "" to undefined: lz-string returns "" for
+    // some corrupt inputs, and "" is never valid JSON for resume callers.
     const decompressed = LZString.decompressFromUTF16(raw);
-    return decompressed ?? undefined;
+    return decompressed || undefined;
   }
   getStudentName(): string | undefined {
     const v = this.api.get("cmi.core.student_name");
@@ -124,7 +133,9 @@ class PipwerksDriver implements ScormDriver {
     const i = this.interactionIndex;
     this.interactionIndex += 1;
     const prefix = `cmi.interactions.${i}`;
-    this.api.set(`${prefix}.id`, truncateResponse(record.id));
+    // `id` is a CMIIdentifier — plain slice, no ellipsis: U+2026 is outside
+    // the identifier character set. Human-readable responses keep the marker.
+    this.api.set(`${prefix}.id`, record.id.slice(0, MAX_RESPONSE_CHARS));
     this.api.set(`${prefix}.type`, record.type);
     this.api.set(`${prefix}.time`, encodeTimeOfDay(new Date()));
     this.api.set(`${prefix}.student_response`, truncateResponse(record.studentResponse));
@@ -191,7 +202,10 @@ class LocalDriver implements ScormDriver {
   constructor(private readonly storageKey: string) {
     const raw = this.readStore();
     if (raw) {
-      this.record = { interactions: [], ...raw.results };
+      // readStore already type-checked every field — a tampered/legacy
+      // record comes back sanitized (e.g. `interactions` is always an
+      // array, which recordInteraction mutates).
+      if (raw.results) this.record = raw.results;
       this.suspend = raw.suspend;
     }
   }
@@ -200,7 +214,35 @@ class LocalDriver implements ScormDriver {
     try {
       const text = window.localStorage.getItem(this.storageKey);
       if (!text) return undefined;
-      return JSON.parse(text) as { suspend?: string; results?: WebResults };
+      const parsed: unknown = JSON.parse(text);
+      // localStorage is learner-editable, so never trust the parsed shape.
+      // Drop any field that fails a type check rather than crashing later
+      // (suspend feeds JSON.parse in activities; score feeds arithmetic).
+      if (typeof parsed !== "object" || parsed === null) return undefined;
+      const record = parsed as { suspend?: unknown; results?: unknown };
+      const out: { suspend?: string; results?: WebResults } = {};
+      if (typeof record.suspend === "string") out.suspend = record.suspend;
+      if (typeof record.results === "object" && record.results !== null) {
+        const r = record.results as Record<string, unknown>;
+        const results: WebResults = { interactions: [] };
+        if (Array.isArray(r.interactions)) {
+          results.interactions = r.interactions as InteractionRecord[];
+        }
+        const s = r.score as Record<string, unknown> | undefined;
+        if (
+          typeof s === "object" &&
+          s !== null &&
+          typeof s.raw === "number" &&
+          typeof s.max === "number" &&
+          typeof s.success === "boolean"
+        ) {
+          results.score = { raw: s.raw, max: s.max, success: s.success };
+        }
+        if (typeof r.name === "string") results.name = r.name;
+        if (typeof r.finishedAt === "string") results.finishedAt = r.finishedAt;
+        out.results = results;
+      }
+      return out;
     } catch {
       return undefined;
     }
@@ -224,6 +266,9 @@ class LocalDriver implements ScormDriver {
     return true;
   }
   postScore(raw: number, max: number, success: boolean) {
+    // Unlike PipwerksDriver this stores raw/max unscaled — by design: web
+    // completion codes and the results download carry raw points, and the
+    // panel derives the percentage at display time.
     this.record.score = { raw, max, success };
     this.record.finishedAt = new Date().toISOString();
     this.writeStore();
@@ -245,12 +290,31 @@ class LocalDriver implements ScormDriver {
     return false;
   }
   recordInteraction(record: InteractionRecord) {
-    this.record.interactions.push(record);
+    // De-dupe by id: the array persists across retries and reloads, so a
+    // re-answered question replaces its prior record instead of appending
+    // a duplicate forever.
+    const existing = this.record.interactions.findIndex((r) => r.id === record.id);
+    if (existing >= 0) {
+      this.record.interactions[existing] = record;
+    } else {
+      this.record.interactions.push(record);
+    }
     this.writeStore();
   }
   getWebResults(): WebResults {
     return this.record;
   }
+}
+
+/**
+ * Stable localStorage namespace for a web-mode run on this page. Keyed by
+ * activity kind, path, AND config URL — engine-web resolves the config from
+ * a `?config=` query param, so two activities of the same kind served from
+ * one path must not share state.
+ */
+export function webStorageKey(kind: string, configUrl: string): string {
+  const path = typeof window !== "undefined" ? window.location.pathname : "";
+  return `kukui:web:${kind}:${path}:${configUrl}`;
 }
 
 let driver: ScormDriver | undefined;
@@ -268,9 +332,16 @@ export function getScormDriver(opts?: ScormDriverOptions): ScormDriver {
   const api = w?.pipwerks?.SCORM;
   if (api) {
     const d = new PipwerksDriver(api);
-    d.initialize();
-    driver = d;
-  } else if (opts?.mode === "web" && w) {
+    // LMSInitialize can fail (stale session, misconfigured LMS). Only commit
+    // to the SCORM driver when it succeeds; otherwise fall through to the
+    // requested non-LMS backend so saves don't silently no-op.
+    if (d.initialize()) {
+      driver = d;
+      return driver;
+    }
+    console.warn("[kukui:scorm] LMSInitialize failed; falling back to non-LMS persistence");
+  }
+  if (opts?.mode === "web" && w) {
     const d = new LocalDriver(opts.storageKey ?? "kukui:web");
     d.initialize();
     driver = d;

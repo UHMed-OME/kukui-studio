@@ -1,7 +1,7 @@
 import { Suspense, useEffect, useState, type CSSProperties } from "react";
 import { SchemaRegistry, type SchemaRegistryKey } from "@kukui/schemas";
 import { loadContent, ContentLoadError } from "./content.js";
-import { getScormDriver, type DriverMode } from "./scorm.js";
+import { getScormDriver, webStorageKey, type DriverMode } from "./scorm.js";
 import type { CollectConfig } from "./collect.js";
 import type { ActivityKind, BuiltActivityKind, InteractionRecord, ScoreState } from "./types.js";
 import { ACTIVITY_REGISTRY, StubActivityLazy } from "./components/registry.js";
@@ -10,12 +10,6 @@ import { applyColorScheme, type ResolvedColorScheme } from "./colorScheme.js";
 import { WebCompletionPanel } from "./WebCompletionPanel.js";
 
 export type { ActivityKind };
-
-/** Stable localStorage namespace for a web-mode run on this page. */
-function webStorageKey(kind: ActivityKind): string {
-  const path = typeof window !== "undefined" ? window.location.pathname : "";
-  return `kukui:web:${kind}:${path}`;
-}
 
 type LoadState =
   | { status: "loading" }
@@ -93,7 +87,7 @@ export function ActivityHost({
   }, [kind, configUrl, loader]);
 
   const scorm = getScormDriver(
-    mode === "web" ? { mode, storageKey: webStorageKey(kind) } : undefined,
+    mode === "web" ? { mode, storageKey: webStorageKey(kind, configUrl) } : undefined,
   );
 
   const handleSubmit = (score: ScoreState) => {

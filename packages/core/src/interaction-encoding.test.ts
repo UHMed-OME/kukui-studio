@@ -45,6 +45,12 @@ describe("encodeChoice", () => {
     expect(encodeChoice([51])).toBe("az");
     expect(encodeChoice([52])).toBe("ba");
   });
+
+  it("clamps to 'zz' past the two-letter range instead of emitting non-letters", () => {
+    expect(encodeChoice([701])).toBe("zz");
+    expect(encodeChoice([702])).toBe("zz");
+    expect(encodeChoice([9999])).toBe("zz");
+  });
 });
 
 describe("encodeMatching", () => {

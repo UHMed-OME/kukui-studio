@@ -20,10 +20,12 @@ function letterFor(index: number): string {
   // SCORM 1.2 doesn't formally support more than 26 alternatives, but
   // activities like word-cloud / large hotspot sets can exceed it.
   // Fall through to two-letter labels (aa, ab, …) — Brightspace accepts
-  // these in our testing and it preserves uniqueness.
-  if (index < 26) return String.fromCharCode(97 + index);
-  const first = Math.floor(index / 26) - 1;
-  const second = index % 26;
+  // these in our testing and it preserves uniqueness. Past "zz" (index
+  // 701) clamp rather than emit non-letters; no activity gets close.
+  const i = Math.min(index, 701);
+  if (i < 26) return String.fromCharCode(97 + i);
+  const first = Math.floor(i / 26) - 1;
+  const second = i % 26;
   return String.fromCharCode(97 + first) + String.fromCharCode(97 + second);
 }
 

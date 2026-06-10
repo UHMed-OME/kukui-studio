@@ -67,9 +67,25 @@ export function decodeCompletionCode(code: string): CompletionPayload | undefine
   const json = LZString.decompressFromEncodedURIComponent(code.trim());
   if (!json) return undefined;
   try {
-    const obj = JSON.parse(json) as CompletionPayload;
-    if (obj && obj.v === 1 && typeof obj.k === "string") return obj;
-    return undefined;
+    // The code is learner-supplied — validate every field, not just the
+    // version tag, so a tampered payload can't smuggle wrong types into
+    // whatever renders the decoded result.
+    const obj = JSON.parse(json) as Partial<CompletionPayload>;
+    if (
+      !obj ||
+      obj.v !== 1 ||
+      typeof obj.k !== "string" ||
+      typeof obj.r !== "number" ||
+      !Number.isFinite(obj.r) ||
+      typeof obj.m !== "number" ||
+      typeof obj.p !== "boolean"
+    ) {
+      return undefined;
+    }
+    if (obj.t !== undefined && typeof obj.t !== "string") return undefined;
+    if (obj.n !== undefined && typeof obj.n !== "string") return undefined;
+    if (obj.at !== undefined && typeof obj.at !== "string") return undefined;
+    return obj as CompletionPayload;
   } catch {
     return undefined;
   }

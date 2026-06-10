@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import LZString from "lz-string";
 import {
   buildPayload,
   buildResultsDocument,
@@ -50,6 +51,34 @@ describe("completion code round-trip", () => {
   it("returns undefined for garbage or tampered codes", () => {
     expect(decodeCompletionCode("not-a-real-code")).toBeUndefined();
     expect(decodeCompletionCode("")).toBeUndefined();
+  });
+
+  it("rejects payloads with missing or wrong-typed fields", () => {
+    // A completion code is learner-supplied — craft codes around the
+    // encoder to simulate tampering.
+    const forge = (json: string) => LZString.compressToEncodedURIComponent(json);
+    const bad = [
+      '{"v":2,"k":"x","r":8,"m":10,"p":true}', // wrong version
+      '{"v":1,"r":8,"m":10,"p":true}', // k missing
+      '{"v":1,"k":"x","m":10,"p":true}', // r missing
+      '{"v":1,"k":"x","r":"8","m":10,"p":true}', // r not a number
+      '{"v":1,"k":"x","r":1e999,"m":10,"p":true}', // r not finite
+      '{"v":1,"k":"x","r":8,"m":"10","p":true}', // m not a number
+      '{"v":1,"k":"x","r":8,"m":10,"p":1}', // p not a boolean
+      '{"v":1,"k":"x","r":8,"m":10,"p":true,"t":42}', // t not a string
+      '{"v":1,"k":"x","r":8,"m":10,"p":true,"n":{}}', // n not a string
+      '{"v":1,"k":"x","r":8,"m":10,"p":true,"at":[]}', // at not a string
+      '"a string"',
+      "null",
+      "[1,2,3]",
+    ];
+    for (const json of bad) {
+      expect(decodeCompletionCode(forge(json)), json).toBeUndefined();
+    }
+    // Sanity check: the same shape with correct types decodes.
+    expect(
+      decodeCompletionCode(forge('{"v":1,"k":"x","r":8,"m":10,"p":true}'))?.k,
+    ).toBe("x");
   });
 });
 
