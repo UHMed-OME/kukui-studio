@@ -1,13 +1,13 @@
 ---
 title: Live mode (alpha)
-description: Synchronous in-class activities — students join with a 6-digit code, instructor controls the pace.
+description: Synchronous in-class activities. Students join with a 6-digit code, instructor controls the pace.
 order: 5
 updated: 2026-05-29
 ---
 
 # Live mode (alpha)
 
-Kukui Live is a real-time synchronous mode for in-class activities. Instructors run a session from their device, students join with a 6-digit code, and the room state flows through a peer-to-peer connection — no Kukui server in the middle.
+Kukui Live is a real-time synchronous mode for in-class activities. Instructors run a session from their device, students join with a 6-digit code, and the room state flows through a peer-to-peer connection, with no Kukui server in the middle.
 
 > **Alpha.** Live mode is still in active development. The instructor and student flows work; some activities don't yet support Live; relay reliability varies by network.
 
@@ -16,7 +16,7 @@ Kukui Live is a real-time synchronous mode for in-class activities. Instructors 
 Live mode shines when you want **everyone moving together**. Examples:
 
 - A pre-class straw poll: "Before I start, how confident are you in last week's material?"
-- Mid-lecture comprehension check: "Quick quiz — what's the most likely diagnosis?"
+- Mid-lecture comprehension check: "Quick quiz: what's the most likely diagnosis?"
 - Group word-cloud brainstorm: "What's the first word that comes to mind when I say 'sepsis'?"
 - Backchannel Q&A: students submit questions during a long lecture, vote up the ones that matter
 
@@ -24,7 +24,7 @@ Live mode shines when you want **everyone moving together**. Examples:
 
 1. **Instructor opens Live.** From Studio, switch to an activity that supports Live (Straw Poll, Confidence Meter, Word Cloud, Q&A Board, Quick Quiz). A 6-digit join code appears.
 2. **Students join.** They open `kukuistudio.com/live` on their phones or laptops and enter the code. No login.
-3. **Instructor controls the phase.** Reveal results, open polling, pause, advance — all from the instructor view.
+3. **Instructor controls the phase.** Reveal results, open polling, pause, advance: all from the instructor view.
 4. **State syncs in real time** via WebRTC. There's no Kukui server holding the session; the room exists only as long as one peer (the instructor) is connected.
 
 ## Activities currently supported in Live
@@ -43,7 +43,7 @@ More live-compatible activities are planned.
 
 If Live works between tabs on your own computer but other devices just sit on **"waiting for the instructor,"** the network is blocking the direct device-to-device connection. This is common on eduroam, guest Wi-Fi with client isolation, and networks that block UDP.
 
-Live always uses public STUN servers, which handle most home and single-LAN setups automatically. Restrictive networks need a **TURN relay** as a fallback — see **[Hosting a TURN server](/docs/turn-server)** for the full setup. Once a TURN server is configured (per-session via `?turn=` in the URL, in the lobby's **Advanced → connection** panel, or as a build-wide default), cross-network rooms connect reliably.
+Live always uses public STUN servers, which handle most home and single-LAN setups automatically. Restrictive networks need a **TURN relay** as a fallback: see **[Hosting a TURN server](/docs/turn-server)** for the full setup. Once a TURN server is configured (per-session via `?turn=` in the URL, in the lobby's **Advanced → connection** panel, or as a build-wide default), cross-network rooms connect reliably.
 
 ## Limitations (alpha)
 
@@ -54,7 +54,7 @@ Live always uses public STUN servers, which handle most home and single-LAN setu
 
 ## Privacy
 
-Live sessions transit through a peer-to-peer relay we don't operate (default: Nostr-based). No student data hits a server we run. Names are optional — students can join anonymously. If you configure a [TURN server](/docs/turn-server) for restrictive networks, session traffic that can't connect directly is relayed through *your* TURN server — so it stays on infrastructure you control, never a third party.
+Live sessions transit through a peer-to-peer relay we don't operate (default: Nostr-based). No student data hits a server we run. Names are optional; students can join anonymously. If you configure a [TURN server](/docs/turn-server) for restrictive networks, session traffic that can't connect directly is relayed through *your* TURN server, so it stays on infrastructure you control, never a third party.
 
 ## What's next
 

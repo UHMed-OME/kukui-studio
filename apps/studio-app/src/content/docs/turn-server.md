@@ -7,7 +7,8 @@ updated: 2026-05-29
 
 # Hosting a TURN server
 
-Kukui Live connects devices directly, peer-to-peer, over WebRTC — there's no Kukui server relaying the session. For that direct connection to form, each device has to find a path through its network's NAT and firewall. Most home and single-LAN setups manage this with **STUN** alone (always configured, nothing to do). But some networks block direct peer-to-peer entirely, and on those the *only* way two devices reach each other is by bouncing traffic through a **TURN** relay.
+Kukui Live connects devices directly, peer-to-peer, over WebRTC. There's no Kukui server relaying the session. For that direct connection to form, each device has to find a path through its network's NAT and firewall. Most home and single-LAN setups manage this with **STUN** alone (always configured, nothing to do). But some networks block direct peer-to-peer entirely, and on those the *only* way two devices reach each other is by bouncing traffic through a **TURN** relay.
+
 
 If Live works between tabs on one computer but **other devices just sit on "waiting for the instructor,"** that's the signature of a network that needs TURN. It's common on:
 
@@ -15,14 +16,14 @@ If Live works between tabs on one computer but **other devices just sit on "wait
 - **Guest / public Wi-Fi** with *client isolation* (AP isolation), which deliberately blocks device-to-device traffic
 - Networks that block outbound UDP
 
-There is no public TURN baked into Kukui — a TURN relay carries all of a session's traffic, so it has to be an endpoint your institution controls and trusts. This guide walks through standing one up.
+There is no public TURN baked into Kukui: a TURN relay carries all of a session's traffic, so it has to be an endpoint your institution controls and trusts. This guide walks through standing one up.
 
-> **Why not GitHub?** A TURN server is a long-running daemon that needs a public IP and open relay ports. GitHub Pages serves static files only, and GitHub Actions runners are ephemeral — neither can host it. TURN belongs on a small always-on VPS.
+> **Why not GitHub?** A TURN server is a long-running daemon that needs a public IP and open relay ports. GitHub Pages serves static files only, and GitHub Actions runners are ephemeral. Neither can host it. TURN belongs on a small always-on VPS.
 
 ## What you need
 
-- A small **VPS** with a public IP — Fly.io, Hetzner, DigitalOcean, AWS Lightsail, or Oracle Cloud's always-free tier all work. A 1 vCPU / 1 GB box is plenty for a classroom.
-- A **domain or subdomain** pointed at the VPS (e.g. `turn.kukui.your-school.edu`) — needed for the TLS certificate.
+- A small **VPS** with a public IP (Fly.io, Hetzner, DigitalOcean, AWS Lightsail, or Oracle Cloud's always-free tier all work). A 1 vCPU / 1 GB box is plenty for a classroom.
+- A **domain or subdomain** pointed at the VPS (e.g. `turn.kukui.your-school.edu`), needed for the TLS certificate.
 - About 20 minutes.
 
 ## 1. Install coturn
@@ -36,7 +37,7 @@ sudo sed -i 's/#TURNSERVER_ENABLED=1/TURNSERVER_ENABLED=1/' /etc/default/coturn
 
 ## 2. Get a TLS certificate
 
-Use `turns:` (TURN over TLS, port 5349) as your primary endpoint — it survives networks that only allow outbound 443/TLS, which is exactly where you need TURN most. Issue a cert with Let's Encrypt:
+Use `turns:` (TURN over TLS, port 5349) as your primary endpoint: it survives networks that only allow outbound 443/TLS, which is exactly where you need TURN most. Issue a cert with Let's Encrypt:
 
 ```bash
 sudo apt install -y certbot
@@ -57,7 +58,7 @@ realm=turn.kukui.your-school.edu
 cert=/etc/letsencrypt/live/turn.kukui.your-school.edu/fullchain.pem
 pkey=/etc/letsencrypt/live/turn.kukui.your-school.edu/privkey.pem
 
-# Time-limited credentials (recommended) — clients authenticate with an
+# Time-limited credentials (recommended): clients authenticate with an
 # HMAC of the username, so you never ship a static password.
 use-auth-secret
 static-auth-secret=REPLACE_WITH_A_LONG_RANDOM_SECRET
@@ -109,12 +110,12 @@ Then do the real test: join the same Live room from **two devices on different n
 
 ## Troubleshooting
 
-- **No `relay` candidates in Trickle ICE** — the relay ports (49152–65535/UDP) or 5349 are closed in the VPS firewall, or the credentials are wrong.
-- **Works on Trickle ICE but not in Live** — double-check the URL scheme (`turns:` for TLS on 5349, `turn:` for 3478) and that the credentials reaching Live match the server.
-- **TLS errors** — the cert hostname must match the `turns:` host exactly, and the cert must be readable by the `turnserver` user.
-- **Still stuck on one network only** — confirm the value is actually reaching the client: a per-session `?turn=` is the easiest way to rule out a misconfigured build default.
+- **No `relay` candidates in Trickle ICE**: the relay ports (49152–65535/UDP) or 5349 are closed in the VPS firewall, or the credentials are wrong.
+- **Works on Trickle ICE but not in Live**: double-check the URL scheme (`turns:` for TLS on 5349, `turn:` for 3478) and that the credentials reaching Live match the server.
+- **TLS errors**: the cert hostname must match the `turns:` host exactly, and the cert must be readable by the `turnserver` user.
+- **Still stuck on one network only**: confirm the value is actually reaching the client: a per-session `?turn=` is the easiest way to rule out a misconfigured build default.
 
 ## Related
 
-- [Live mode](/docs/live-mode) — what Live is and which activities support it
-- [Self-hosting](/docs/self-hosting) — running your own Studio instance
+- [Live mode](/docs/live-mode): what Live is and which activities support it
+- [Self-hosting](/docs/self-hosting): running your own Studio instance

@@ -7,7 +7,7 @@ updated: 2026-05-12
 
 # Upload to your LMS
 
-Every Kukui activity downloads as a **SCORM 1.2 zip file**. SCORM is a standard that almost every LMS speaks — Brightspace (Lamakū), Canvas, Moodle, Blackboard, Sakai, OpenLMS, and most others.
+Every Kukui activity downloads as a **SCORM 1.2 zip file**. SCORM is a standard that almost every LMS speaks: Brightspace (Lamakū), Canvas, Moodle, Blackboard, Sakai, OpenLMS, and most others.
 
 The general flow is the same everywhere:
 
@@ -25,7 +25,7 @@ Below are step-by-step instructions for the most common LMS platforms.
 3. Choose the zip you downloaded from Studio. Brightspace unpacks the package and adds it as a new topic.
 4. Open the new topic, click the **gear icon** → **Edit Properties In-place**, and link it to a numeric grade item. Pass percentage and points-out-of are configured on the grade item itself, not on the activity.
 
-The Kukui activity reports `raw / max` (scaled to 0–100) and `passed` / `failed` to Brightspace. Completion-only activities (Reflection, Audio Recording, Image Comparison Slider, Flashcards) always submit `100% / passed` so the gradebook records full credit on completion — they're engagement activities, not assessment items.
+The Kukui activity reports `raw / max` (scaled to 0–100) and `passed` / `failed` to Brightspace. Completion-only activities (Reflection, Audio Recording, Image Comparison Slider, Flashcards) always submit `100% / passed` so the gradebook records full credit on completion; they're engagement activities, not assessment items.
 
 ## Canvas
 
@@ -52,7 +52,7 @@ The Kukui activity reports `raw / max` (scaled to 0–100) and `passed` / `faile
 
 ## Generic SCORM 1.2 LMS
 
-Any LMS that advertises SCORM 1.2 (or SCORM 2004) support will accept Kukui zips. The package contains an `imsmanifest.xml` that the LMS reads on upload — no special configuration is needed on your side.
+Any LMS that advertises SCORM 1.2 (or SCORM 2004) support will accept Kukui zips. The package contains an `imsmanifest.xml` that the LMS reads on upload; no special configuration is needed on your side.
 
 ## Scoring details
 
@@ -63,7 +63,7 @@ Kukui activities report two SCORM fields:
 | `cmi.core.score.raw` | Score scaled to 0–100 (so the gradebook always sees a comparable percentage) |
 | `cmi.core.lesson_status` | `"passed"` or `"failed"` |
 
-For activities that are **completion-only** (Reflection, Audio Recording, Image Comparison Slider, Flashcards), the activity always reports `100 / passed` on submission — they record full credit for completing the activity rather than scoring against an answer key.
+For activities that are **completion-only** (Reflection, Audio Recording, Image Comparison Slider, Flashcards), the activity always reports `100 / passed` on submission; they record full credit for completing the activity rather than scoring against an answer key.
 
 ## Troubleshooting
 

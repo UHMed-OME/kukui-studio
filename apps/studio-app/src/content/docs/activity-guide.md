@@ -7,15 +7,15 @@ updated: 2026-06-10
 
 # Activity catalog
 
-Kukui Studio ships with more than two dozen interactive activity types, organized by **Bloom's revised taxonomy** — six cognitive levels that climb from "recall" through "create." This guide covers the core catalog. Picking the right activity starts with knowing what cognitive work you want learners to do.
+Kukui Studio ships with more than two dozen interactive activity types, organized by **Bloom's revised taxonomy**: six cognitive levels that climb from "recall" through "create." This guide covers the core catalog. Picking the right activity starts with knowing what cognitive work you want learners to do.
 
-## Remember — recall facts and terminology
+## Remember: recall facts and terminology
 
 ### Flashcards
 Self-paced two-sided card deck with a spaced-style retry loop: cards the learner says they "didn't know" cycle back into the deck until mastered. Self-rating is honor-system, so flashcards are graded as completion-only.
 
 **Best for:** memorizing terminology, drug names, anatomical structures, equations. Pre-class prep work.
-**Skip if:** you need to verify the learner actually got the right answer — Flashcards trust self-rating.
+**Skip if:** you need to verify the learner actually got the right answer; Flashcards trust self-rating.
 
 ### Matching Pairs
 Click an item on the left, then its match on the right. Right column shuffles on load. On submit, wrong rows show "Correct match: X" so the learner sees the pairing.
@@ -27,7 +27,7 @@ Author provides a list of `{ term, definition }` entries; the runtime randomly l
 
 **Best for:** terminology review with a playful tone. Group activities, end-of-unit recap.
 
-## Understand — identify, explain, classify
+## Understand: identify, explain, classify
 
 ### Image Hotspots
 Pick the correct region of an image. Single-correct (use 3D Hotspots for spatial work). Includes a keyboard fallback list of named regions for screen-reader users.
@@ -44,7 +44,7 @@ Click words/phrases in a sentence; correct selections gain points, wrong ones lo
 
 **Best for:** identifying grammar elements, picking out relevant clinical features in a vignette.
 
-## Apply — use procedures in new contexts
+## Apply: use procedures in new contexts
 
 ### Drag and Drop
 Drop labeled chips onto rectangles overlaid on a background image. Supports many-to-one (multiple chips on one zone).
@@ -76,7 +76,7 @@ A video player that pauses at author-chosen timestamps and overlays a sub-activi
 
 **Best for:** lecture videos with comprehension checks, procedural videos with "what happens next?" pauses.
 
-## Analyze — break apart, compare, infer
+## Analyze: break apart, compare, infer
 
 ### Image Annotation
 The learner draws on an image with rectangle, circle, arrow, or freehand tools. Optional `expectedAnnotations[]` lets authors set ground-truth regions; scoring uses Intersection-over-Union ≥ 0.5 per expected region.
@@ -98,7 +98,7 @@ A clinical lab values table where the learner flags abnormal results, then picks
 
 **Best for:** clinical lab interpretation, CBC/CMP reasoning, recognizing patterns in blood work.
 
-## Evaluate — judge, critique, decide
+## Evaluate: judge, critique, decide
 
 ### Branching Scenario
 Choose-your-own-adventure walk through author-defined steps. Each step has a prompt and either choices (with `nextNodeId`) or a terminal outcome.
@@ -120,7 +120,7 @@ A multi-phase clinical encounter (e.g., History → Examination → Closure). Ea
 
 **Best for:** clinical skills practice, simulated patient encounters, OSCE prep.
 
-## Create — produce original work
+## Create: produce original work
 
 ### Audio Recording
 Records mic audio in-browser. Optional reference audio plays alongside. `minSeconds`/`maxSeconds` enforce duration. Completion-only.
@@ -131,14 +131,14 @@ Records mic audio in-browser. Optional reference audio plays alongside. `minSeco
 
 Live mode adds five real-time synchronous activities that students join with a 6-digit code:
 
-- **Straw Poll** — instructor question, students vote, live histogram
-- **Confidence Meter** — students slide between "no clue" and "got it"
-- **Word Cloud** — students submit short phrases, cloud aggregates live
-- **Q&A Board** — students submit questions, others upvote
-- **Quick Quiz** — synchronized multiple-choice with timer
+- **Straw Poll**: instructor question, students vote, live histogram
+- **Confidence Meter**: students slide between "no clue" and "got it"
+- **Word Cloud**: students submit short phrases, cloud aggregates live
+- **Q&A Board**: students submit questions, others upvote
+- **Quick Quiz**: synchronized multiple-choice with timer
 
 See [Live mode](/docs/live-mode) for setup and limitations.
 
 ## Quiz primitives (used inside other activities, not surfaced directly)
 
-**Multiple Choice**, **Fill in the Blanks**, and **Question Set** ship in the core engine but aren't in Studio's catalog — most LMSes already have good native quiz authoring, and Kukui exists to do what your LMS *can't*.
+**Multiple Choice**, **Fill in the Blanks**, and **Question Set** ship in the core engine but aren't in Studio's catalog, because most LMSes already have good native quiz authoring, and Kukui exists to do what your LMS *can't*.

@@ -7,7 +7,7 @@ updated: 2026-06-10
 
 # Contributing
 
-Kukui is MIT-licensed and we welcome contributions — bug fixes, new activity types, translations, documentation. This page is the architectural orientation. For the day-to-day workflow (forking, testing, PRing), see the [project README](https://github.com/UHMed-OME/kukui-studio).
+Kukui is MIT-licensed and we welcome contributions: bug fixes, new activity types, translations, documentation. This page is the architectural orientation. For the day-to-day workflow (forking, testing, PRing), see the [project README](https://github.com/UHMed-OME/kukui-studio).
 
 ## Repository layout
 
@@ -32,7 +32,7 @@ kukui-studio/
 └── docs/
 ```
 
-Three apps, six shared packages. Everything that defines one activity lives in a single bundle folder, `packages/activities/<slug>/`: its Zod schema, React component, Studio form metadata, starter config, and sample fixtures. Each bundle exports an `ActivityManifest` from its `manifest.ts`, and `packages/activities/src/index.ts` discovers all manifests via `import.meta.glob` — Studio's catalog, the schema registry, and the engine's activity router all derive from them automatically. The component consumes a Zod-validated config and emits a `ScoreState` on submit.
+Three apps, six shared packages. Everything that defines one activity lives in a single bundle folder, `packages/activities/<slug>/`: its Zod schema, React component, Studio form metadata, starter config, and sample fixtures. Each bundle exports an `ActivityManifest` from its `manifest.ts`, and `packages/activities/src/index.ts` discovers all manifests via `import.meta.glob`: Studio's catalog, the schema registry, and the engine's activity router all derive from them automatically. The component consumes a Zod-validated config and emits a `ScoreState` on submit.
 
 ## Adding a new activity type
 
@@ -47,7 +47,7 @@ Everything lives in `packages/activities/<slug>/`:
 | `schema.ts` | The Zod config schema (add a JSDoc header explaining what the activity is) |
 | `Component.tsx` | The React component |
 | `meta.ts` | Label, description, Bloom level, `live` flag |
-| `starter.ts` | Minimal valid config — the form's initial value when an author picks the activity |
+| `starter.ts` | Minimal valid config: the form's initial value when an author picks the activity |
 | `ui-schema.ts` | RJSF form hints (can be minimal if defaults are fine) |
 | `samples/basic.json` | Sample fixture, served at `/samples/<slug>/` in dev and used as the packaging default |
 | `manifest.ts` | Assembles the above into an `ActivityManifest` export |
@@ -72,7 +72,7 @@ The component receives a `config: MyActivityConfig` and an `onSubmit({ raw, max,
 
 ### 2. There is no step 2 (registration is automatic)
 
-`packages/activities/src/index.ts` discovers every bundle's `manifest.ts` via `import.meta.glob`. Studio's sidebar, the schema registry, the activity-host router, and packaging all derive from the manifests — there is no central registry file to hand-edit.
+`packages/activities/src/index.ts` discovers every bundle's `manifest.ts` via `import.meta.glob`. Studio's sidebar, the schema registry, the activity-host router, and packaging all derive from the manifests; there is no central registry file to hand-edit.
 
 ### 3. Add an engine-web entry
 
