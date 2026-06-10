@@ -1,7 +1,9 @@
 # Builds Kukui Studio + live-mode and publishes both to GitHub Pages on
 # every push to main. Studio sits at the apex (kukuistudio.com); live-mode
 # is mounted at /live/ so Studio's "Launch in Kukui Live" buttons resolve
-# correctly without an extra deploy. Engine-web is still SCORM-only.
+# correctly without an extra deploy. Engine-web ships as downloadable
+# templates packed here for both targets: SCORM zips for an LMS and
+# non-LMS "web" zips for static hosting.
 name: Deploy Studio + live-mode to GitHub Pages
 
 on:
@@ -45,6 +47,9 @@ jobs:
       - name: Test
         run: pnpm test
 
+      - name: Lint
+        run: pnpm lint
+
       - name: Build engine bundles (consumed by SCORM templates)
         run: pnpm --filter @kukui/engine-web build
 
@@ -58,10 +63,43 @@ jobs:
           mkdir -p apps/studio-app/public/scorm-templates
           cp packaging/build/*.scorm.zip apps/studio-app/public/scorm-templates/
 
+      - name: Pack web templates
+        # Non-LMS "web" packages — same engine build, no manifest/pipwerks,
+        # data-mode="web" baked on #root. Studio's "Download → For the web"
+        # patches these in the browser (see webDownload.ts).
+        run: node packaging/pack-scorm.js --all --target web
+
+      - name: Stage web templates into Studio public dir
+        run: |
+          mkdir -p apps/studio-app/public/web-templates
+          cp packaging/build/*.web.zip apps/studio-app/public/web-templates/
+
+      - name: Build embed element
+        # @kukui/embed is the dependency-free <kukui-activity> custom
+        # element. Its compiled dist/index.js ships with every Studio
+        # deploy as the CDN bundle the embed README points at
+        # (https://kukuistudio.com/embed/kukui-embed.js).
+        run: pnpm --filter @kukui/embed build
+
+      - name: Stage embed bundle into Studio public dir
+        run: |
+          mkdir -p apps/studio-app/public/embed
+          cp packages/embed/dist/index.js apps/studio-app/public/embed/kukui-embed.js
+
       - name: Compute Pages base path
-        # Pages serves the studio at the apex of the custom domain
-        # kukuistudio.com, so Vite's base must be "/" (not "/<repo>/").
-        run: echo "KUKUI_BASE=/" >> "$GITHUB_ENV"
+        # The canonical deploy (UHMed-OME/kukui-studio) serves Studio at
+        # the apex of the custom domain kukuistudio.com, so Vite's base
+        # must be "/" (not "/<repo>/"). Forks without a custom domain are
+        # served at <user>.github.io/<repo>/, so they need "/<repo>/".
+        # Contract (see docs self-hosting.md): a CNAME file in
+        # apps/studio-app/public/ (custom domain) or being the canonical
+        # repo forces "/"; otherwise the repo name becomes the base.
+        run: |
+          if [ -f apps/studio-app/public/CNAME ] || [ "$GITHUB_REPOSITORY" = "UHMed-OME/kukui-studio" ]; then
+            echo "KUKUI_BASE=/" >> "$GITHUB_ENV"
+          else
+            echo "KUKUI_BASE=/${GITHUB_REPOSITORY#*/}/" >> "$GITHUB_ENV"
+          fi
 
       - name: Build Studio
         env:

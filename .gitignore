@@ -40,9 +40,16 @@ test-results/
 # TypeScript
 *.tsbuildinfo
 
-# SCORM zips (built artifacts)
+# SCORM + web-package zips (built artifacts)
 packaging/build/
 *.scorm.zip
+*.web.zip
+
+# Download templates + embed bundle staged into Studio's public dir by
+# the Pages workflow (or local packaging runs); never committed.
+apps/studio-app/public/scorm-templates/
+apps/studio-app/public/web-templates/
+apps/studio-app/public/embed/
 
 # On-device Whisper model + ORT wasm, staged at build time by
 # packaging/fetch-whisper-assets.mjs (large binaries; not committed).
