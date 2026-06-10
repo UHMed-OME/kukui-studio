@@ -1,8 +1,41 @@
 # Non-LMS distribution — plan
 
 **Date:** 2026-06-02
-**Status:** Proposal / planning
+**Status:** Implemented 2026-06-03 (one item deferred — see below)
 **Author:** Kukui core
+
+## Implementation status (2026-06-03)
+
+Shipped:
+
+- **Runtime** — `LocalDriver` (localStorage persistence) selected by a
+  `data-mode="web"` signal; learner-facing `WebCompletionPanel`; collection
+  helpers (`web-results.ts`, `collect.ts`). `ActivityHost` gains `mode` +
+  `collect` props; engine-web `main.tsx` reads `data-mode` / `data-collect`.
+- **Portable web zip (variant A)** — `pack-scorm.js --target web` (+
+  `--collect`), `build:web` / `build:web:all` scripts, CI stages
+  `web-templates/` like the SCORM templates.
+- **Studio one-click** — `webDownload.ts` + "Download → For the web" button
+  (mirrors the SCORM template-patching path).
+- **Collection** — completion code, results JSON download, opt-in
+  mailto / webhook / external form; instructor-side decoder in Studio
+  Settings → **Results**.
+- **Embed (variant C/D)** — `@kukui/embed` `<kukui-activity>` custom element
+  (lazy, sandboxed iframe; framework-free).
+- **Docs** — `host-on-the-web.md`.
+
+Deferred:
+
+- **Single-file HTML (variant B).** Every activity is a `React.lazy` chunk, so
+  a naive inline of `main.js` won't pull in the lazily-loaded component; a true
+  offline single file needs a dedicated `inlineDynamicImports` build per
+  activity (or `vite-plugin-singlefile`). Not shipped to avoid a fragile/broken
+  artifact — variants A and C/D already cover hosting and embedding. The
+  user-facing docs intentionally do **not** promise single-file.
+
+Original plan follows.
+
+---
 
 ## Problem
 

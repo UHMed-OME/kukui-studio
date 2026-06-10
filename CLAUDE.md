@@ -35,7 +35,6 @@ MIT. See `LICENSE`.
 ## Where things live
 
 - Visual canon: `docs/design-system.md`
-- Modus & audience: `docs/ux-design.md`
 - Pedagogical grounding: `docs/research-foundations.md`
 - Per-feature design specs: `docs/superpowers/specs/`
 - Per-activity bundle: `packages/activities/{slug}/` — co-locates `schema.ts`, `Component.tsx`, `samples/`, `ui-schema.ts`, `starter.ts`, `meta.ts`, and `manifest.ts` for one activity kind. Third-party sample-asset attribution lives at `packages/activities/NOTICE.md`.
@@ -53,7 +52,7 @@ MIT. See `LICENSE`.
 - **3D**: react-three-fiber 9 + @react-three/drei (WebGL2; WebGPU deferred until iOS 17 share collapses)
 - **Schema validation**: Zod 4 (runtime validation; replaces JSON Schema validators)
 - **Unit tests**: Vitest 3
-- **E2E**: Playwright 1.5x (real headless Chrome / Safari for SCORM round-trip)
+- **E2E**: Playwright 1.5x (real headless Chrome / Safari for SCORM round-trip) — *planned, not yet implemented; no Playwright config or dependency exists in the repo today*
 - **Live realtime (Phase 3)**: Trystero (P2P signaling over public BitTorrent trackers) + Y.js (CRDT shared state). Configurable TURN endpoint from day one; deployment of TURN VPS empirical.
 - **Studio hosting (Phase 2)**: GitHub Pages
 - **LMS integration**: SCORM 1.2 via pipwerks SCORM API; xAPI / cmi5 deferred to Phase 6+ pending LRS commitment

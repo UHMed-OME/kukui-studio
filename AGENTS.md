@@ -8,27 +8,25 @@ This repo is **UHMed-OME/kukui-studio**, the active React/TypeScript rebuild of 
 
 Kukui is a browser-native toolkit for authoring, previewing, packaging, and running JSON-driven SCORM 1.2 learning activities for Lamakū / D2L Brightspace. The live Studio is hosted on GitHub Pages.
 
-Primary local path:
+Local working copies (development happens on more than one machine):
 
-- `/Users/Jesse/kukui-studio`
+- Windows: `C:\Users\jesse\OneDrive\Documents\Kukui-Studio` (primary)
+- macOS: `/Users/Jesse/kukui-studio` (and `/Users/Jesse/kukui-web`, an older clone of the same remote)
 
-Related copy:
-
-- `/Users/Jesse/kukui-web` points at the same GitHub remote, but `/Users/Jesse/kukui-studio` is the working copy to prefer unless the user says otherwise.
+Prefer whichever copy you were launched in; they all track the same GitHub remote.
 
 ## Important Context
 
-- The old Unity prototype lives at `/Users/Jesse/OME Projects`.
+- The old Unity prototype lives at `~/OME Projects` (macOS).
 - Treat that Unity project as historical reference only.
 - Do not resume Unity work unless the user explicitly asks for it.
-- If you see a root `CLAUDE.md` in `/Users/Jesse/OME Projects`, it describes the old Unity prototype, not the current web product.
-- This repo's `CLAUDE.md` is partly stale where it says the repo is empty; trust `README.md`, the code, and recent commits for current state.
+- If you see a root `CLAUDE.md` in `OME Projects`, it describes the old Unity prototype, not the current web product.
 
 ## GitHub
 
 - Remote: `https://github.com/UHMed-OME/kukui-studio.git`
 - Public repo: `UHMed-OME/kukui-studio`
-- Homepage: `https://uhmed-ome.github.io/kukui-studio/`
+- Homepage: `https://kukuistudio.com`
 - Use `/Users/Jesse/bin/gh` if `gh` is not on PATH.
 
 ## Stack
@@ -65,10 +63,9 @@ Related copy:
 
 ## Current Alignment Notes
 
-As of 2026-05-22:
+As of 2026-06-10:
 
-- The activity co-location refactor (Plans 1–3 in `docs/superpowers/plans/`) has landed. All 30 activities live in `packages/activities/{slug}/` with a co-located schema, Component, samples, ui-schema, starter, icon (optional), meta, and manifest. The `@kukui/schemas` SchemaRegistry, `@kukui/core` ACTIVITY_REGISTRY, Studio's UI_SCHEMAS / STARTERS / ACTIVITY_LABELS / activityIcons / BLOOM_BY_KIND, and the engine-web + studio-app sample-serving plugins are all derived from manifests via `import.meta.glob`.
+- The activity co-location refactor (Plans 1–3 in `docs/superpowers/plans/`) has landed. All activities (31 manifests at last count) live in `packages/activities/{slug}/` with a co-located schema, Component, samples, ui-schema, starter, icon (optional), meta, and manifest. The `@kukui/schemas` SchemaRegistry, `@kukui/core` ACTIVITY_REGISTRY, Studio's UI_SCHEMAS / STARTERS / ACTIVITY_LABELS / activityIcons / BLOOM_BY_KIND, and the engine-web + studio-app sample-serving plugins are all derived from manifests via `import.meta.glob`.
 - Live variants stay in `apps/live-mode/src/activities/{Slug}Live.tsx`; `LiveHost` dispatch uses a barrel-driven `LIVE_ACTIVITY_REGISTRY` with a cross-reference test that enforces `manifest.live === true ↔ registered Live wrapper`.
-- Studio still hides quiz primitives (`multiple-choice`, `fill-in-the-blanks`, `question-set`) from its catalog via `STUDIO_SUPPRESSED` in `App.tsx`.
-- The README's 24-activity figure pre-dates the refactor; the SchemaRegistry now covers 30 kinds (5 lack `basic.json` fixtures and are skipped by the auto-discovered fixtures test until samples land).
-- Plan 4 (rewrite the `/kukui` slash command for the new layout) is pending.
+- Studio hides 4 kinds from its catalog via `STUDIO_SUPPRESSED` in `App.tsx`: the quiz primitives (`multiple-choice`, `fill-in-the-blanks`, `question-set`) plus `isometric-chatroom` (hidden while its Live runtime is overhauled), so 27 kinds are author-visible.
+- In flight: non-LMS web distribution — `packaging/pack-scorm.js --target web` produces a portable "web package" (LocalDriver persistence + completion panel, no SCORM API), Studio gained a "Download → For the web" path, the Pages workflow stages `web-templates/`, and `packages/embed/` adds a `<kukui-activity>` custom element for embedding hosted packages.

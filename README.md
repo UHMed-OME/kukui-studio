@@ -30,7 +30,7 @@ A handful of incumbent interactive-content authoring platforms already exist for
 - **WCAG 2.2 AA from day 1, not retrofitted.** Every activity ships keyboard fallbacks for drag-and-drop interactions, ARIA-labeled controls, focus-trapped modals, and respects `prefers-reduced-motion` / `prefers-reduced-transparency`. Required `alt` text is enforced at the schema layer — authors can't ship an inaccessible image even by accident.
 - **Direct SCORM 1.2 packaging, no third-party hosting.** Click **Download** and you get a `<title>.zip` you upload to Lamakū (or any SCORM 1.2 LMS) as a SCO module. Grades flow back through `cmi.core.score.*` and `cmi.core.lesson_status` automatically. No external content service to integrate, no LTI consumer key to provision, no risk of an outage on someone else's server breaking your gradebook.
 - **JSON-driven, version-controllable authoring.** Every activity is a Zod-validated JSON config. Authors can hand-edit the JSON, paste into Studio, diff it in git, copy a working activity and tweak it, or generate one from a script. The schemas are the contract — no proprietary binary formats, no editor-locked files.
-- **Open content + open code.** MIT-licensed code; activities are plain JSON the author owns. No vendor can revoke access, change pricing, or sunset a feature an institution depends on. The 24 activity types ship as components in the repo — extend or fork freely.
+- **Open content + open code.** MIT-licensed code; activities are plain JSON the author owns. No vendor can revoke access, change pricing, or sunset a feature an institution depends on. The 30+ activity types ship as components in the repo — extend or fork freely.
 - **Modern web stack, native to the browser.** React 19, TypeScript strict, Tailwind, Vite. No Flash, no Java applet, no proprietary runtime. WebGL/`react-three-fiber` powers the 3D activities; `MediaRecorder` powers audio capture; everything degrades gracefully when a feature isn't available.
 
 
@@ -58,7 +58,7 @@ Three apps, one shared core:
 | **Kukui Engine** | The runtime that actually ships inside each SCORM zip. One self-contained bundle per activity type; loads its config JSON, renders the React component, reports the score back to the LMS via SCORM. |
 | **Kukui Live** *(alpha)* | Real-time classroom mode using peer-to-peer WebRTC. Students join an instructor's session with a 6-digit code and synchronized state flows through a CRDT (Y.js). |
 
-24 activity types ship today, grouped below.
+30+ activity types ship today; the highlights are grouped below.
 
 ## Activity catalog
 
@@ -129,23 +129,34 @@ The Kukui activity reports `raw / max` (scaled to 0–100) and `passed` / `faile
                 └──────────────────┘
 ```
 
-Each activity is a React component in `packages/core/src/components/<kind>/`. It receives a Zod-validated config (from `packages/schemas/<kind>.ts`) and emits a `ScoreState` on submit. The runtime, scoring, and SCORM bridge are shared across every activity.
+Each activity is a self-contained bundle at `packages/activities/<slug>/` — Zod schema (`schema.ts`), React component (`Component.tsx`), Studio form metadata (`ui-schema.ts`, `starter.ts`, `meta.ts`), and sample fixtures (`samples/`) co-located in one folder. Every bundle exports an `ActivityManifest` from its `manifest.ts`, and `packages/activities/src/index.ts` discovers all of them via `import.meta.glob` — Studio's catalog, the engine's component registry, and the schema registry derive from the manifests automatically; there is no hand-maintained central registry. The host runtime, scoring, and LMS drivers live in `@kukui/core` and are shared across every activity.
+
+SCORM isn't the only output. The same engine build also packages as a **web package** (`node packaging/pack-scorm.js --target web`, or **Download → For the web** in Studio): a self-contained static folder that runs on any web host with no LMS — progress persists in the learner's browser, and a completion panel lets learners self-report results. `packages/embed/` ships a dependency-free `<kukui-activity>` custom element for dropping a hosted web package onto any page.
 
 ## Repository layout
 
 ```
-kukui-web/
+kukui-studio/
   apps/
     studio-app/               authoring tool (Vite + React + Tiptap + RJSF)
-    engine-web/               per-activity HTML entries that ship inside SCORM
-    live-mode/                M0 lobby for Phase 3 real-time classroom
+    engine-web/               per-activity HTML entries that ship inside each package
+    live-mode/                Phase 3 real-time classroom (alpha)
   packages/
-    core/                     activity components, ActivityHost router, scoring
-    schemas/                  one Zod schema per activity kind
+    activities/               one bundle per activity kind: {slug}/schema.ts,
+                              Component.tsx, ui-schema.ts, starter.ts, meta.ts,
+                              samples/, manifest.ts; src/index.ts derives all
+                              registries from the manifests via import.meta.glob
+    core/                     ActivityHost runtime, scoring, SCORM/web drivers,
+                              shared component utilities
+    schemas/                  cross-activity schema scaffolding (shared fields,
+                              appearance, migrations, SchemaRegistry)
     bridge/                   SCORM 1.2 wrapper (pipwerks + Unity .jslib)
     live/                     Trystero + Y.js transport for Live
+    embed/                    <kukui-activity> custom element for embedding
+                              hosted web packages on any page
   packaging/
-    pack-scorm.js             builds kukui-<kind>.scorm.zip from templates
+    pack-scorm.js             builds SCORM zips (default) or portable web
+                              packages (--target web) from the engine build
     templates/imsmanifest.xml.tmpl
   docs/
     design-system.md          tokens, components, glass theme conventions
@@ -153,20 +164,26 @@ kukui-web/
 
 ## Developing a new activity
 
-1. Add a Zod schema under [`packages/schemas/src/<kind>.ts`](packages/schemas/src/).
-2. Register it in [`packages/schemas/src/index.ts`](packages/schemas/src/index.ts).
-3. Add the React component under [`packages/core/src/components/<kind>/`](packages/core/src/components/) — receive `config: TConfig`, call `onSubmit({ raw, max, success })` when finished.
-4. Wire the component into [`packages/core/src/activity-host.tsx`](packages/core/src/activity-host.tsx).
-5. Add a starter to [`apps/studio-app/src/starters.ts`](apps/studio-app/src/starters.ts) and a uiSchema to [`apps/studio-app/src/uiSchemas.ts`](apps/studio-app/src/uiSchemas.ts).
-6. Add a per-activity HTML entry under [`apps/engine-web/<kind>.html`](apps/engine-web/) (copy any existing one).
-7. Add the kind to [`packaging/pack-scorm.js`](packaging/pack-scorm.js)'s `PHASE_1_ACTIVITIES`.
-8. `pnpm build && node packaging/pack-scorm.js --all`.
+Everything for one activity lives in a single folder: [`packages/activities/<slug>/`](packages/activities/).
 
-The simplest reference is `multiple-choice` (text-only, no media). For visual placement editors, see `drag-and-drop` and the parallel editor in `apps/studio-app/src/EditCanvas/`.
+1. Create the bundle folder `packages/activities/<slug>/` with:
+   - `schema.ts` — the Zod config schema
+   - `Component.tsx` — the React component; receives `config`, calls `onSubmit({ raw, max, success })` when finished
+   - `meta.ts` — label, description, Bloom level, `live` flag
+   - `starter.ts` — the minimal valid config Studio loads when an author picks the kind
+   - `ui-schema.ts` — RJSF form hints (can be empty if defaults are fine)
+   - `samples/basic.json` — a fixture, served at `/samples/<slug>/` in dev and used as the packaging default
+   - `manifest.ts` — assembles the above into an `ActivityManifest` (copy from an existing bundle, e.g. `flashcards`)
+2. That *is* the registration. [`packages/activities/src/index.ts`](packages/activities/src/index.ts) discovers every `manifest.ts` via `import.meta.glob`, so Studio's sidebar, the schema registry, and the engine's activity router all pick the new kind up automatically — there is no central file to hand-edit.
+3. Add a per-activity HTML entry under [`apps/engine-web/<slug>.html`](apps/engine-web/) (copy any existing one and change the `data-activity` / `data-config` attributes).
+4. `pnpm typecheck && pnpm test` — cross-reference tests enforce that manifests are complete.
+5. `pnpm build:scorm:all` (or `node packaging/pack-scorm.js --activity <slug>`). Packaging auto-discovers slugs from `packages/activities/`, so there's no activity list to update there either.
+
+The simplest reference bundle is `packages/activities/multiple-choice/` (text-only, no media). For visual placement editors, see `drag-and-drop` and the parallel editor in `apps/studio-app/src/EditCanvas/`. If you develop with Claude Code, the repo's `/kukui` slash command scaffolds a new bundle interactively.
 
 ## Scoring & SCORM
 
-Per-activity score math lives in [`packages/core/src/scoring.ts`](packages/core/src/scoring.ts). Each component computes raw/max points and a `success` boolean, then calls `onSubmit({ raw, max, success, suspendData })`. The [`@kukui/bridge`](packages/bridge/) wrapper translates this to SCORM 1.2:
+Per-activity score math lives in [`packages/core/src/scoring.ts`](packages/core/src/scoring.ts). Each component computes raw/max points and a `success` boolean, then calls `onSubmit({ raw, max, success, suspendData })`. The driver layer in [`packages/core/src/scorm.ts`](packages/core/src/scorm.ts) routes that to the right backend: in an LMS, a pipwerks-based SCORM 1.2 driver; in a web package, a `LocalDriver` that persists to the learner's browser storage and powers the completion panel. In LMS mode the mapping is:
 
 | Component output | SCORM field | Notes |
 |---|---|---|
@@ -182,10 +199,12 @@ Push to `main` and the [Pages workflow](.github/workflows/pages.yml) builds + te
 
 1. **Fork or push the repo** to your GitHub account.
 2. **Enable Pages**: in the repo's **Settings > Pages**, set **Source = GitHub Actions**.
-3. **Push to `main`**. The workflow runs `pnpm typecheck`, `pnpm test`, builds the engine, packs the SCORM templates, builds Studio with `KUKUI_BASE=/<repo>/`, and deploys the result.
+3. **Push to `main`**. The workflow runs `pnpm typecheck`, `pnpm test`, builds the engine, packs the SCORM and web-package templates, builds Studio (with Live mode staged under `/live/`), and deploys the result.
 4. Visit `https://<your-user>.github.io/<repo>/` once the workflow finishes (~3 min for a fresh build).
 
-The deployed Studio bundles the per-activity SCORM templates from `packaging/build/` so authors can click **Download** without rebuilding anything locally — the templates ship as static files inside `/scorm-templates/kukui-<kind>.scorm.zip`.
+The workflow computes the Vite base path automatically: a fork builds with base `/<repo-name>/` and serves at `https://<your-user>.github.io/<repo-name>/`, while the canonical repo — or any fork with a custom domain configured via a `CNAME` file in `apps/studio-app/public/` — builds with base `/` and serves at the domain apex (that's how https://kukuistudio.com is deployed).
+
+The deployed Studio bundles the per-activity templates from `packaging/build/` so authors can click **Download** without rebuilding anything locally — SCORM zips ship as static files under `/scorm-templates/`, and the non-LMS web packages under `/web-templates/`.
 
 ## Local development
 
@@ -198,10 +217,11 @@ pnpm install
 pnpm dev:studio                         # Studio authoring tool (port 5174)
 pnpm dev                                # engine-web preview (port 5173)
 pnpm dev:live                           # Kukui Live alpha (port 5175)
-pnpm test                               # ~230 tests across packages + apps
+pnpm test                               # full Vitest suite (100+ test files)
 pnpm typecheck                          # tsc -b workspace-wide
 pnpm build                              # production builds for every app
 node packaging/pack-scorm.js --all      # build all SCORM zips → packaging/build/
+node packaging/pack-scorm.js --all --target web   # non-LMS web packages
 ```
 
 Requires Node 20+ and pnpm 10. Tested on macOS and Linux.

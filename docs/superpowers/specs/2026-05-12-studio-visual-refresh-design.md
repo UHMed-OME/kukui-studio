@@ -10,7 +10,7 @@ Sidebar/buttons/panels currently follow a *border-everywhere* skeuomorphism that
 
 ## Audience and product type
 
-Faculty + instructional designers comparing Kukui Studio to Articulate, H5P, Canvas authoring UIs. **Not** devs, **not** marketing visitors. The visual language target is "authoring tool with personality" — closer to Figma than to a marketing site, with some warmth carried over from the Hawaiian framing.
+Faculty + instructional designers comparing Kukui Studio to other interactive-content authoring tools. **Not** devs, **not** marketing visitors. The visual language target is "authoring tool with personality" — closer to Figma than to a marketing site, with some warmth carried over from the Hawaiian framing.
 
 ## Five-dimension system
 
