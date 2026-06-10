@@ -32,6 +32,20 @@ export default [
       "react/react-in-jsx-scope": "off",
       "react/prop-types": "off",
       "@typescript-eslint/no-unused-vars": ["warn", { argsIgnorePattern: "^_" }],
+      // TypeScript itself checks undefined identifiers; core no-undef
+      // false-positives on type-only refs (React, RequestInit, RTCIceServer).
+      "no-undef": "off",
+      // react-three-fiber JSX (position, intensity, castShadow, object, …)
+      // is unknown to the DOM property list; TSX typing covers real typos.
+      "react/no-unknown-property": "off",
+      "react/no-unescaped-entities": "off",
+    },
+  },
+  {
+    // Node-run scripts at the repo root and in packaging/.
+    files: ["**/*.{js,mjs,cjs}"],
+    languageOptions: {
+      globals: { ...globals.node },
     },
   },
   prettier,
@@ -44,6 +58,9 @@ export default [
       "**/coverage/**",
       "**/*.scorm/**",
       "packaging/build/**",
+      // Third-party / generated browser assets served verbatim — not ours to lint.
+      "**/public/**",
+      "**/*.min.js",
     ],
   },
 ];

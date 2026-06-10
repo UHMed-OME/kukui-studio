@@ -18,13 +18,16 @@
     "lint": "eslint .",
     "format": "prettier --write .",
     "build:scorm": "node packaging/pack-scorm.js",
-    "build:scorm:all": "pnpm build && node packaging/pack-scorm.js --all"
+    "build:scorm:all": "pnpm build && node packaging/pack-scorm.js --all",
+    "build:web": "node packaging/pack-scorm.js --target web",
+    "build:web:all": "pnpm --filter @kukui/engine-web build && node packaging/pack-scorm.js --all --target web"
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.1.0",
     "@testing-library/user-event": "^14.5.2",
     "@types/archiver": "^6.0.3",
+    "@eslint/js": "^9.17.0",
     "@types/node": "^22.10.0",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
