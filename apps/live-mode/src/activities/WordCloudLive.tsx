@@ -21,7 +21,7 @@ export function WordCloudLive({
   config,
   onLeave,
 }: WordCloudLiveProps) {
-  const { phase, setPhase } = usePhase(room);
+  const { phase, setPhase } = usePhase(room, role);
   const behaviour = config.behaviour ?? {};
   const caseSensitive = behaviour.caseSensitive === true;
   const showLive = behaviour.showLiveResultsToStudents !== false;
@@ -29,7 +29,7 @@ export function WordCloudLive({
   const maxWords = config.maxWordsPerSubmission ?? 2;
   const maxChars = config.maxCharsPerSubmission ?? 24;
 
-  const { snapshot, submit, remove, clearAll } = useWordCloud(room, caseSensitive);
+  const { snapshot, submit, remove, clearAll } = useWordCloud(room, caseSensitive, role);
   const [draft, setDraft] = useState("");
 
   const isOpen = phase === "question";

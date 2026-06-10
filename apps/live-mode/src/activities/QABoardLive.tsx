@@ -21,7 +21,7 @@ export function QABoardLive({
   config,
   onLeave,
 }: QABoardLiveProps) {
-  const { phase, setPhase } = usePhase(room);
+  const { phase, setPhase } = usePhase(room, role);
   const behaviour = config.behaviour ?? {};
   const allowAnon = behaviour.allowAnonymous !== false;
   const allowUpvoteOwn = behaviour.allowUpvoteOwn === true;
@@ -30,7 +30,7 @@ export function QABoardLive({
   const maxQuestions = config.maxQuestionsPerStudent ?? 5;
 
   const { snapshot, postQuestion, toggleUpvote, markAnswered, clearAll } =
-    useQABoard(room);
+    useQABoard(room, role);
   const [draft, setDraft] = useState("");
 
   const isOpen = phase === "question" || phase === "discussion";

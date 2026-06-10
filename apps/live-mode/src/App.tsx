@@ -283,6 +283,19 @@ export function App() {
   const [presence, setPresence] = useState<Map<string, Presence>>(new Map());
   const [error, setError] = useState<string | null>(null);
   const [configUrl, setConfigUrl] = useState<string | undefined>(undefined);
+  // Funnel every configUrl change through here so the object URL created
+  // for a preloaded config is revoked when replaced or on leave — otherwise
+  // the blob leaks for the page's lifetime. The updater form sees the true
+  // previous value; revoking an already-revoked URL is a harmless no-op
+  // (matters under StrictMode's double-invoked updaters).
+  const replaceConfigUrl = (next: string | undefined) => {
+    setConfigUrl((prev) => {
+      if (prev && prev !== next && prev.startsWith("blob:")) {
+        URL.revokeObjectURL(prev);
+      }
+      return next;
+    });
+  };
   const [preloadedConfig, setPreloadedConfig] = useState<unknown | null>(() =>
     readPreloadedConfig(),
   );
@@ -357,10 +370,22 @@ export function App() {
       if (preloadedConfig) {
         const cfg = preloadedConfig as Record<string, unknown>;
         const live = (cfg.live ?? {}) as Record<string, unknown>;
+        // Fail closed when the launched config carries no joinKey. Studio
+        // always stamps `live.joinKey` into launched drafts (ensureFreshKeys
+        // + the Live-launch panel), so a missing key means a hand-built or
+        // corrupted URL. The old fallback derived the room from the activity
+        // *title*, which is predictable (world-joinable by anyone who knows
+        // the title) and collides across sections running the same activity.
         const joinKey =
           typeof live.joinKey === "string" && live.joinKey.length > 0
             ? live.joinKey
-            : (typeof cfg.title === "string" ? cfg.title : "kukui-live-default");
+            : null;
+        if (!joinKey) {
+          setError(
+            "This launch link is missing its join key, so a private room can't be derived. Re-open the activity from Kukui Studio (Test in Kukui Live generates one automatically), or use the manual lobby instead.",
+          );
+          return;
+        }
         roomCode = await deriveRoomCode(joinKey);
         if (live.signaling === "nostr" || live.signaling === "mqtt") {
           effectiveBackend = live.signaling;
@@ -425,11 +450,11 @@ export function App() {
         const blob = new Blob([JSON.stringify(preloadedConfig)], {
           type: "application/json",
         });
-        setConfigUrl(URL.createObjectURL(blob));
+        replaceConfigUrl(URL.createObjectURL(blob));
       } else {
         const sample = LIVE_ACTIVITIES.find((a) => a.kind === activityKind);
         if (sample && LIVE_AUTO_LOAD_KINDS.has(activityKind)) {
-          setConfigUrl(sample.sampleUrl);
+          replaceConfigUrl(sample.sampleUrl);
         }
       }
     } catch (err) {
@@ -462,7 +487,7 @@ export function App() {
     if (room) room.leave();
     setRoom(null);
     setPresence(new Map());
-    setConfigUrl(undefined);
+    replaceConfigUrl(undefined);
   };
 
   if (room) {
@@ -477,7 +502,7 @@ export function App() {
           room={room}
           presence={presence}
           role={role}
-          onLoadDemo={() => setConfigUrl(sample)}
+          onLoadDemo={() => replaceConfigUrl(sample)}
           onLeave={handleLeave}
         />
         <AttributionFooter />

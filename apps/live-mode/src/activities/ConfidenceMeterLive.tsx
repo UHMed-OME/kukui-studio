@@ -27,8 +27,8 @@ export function ConfidenceMeterLive({
   config,
   onLeave,
 }: ConfidenceMeterLiveProps) {
-  const { phase, setPhase } = usePhase(room);
-  const { snapshot, rate, clearAll } = useConfidenceMeter(room);
+  const { phase, setPhase } = usePhase(room, role);
+  const { snapshot, rate, clearAll } = useConfidenceMeter(room, role);
 
   const behaviour = config.behaviour ?? {};
   const showLive = behaviour.showLiveResultsToStudents !== false;

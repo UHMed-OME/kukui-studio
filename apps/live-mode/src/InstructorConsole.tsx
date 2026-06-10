@@ -51,7 +51,8 @@ export function InstructorConsole({
   hasDemoLoaded,
   onLeave,
 }: InstructorConsoleProps) {
-  const { phase, setPhase } = usePhase(room);
+  // InstructorConsole is only ever rendered for the instructor role.
+  const { phase, setPhase } = usePhase(room, "instructor");
   const [confirmReset, setConfirmReset] = useState(false);
 
   const currentIndex = PHASE_ORDER.indexOf(phase);

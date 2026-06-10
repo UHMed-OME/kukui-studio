@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import {
   ContentLoadError,
-  getScormDriver,
   loadContent,
   type ActivityKind,
 } from "@kukui/core";
@@ -44,9 +43,12 @@ type LoadState =
  *
  * Responsibilities for M1:
  *   - Validate an activity JSON config against `SchemaRegistry[kind]`.
- *   - Initialize this student's SCORM session (so grade passback works on
- *     `cmi.core.lesson_status` at session end).
  *   - Delegate to InstructorConsole or StudentParticipant based on role.
+ *
+ * The SCORM session is NOT managed here: the core driver is a per-page
+ * singleton, so a per-mount init/finish would hand a *finished* driver to
+ * the next room joined in the same tab. main.tsx owns the tab-level
+ * init/finish lifecycle instead.
  *
  * Activity-specific Live components (TBL, Live Poll, Live Timeline) plug in
  * here in M2+ — for now the body of the room is a placeholder summary.
@@ -64,18 +66,6 @@ export function LiveHost({
   const [loadState, setLoadState] = useState<LoadState>(
     configUrl ? { status: "loading", url: configUrl } : { status: "idle" },
   );
-
-  // Initialize the SCORM driver once per LiveHost mount. Each student tab
-  // is its own SCORM session, regardless of how many peers share the room.
-  useEffect(() => {
-    const driver = getScormDriver();
-    driver.initialize();
-    return () => {
-      // Leaving the room ends this student's session; finish so the LMS
-      // commits whatever was already written.
-      driver.finish();
-    };
-  }, []);
 
   // Validate the activity config when the URL changes.
   useEffect(() => {

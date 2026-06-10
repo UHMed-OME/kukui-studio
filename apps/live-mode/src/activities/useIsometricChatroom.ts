@@ -68,6 +68,7 @@ export interface PinnedQuestion {
 export function useIsometricChatroom(
   room: LiveRoomHandle,
   config: IsometricChatroomConfig,
+  role: "instructor" | "student",
 ): {
   /** All avatar states in the room. */
   avatars: Map<string, AvatarState>;
@@ -289,26 +290,32 @@ export function useIsometricChatroom(
     });
   }, [pinnedMap, room]);
 
+  // Moderation mutators below are instructor-only local speed-bumps:
+  // integrity is advisory in P2P mode — every client holds the shared doc,
+  // so a modified client can still write.
   const muteParticipant = useCallback(
     (id: string) => {
+      if (role !== "instructor") return;
       room.doc.transact(() => {
         muteMap.set(id, true);
       });
     },
-    [muteMap],
+    [muteMap, role],
   );
 
   const unmuteParticipant = useCallback(
     (id: string) => {
+      if (role !== "instructor") return;
       room.doc.transact(() => {
         muteMap.delete(id);
       });
     },
-    [muteMap],
+    [muteMap, role],
   );
 
   const deleteMessage = useCallback(
     (messageId: string) => {
+      if (role !== "instructor") return;
       room.doc.transact(() => {
         const idx = findMessageIndex(messagesArray, messageId);
         if (idx >= 0) {
@@ -316,7 +323,7 @@ export function useIsometricChatroom(
         }
       });
     },
-    [messagesArray],
+    [messagesArray, role],
   );
 
   return {

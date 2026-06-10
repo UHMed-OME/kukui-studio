@@ -186,9 +186,22 @@ function realRoomFactory(
     Y.applyUpdate(doc, update, "remote");
   });
 
-  // On peer join, send a full state snapshot so they catch up.
-  room.onPeerJoin(() => {
+  // Trystero stores a SINGLE callback per event — a second `onPeerJoin`
+  // registration silently clobbers the first. Without multiplexing, any
+  // consumer subscription would replace the internal snapshot-on-join
+  // below and break late-joiner sync. So: keep subscriber arrays here and
+  // register exactly one real Trystero handler per event that fans out.
+  const peerJoinCbs: Array<(id: ParticipantId) => void> = [];
+  const peerLeaveCbs: Array<(id: ParticipantId) => void> = [];
+  room.onPeerJoin((id: string) => {
+    // Internal: send a full state snapshot so the new peer catches up.
     sendDocUpdate(Y.encodeStateAsUpdate(doc));
+    // Copy before iterating so a callback that unsubscribes (or
+    // subscribes) mid-fan-out can't skip a sibling.
+    for (const cb of [...peerJoinCbs]) cb(id);
+  });
+  room.onPeerLeave((id: string) => {
+    for (const cb of [...peerLeaveCbs]) cb(id);
   });
 
   return {
@@ -209,19 +222,17 @@ function realRoomFactory(
       return out;
     },
     onPeerJoin(cb) {
-      const handler = (id: string) => cb(id);
-      room.onPeerJoin(handler);
-      // Trystero doesn't expose remove, but rooms are short-lived — leave on `leave()`.
+      peerJoinCbs.push(cb);
       return () => {
-        /* handled by leave() */
-        void handler;
+        const i = peerJoinCbs.indexOf(cb);
+        if (i !== -1) peerJoinCbs.splice(i, 1);
       };
     },
     onPeerLeave(cb) {
-      const handler = (id: string) => cb(id);
-      room.onPeerLeave(handler);
+      peerLeaveCbs.push(cb);
       return () => {
-        void handler;
+        const i = peerLeaveCbs.indexOf(cb);
+        if (i !== -1) peerLeaveCbs.splice(i, 1);
       };
     },
     leave() {
@@ -242,9 +253,19 @@ function generateParticipantId(): ParticipantId {
 }
 
 /**
- * Hashes a 6-digit instructor code → a Trystero room name.
- * Same code on different campuses = different rooms (because of `appId`),
- * so we don't collide accidentally.
+ * Hashes a join key (Studio-generated `live.joinKey`, or a manually
+ * typed 6-digit code) → a Trystero room name.
+ *
+ * Honest threat model: this is an unsalted, public SHA-256 over a small
+ * input space, and every deployment shares the default `appId`
+ * ("kukui-live"). Manual 6-digit rooms therefore have only 10^6 possible
+ * names — anyone running the same derivation can enumerate and join
+ * them. That is accepted: manual codes are for low-stakes, in-the-moment
+ * classroom use, not for anything sensitive. Studio-launched configs use
+ * a higher-entropy `live.joinKey` (`adj-noun-NNNN`, ~16M combinations),
+ * which resists casual enumeration but is still not a secret channel —
+ * treat everything in a Live room as visible to determined bystanders.
+ * Rooms only separate across deployments when `appId` is overridden.
  */
 export async function deriveRoomCode(instructorCode: string): Promise<string> {
   const data = new TextEncoder().encode(instructorCode);

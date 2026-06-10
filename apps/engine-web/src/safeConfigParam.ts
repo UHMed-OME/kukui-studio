@@ -12,6 +12,11 @@
 export function safeConfigParam(raw: string | null): string | null {
   if (!raw) return null;
   if (raw.includes("..")) return null;
+  // The WHATWG URL parser treats `\` as `/` in special schemes, so
+  // `\\evil.com\cfg.json` resolves protocol-relative exactly like
+  // `//evil.com/cfg.json` (and `/\evil.com` likewise). No legitimate
+  // same-origin config path contains a backslash — reject outright.
+  if (raw.includes("\\")) return null;
   if (/^[a-z][a-z0-9+.-]*:/i.test(raw)) return null; // any scheme
   if (raw.startsWith("//")) return null; // protocol-relative
   if (raw.startsWith("/")) return raw; // root-relative, safe

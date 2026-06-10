@@ -35,9 +35,9 @@ export function StrawPollLive({
   config,
   onLeave,
 }: StrawPollLiveProps) {
-  const { phase, setPhase } = usePhase(room);
+  const { phase, setPhase } = usePhase(room, role);
   const choiceIds = useMemo(() => config.choices.map((c) => c.id), [config.choices]);
-  const { myVote, tally, vote, clearAll, voterCount } = useStrawPoll(room, choiceIds);
+  const { myVote, tally, vote, clearAll, voterCount } = useStrawPoll(room, choiceIds, role);
 
   const behaviour = config.behaviour ?? {};
   const showLiveResults = behaviour.showLiveResultsToStudents !== false;

@@ -16,7 +16,10 @@ export type RatingSnapshot = {
  * participantId; re-rating overwrites. Total state at 300 voters
  * = ~8 bytes × 300 = tiny.
  */
-export function useConfidenceMeter(room: LiveRoomHandle): {
+export function useConfidenceMeter(
+  room: LiveRoomHandle,
+  role: "instructor" | "student",
+): {
   snapshot: RatingSnapshot;
   rate(value: number): void;
   clearAll(): void;
@@ -37,6 +40,9 @@ export function useConfidenceMeter(room: LiveRoomHandle): {
   };
 
   const clearAll = () => {
+    // Instructor-only local speed-bump: integrity is advisory in P2P mode —
+    // every client holds the shared doc, so a modified client can still write.
+    if (role !== "instructor") return;
     room.doc.transact(() => ratings.clear());
   };
 

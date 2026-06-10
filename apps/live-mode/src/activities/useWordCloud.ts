@@ -4,6 +4,11 @@ import type { LiveRoomHandle } from "@kukui/live";
 
 const SUBMISSIONS_KEY = "word-cloud-submissions";
 
+// Hard per-participant cap, well above any authored `submissionsPerStudent`
+// limit (UI-enforced). Stops a misbehaving client from flooding the shared
+// doc with unbounded entries.
+const MAX_SUBMISSIONS_PER_PARTICIPANT = 50;
+
 export type WordTally = Map<string, { count: number; rawSamples: string[] }>;
 
 export type WordCloudSnapshot = {
@@ -25,6 +30,7 @@ export type WordCloudSnapshot = {
 export function useWordCloud(
   room: LiveRoomHandle,
   caseSensitive: boolean,
+  role: "instructor" | "student",
 ): {
   snapshot: WordCloudSnapshot;
   submit(text: string): void;
@@ -49,6 +55,7 @@ export function useWordCloud(
         arr = new Y.Array<string>();
         root.set(room.participantId, arr);
       }
+      if (arr.length >= MAX_SUBMISSIONS_PER_PARTICIPANT) return;
       arr.push([trimmed]);
     });
   };
@@ -67,6 +74,9 @@ export function useWordCloud(
   };
 
   const clearAll = () => {
+    // Instructor-only local speed-bump: integrity is advisory in P2P mode —
+    // every client holds the shared doc, so a modified client can still write.
+    if (role !== "instructor") return;
     room.doc.transact(() => root.clear());
   };
 

@@ -70,7 +70,7 @@ export function QuickQuizLive({
   config,
   onLeave,
 }: QuickQuizLiveProps) {
-  const { phase, setPhase } = usePhase(room);
+  const { phase, setPhase } = usePhase(room, role);
   const behaviour = config.behaviour ?? {};
   const showLive = behaviour.showLiveResultsToStudents === true;
   const revealCorrect = behaviour.revealCorrectAnswer !== false;

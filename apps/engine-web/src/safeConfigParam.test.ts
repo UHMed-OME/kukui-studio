@@ -19,6 +19,12 @@ describe("safeConfigParam", () => {
     expect(safeConfigParam("//evil.com/x.json")).toBeNull();
   });
 
+  it("rejects backslash variants the URL parser treats as protocol-relative", () => {
+    expect(safeConfigParam("\\\\evil.com/x.json")).toBeNull();
+    expect(safeConfigParam("/\\evil.com/x.json")).toBeNull();
+    expect(safeConfigParam("\\evil.com\\cfg.json")).toBeNull();
+  });
+
   it("accepts root-relative same-origin paths", () => {
     expect(safeConfigParam("/samples/foo/basic.json")).toBe("/samples/foo/basic.json");
   });

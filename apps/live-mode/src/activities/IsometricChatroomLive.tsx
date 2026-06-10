@@ -36,7 +36,7 @@ export function IsometricChatroomLive({
   config,
   onLeave,
 }: IsometricChatroomLiveProps) {
-  const { phase, setPhase } = usePhase(room);
+  const { phase, setPhase } = usePhase(room, role);
   const {
     avatars,
     myAvatar,
@@ -54,7 +54,7 @@ export function IsometricChatroomLive({
     muteParticipant,
     unmuteParticipant,
     deleteMessage,
-  } = useIsometricChatroom(room, config);
+  } = useIsometricChatroom(room, config, role);
 
   const studentCount = [...presence.values()].filter((p) => p.role === "student").length;
   const messageCount = messages.length;

@@ -33,7 +33,10 @@ export type QABoardSnapshot = {
  * classroom engagement, which is above our usual envelope. Most
  * sessions land at <50 KB.
  */
-export function useQABoard(room: LiveRoomHandle): {
+export function useQABoard(
+  room: LiveRoomHandle,
+  role: "instructor" | "student",
+): {
   snapshot: QABoardSnapshot;
   postQuestion(text: string, displayName: string): void;
   toggleUpvote(questionId: string): void;
@@ -86,7 +89,10 @@ export function useQABoard(room: LiveRoomHandle): {
     });
   };
 
+  // Instructor-only local speed-bumps: integrity is advisory in P2P mode —
+  // every client holds the shared doc, so a modified client can still write.
   const markAnswered = (questionId: string, answered: boolean) => {
+    if (role !== "instructor") return;
     room.doc.transact(() => {
       const q = questionsMap.get(questionId);
       if (!q) return;
@@ -95,6 +101,7 @@ export function useQABoard(room: LiveRoomHandle): {
   };
 
   const clearAll = () => {
+    if (role !== "instructor") return;
     room.doc.transact(() => {
       questionsMap.clear();
       upvotesMap.clear();

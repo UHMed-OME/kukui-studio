@@ -29,6 +29,7 @@ export type Tally = {
 export function useStrawPoll(
   room: LiveRoomHandle,
   choiceIds: readonly string[],
+  role: "instructor" | "student",
 ): {
   myVote: string | undefined;
   tally: Tally;
@@ -63,6 +64,9 @@ export function useStrawPoll(
   };
 
   const clearAll = () => {
+    // Instructor-only local speed-bump: integrity is advisory in P2P mode —
+    // every client holds the shared doc, so a modified client can still write.
+    if (role !== "instructor") return;
     room.doc.transact(() => {
       votesMap.clear();
     });

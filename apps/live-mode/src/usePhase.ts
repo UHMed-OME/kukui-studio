@@ -11,12 +11,16 @@ import {
  * Backed by the Y.js map owned by `RoomStateController` (`getRoomState`).
  * Any peer's `setPhase` call propagates to all peers via Y.js update events.
  *
- * Only the instructor view should call `setPhase` — for M1 we don't enforce
- * write permission at the transport level; the student UI simply doesn't
- * expose a control. The first peer's view authoritatively reflects what was
- * written.
+ * Only the instructor may drive the phase: `setPhase` is a no-op unless the
+ * local role is "instructor". This is a local speed-bump, not a security
+ * boundary — in P2P mode every client holds the shared doc, so integrity is
+ * advisory and a modified client can still write. The transport level does
+ * not enforce write permission.
  */
-export function usePhase(room: LiveRoomHandle): {
+export function usePhase(
+  room: LiveRoomHandle,
+  role: "instructor" | "student",
+): {
   phase: LivePhase;
   setPhase: (next: LivePhase) => void;
 } {
@@ -39,6 +43,9 @@ export function usePhase(room: LiveRoomHandle): {
 
   return {
     phase,
-    setPhase: (next: LivePhase) => state.setPhase(next),
+    setPhase: (next: LivePhase) => {
+      if (role !== "instructor") return;
+      state.setPhase(next);
+    },
   };
 }

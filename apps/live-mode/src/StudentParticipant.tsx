@@ -37,7 +37,7 @@ export function StudentParticipant({
   configTitle,
   onLeave,
 }: StudentParticipantProps) {
-  const { phase } = usePhase(room);
+  const { phase } = usePhase(room, "student");
 
   return (
     <div className="live-shell">
