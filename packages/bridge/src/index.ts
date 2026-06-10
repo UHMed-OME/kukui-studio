@@ -17,7 +17,9 @@
  * `beforeunload` calls LMSFinish exactly once.
  *
  * SCORM 1.2 cmi.suspend_data has a 4096-character cap — `SaveSuspendData`
- * length-checks before writing and warns on overflow.
+ * length-checks before writing and refuses an over-cap payload (warns,
+ * returns false, keeps the previous value) — truncated JSON would fail to
+ * parse on resume.
  */
 
 const SUSPEND_DATA_MAX = 4096;
@@ -115,7 +117,9 @@ export function attachBridge(target: Window = window): KukuiBridge {
         return false;
       }
       try {
-        const scaled = max === 0 ? 0 : Math.round((raw / max) * 100);
+        // SCORM 1.2 CMIDecimal score range is 0–100; clamp so an out-of-range
+        // raw (bonus points, negative scoring) never produces an LMS write error.
+        const scaled = max === 0 ? 0 : Math.min(100, Math.max(0, Math.round((raw / max) * 100)));
         scormApi.set("cmi.core.score.raw", String(scaled));
         scormApi.set("cmi.core.score.min", "0");
         scormApi.set("cmi.core.score.max", "100");
@@ -131,17 +135,19 @@ export function attachBridge(target: Window = window): KukuiBridge {
     SaveSuspendData(json) {
       const value = typeof json === "string" ? json : "";
       if (value.length > SUSPEND_DATA_MAX) {
+        // Never write a truncated payload — sliced JSON fails to parse on
+        // resume, so the whole save would be lost. Keep the previous value.
         console.warn(
-          `[kukui:bridge] suspend_data ${value.length} > ${SUSPEND_DATA_MAX} cap; truncating`,
+          `[kukui:bridge] suspend_data ${value.length} > ${SUSPEND_DATA_MAX} cap; skipping save to preserve the previous state`,
         );
+        return false;
       }
-      const truncated = value.slice(0, SUSPEND_DATA_MAX);
       if (!connected || !scormApi) {
-        memorySuspend = truncated;
+        memorySuspend = value;
         return false;
       }
       try {
-        scormApi.set("cmi.suspend_data", truncated);
+        scormApi.set("cmi.suspend_data", value);
         scormApi.save();
         return true;
       } catch (err) {
@@ -179,7 +185,17 @@ export function attachBridge(target: Window = window): KukuiBridge {
         console.info(`[kukui:bridge:preview] RecordInteraction: ${json}`);
         return false;
       }
-      let record: {
+      let parsed: unknown;
+      try {
+        parsed = JSON.parse(json);
+      } catch (err) {
+        console.error("[kukui:bridge] RecordInteraction: invalid JSON", err);
+        return false;
+      }
+      // Validate the shape BEFORE any cmi.* write — the caller is a foreign
+      // engine, so a malformed record must not leave a half-written
+      // interaction behind.
+      const record = parsed as {
         id: string;
         type: string;
         studentResponse: string;
@@ -188,17 +204,32 @@ export function attachBridge(target: Window = window): KukuiBridge {
         weighting?: number;
         latencySeconds?: number;
       };
-      try {
-        record = JSON.parse(json);
-      } catch (err) {
-        console.error("[kukui:bridge] RecordInteraction: invalid JSON", err);
+      const resultKinds = ["correct", "wrong", "unanticipated", "neutral", "numeric"];
+      const valid =
+        typeof parsed === "object" &&
+        parsed !== null &&
+        typeof record.id === "string" &&
+        typeof record.type === "string" &&
+        typeof record.studentResponse === "string" &&
+        typeof record.result === "object" &&
+        record.result !== null &&
+        resultKinds.includes(record.result.kind) &&
+        (record.result.kind !== "numeric" || Number.isFinite(record.result.value)) &&
+        (record.weighting === undefined || Number.isFinite(record.weighting)) &&
+        (record.correctResponse === undefined || typeof record.correctResponse === "string") &&
+        (record.latencySeconds === undefined || Number.isFinite(record.latencySeconds));
+      if (!valid) {
+        console.error("[kukui:bridge] RecordInteraction: malformed record", json);
         return false;
       }
       try {
         const i = interactionIndex;
         interactionIndex += 1;
         const prefix = `cmi.interactions.${i}`;
-        scormApi.set(`${prefix}.id`, truncate(record.id));
+        // `id` is a CMIIdentifier — plain slice, no ellipsis: U+2026 is
+        // outside the identifier character set. Human-readable responses
+        // keep the marker.
+        scormApi.set(`${prefix}.id`, record.id.slice(0, MAX_RESPONSE_CHARS));
         scormApi.set(`${prefix}.type`, record.type);
         scormApi.set(`${prefix}.time`, encodeTime(new Date()));
         scormApi.set(`${prefix}.student_response`, truncate(record.studentResponse));

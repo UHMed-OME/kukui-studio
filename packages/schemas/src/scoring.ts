@@ -16,8 +16,8 @@ import { z } from "zod";
  *     = passed if score.raw >= passPercentage else failed
  *   - "all-or-nothing": score.raw = 100 if fully correct else 0;
  *     lesson_status = passed only on a clean sweep
- *   - "completion": score.raw = 100, lesson_status = "completed"
- *     when the learner finishes
+ *   - "completion": score.raw = 100, lesson_status = "passed" when the
+ *     learner finishes (the drivers only ever write passed/failed)
  */
 
 const ScoreBandSchema = z

@@ -32,6 +32,16 @@ describe("kukuiBridge — preview / no-pipwerks fallback", () => {
     expect(b.LoadSuspendData()).toBe("hello");
   });
 
+  it("SaveSuspendData refuses an over-cap payload in preview mode and keeps the previous value", () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const b = attachBridge(window);
+    b.SaveSuspendData("hello");
+    expect(b.SaveSuspendData("x".repeat(5000))).toBe(false);
+    expect(warn).toHaveBeenCalled();
+    expect(b.LoadSuspendData()).toBe("hello");
+    warn.mockRestore();
+  });
+
   it("GetUrlParam reads from window.location.search", () => {
     const original = window.location.href;
     window.history.replaceState(null, "", "/?config=samples/x.json&foo=bar");
@@ -76,7 +86,7 @@ describe("kukuiBridge — pipwerks-connected mode", () => {
     expect(save).toHaveBeenCalled();
   });
 
-  it("SaveSuspendData warns and truncates above 4096-char cap", () => {
+  it("SaveSuspendData refuses to write above the 4096-char cap (no truncated JSON on the LMS)", () => {
     const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
     const set = vi.fn(() => true);
     const save = vi.fn(() => true);
@@ -91,13 +101,30 @@ describe("kukuiBridge — pipwerks-connected mode", () => {
     };
     const b = attachBridge(window);
     const huge = "x".repeat(5000);
-    b.SaveSuspendData(huge);
+    expect(b.SaveSuspendData(huge)).toBe(false);
     expect(warn).toHaveBeenCalled();
-    const written = (set.mock.calls.find((c) => c[0] === "cmi.suspend_data") ?? [])[1] as
-      | string
-      | undefined;
-    expect(written?.length).toBe(4096);
+    expect(set.mock.calls.find((c) => c[0] === "cmi.suspend_data")).toBeUndefined();
+    expect(save).not.toHaveBeenCalled();
     warn.mockRestore();
+  });
+
+  it("OnActivityComplete clamps the posted score to 0–100", () => {
+    const set = vi.fn(() => true);
+    (window as unknown as { pipwerks: { SCORM: unknown } }).pipwerks = {
+      SCORM: {
+        init: () => true,
+        get: () => "",
+        set,
+        save: () => true,
+        quit: () => true,
+      },
+    };
+    const b = attachBridge(window);
+    expect(b.OnActivityComplete(15, 10, true)).toBe(true); // raw > max (bonus points)
+    expect(set).toHaveBeenCalledWith("cmi.core.score.raw", "100");
+    set.mockClear();
+    expect(b.OnActivityComplete(-5, 10, false)).toBe(true); // negative scoring
+    expect(set).toHaveBeenCalledWith("cmi.core.score.raw", "0");
   });
 });
 
@@ -185,5 +212,66 @@ describe("KukuiBridge.RecordInteraction", () => {
     expect(ok).toBe(false);
     expect(errSpy).toHaveBeenCalled();
     errSpy.mockRestore();
+  });
+
+  it("rejects malformed records before any cmi.* write", () => {
+    const set = vi.fn(() => true);
+    const save = vi.fn(() => true);
+    (window as unknown as { pipwerks: unknown }).pipwerks = {
+      SCORM: { init: () => true, get: () => "", set, save, quit: () => true },
+    };
+    const errSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    const bridge = attachBridge(window);
+
+    const base = {
+      id: "test:abc:q1",
+      type: "choice",
+      studentResponse: "a",
+      result: { kind: "correct" },
+    };
+    const bad = [
+      { ...base, id: 42 }, // id not a string
+      { ...base, studentResponse: ["a"] }, // studentResponse not a string
+      { ...base, result: { kind: "amazing" } }, // unknown result kind
+      { ...base, result: "correct" }, // result not an object
+      { ...base, result: { kind: "numeric" } }, // numeric without a value
+      { ...base, weighting: "2" }, // weighting not a number
+      "null", // not an object at all
+    ];
+    for (const record of bad) {
+      const json = typeof record === "string" ? record : JSON.stringify(record);
+      expect(bridge.RecordInteraction(json)).toBe(false);
+    }
+    expect(set).not.toHaveBeenCalled();
+    expect(save).not.toHaveBeenCalled();
+    expect(errSpy).toHaveBeenCalled();
+
+    // The same base record without the bad field is accepted — the guard
+    // rejects the malformed field, not the shape in general.
+    expect(bridge.RecordInteraction(JSON.stringify(base))).toBe(true);
+    expect(set).toHaveBeenCalledWith("cmi.interactions.0.id", "test:abc:q1");
+    errSpy.mockRestore();
+  });
+
+  it("truncates an over-length id with a plain slice (no ellipsis — id is a CMIIdentifier)", () => {
+    const set = vi.fn(() => true);
+    (window as unknown as { pipwerks: unknown }).pipwerks = {
+      SCORM: { init: () => true, get: () => "", set, save: () => true, quit: () => true },
+    };
+    const bridge = attachBridge(window);
+    const ok = bridge.RecordInteraction(
+      JSON.stringify({
+        id: "x".repeat(300),
+        type: "fill-in",
+        studentResponse: "y".repeat(300),
+        result: { kind: "neutral" },
+      }),
+    );
+    expect(ok).toBe(true);
+    const idCall = set.mock.calls.find((c) => c[0] === "cmi.interactions.0.id");
+    const responseCall = set.mock.calls.find((c) => c[0] === "cmi.interactions.0.student_response");
+    expect(idCall?.[1]).toBe("x".repeat(255));
+    expect(responseCall?.[1]).toHaveLength(255);
+    expect((responseCall?.[1] as string).endsWith("…")).toBe(true);
   });
 });

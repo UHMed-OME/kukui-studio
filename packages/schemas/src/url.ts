@@ -27,8 +27,10 @@ export const SAFE_MEDIA_URL = z
       /^https?:\/\//i.test(v) ||
       /^data:(image|audio|video)\//i.test(v) ||
       // relative paths inside the SCORM package — letters, digits, `_`,
-      // `-`, `.`, `/`. No traversals, no schemes, no whitespace.
-      (/^[a-z0-9_\-./]+$/i.test(v) && !v.includes("..")),
+      // `-`, `.`, `/`. No traversals, no schemes, no whitespace, and no
+      // leading `/`: package media is always relative, and a leading slash
+      // would let protocol-relative `//evil.com/x.png` slip through.
+      (/^[a-z0-9_\-./]+$/i.test(v) && !v.includes("..") && !v.startsWith("/")),
     {
       message:
         "Must be an https URL, a data: URL for image/audio/video, or a relative path inside the SCORM package.",
