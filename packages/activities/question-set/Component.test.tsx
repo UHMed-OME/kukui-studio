@@ -121,6 +121,51 @@ describe("QuestionSet", () => {
     warn.mockRestore();
   });
 
+  it("randomQuestions shuffles display order, stable across re-renders", () => {
+    // Pin the per-mount seed: Math.random() -> 0 means seed 0, and
+    // shuffleIndices(2, 0) yields [1, 0] — Q2 displays first.
+    const rand = vi.spyOn(Math, "random").mockReturnValue(0);
+    const cfgShuffled: QuestionSetConfig = {
+      ...cfg,
+      behaviour: { ...cfg.behaviour, randomQuestions: true },
+    };
+    const { rerender } = render(<Component config={cfgShuffled} onSubmit={vi.fn()} />);
+    expect(screen.getByRole("heading", { level: 2, name: /q2/i })).toBeInTheDocument();
+    // Re-render with the same props: order must not re-shuffle.
+    rerender(<Component config={cfgShuffled} onSubmit={vi.fn()} />);
+    expect(screen.getByRole("heading", { level: 2, name: /q2/i })).toBeInTheDocument();
+    rand.mockRestore();
+  });
+
+  it("randomQuestions keeps scoring by stable identity", async () => {
+    const user = userEvent.setup();
+    const onSubmit = vi.fn();
+    const cfgShuffled: QuestionSetConfig = {
+      ...cfg,
+      behaviour: { ...cfg.behaviour, randomQuestions: true },
+    };
+    render(<Component config={cfgShuffled} onSubmit={onSubmit} />);
+    // Answer both questions by content, regardless of display order.
+    for (let i = 0; i < 2; i += 1) {
+      const jupiter = screen.queryByRole("button", { name: /jupiter/i });
+      if (jupiter) {
+        await user.click(jupiter);
+      } else {
+        await user.type(screen.getByRole("textbox"), "AU");
+      }
+      await user.click(screen.getByRole("button", { name: /^check$/i }));
+      if (i === 0) await user.click(screen.getByRole("button", { name: /next/i }));
+    }
+    await user.click(screen.getByRole("button", { name: /submit set/i }));
+    expect(onSubmit.mock.calls[0]?.[0]).toMatchObject({ success: true });
+  });
+
+  it("clamps an out-of-range suspended `current` to the last question", () => {
+    const suspend = JSON.stringify({ stage: "answering", scores: {}, current: 99, attempts: 0 });
+    render(<Component config={cfg} onSubmit={vi.fn()} suspendData={suspend} />);
+    expect(screen.getByText(/Question 2 of 2/i)).toBeInTheDocument();
+  });
+
   it("persists state via onPersist on each interaction", async () => {
     const user = userEvent.setup();
     const onPersist = vi.fn();

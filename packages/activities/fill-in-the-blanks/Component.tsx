@@ -180,10 +180,6 @@ export function Component({
             const reveal = showSolutions && !correctness[blankIdx];
             const displayValue = reveal ? (seg.accepts[0] ?? "") : value;
             const inputId = `${baseInputId}-${blankIdx}`;
-            const widthCh = Math.max(
-              8,
-              ...seg.accepts.map((a) => Math.min(24, a.length + 2)),
-            );
 
             const stateLabel = submitted
               ? isCorrect
@@ -219,7 +215,9 @@ export function Component({
                   autoCorrect="off"
                   autoCapitalize="off"
                   spellCheck={false}
-                  style={{ width: `${widthCh}ch` }}
+                  // Fixed width for every blank — sizing to the accepted
+                  // answer would leak its length to the learner.
+                  style={{ width: "12ch" }}
                 />
                 <span className="kukui-fib__icon" aria-hidden="true">
                   {submitted ? (isCorrect ? "✓" : "✗") : ""}

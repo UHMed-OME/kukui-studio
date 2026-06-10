@@ -22,7 +22,7 @@
 .kukui-mc__title {
   margin: 0 0 var(--spacing-lg, 16px);
   font-family: var(--font-family-display, "Iowan Old Style", "Apple Garamond", Baskerville, "Times New Roman", serif);
-  font-size: var(--font-size-title, 24px);
+  font-size: var(--font-size-title, 22px);
   font-weight: 500;
   letter-spacing: -0.005em;
   color: var(--color-text-primary, #1c1e20);
@@ -119,28 +119,32 @@
  * reveal does not reflow neighbours. Default opacity 0; .is-visible fades to 1.
  */
 .kukui-mc__feedback {
-  min-height: 0;
+  min-height: 28px;
   opacity: 0;
   font-size: var(--font-size-meta, 13px);
   color: var(--color-text-secondary, #606069);
-  padding: 0 var(--spacing-lg, 16px);
-  transition:
-    opacity 200ms ease,
-    min-height 200ms ease;
+  padding: var(--spacing-xs, 4px) var(--spacing-lg, 16px) var(--spacing-sm, 8px);
+  transition: opacity 200ms ease;
 }
 
 .kukui-mc__feedback.is-visible {
   opacity: 1;
-  min-height: 28px;
-  padding-top: var(--spacing-xs, 4px);
-  padding-bottom: var(--spacing-sm, 8px);
 }
 
+/* Tip row — same pattern A as the feedback row: rendered whenever the
+ * answer has a tip, space reserved from initial render, opacity-only
+ * reveal on submit so neighbours never reflow. */
 .kukui-mc__tip {
   font-size: var(--font-size-meta, 13px);
   color: var(--color-text-secondary, #606069);
   padding: var(--spacing-xs, 4px) var(--spacing-lg, 16px) 0;
   font-style: italic;
+  opacity: 0;
+  transition: opacity 200ms ease;
+}
+
+.kukui-mc__tip.is-visible {
+  opacity: 1;
 }
 
 .kukui-mc__tip-label {
@@ -205,7 +209,8 @@
 
 @media (prefers-reduced-motion: reduce) {
   .kukui-mc__answer,
-  .kukui-mc__feedback {
+  .kukui-mc__feedback,
+  .kukui-mc__tip {
     transition: none;
   }
 }

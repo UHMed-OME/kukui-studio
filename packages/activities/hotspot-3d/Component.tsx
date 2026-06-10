@@ -28,6 +28,54 @@ const LIGHTING_PRESETS = ["studio", "warehouse", "park", "forest", "lobby", "sun
 type LightingPreset = (typeof LIGHTING_PRESETS)[number];
 const DEFAULT_PRESET: LightingPreset = "studio";
 
+/**
+ * Procedural light rig per preset. We deliberately don't fetch drei's
+ * HDRI environments (see the comment inside <Canvas>), so each preset
+ * maps to an ambient + key/fill directional combination that
+ * approximates the named environment's mood: intensity for brightness,
+ * color temperature for warmth. "studio" matches the original
+ * hardcoded rig exactly.
+ */
+const LIGHT_RIGS: Record<
+  LightingPreset,
+  {
+    ambient: { intensity: number; color: string };
+    key: { intensity: number; color: string };
+    fill: { intensity: number; color: string };
+  }
+> = {
+  studio: {
+    ambient: { intensity: 0.6, color: "#ffffff" },
+    key: { intensity: 0.9, color: "#ffffff" },
+    fill: { intensity: 0.35, color: "#ffffff" },
+  },
+  warehouse: {
+    ambient: { intensity: 0.45, color: "#dfe4ea" },
+    key: { intensity: 0.75, color: "#eef1f5" },
+    fill: { intensity: 0.3, color: "#c9d2dc" },
+  },
+  park: {
+    ambient: { intensity: 0.7, color: "#eaf3e0" },
+    key: { intensity: 1.0, color: "#fff6df" },
+    fill: { intensity: 0.4, color: "#cfe3f5" },
+  },
+  forest: {
+    ambient: { intensity: 0.5, color: "#dcead2" },
+    key: { intensity: 0.7, color: "#f2f7da" },
+    fill: { intensity: 0.35, color: "#b9d4ad" },
+  },
+  lobby: {
+    ambient: { intensity: 0.65, color: "#f5ecdf" },
+    key: { intensity: 0.8, color: "#ffeed6" },
+    fill: { intensity: 0.4, color: "#e8dcc8" },
+  },
+  sunset: {
+    ambient: { intensity: 0.4, color: "#f3d4b8" },
+    key: { intensity: 1.1, color: "#ffc488" },
+    fill: { intensity: 0.25, color: "#9fb4d8" },
+  },
+};
+
 type Stage = "answering" | "submitted";
 
 type State = {
@@ -278,6 +326,14 @@ function Hotspot3DScene({
   submitted: boolean;
   onPick: (id: string) => void;
 }) {
+  // All hooks live above the conditional early returns below — switching
+  // between the no-WebGL / Sketchfab / GLB render paths must never change
+  // the hook count (Rules of Hooks).
+  //
+  // The model is the only meaningful occluder. Pins raycast against it
+  // each frame to decide whether to render the "behind" style.
+  const modelRef = useRef<THREE.Object3D | null>(null);
+
   // Probe both webgl and webgl2 — Safari with strict privacy settings
   // can return null for "webgl" but still have webgl2 available, and
   // probing only the legacy context falls into the text fallback for a
@@ -360,9 +416,7 @@ function Hotspot3DScene({
     config.lighting?.preset && LIGHTING_PRESETS.includes(config.lighting.preset as LightingPreset)
       ? (config.lighting.preset as LightingPreset)
       : DEFAULT_PRESET;
-  // The model is the only meaningful occluder. Pins raycast against it
-  // each frame to decide whether to render the "behind" style.
-  const modelRef = useRef<THREE.Object3D | null>(null);
+  const rig = LIGHT_RIGS[lightingPreset];
 
   // Camera: honor the author's pinned view if present; otherwise
   // FrameToModel below auto-fits to the model's bounding box on first
@@ -397,12 +451,23 @@ function Hotspot3DScene({
               raw.githack.com which fails inside LMS networks that block
               external CDNs, and trips strict CSPs (CSP saw it before we
               did). Use three procedural lights instead — flatter shading
-              than IBL, but the activity ships fully self-contained. To
-              restore IBL later, bundle an HDR file in the SCORM zip and
-              pass it via `files=` on Environment. */}
-          <ambientLight intensity={0.6} />
-          <directionalLight position={[3, 5, 4]} intensity={0.9} castShadow={false} />
-          <directionalLight position={[-3, 2, -4]} intensity={0.35} castShadow={false} />
+              than IBL, but the activity ships fully self-contained. The
+              author's `lighting.preset` picks a LIGHT_RIGS entry above.
+              To restore IBL later, bundle an HDR file in the SCORM zip
+              and pass it via `files=` on Environment. */}
+          <ambientLight intensity={rig.ambient.intensity} color={rig.ambient.color} />
+          <directionalLight
+            position={[3, 5, 4]}
+            intensity={rig.key.intensity}
+            color={rig.key.color}
+            castShadow={false}
+          />
+          <directionalLight
+            position={[-3, 2, -4]}
+            intensity={rig.fill.intensity}
+            color={rig.fill.color}
+            castShadow={false}
+          />
           <Suspense fallback={null}>
             {config.model.src ? (
               <Model src={config.model.src} scale={modelScale} sceneRef={modelRef} />

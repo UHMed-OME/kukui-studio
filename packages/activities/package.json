@@ -64,6 +64,8 @@
     "./sequence-steps/schema": "./sequence-steps/schema.ts",
     "./straw-poll/Component": "./straw-poll/Component.tsx",
     "./straw-poll/schema": "./straw-poll/schema.ts",
+    "./video-reflection/Component": "./video-reflection/Component.tsx",
+    "./video-reflection/schema": "./video-reflection/schema.ts",
     "./virtual-tour/Component": "./virtual-tour/Component.tsx",
     "./virtual-tour/schema": "./virtual-tour/schema.ts",
     "./word-cloud/Component": "./word-cloud/Component.tsx",

@@ -16,7 +16,7 @@
 .kukui-ia__title {
   margin: 0 0 var(--spacing-sm, 8px);
   font-family: var(--font-family-display, "Iowan Old Style", "Apple Garamond", Baskerville, "Times New Roman", serif);
-  font-size: var(--font-size-title, 24px);
+  font-size: var(--font-size-title, 22px);
   font-weight: 500;
   letter-spacing: -0.005em;
   color: var(--color-text-primary);
@@ -158,6 +158,7 @@
 }
 
 .kukui-ia__shape-remove {
+  position: relative;
   margin-left: auto;
   min-height: 32px;
   padding: 4px 10px;
@@ -167,6 +168,15 @@
   font-size: var(--font-size-meta, 13px);
   cursor: pointer;
   color: var(--color-text-secondary);
+}
+
+/* Invisible hit-target expansion: visual size stays 32 px, but the
+ * clickable area extends 6 px on every side so the effective target is
+ * ≥ 44 px (WCAG 2.5.5) without growing the row. */
+.kukui-ia__shape-remove::after {
+  content: "";
+  position: absolute;
+  inset: -6px;
 }
 
 .kukui-ia__shape-remove:hover {
@@ -243,11 +253,11 @@
   border-radius: var(--radius-md, 8px);
   background: var(--color-tip-bg, #f2f0e8);
   text-align: center;
-  color: var(--color-text-secondary, #6b6357);
+  color: var(--color-text-secondary, #606069);
 }
 
 .kukui-ia__empty strong {
-  color: var(--color-text-primary, #2a241d);
+  color: var(--color-text-primary, #1c1e20);
   font-size: var(--font-size-prompt, 16px);
 }
 

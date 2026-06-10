@@ -191,8 +191,19 @@ export function Component({
                     {right ? "✓" : wrong ? "✗" : reveal ? "○" : ""}
                   </span>
                 </button>
-                {submitted && selected && a.tip ? (
-                  <div className="kukui-mc__tip" aria-live="polite">
+                {/* Tip row mounts whenever the answer has a tip — presence
+                    depends on config only, never on state, so the reveal is
+                    opacity-only and neighbours stay put (layout-stable). The
+                    tip text is already exposed pre-submit via `title`. */}
+                {a.tip ? (
+                  <div
+                    className={[
+                      "kukui-mc__tip",
+                      submitted && selected ? "is-visible" : "",
+                    ]
+                      .filter(Boolean)
+                      .join(" ")}
+                  >
                     <span className="kukui-mc__tip-label">Tip:</span> {a.tip}
                   </div>
                 ) : null}

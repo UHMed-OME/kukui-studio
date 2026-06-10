@@ -28,6 +28,29 @@ type State = {
   attempts: number;
 };
 
+/** Tiny seeded PRNG (mulberry32) — stable shuffle across remounts. */
+function rng(seed: number): () => number {
+  let t = seed >>> 0;
+  return () => {
+    t = (t + 0x6d2b79f5) >>> 0;
+    let r = Math.imul(t ^ (t >>> 15), 1 | t);
+    r = (r + Math.imul(r ^ (r >>> 7), 61 | r)) ^ r;
+    return ((r ^ (r >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+function shuffleIndices(n: number, seed: number): number[] {
+  const out = Array.from({ length: n }, (_, i) => i);
+  const rand = rng(seed);
+  for (let i = out.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(rand() * (i + 1));
+    const tmp = out[i] as number;
+    out[i] = out[j] as number;
+    out[j] = tmp;
+  }
+  return out;
+}
+
 export default function Component({
   config,
   onSubmit,
@@ -64,8 +87,22 @@ export default function Component({
     return out;
   }, [config.questions]);
 
+  // Display order of validated questions. Scores stay keyed by the
+  // ORIGINAL question index (q.index), so resume data is order-stable
+  // even though the shuffle varies across mounts — mirrors how
+  // MultipleChoice handles behaviour.randomAnswers.
+  const ordered = useMemo<ValidatedQuestion[]>(() => {
+    if (!config.behaviour?.randomQuestions) return validated;
+    // Per-mount seed: stable across re-renders, varies across mounts.
+    const seed = Math.floor(Math.random() * 0xffffffff) >>> 0;
+    return shuffleIndices(validated.length, seed).map((i) => validated[i] as ValidatedQuestion);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [validated, config.behaviour?.randomQuestions]);
+
   const initial: State = { stage: "answering", scores: {}, current: 0, attempts: 0 };
-  const [state, setState] = useState<State>(() => parseSuspend(suspendData) ?? initial);
+  const [state, setState] = useState<State>(
+    () => parseSuspend(suspendData, validated.length) ?? initial,
+  );
 
   // Reset local state when `config` changes externally (Studio Preview edit,
   // AI Accept, draft load, etc.). Reference equality on the `config` prop —
@@ -74,7 +111,7 @@ export default function Component({
   // remount key.
   useEffect(() => {
     setState(
-      parseSuspend(suspendData) ?? {
+      parseSuspend(suspendData, validated.length) ?? {
         stage: "answering",
         scores: {},
         current: 0,
@@ -152,7 +189,7 @@ export default function Component({
   const showProgressBar = config.behaviour?.showProgressBar ?? true;
   const showResults = config.behaviour?.showResults ?? false;
   const submitted = state.stage === "submitted";
-  const current = validated[state.current];
+  const current = ordered[state.current];
 
   return (
     <div className="kukui-qs">
@@ -246,7 +283,7 @@ export default function Component({
           >
             <h2 className="kukui-qs__results-title">Per-question results</h2>
             <ul className="kukui-qs__results-list">
-              {validated.map((q, displayIdx) => {
+              {ordered.map((q, displayIdx) => {
                 const sc = state.scores[q.index];
                 const isCorrect = sc ? sc.raw === sc.max && sc.max > 0 : false;
                 const qTitle =
@@ -276,7 +313,7 @@ export default function Component({
   );
 }
 
-function parseSuspend(s: string | undefined): State | null {
+function parseSuspend(s: string | undefined, questionCount: number): State | null {
   if (!s) return null;
   try {
     const parsed = JSON.parse(s) as Partial<State>;
@@ -284,7 +321,9 @@ function parseSuspend(s: string | undefined): State | null {
       return {
         stage: parsed.stage === "submitted" ? "submitted" : "answering",
         scores: typeof parsed.scores === "object" && parsed.scores ? parsed.scores : {},
-        current: parsed.current,
+        // Clamp to the valid question range — stale or hand-edited
+        // suspend data must never point past the last question.
+        current: Math.min(Math.max(0, Math.trunc(parsed.current)), Math.max(0, questionCount - 1)),
         attempts: typeof parsed.attempts === "number" ? parsed.attempts : 0,
       };
     }

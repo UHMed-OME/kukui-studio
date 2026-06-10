@@ -30,6 +30,9 @@ Defined as `static readonly Color` constants. Do not introduce new hex values wi
 | `Error` | `0.764, 0.255, 0.196` | `#C34132` | Wrong answers, validation errors |
 | `ErrorSoft` | `Error @ 0.08 alpha` | — | Wrong answer fill |
 | `TipBg` | `0.95, 0.94, 0.91` | `#F2F0E8` | Tip / hint area |
+| `TextMuted` | `0.431, 0.431, 0.463` | `#6E6E76` | Tertiary / fine-print text (model attribution footers). ≈ 5.1:1 on `Surface` — passes AA for body text; reserve for 12–13 px asides |
+| `Revealed` | `0.478, 0.361, 0.678` | `#7A5CAD` | "Revealed" state (e.g. crossword reveal-letter). Used only as a ≤ 22% tint over `Surface` and always paired with a mark glyph (◔) — never as a text color. White text on the full hex is ≈ 5.3:1 if ever needed |
+| `Canvas3D` | `0.043, 0.043, 0.063` | `#0B0B10` | 3D viewport backdrop (Hotspot 3D, Virtual Tour). White pin text on it is ≈ 19:1; per-scheme overrides keep it near-black so pins stay AA |
 
 ## Spacing scale
 
@@ -66,6 +69,8 @@ Use these values only. Skip granularity that isn't here.
 **Family:** Inter Variable, self-hosted at `apps/studio-app/public/fonts/InterVariable.woff2` (~344KB, single file with weight axis 100–900 + slant). Loaded via `@font-face` with `font-display: swap`; falls back to `ui-sans-serif, system-ui, -apple-system, …` while the woff2 is fetching on first load.
 
 Body opt-in features: `font-feature-settings: "cv11", "ss03"` (single-storey `a`, sharper `i J l` stems). `text-rendering: optimizeLegibility` + grayscale font-smoothing. Numeric elements (badges, counts) add `font-variant-numeric: tabular-nums` to prevent digit reflow.
+
+**Display family (activity headings):** in-activity titles (the `__title` element of every activity card) render in `--font-family-display` — an editorial serif stack (`"Iowan Old Style", "Apple Garamond", Baskerville, "Times New Roman", serif`; engine bundles don't embed a serif to keep SCORM zips small, so the host platform's best serif resolves) at **weight 500**, letter-spacing `-0.005em`. This serif-at-500 treatment is the canonical heading style for learner-facing activity titles. The Inter weights below apply to app chrome (Studio UI, wordmark, panels), not activity headings.
 
 Heading weights are **600** (formerly 700) — Inter at 700 is too dense at UI sizes. Letter-spacing tightens with size:
 

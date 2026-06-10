@@ -13,9 +13,9 @@
   --kukui-cw-cell-blank: color-mix(in srgb, var(--color-text-primary, #1c1e20) 14%, transparent);
   --kukui-cw-cell-highlight: color-mix(in srgb, var(--color-tip-bg, #f2f0e8) 70%, transparent);
   --kukui-cw-cell-selected: color-mix(in srgb, var(--color-accent, #b69b5d) 30%, transparent);
-  --kukui-cw-correct: color-mix(in srgb, #2e6e41 22%, var(--color-surface, #ffffff));
-  --kukui-cw-incorrect: color-mix(in srgb, #b3261e 22%, var(--color-surface, #ffffff));
-  --kukui-cw-revealed: color-mix(in srgb, #7a5cad 22%, var(--color-surface, #ffffff));
+  --kukui-cw-correct: color-mix(in srgb, var(--color-success, #2e6e41) 22%, var(--color-surface, #ffffff));
+  --kukui-cw-incorrect: color-mix(in srgb, var(--color-error, #c34132) 22%, var(--color-surface, #ffffff));
+  --kukui-cw-revealed: color-mix(in srgb, var(--color-revealed, #7a5cad) 22%, var(--color-surface, #ffffff));
   display: flex;
   justify-content: center;
   padding: var(--spacing-2xl, 24px);
@@ -38,7 +38,7 @@
 .kukui-cw__title {
   margin: 0 0 var(--spacing-lg, 16px);
   font-family: var(--font-family-display, "Iowan Old Style", "Apple Garamond", Baskerville, "Times New Roman", serif);
-  font-size: var(--font-size-title, 24px);
+  font-size: var(--font-size-title, 22px);
   font-weight: 500;
   letter-spacing: -0.005em;
   color: var(--color-text-primary, #1c1e20);
@@ -221,14 +221,14 @@
 }
 
 .kukui-cw__btn--primary {
-  background: var(--color-accent, #b69b5d);
-  border-color: var(--color-accent, #b69b5d);
+  background: var(--color-primary, #7b4324);
+  border-color: var(--color-primary, #7b4324);
   color: #ffffff;
   font-weight: 600;
 }
 
 .kukui-cw__btn--primary:hover:not(:disabled) {
-  background: color-mix(in srgb, var(--color-accent, #b69b5d) 85%, #000000);
+  background: var(--color-primary-hover, #9b5830);
 }
 
 .kukui-cw__clues {
@@ -317,8 +317,8 @@
 .kukui-cw__warning {
   margin: var(--spacing-sm, 8px) 0 0;
   padding: var(--spacing-sm, 8px) var(--spacing-md, 12px);
-  background: color-mix(in srgb, #b3261e 8%, var(--color-surface, #ffffff));
-  border-left: 3px solid #b3261e;
+  background: color-mix(in srgb, var(--color-error, #c34132) 8%, var(--color-surface, #ffffff));
+  border-left: 2px solid var(--color-error, #c34132);
   border-radius: var(--radius-sm, 6px);
   font-size: var(--font-size-caption, 14px);
 }

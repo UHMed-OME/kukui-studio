@@ -249,6 +249,13 @@ function VirtualTourScene({
   visited: Set<string>;
   onVisit: (id: string) => void;
 }) {
+  // The model is the occluder for each pin's per-frame raycast — pins
+  // show `.is-behind` styling when their anchor is round a corner /
+  // behind a wall, so the learner can still see where unvisited points
+  // are without losing depth information. Hooks must stay above the
+  // no-WebGL early return so the hook count is render-stable.
+  const sceneRef = useRef<THREE.Object3D | null>(null);
+
   // Probe both webgl and webgl2 — Safari with strict privacy settings
   // can return null for "webgl" but still have webgl2 available.
   const hasWebGL =
@@ -269,11 +276,6 @@ function VirtualTourScene({
 
   const spawn = config.scene.spawn?.position ?? { x: 0, y: 1.6, z: 3 };
   const movementSpeed = config.movement?.speed ?? 3;
-  // The model is the occluder for each pin's per-frame raycast — pins
-  // show `.is-behind` styling when their anchor is round a corner /
-  // behind a wall, so the learner can still see where unvisited points
-  // are without losing depth information.
-  const sceneRef = useRef<THREE.Object3D | null>(null);
 
   return (
     <div className="kukui-vt__canvas-wrap">

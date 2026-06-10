@@ -30,7 +30,7 @@
 .kukui-sp__title {
   margin: var(--spacing-md, 12px) 0 var(--spacing-sm, 8px);
   font-family: var(--font-family-display, "Iowan Old Style", "Apple Garamond", Baskerville, "Times New Roman", serif);
-  font-size: var(--font-size-title, 24px);
+  font-size: var(--font-size-title, 22px);
   font-weight: 500;
   letter-spacing: -0.005em;
   color: var(--color-text-primary, #1c1e20);
@@ -47,7 +47,7 @@
   margin: 0 0 var(--spacing-lg, 16px);
   padding: var(--spacing-sm, 8px) var(--spacing-md, 12px);
   background: color-mix(in srgb, var(--color-tip-bg, #f2f0e8) 70%, transparent);
-  border-left: 3px solid var(--color-accent, #b69b5d);
+  border-left: 2px solid var(--color-accent, #b69b5d);
   border-radius: var(--radius-sm, 6px);
   font-size: var(--font-size-caption, 14px);
   color: var(--color-text-secondary, #606069);
@@ -105,8 +105,8 @@
 .kukui-sp__complete {
   min-height: 44px;
   padding: 0 var(--spacing-lg, 16px);
-  background: var(--color-accent, #b69b5d);
-  border: 1px solid var(--color-accent, #b69b5d);
+  background: var(--color-primary, #7b4324);
+  border: 1px solid var(--color-primary, #7b4324);
   border-radius: var(--radius-sm, 6px);
   font-size: var(--font-size-body, 15px);
   font-weight: 600;
@@ -115,5 +115,5 @@
 }
 
 .kukui-sp__complete:hover {
-  background: color-mix(in srgb, var(--color-accent, #b69b5d) 85%, #000000);
+  background: var(--color-primary-hover, #9b5830);
 }
