@@ -5,6 +5,7 @@
     { "path": "./packages/schemas" },
     { "path": "./packages/activities" },
     { "path": "./packages/bridge" },
+    { "path": "./packages/embed" },
     { "path": "./apps/engine-web" },
     { "path": "./apps/studio-app" },
     { "path": "./apps/live-mode" },
