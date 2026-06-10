@@ -2,7 +2,7 @@
 title: Host on the web (no LMS)
 description: Share a Kukui activity as a plain web page — host it anywhere static, embed it in your site, or hand out a link. No LMS required.
 order: 3
-updated: 2026-06-03
+updated: 2026-06-10
 ---
 
 # Host on the web (no LMS)
