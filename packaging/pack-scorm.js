@@ -23,7 +23,8 @@
  *   - tags #root with data-mode="web" so the engine uses LocalDriver
  *     (localStorage persistence + the learner-facing completion panel),
  *   - optionally bakes a data-collect="<json>" results-collection config,
- *   - relaxes the CSP connect-src so an opt-in webhook can POST out,
+ *   - if that config opts into a webhook, relaxes the CSP connect-src to
+ *     the webhook's origin so the POST can leave,
  *   - zips to {out}/kukui-{activity}.web.zip.
  *
  * CLI:
@@ -101,35 +102,77 @@ const SLUG_PATTERN = /^[a-z0-9][a-z0-9-]*$/;
 const SUPPORTED_ENGINES = new Set(["react", "unity", "godot", "articulate", "raw"]);
 const SUPPORTED_TARGETS = new Set(["scorm", "web"]);
 
+// HTML attribute-value escaping. `&` must go first so entity-like sequences
+// in user input (e.g. `&copy=` in a webhook URL) survive the round trip
+// instead of being decoded into corrupt JSON. Mirrors escapeAttr in
+// apps/studio-app/src/webDownload.ts.
+function escapeAttr(s) {
+  return s.replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+}
+
+// XML text/attribute escaping for imsmanifest.xml values, so e.g.
+// --title "Q&A Review" produces valid XML.
+function escapeXml(s) {
+  return String(s)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
 /**
  * Rewrite a built engine HTML entry for the non-LMS "web" target:
  *   - drop the pipwerks SCORM wrapper <script> (no LMS API to bind),
  *   - tag #root with data-mode="web" (→ LocalDriver) and, if provided,
  *     data-collect with the results-collection JSON,
- *   - relax the CSP connect-src to allow an opt-in webhook POST over https.
- * Pure string transform so it stays trivially testable.
+ *   - if the collect config opts into a webhook, relax the CSP connect-src
+ *     to that webhook's origin (and nothing wider) so the POST can leave.
+ * Pure string transform so it stays trivially testable. Each step verifies
+ * its pattern matched — if the built HTML drifts, we throw instead of
+ * silently shipping a broken "web" zip.
  */
 function transformHtmlForWeb(html, collectJson) {
   let out = html;
 
   // 1. Remove the pipwerks loader script (matches the line in every entry).
-  out = out.replace(
-    /\s*<script[^>]*src=["']\.\/pipwerks\.SCORM\.min\.js["'][^>]*><\/script>/i,
-    "",
-  );
+  const pipwerksPattern =
+    /\s*<script[^>]*src=["']\.\/pipwerks\.SCORM\.min\.js["'][^>]*><\/script>/i;
+  if (!pipwerksPattern.test(out)) {
+    throw new Error(
+      "transformHtmlForWeb: pipwerks <script> tag not found in built HTML — the engine entry template has drifted; update pack-scorm.js to match.",
+    );
+  }
+  out = out.replace(pipwerksPattern, "");
 
   // 2. Add data-mode (and optional data-collect) to the #root div. The built
   //    div is `<div id="root" data-activity="..." data-config="...">`.
+  //    Function replacement: rootAttrs carries user JSON, which must not be
+  //    interpreted as `$`-replacement patterns.
+  const rootPattern = /<div\s+id=["']root["']/i;
+  if (!rootPattern.test(out)) {
+    throw new Error(
+      'transformHtmlForWeb: <div id="root"> not found in built HTML — the engine entry template has drifted; update pack-scorm.js to match.',
+    );
+  }
   const rootAttrs =
     ` data-mode="web"` +
-    (collectJson
-      ? ` data-collect="${collectJson.replace(/"/g, "&quot;").replace(/'/g, "&#39;")}"`
-      : "");
-  out = out.replace(/(<div\s+id=["']root["'])/i, `$1${rootAttrs}`);
+    (collectJson ? ` data-collect="${escapeAttr(collectJson)}"` : "");
+  out = out.replace(rootPattern, (m) => m + rootAttrs);
 
-  // 3. Relax the CSP so a configured webhook can POST out. The engine's CSP
-  //    pins connect-src to 'self'; web mode may talk to an external endpoint.
-  out = out.replace(/connect-src 'self';/i, "connect-src 'self' https:;");
+  // 3. Relax the CSP only when the collect config has a webhook, and pin
+  //    connect-src to that webhook's origin. The engine's CSP pins
+  //    connect-src to 'self'; without a webhook there is nothing to relax.
+  const webhook = collectJson ? JSON.parse(collectJson).webhook : undefined;
+  if (typeof webhook === "string" && webhook) {
+    const webhookOrigin = new URL(webhook).origin;
+    const cspPattern = /connect-src 'self';/i;
+    if (!cspPattern.test(out)) {
+      throw new Error(
+        "transformHtmlForWeb: connect-src 'self' CSP directive not found in built HTML — the engine entry template has drifted; update pack-scorm.js to match.",
+      );
+    }
+    out = out.replace(cspPattern, () => `connect-src 'self' ${webhookOrigin};`);
+  }
 
   return out;
 }
@@ -146,9 +189,11 @@ function slugToIdentifier(slug) {
   return "KUKUI-" + slug.replace(/[^a-zA-Z0-9]+/g, "-").toUpperCase();
 }
 
+// Var values are XML-escaped: the only template is imsmanifest.xml.tmpl, and
+// e.g. --title "Q&A Review" must not produce invalid XML.
 function fillTemplate(text, vars) {
   return text.replace(/\{\{(\w+)\}\}/g, (full, key) =>
-    Object.prototype.hasOwnProperty.call(vars, key) ? vars[key] : full,
+    Object.prototype.hasOwnProperty.call(vars, key) ? escapeXml(vars[key]) : full,
   );
 }
 
@@ -367,6 +412,17 @@ async function main() {
     process.exit(2);
   }
 
+  // Validate --mastery now so a typo fails fast rather than baking NaN (or
+  // an out-of-range score) into the manifest.
+  if (
+    !Number.isInteger(opts.mastery) ||
+    opts.mastery < 0 ||
+    opts.mastery > 100
+  ) {
+    console.error(`Invalid --mastery: ${opts.mastery}. Expected an integer 0–100.`);
+    process.exit(2);
+  }
+
   // Validate --collect now so a typo fails fast rather than baking broken
   // JSON into the package. Only meaningful for the web target.
   let collectJson;
@@ -375,7 +431,12 @@ async function main() {
       console.warn("[pack-scorm] --collect is ignored unless --target web");
     } else {
       try {
-        JSON.parse(opts.collect);
+        const parsed = JSON.parse(opts.collect);
+        // The webhook (if any) feeds the CSP connect-src relax, so it must
+        // parse as a URL — fail fast here rather than mid-pack.
+        if (typeof parsed.webhook === "string" && parsed.webhook) {
+          new URL(parsed.webhook);
+        }
         collectJson = opts.collect;
       } catch {
         console.error(`Invalid --collect JSON: ${opts.collect}`);
