@@ -436,6 +436,33 @@
   --color-canvas-3d: #0d0915;
 }
 
+/* ---------- Kai (clinical ocean-blue light) ---------- */
+/* Mirrors the JABSOM clinical-case palette: deep medical blue primary,
+   light-blue surfaces, teal info. */
+[data-color-scheme="kai"] {
+  --color-bg: #f4f8fd;
+  --color-surface: #ffffff;
+  --color-surface-alt: #e8f0fe;
+  --color-text-primary: #0d2440;
+  --color-text-secondary: #3d5878;
+  --color-text-muted: #5a7290;
+  --color-border: #c5d8ee;
+  --color-border-hover: #9bbce0;
+  --color-primary: #1a4d8f;
+  --color-primary-hover: #2a63b5;
+  --color-primary-soft: rgb(26 77 143 / 0.08);
+  --color-success: #1a7a47;
+  --color-success-soft: rgb(26 122 71 / 0.10);
+  --color-error: #c0392b;
+  --color-error-soft: rgb(192 57 43 / 0.09);
+  --color-warning: #b45309;
+  --color-warning-soft: rgb(180 83 9 / 0.10);
+  --color-info: #0e7490;
+  --color-info-soft: rgb(14 116 144 / 0.10);
+  --color-tip-bg: #e8f0fe;
+  --color-canvas-3d: #0a1a2e;
+}
+
 /* Bloom-level themed surfaces. Anything inside a [data-bloom=…] subtree
    can read `var(--bloom-color)` — dots, active-row tints, icon hover
    colors. Falls back to text-muted so planned/uncategorized rows still
@@ -3193,6 +3220,13 @@ button {
   background: var(--color-tip-bg);
   color: var(--color-text-secondary);
   font-style: italic;
+}
+
+/* SVG-markup textarea (SvgUploadWidget) — multi-line, resizable. */
+.ks-file__svg {
+  min-height: 7rem;
+  resize: vertical;
+  line-height: 1.4;
 }
 
 .ks-file__row {

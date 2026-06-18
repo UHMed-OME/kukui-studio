@@ -57,6 +57,7 @@ const GROUPS: Group[] = [
       { value: "kalo", label: "Kalo", description: "Taro-leaf dark with sage greens, grounded." },
       { value: "lab", label: "Lab", description: "Cool clinical light scheme with navy accents." },
       { value: "twilight", label: "Twilight", description: "Plum-tinted dark, reflective." },
+      { value: "kai", label: "Kai", description: "Clinical ocean-blue light scheme — bright, medical." },
     ],
   },
 ];

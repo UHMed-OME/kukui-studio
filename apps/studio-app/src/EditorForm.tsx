@@ -11,6 +11,7 @@ import { ArrayFieldTemplate } from "./templates/ArrayFieldTemplate.js";
 import { ObjectFieldTemplate } from "./templates/ObjectFieldTemplate.js";
 import { FieldTemplate } from "./templates/FieldTemplate.js";
 import { FileUploadWidget } from "./widgets/FileUploadWidget.js";
+import { SvgUploadWidget } from "./widgets/SvgUploadWidget.js";
 import { NodeSelectWidget } from "./widgets/NodeSelectWidget.js";
 import { PasswordCopyWidget } from "./widgets/PasswordCopyWidget.js";
 import { ModelSourceField } from "./fields/ModelSourceField.js";
@@ -111,6 +112,7 @@ export function EditorForm({
           widgets={{
             html: RichTextWidget,
             file: FileUploadWidget,
+            svgUpload: SvgUploadWidget,
             nodeSelect: NodeSelectWidget,
             passwordCopy: PasswordCopyWidget,
           }}
