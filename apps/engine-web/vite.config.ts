@@ -26,15 +26,19 @@ const CSP_CONTENT =
   "default-src 'self'; " +
   // 'wasm-unsafe-eval' lets onnxruntime-web compile its WebAssembly for the
   // on-device caption model (video-reflection). It permits WASM compilation
-  // only — not arbitrary eval().
-  "script-src 'self' 'wasm-unsafe-eval'; " +
-  "connect-src 'self'; " +
+  // only — not arbitrary eval(). https://www.youtube.com is the IFrame Player
+  // API script that interactive-video loads to drive YouTube checkpoints.
+  "script-src 'self' 'wasm-unsafe-eval' https://www.youtube.com; " +
+  "connect-src 'self' https://www.youtube.com https://www.youtube-nocookie.com; " +
   "img-src 'self' data: https:; " +
   // blob: is required for recorded-media playback (<video src="blob:…">) and
   // the canvas capture streams used by the recording activities.
   "media-src 'self' data: blob: https:; " +
   "style-src 'self' 'unsafe-inline'; " +
   "font-src 'self' data:; " +
+  // interactive-video embeds YouTube via the privacy-preserving
+  // youtube-nocookie domain (no cookies set unless the learner plays).
+  "frame-src https://www.youtube-nocookie.com; " +
   "object-src 'none'; " +
   "base-uri 'self'; " +
   "frame-ancestors *;";
