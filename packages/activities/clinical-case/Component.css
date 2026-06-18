@@ -1,9 +1,10 @@
 /*
  * Clinical Anatomy Case — a guided multi-section case walk (presentation →
- * anatomy → diagnosis → formative quiz → activity chooser). Layout-stable:
- * borders are a constant 2px; only color/opacity change between states.
- * Color is never the sole signal — every state pairs color with an icon and
- * a text label. Tokens only; no raw hex.
+ * anatomy → diagnosis → formative quiz → activity chooser) with a gradient
+ * banner header, a clickable progress bar, and elevated cards. Layout-stable:
+ * borders are a constant 2px; only color/opacity change between states. Color
+ * is never the sole signal — every state pairs color with an icon and a text
+ * label. Tokens only; no raw hex.
  */
 
 .kukui-ccase {
@@ -18,7 +19,8 @@
   background: var(--color-surface, #ffffff);
   border: 1px solid var(--color-border, #dad2c6);
   border-radius: var(--radius-card, 12px);
-  padding: var(--spacing-3xl, 28px);
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
 }
 
 .kukui-ccase__sr-only {
@@ -33,98 +35,116 @@
   border: 0;
 }
 
-/* Header ------------------------------------------------------------------- */
+/* Banner header ------------------------------------------------------------ */
 
-.kukui-ccase__header {
-  margin-bottom: var(--spacing-lg, 16px);
+.kukui-ccase__banner {
+  padding: var(--spacing-2xl, 24px) var(--spacing-3xl, 28px);
+  background: linear-gradient(
+    135deg,
+    var(--color-primary, #7b4324) 0%,
+    var(--color-primary-hover, #9b5830) 100%
+  );
+  color: #ffffff;
 }
 
 .kukui-ccase__title {
   margin: 0;
   font-family: var(--font-family-display, "Iowan Old Style", "Apple Garamond", Baskerville, "Times New Roman", serif);
   font-size: var(--font-size-title, 22px);
-  font-weight: 500;
+  font-weight: 600;
   letter-spacing: -0.005em;
-  color: var(--color-text-primary, #1c1e20);
+  color: #ffffff;
 }
 
 .kukui-ccase__meta {
-  margin: var(--spacing-xs, 4px) 0 0;
+  margin: var(--spacing-sm, 8px) 0 0;
   font-size: var(--font-size-meta, 13px);
-  color: var(--color-text-secondary, #606069);
+  color: #ffffff;
+  opacity: 0.9;
 }
 
 .kukui-ccase__credit {
-  margin: var(--spacing-xl, 20px) 0 0;
+  margin: 0;
+  padding: 0 var(--spacing-3xl, 28px) var(--spacing-xl, 20px);
   font-size: var(--font-size-meta, 13px);
   color: var(--color-text-secondary, #606069);
 }
 
-/* Stepper ------------------------------------------------------------------ */
+/* Progress bar ------------------------------------------------------------- */
 
-.kukui-ccase__stepper {
-  margin-bottom: var(--spacing-xl, 20px);
+.kukui-ccase__progress {
+  padding: var(--spacing-lg, 16px) var(--spacing-3xl, 28px) 0;
 }
 
-.kukui-ccase__stepper-list {
+.kukui-ccase__progress-labels {
   list-style: none;
-  margin: 0;
+  margin: 0 0 var(--spacing-sm, 8px);
   padding: 0;
   display: flex;
-  flex-wrap: wrap;
-  gap: var(--spacing-sm, 8px);
+  gap: var(--spacing-xs, 4px);
 }
 
-.kukui-ccase__stepper-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--spacing-sm, 8px);
+.kukui-ccase__progress-item {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.kukui-ccase__progress-label {
+  width: 100%;
   min-height: 44px;
-  padding: var(--spacing-sm, 8px) var(--spacing-md, 12px);
-  background: var(--color-surface, #ffffff);
-  border: 2px solid var(--color-border, #dad2c6);
-  border-radius: var(--radius-md, 8px);
-  color: var(--color-text-primary, #1c1e20);
-  font-size: var(--font-size-answer, 15px);
+  padding: var(--spacing-xs, 4px) var(--spacing-sm, 8px);
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-sm, 6px);
+  font-size: var(--font-size-meta, 13px);
   font-weight: 600;
+  color: var(--color-text-secondary, #606069);
   cursor: pointer;
-  transition: background-color 150ms ease, border-color 150ms ease;
+  text-align: center;
+  white-space: normal;
+  transition: color 150ms ease, background-color 150ms ease;
 }
 
-.kukui-ccase__stepper-btn:hover:not(:disabled) {
-  border-color: var(--color-border-hover, #bbae9a);
+.kukui-ccase__progress-label:hover {
+  background: var(--color-primary-soft);
 }
 
-.kukui-ccase__stepper-btn:focus-visible {
+.kukui-ccase__progress-label:focus-visible {
   outline: 2px solid var(--color-primary, #7b4324);
   outline-offset: 2px;
 }
 
-.kukui-ccase__stepper-btn.is-current {
-  border-color: var(--color-primary, #7b4324);
-  background: var(--color-primary-soft);
+.kukui-ccase__progress-label.is-done {
+  color: var(--color-primary, #7b4324);
 }
 
-.kukui-ccase__stepper-index {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 24px;
-  min-height: 24px;
-  padding: 0 var(--spacing-xs, 4px);
-  font-size: var(--font-size-meta, 13px);
+.kukui-ccase__progress-label.is-current {
+  color: var(--color-primary, #7b4324);
   font-weight: 700;
-  color: var(--color-text-secondary, #606069);
-  background: var(--color-tip-bg, #f2f0e8);
-  border-radius: var(--radius-sm, 6px);
 }
 
-.kukui-ccase__stepper-btn.is-current .kukui-ccase__stepper-index {
-  color: #ffffff;
+.kukui-ccase__progress-bar {
+  display: flex;
+  gap: var(--spacing-xs, 4px);
+}
+
+.kukui-ccase__progress-seg {
+  flex: 1 1 0;
+  height: 4px;
+  border-radius: var(--radius-pill, 4px);
+  background: var(--color-border, #dad2c6);
+  transition: background-color 200ms ease;
+}
+
+.kukui-ccase__progress-seg.is-filled {
   background: var(--color-primary, #7b4324);
 }
 
 /* Section ------------------------------------------------------------------ */
+
+.kukui-ccase__section {
+  padding: var(--spacing-xl, 20px) var(--spacing-3xl, 28px) 0;
+}
 
 .kukui-ccase__section-head {
   margin-bottom: var(--spacing-lg, 16px);
@@ -149,30 +169,34 @@
 }
 
 .kukui-ccase__lead {
+  margin: 0;
   font-size: var(--font-size-prompt, 16px);
   line-height: 1.5;
   color: var(--color-text-primary, #1c1e20);
 }
 
+/* Cards / blocks ----------------------------------------------------------- */
+
 .kukui-ccase__block {
   margin-bottom: var(--spacing-xl, 20px);
+  padding: var(--spacing-lg, 16px);
+  background: var(--color-surface, #ffffff);
+  border: 1px solid var(--color-border, #dad2c6);
+  border-radius: var(--radius-lg, 10px);
+  box-shadow: var(--shadow-card);
 }
 
 .kukui-ccase__block-title {
-  margin: 0 0 var(--spacing-sm, 8px);
-  font-size: var(--font-size-answer, 15px);
+  margin: 0 0 var(--spacing-md, 12px);
+  font-size: var(--font-size-meta, 13px);
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.04em;
   color: var(--color-text-secondary, #606069);
 }
 
-.kukui-ccase__prose,
-.kukui-ccase__lead {
-  margin: 0;
-}
-
 .kukui-ccase__prose {
+  margin: 0;
   font-size: var(--font-size-prompt, 16px);
   line-height: 1.5;
   color: var(--color-text-primary, #1c1e20);
@@ -182,8 +206,9 @@
 
 .kukui-ccase__cue {
   padding: var(--spacing-lg, 16px);
-  background: var(--color-tip-bg, #f2f0e8);
-  border-left: 4px solid var(--color-primary, #7b4324);
+  margin-bottom: var(--spacing-xl, 20px);
+  background: var(--color-warning-soft);
+  border-left: 4px solid var(--color-warning, #8a5a12);
   border-radius: var(--radius-lg, 10px);
   font-size: var(--font-size-prompt, 16px);
   line-height: 1.5;
@@ -197,7 +222,7 @@
   margin: 0;
   padding: 0;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
   gap: var(--spacing-md, 12px);
 }
 
@@ -212,11 +237,13 @@
 }
 
 .kukui-ccase__vital.is-watch {
-  border-color: var(--color-primary, #7b4324);
+  border-color: var(--color-warning, #8a5a12);
+  background: var(--color-warning-soft);
 }
 
 .kukui-ccase__vital.is-alert {
   border-color: var(--color-error, #c34132);
+  background: var(--color-error-soft);
 }
 
 .kukui-ccase__vital-value {
@@ -244,7 +271,7 @@
 }
 
 .kukui-ccase__vital.is-watch .kukui-ccase__flag-icon {
-  color: var(--color-primary, #7b4324);
+  color: var(--color-warning, #8a5a12);
 }
 
 .kukui-ccase__vital.is-alert .kukui-ccase__flag-icon {
@@ -281,7 +308,7 @@
 }
 
 .kukui-ccase__finding.is-present .kukui-ccase__finding-icon {
-  color: var(--color-primary, #7b4324);
+  color: var(--color-error, #c34132);
 }
 
 .kukui-ccase__finding.is-absent .kukui-ccase__finding-icon {
@@ -289,7 +316,7 @@
 }
 
 .kukui-ccase__finding.is-neutral .kukui-ccase__finding-icon {
-  color: var(--color-text-secondary, #606069);
+  color: var(--color-info, #1f6f78);
 }
 
 .kukui-ccase__labs li {
@@ -310,6 +337,7 @@
   height: auto;
   border: 1px solid var(--color-border, #dad2c6);
   border-radius: var(--radius-md, 8px);
+  background: var(--color-surface, #ffffff);
 }
 
 .kukui-ccase__figcaption {
@@ -324,14 +352,21 @@
   padding: 0;
   display: flex;
   flex-wrap: wrap;
-  gap: var(--spacing-sm, 8px);
+  gap: var(--spacing-md, 12px);
 }
 
 .kukui-ccase__legend-item {
-  padding: var(--spacing-xs, 4px) var(--spacing-md, 12px);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs, 4px);
   font-size: var(--font-size-meta, 13px);
   color: var(--color-text-secondary, #606069);
-  background: var(--color-tip-bg, #f2f0e8);
+}
+
+.kukui-ccase__legend-swatch {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
   border-radius: var(--radius-sm, 6px);
 }
 
@@ -379,8 +414,20 @@
 }
 
 .kukui-ccase__note.is-highlight {
-  border-left-color: var(--color-primary, #7b4324);
-  background: var(--color-primary-soft);
+  border-left-color: var(--color-info, #1f6f78);
+  background: var(--color-info-soft);
+}
+
+/* Key finding (accent panel) ----------------------------------------------- */
+
+.kukui-ccase__keyfinding {
+  margin-bottom: var(--spacing-xl, 20px);
+  padding: var(--spacing-lg, 16px);
+  border: 1px solid var(--color-border, #dad2c6);
+  border-left: 4px solid var(--color-primary, #7b4324);
+  border-radius: var(--radius-lg, 10px);
+  background: var(--color-surface, #ffffff);
+  box-shadow: var(--shadow-card);
 }
 
 /* Differential / management ------------------------------------------------ */
@@ -446,7 +493,7 @@
   font-size: var(--font-size-meta, 13px);
   font-weight: 700;
   color: #ffffff;
-  background: var(--color-error, #c34132);
+  background: var(--color-warning, #8a5a12);
   border-radius: var(--radius-sm, 6px);
 }
 
@@ -641,7 +688,8 @@
   background: var(--color-primary-soft);
 }
 
-.kukui-ccase__format-icon {
+.kukui-ccase__format-icon,
+.kukui-ccase__format-caret {
   flex: 0 0 auto;
   font-size: 18px;
 }
@@ -665,7 +713,7 @@
 }
 
 .kukui-ccase__format-detail {
-  padding: var(--spacing-md, 12px) var(--spacing-lg, 16px);
+  padding: var(--spacing-md, 12px) var(--spacing-lg, 16px) 0;
   font-size: var(--font-size-prompt, 16px);
   line-height: 1.5;
   color: var(--color-text-primary, #1c1e20);
@@ -688,7 +736,7 @@
 
 .kukui-ccase__result {
   min-height: 28px;
-  margin-top: var(--spacing-lg, 16px);
+  margin: 0 var(--spacing-3xl, 28px);
   padding: 0 var(--spacing-xs, 4px);
   font-size: var(--font-size-prompt, 16px);
   font-weight: 700;
@@ -704,7 +752,16 @@
 /* Nav ---------------------------------------------------------------------- */
 
 .kukui-ccase__nav {
-  margin-top: var(--spacing-xl, 20px);
+  margin-top: var(--spacing-lg, 16px);
+  padding: var(--spacing-lg, 16px) var(--spacing-3xl, 28px) var(--spacing-xl, 20px);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-md, 12px);
+}
+
+.kukui-ccase__nav-end {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -751,12 +808,18 @@
   cursor: not-allowed;
 }
 
+.kukui-ccase__submit-note {
+  font-size: var(--font-size-meta, 13px);
+  color: var(--color-text-secondary, #606069);
+}
+
 @media (prefers-reduced-motion: reduce) {
   .kukui-ccase__option,
   .kukui-ccase__format,
   .kukui-ccase__feedback,
   .kukui-ccase__result,
-  .kukui-ccase__stepper-btn {
+  .kukui-ccase__progress-seg,
+  .kukui-ccase__progress-label {
     transition: none;
   }
 }

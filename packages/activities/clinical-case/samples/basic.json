@@ -11,23 +11,69 @@
     "lead": "A patient arrives 2 hours after a root canal procedure with rapidly worsening right-sided facial and neck swelling. Review all findings carefully before proceeding.",
     "chiefComplaint": "Rapid right-sided facial swelling and pain beginning approximately 1 hour after an endodontic (root canal) procedure. Swelling has progressed from the right buccal region down to the clavicle.",
     "vitals": [
-      { "value": "97.6°F", "label": "Temperature", "flag": "normal", "flagText": "Normal" },
-      { "value": "144/67", "label": "BP (mmHg)", "flag": "watch", "flagText": "Elevated SBP" },
-      { "value": "87", "label": "Heart Rate (bpm)", "flag": "normal", "flagText": "Normal" },
-      { "value": "18", "label": "Resp. Rate (/min)", "flag": "normal", "flagText": "Normal" },
-      { "value": "98%", "label": "O₂ Saturation", "flag": "normal", "flagText": "Normal" }
+      {
+        "value": "97.6°F",
+        "label": "Temperature",
+        "flag": "normal",
+        "flagText": "Normal"
+      },
+      {
+        "value": "144/67",
+        "label": "BP (mmHg)",
+        "flag": "watch",
+        "flagText": "Elevated SBP"
+      },
+      {
+        "value": "87",
+        "label": "Heart Rate (bpm)",
+        "flag": "normal",
+        "flagText": "Normal"
+      },
+      {
+        "value": "18",
+        "label": "Resp. Rate (/min)",
+        "flag": "normal",
+        "flagText": "Normal"
+      },
+      {
+        "value": "98%",
+        "label": "O₂ Saturation",
+        "flag": "normal",
+        "flagText": "Normal"
+      }
     ],
     "examFindings": [
-      { "type": "present", "text": "<strong>Swelling:</strong> Non-erythematous, non-tender; extends from right buccal region to clavicle; follows cervical fascial planes" },
-      { "type": "present", "text": "<strong>Crepitus:</strong> Present on palpation — a crackling sensation under the skin" },
-      { "type": "present", "text": "<strong>Jaw symptoms:</strong> Pain on opening and with lateral excursion (trismus)" },
-      { "type": "present", "text": "<strong>Respiratory:</strong> Mild dyspnea; no dysphagia" },
-      { "type": "absent", "text": "<strong>Absent:</strong> No fever, no chills, no nausea, no headache, no systemic infection signs" }
+      {
+        "type": "present",
+        "text": "<strong>Swelling:</strong> Non-erythematous, non-tender; extends from right buccal region to clavicle; follows cervical fascial planes"
+      },
+      {
+        "type": "present",
+        "text": "<strong>Crepitus:</strong> Present on palpation — a crackling sensation under the skin"
+      },
+      {
+        "type": "present",
+        "text": "<strong>Jaw symptoms:</strong> Pain on opening and with lateral excursion (trismus)"
+      },
+      {
+        "type": "present",
+        "text": "<strong>Respiratory:</strong> Mild dyspnea; no dysphagia"
+      },
+      {
+        "type": "absent",
+        "text": "<strong>Absent:</strong> No fever, no chills, no nausea, no headache, no systemic infection signs"
+      }
     ],
     "labResults": [
-      { "text": "<strong>WBC:</strong> 4,450/µL (normal: 4,000–10,800/µL) — <strong>Within normal limits</strong>" },
-      { "text": "<strong>Neutrophil %:</strong> 66% (normal: 40–73%) — <strong>Within normal limits</strong>" },
-      { "text": "<strong>Neutrophil count:</strong> 2,750/µL (normal: 2,000–7,000/µL) — <strong>Within normal limits</strong>" }
+      {
+        "text": "<strong>WBC:</strong> 4,450/µL (normal: 4,000–10,800/µL) — <strong>Within normal limits</strong>"
+      },
+      {
+        "text": "<strong>Neutrophil %:</strong> 66% (normal: 40–73%) — <strong>Within normal limits</strong>"
+      },
+      {
+        "text": "<strong>Neutrophil count:</strong> 2,750/µL (normal: 2,000–7,000/µL) — <strong>Within normal limits</strong>"
+      }
     ],
     "reflectionPrompt": "💡 <strong>Stop and think:</strong> What does the combination of rapid swelling + crepitus + a recent dental procedure suggest? Why is the absence of fever and normal WBC clinically important? Formulate a working diagnosis before continuing."
   },
@@ -37,18 +83,75 @@
     "lead": "CBCT revealed radiolucency (air) extending into multiple fascial spaces, following the deep investing layer of the cervical fascia. The SCM outline was visible — indicating air is deep to this layer. Explore the anatomy below.",
     "imagingFinding": "Air tracking was identified in the lateral pharyngeal, pterygomandibular, submandibular, and sub-masseteric spaces — all following the deep investing layer of the cervical fascia. The outline of the sternocleidomastoid muscle (SCM) was visible, confirming air is positioned deep to this layer.",
     "spaces": [
-      { "name": "Pterygomandibular Space", "detail": "<strong>Boundaries:</strong> Medial pterygoid muscle (medially) · Mandibular ramus (laterally) · Pterygomandibular raphe (anteriorly). The inferior alveolar nerve and artery pass through here — direct route for air injected during root canal treatment." },
-      { "name": "Lateral Pharyngeal Space", "detail": "<strong>Boundaries:</strong> Pharyngeal constrictor muscles (medially) · Pterygoid muscles and parotid gland (laterally). Connects the oral cavity to the retropharyngeal space with direct routes toward the mediastinum." },
-      { "name": "Submandibular Space", "detail": "<strong>Boundaries:</strong> Mylohyoid muscle (superiorly) · Hyoid bone (inferiorly) · Mandible (laterally) · Anterior digastric belly (anteriorly). Explains why swelling extended all the way to the clavicle." },
-      { "name": "Sub-masseteric Space", "detail": "<strong>Boundaries:</strong> Lateral ramus of mandible (medially) · Masseter muscle (laterally). Air here compresses the masseter, producing trismus and the jaw pain on lateral excursion seen in this patient." }
+      {
+        "name": "Pterygomandibular Space",
+        "detail": "<strong>Boundaries:</strong> Medial pterygoid muscle (medially) · Mandibular ramus (laterally) · Pterygomandibular raphe (anteriorly). The inferior alveolar nerve and artery pass through here — direct route for air injected during root canal treatment."
+      },
+      {
+        "name": "Lateral Pharyngeal Space",
+        "detail": "<strong>Boundaries:</strong> Pharyngeal constrictor muscles (medially) · Pterygoid muscles and parotid gland (laterally). Connects the oral cavity to the retropharyngeal space with direct routes toward the mediastinum."
+      },
+      {
+        "name": "Submandibular Space",
+        "detail": "<strong>Boundaries:</strong> Mylohyoid muscle (superiorly) · Hyoid bone (inferiorly) · Mandible (laterally) · Anterior digastric belly (anteriorly). Explains why swelling extended all the way to the clavicle."
+      },
+      {
+        "name": "Sub-masseteric Space",
+        "detail": "<strong>Boundaries:</strong> Lateral ramus of mandible (medially) · Masseter muscle (laterally). Air here compresses the masseter, producing trismus and the jaw pain on lateral excursion seen in this patient."
+      }
     ],
     "notes": [
-      { "highlight": true, "text": "<strong>Deep investing layer:</strong> Surrounds SCM + trapezius; communicates with endothoracic fascia of the thorax — the pathway in this case. Particularly thick in the posterior triangle." },
-      { "highlight": false, "text": "<strong>Pretracheal fascia:</strong> Envelopes the anterior visceral compartment (trachea, thyroid gland, esophagus)" },
-      { "highlight": false, "text": "<strong>Prevertebral fascia:</strong> Surrounds the vertebral column and muscles of the vertebral column" },
-      { "highlight": false, "text": "<strong>Carotid sheath:</strong> Encloses the common and internal carotid artery, internal jugular vein, and vagus nerve" },
-      { "highlight": false, "text": "<strong>Alar fascia:</strong> Thin tissue in the retropharyngeal space — creates a danger space for further inferior spread" },
-      { "highlight": false, "text": "<strong>Buccopharyngeal fascia:</strong> Continuation of pretracheal fascia posteriorly around the visceral compartment" }
+      {
+        "highlight": true,
+        "text": "<strong>Deep investing layer:</strong> Surrounds SCM + trapezius; communicates with endothoracic fascia of the thorax — the pathway in this case. Particularly thick in the posterior triangle."
+      },
+      {
+        "highlight": false,
+        "text": "<strong>Pretracheal fascia:</strong> Envelopes the anterior visceral compartment (trachea, thyroid gland, esophagus)"
+      },
+      {
+        "highlight": false,
+        "text": "<strong>Prevertebral fascia:</strong> Surrounds the vertebral column and muscles of the vertebral column"
+      },
+      {
+        "highlight": false,
+        "text": "<strong>Carotid sheath:</strong> Encloses the common and internal carotid artery, internal jugular vein, and vagus nerve"
+      },
+      {
+        "highlight": false,
+        "text": "<strong>Alar fascia:</strong> Thin tissue in the retropharyngeal space — creates a danger space for further inferior spread"
+      },
+      {
+        "highlight": false,
+        "text": "<strong>Buccopharyngeal fascia:</strong> Continuation of pretracheal fascia posteriorly around the visceral compartment"
+      }
+    ],
+    "diagram": {
+      "svg": "<svg viewBox=\"0 0 500 280\" xmlns=\"http://www.w3.org/2000/svg\" style=\"width:100%;display:block;max-height:280px\"> <rect x=\"180\" y=\"6\" width=\"140\" height=\"36\" rx=\"8\" fill=\"#dbeafe\" stroke=\"#3b82f6\" stroke-width=\"1.5\"/> <text x=\"250\" y=\"22\" text-anchor=\"middle\" font-size=\"11\" fill=\"#1e40af\" font-weight=\"700\">AIR SOURCE</text> <text x=\"250\" y=\"35\" text-anchor=\"middle\" font-size=\"10\" fill=\"#3b82f6\">Endodontic handpiece / air-water syringe</text> <line x1=\"250\" y1=\"42\" x2=\"250\" y2=\"60\" stroke=\"#6b7280\" stroke-width=\"1.5\" stroke-dasharray=\"4,2\"/> <polygon points=\"250,65 245,57 255,57\" fill=\"#6b7280\"/> <rect x=\"155\" y=\"65\" width=\"190\" height=\"34\" rx=\"8\" fill=\"#ede9fe\" stroke=\"#7c3aed\" stroke-width=\"1.5\"/> <text x=\"250\" y=\"82\" text-anchor=\"middle\" font-size=\"11\" fill=\"#4c1d95\" font-weight=\"700\">Pterygomandibular Space</text> <text x=\"250\" y=\"93\" text-anchor=\"middle\" font-size=\"9\" fill=\"#7c3aed\">Deep to medial pterygoid · first space reached</text> <line x1=\"200\" y1=\"99\" x2=\"140\" y2=\"118\" stroke=\"#6b7280\" stroke-width=\"1.5\" stroke-dasharray=\"4,2\"/> <polygon points=\"138,123 133,114 143,115\" fill=\"#6b7280\"/> <line x1=\"250\" y1=\"99\" x2=\"250\" y2=\"118\" stroke=\"#6b7280\" stroke-width=\"1.5\" stroke-dasharray=\"4,2\"/> <polygon points=\"250,123 245,115 255,115\" fill=\"#6b7280\"/> <line x1=\"300\" y1=\"99\" x2=\"360\" y2=\"118\" stroke=\"#6b7280\" stroke-width=\"1.5\" stroke-dasharray=\"4,2\"/> <polygon points=\"362,123 357,114 367,115\" fill=\"#6b7280\"/> <rect x=\"60\" y=\"123\" width=\"150\" height=\"32\" rx=\"7\" fill=\"#ede9fe\" stroke=\"#7c3aed\" stroke-width=\"1.5\"/> <text x=\"135\" y=\"139\" text-anchor=\"middle\" font-size=\"10\" fill=\"#4c1d95\" font-weight=\"700\">Submandibular Space</text> <text x=\"135\" y=\"150\" text-anchor=\"middle\" font-size=\"9\" fill=\"#7c3aed\">Below mylohyoid</text> <rect x=\"175\" y=\"123\" width=\"150\" height=\"32\" rx=\"7\" fill=\"#d1fae5\" stroke=\"#059669\" stroke-width=\"1.5\"/> <text x=\"250\" y=\"139\" text-anchor=\"middle\" font-size=\"10\" fill=\"#065f46\" font-weight=\"700\">Lateral Pharyngeal</text> <text x=\"250\" y=\"150\" text-anchor=\"middle\" font-size=\"9\" fill=\"#059669\">Adjacent to pharynx</text> <rect x=\"290\" y=\"123\" width=\"155\" height=\"32\" rx=\"7\" fill=\"#ede9fe\" stroke=\"#7c3aed\" stroke-width=\"1.5\"/> <text x=\"367\" y=\"139\" text-anchor=\"middle\" font-size=\"10\" fill=\"#4c1d95\" font-weight=\"700\">Sub-masseteric Space</text> <text x=\"367\" y=\"150\" text-anchor=\"middle\" font-size=\"9\" fill=\"#7c3aed\">Deep to masseter</text> <line x1=\"135\" y1=\"155\" x2=\"200\" y2=\"175\" stroke=\"#6b7280\" stroke-width=\"1.5\" stroke-dasharray=\"4,2\"/> <line x1=\"250\" y1=\"155\" x2=\"240\" y2=\"175\" stroke=\"#6b7280\" stroke-width=\"1.5\" stroke-dasharray=\"4,2\"/> <polygon points=\"235,179 230,170 245,172\" fill=\"#6b7280\"/> <rect x=\"80\" y=\"180\" width=\"340\" height=\"36\" rx=\"8\" fill=\"#fee2e2\" stroke=\"#dc2626\" stroke-width=\"2\"/> <text x=\"250\" y=\"197\" text-anchor=\"middle\" font-size=\"11\" fill=\"#7f1d1d\" font-weight=\"700\">Deep Investing Layer — Cervical Fascia</text> <text x=\"250\" y=\"210\" text-anchor=\"middle\" font-size=\"9\" fill=\"#dc2626\">Surrounds SCM + trapezius · SCM outline visible on CBCT</text> <line x1=\"250\" y1=\"216\" x2=\"250\" y2=\"234\" stroke=\"#dc2626\" stroke-width=\"2\" stroke-dasharray=\"4,2\"/> <polygon points=\"250,240 244,231 256,231\" fill=\"#dc2626\"/> <rect x=\"100\" y=\"240\" width=\"300\" height=\"34\" rx=\"8\" fill=\"#fef9c3\" stroke=\"#ca8a04\" stroke-width=\"2\"/> <text x=\"250\" y=\"256\" text-anchor=\"middle\" font-size=\"11\" fill=\"#713f12\" font-weight=\"700\">⚠ Endothoracic Fascia → Mediastinum</text> <text x=\"250\" y=\"269\" text-anchor=\"middle\" font-size=\"9\" fill=\"#92400e\">Risk: Pneumomediastinum · Cardiac tamponade · Air emboli</text> </svg>",
+      "alt": "Schematic: air spreads from the endodontic procedural origin through the pterygomandibular, submandibular, lateral pharyngeal, and sub-masseteric spaces along the deep investing layer of the cervical fascia to the endothoracic fascia and mediastinum.",
+      "caption": "Air spread pathway from procedural origin through fascial spaces to the mediastinum."
+    },
+    "diagramLegend": [
+      {
+        "label": "Air origin",
+        "tone": "info"
+      },
+      {
+        "label": "Primary spaces affected",
+        "tone": "primary"
+      },
+      {
+        "label": "Adjacent space",
+        "tone": "success"
+      },
+      {
+        "label": "Fascial conduit",
+        "tone": "error"
+      },
+      {
+        "label": "Danger zone",
+        "tone": "warning"
+      }
     ]
   },
   "diagnosis": {
@@ -57,10 +160,22 @@
     "lead": "This is a rare but potentially life-threatening complication of routine dental procedures. Air escaped under pressure from the dental handpiece into soft tissue planes.",
     "keyFinding": "Crepitus on palpation — the characteristic crackling sensation felt when pressing on skin over trapped air — is considered pathognomonic for subcutaneous emphysema. It may not appear for several hours after the causative event, consistent with this patient's 1-hour post-procedure onset.",
     "differential": [
-      { "verdict": "out", "text": "<strong>Soft tissue infection / Ludwig's angina:</strong> Excluded — normal WBC (4,450/µL), afebrile (97.6°F), no systemic infection signs. Infection would show elevated WBC, fever, and rapid systemic deterioration." },
-      { "verdict": "out", "text": "<strong>Angioedema / Allergic reaction:</strong> Excluded — no urticaria, no pruritus; swelling is unilateral and follows fascial planes; no systemic allergic signs." },
-      { "verdict": "out", "text": "<strong>Hematoma:</strong> Excluded — no discoloration; CBCT shows radiolucency (air = dark/black), not radiodensity (blood = white/bright)." },
-      { "verdict": "in", "text": "<strong>Subcutaneous emphysema — CONFIRMED:</strong> Crepitus on palpation, CBCT radiolucency tracking along cervical fascia, procedural history, rapid onset within 1 hour of treatment." }
+      {
+        "verdict": "out",
+        "text": "<strong>Soft tissue infection / Ludwig's angina:</strong> Excluded — normal WBC (4,450/µL), afebrile (97.6°F), no systemic infection signs. Infection would show elevated WBC, fever, and rapid systemic deterioration."
+      },
+      {
+        "verdict": "out",
+        "text": "<strong>Angioedema / Allergic reaction:</strong> Excluded — no urticaria, no pruritus; swelling is unilateral and follows fascial planes; no systemic allergic signs."
+      },
+      {
+        "verdict": "out",
+        "text": "<strong>Hematoma:</strong> Excluded — no discoloration; CBCT shows radiolucency (air = dark/black), not radiodensity (blood = white/bright)."
+      },
+      {
+        "verdict": "in",
+        "text": "<strong>Subcutaneous emphysema — CONFIRMED:</strong> Crepitus on palpation, CBCT radiolucency tracking along cervical fascia, procedural history, rapid onset within 1 hour of treatment."
+      }
     ],
     "causes": [
       "High-speed dental handpiece",
@@ -73,11 +188,26 @@
       "Laparoscopic procedures"
     ],
     "management": [
-      { "urgent": true, "text": "<strong>Airway management — chief priority.</strong> Expanding air in cervical fascial planes can compromise the airway. Monitor O₂ saturation continuously." },
-      { "urgent": true, "text": "<strong>Antibiotic prophylaxis.</strong> Oral flora bacteria enter with trapped air and can rapidly establish abscess or cellulitis. Broad-spectrum antibiotics (e.g. penicillin for non-allergic patients) are indicated." },
-      { "urgent": true, "text": "<strong>Imaging and extent assessment.</strong> Determine if air has extended to the mediastinum (CBCT ± chest CT). If mediastinal involvement: urgent cardiothoracic surgery consult." },
-      { "urgent": true, "text": "<strong>Monitor for complications:</strong> Pneumomediastinum, pleural effusion, arrhythmia, cardiac tamponade, ischemia due to air emboli." },
-      { "urgent": false, "text": "<strong>Spontaneous resolution.</strong> Trapped air is naturally absorbed and excreted via the lungs within <strong>3–10 days</strong>. Monitor until fully resolved." }
+      {
+        "urgent": true,
+        "text": "<strong>Airway management — chief priority.</strong> Expanding air in cervical fascial planes can compromise the airway. Monitor O₂ saturation continuously."
+      },
+      {
+        "urgent": true,
+        "text": "<strong>Antibiotic prophylaxis.</strong> Oral flora bacteria enter with trapped air and can rapidly establish abscess or cellulitis. Broad-spectrum antibiotics (e.g. penicillin for non-allergic patients) are indicated."
+      },
+      {
+        "urgent": true,
+        "text": "<strong>Imaging and extent assessment.</strong> Determine if air has extended to the mediastinum (CBCT ± chest CT). If mediastinal involvement: urgent cardiothoracic surgery consult."
+      },
+      {
+        "urgent": true,
+        "text": "<strong>Monitor for complications:</strong> Pneumomediastinum, pleural effusion, arrhythmia, cardiac tamponade, ischemia due to air emboli."
+      },
+      {
+        "urgent": false,
+        "text": "<strong>Spontaneous resolution.</strong> Trapped air is naturally absorbed and excreted via the lungs within <strong>3–10 days</strong>. Monitor until fully resolved."
+      }
     ],
     "references": [
       "Rad MV, Chan EKY, Ahmed IH. Cervicofacial subcutaneous and pneumomediastinum secondary to dental treatment. <em>Respir Med Case Reports.</em> 2019;28:100918.",
@@ -190,11 +320,26 @@
     "title": "Choose Your Format",
     "lead": "Select the format that best supports your learning. All formats address the same five required learning objectives — only the method differs.",
     "objectives": [
-      { "text": "Identify all anatomical structures involved in the spread of air", "hint": "Name each fascial space and the layer serving as the conduit to the thorax" },
-      { "text": "Explain the anatomical basis of each symptom and sign", "hint": "Link crepitus, trismus, dyspnea, and the craniocaudal extent of swelling to specific structures" },
-      { "text": "Interpret the imaging findings using anatomical knowledge", "hint": "Explain why the SCM outline is visible on CBCT and what that indicates about fascial layer involvement" },
-      { "text": "Construct and justify a differential diagnosis", "hint": "Explain what evidence ruled in emphysema and ruled out infection, hematoma, and angioedema" },
-      { "text": "Describe the treatment rationale with anatomical reasoning", "hint": "Explain why airway management and antibiotics are prioritized given the fascial pathways involved" }
+      {
+        "text": "Identify all anatomical structures involved in the spread of air",
+        "hint": "Name each fascial space and the layer serving as the conduit to the thorax"
+      },
+      {
+        "text": "Explain the anatomical basis of each symptom and sign",
+        "hint": "Link crepitus, trismus, dyspnea, and the craniocaudal extent of swelling to specific structures"
+      },
+      {
+        "text": "Interpret the imaging findings using anatomical knowledge",
+        "hint": "Explain why the SCM outline is visible on CBCT and what that indicates about fascial layer involvement"
+      },
+      {
+        "text": "Construct and justify a differential diagnosis",
+        "hint": "Explain what evidence ruled in emphysema and ruled out infection, hematoma, and angioedema"
+      },
+      {
+        "text": "Describe the treatment rationale with anatomical reasoning",
+        "hint": "Explain why airway management and antibiotics are prioritized given the fascial pathways involved"
+      }
     ],
     "submissionPlatform": "Brightspace → Assignments → Clinical Case Week 1",
     "formats": [
@@ -239,5 +384,8 @@
         "submission": "📅 Register your group with the course coordinator before the deadline. Attendance and presentation during the synchronous session serves as your submission — no Brightspace upload required."
       }
     ]
+  },
+  "appearance": {
+    "theme": "auto"
   }
 }

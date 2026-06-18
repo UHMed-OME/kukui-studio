@@ -91,6 +91,46 @@ export type SafeHtmlProps = {
 };
 
 /**
+ * Renders an author-supplied inline SVG safely. SVG can't go through
+ * {@link SafeHtml} — its allow-list strips `<svg>` entirely — so this uses
+ * DOMPurify's dedicated SVG profile, which keeps shapes, paths, text, and
+ * presentation attributes while removing the dangerous surface:
+ *   - `<script>` and event handlers (`onload`, `onclick`, …) are dropped.
+ *   - `<foreignObject>` is forbidden (it can smuggle arbitrary HTML/JS).
+ *   - `javascript:` / external-resource URIs in href/xlink:href are stripped.
+ *
+ * The sanitized markup is injected via `dangerouslySetInnerHTML` rather than
+ * parsed to React elements, because html-react-parser lowercases attribute
+ * names and would break case-sensitive SVG attributes like `viewBox`. This is
+ * safe: the string is already sanitized, and `innerHTML` never executes
+ * `<script>` even if one slipped through.
+ *
+ * Used for activity diagrams (e.g. clinical-case anatomy pathways). Pass
+ * `title` for an accessible name; without it the figure is decorative.
+ */
+export function SafeSvg({ svg, className, title }: SafeSvgProps) {
+  const clean = DOMPurify.sanitize(svg, {
+    USE_PROFILES: { svg: true, svgFilters: true },
+    // Belt-and-braces on top of the SVG profile: never allow these even if
+    // a future DOMPurify default loosens.
+    FORBID_TAGS: ["script", "foreignObject"],
+    ADD_ATTR: ["viewBox", "preserveAspectRatio"],
+  });
+  return createElement("figure", {
+    className,
+    ...(title ? { role: "img", "aria-label": title } : { "aria-hidden": "true" }),
+    dangerouslySetInnerHTML: { __html: clean },
+  });
+}
+
+export type SafeSvgProps = {
+  svg: string;
+  className?: string;
+  /** Accessible name for the diagram. Omit for purely decorative SVG. */
+  title?: string;
+};
+
+/**
  * Strips HTML tags, returning plain text for aria-labels and similar contexts.
  * Uses DOMParser when available so we never assign untrusted strings to live
  * DOM properties; falls back to a regex strip in non-browser environments.

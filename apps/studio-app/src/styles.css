@@ -59,8 +59,15 @@
   --color-success-soft: rgb(46 110 65 / 0.1);
   --color-error: #c34132;
   --color-error-soft: rgb(195 65 50 / 0.08);
+  --color-warning: #8a5a12;
+  --color-warning-soft: rgb(138 90 18 / 0.10);
+  --color-info: #1f6f78;
+  --color-info-soft: rgb(31 111 120 / 0.10);
   --color-tip-bg: #ebe8de;
   --color-canvas-3d: #0b0b10;
+
+  /* Elevation — subtle card depth. See docs/design-system.md. */
+  --shadow-card: 0 1px 2px rgb(0 0 0 / 0.06), 0 6px 16px rgb(0 0 0 / 0.07);
 
   --spacing-xs: 4px;
   --spacing-sm: 8px;
@@ -128,6 +135,10 @@
   --color-success-soft: rgb(134 199 154 / 0.16);
   --color-error: #ed9183;
   --color-error-soft: rgb(237 145 131 / 0.14);
+  --color-warning: #e0b35e;
+  --color-warning-soft: rgb(224 179 94 / 0.16);
+  --color-info: #7fc3cc;
+  --color-info-soft: rgb(127 195 204 / 0.16);
   --color-tip-bg: #292524;
   --color-canvas-3d: #000000;
 
@@ -171,6 +182,10 @@
   --color-success-soft: rgb(46 110 65 / 0.1);
   --color-error: #c34132;
   --color-error-soft: rgb(195 65 50 / 0.08);
+  --color-warning: #8a5a12;
+  --color-warning-soft: rgb(138 90 18 / 0.10);
+  --color-info: #1f6f78;
+  --color-info-soft: rgb(31 111 120 / 0.10);
   --color-tip-bg: #ebe8de;
   --color-canvas-3d: #0b0b10;
 
@@ -214,6 +229,10 @@
   --color-success-soft: rgb(26 77 46 / 0.12);
   --color-error: #8a1f1f;
   --color-error-soft: rgb(138 31 31 / 0.12);
+  --color-warning: #6b4500;
+  --color-warning-soft: rgb(107 69 0 / 0.12);
+  --color-info: #0e4f57;
+  --color-info-soft: rgb(14 79 87 / 0.12);
   --color-tip-bg: #f5f5f4;
   --color-canvas-3d: #000000;
 }
@@ -234,6 +253,10 @@
   --color-success-soft: rgb(155 224 173 / 0.18);
   --color-error: #ffa898;
   --color-error-soft: rgb(255 168 152 / 0.18);
+  --color-warning: #ffd27a;
+  --color-warning-soft: rgb(255 210 122 / 0.18);
+  --color-info: #9fe0e8;
+  --color-info-soft: rgb(159 224 232 / 0.18);
   --color-tip-bg: #1a1a1a;
   --color-canvas-3d: #000000;
 }
@@ -255,6 +278,10 @@
   --color-success-soft: rgb(45 94 58 / 0.12);
   --color-error: #a93226;
   --color-error-soft: rgb(169 50 38 / 0.10);
+  --color-warning: #8a5a12;
+  --color-warning-soft: rgb(138 90 18 / 0.12);
+  --color-info: #2d6b66;
+  --color-info-soft: rgb(45 107 102 / 0.12);
   --color-tip-bg: #eee2c5;
   --color-canvas-3d: #1c1410;
 }
@@ -276,6 +303,10 @@
   --color-success-soft: rgb(134 199 154 / 0.16);
   --color-error: #ed9183;
   --color-error-soft: rgb(237 145 131 / 0.14);
+  --color-warning: #e0b35e;
+  --color-warning-soft: rgb(224 179 94 / 0.16);
+  --color-info: #7fc3cc;
+  --color-info-soft: rgb(127 195 204 / 0.16);
   --color-tip-bg: #0a0a0a;
   --color-canvas-3d: #000000;
 }
@@ -297,6 +328,10 @@
   --color-success-soft: #f5f5f5;
   --color-error: #000000;
   --color-error-soft: #f5f5f5;
+  --color-warning: #000000;
+  --color-warning-soft: #f5f5f5;
+  --color-info: #000000;
+  --color-info-soft: #f5f5f5;
   --color-tip-bg: #ffffff;
   --color-canvas-3d: #ffffff;
 }
@@ -318,6 +353,10 @@
   --color-success-soft: rgb(44 92 57 / 0.10);
   --color-error: #8a1f1f;
   --color-error-soft: rgb(138 31 31 / 0.10);
+  --color-warning: #b06a14;
+  --color-warning-soft: rgb(176 106 20 / 0.10);
+  --color-info: #1f6f78;
+  --color-info-soft: rgb(31 111 120 / 0.10);
   --color-tip-bg: #fce0cc;
   --color-canvas-3d: #2a1812;
 }
@@ -339,6 +378,10 @@
   --color-success-soft: rgb(163 204 141 / 0.16);
   --color-error: #e89880;
   --color-error-soft: rgb(232 152 128 / 0.14);
+  --color-warning: #d9b366;
+  --color-warning-soft: rgb(217 179 102 / 0.16);
+  --color-info: #88c0c8;
+  --color-info-soft: rgb(136 192 200 / 0.16);
   --color-tip-bg: #262e23;
   --color-canvas-3d: #0c1208;
 }
@@ -360,6 +403,10 @@
   --color-success-soft: rgb(14 92 74 / 0.10);
   --color-error: #a82a2a;
   --color-error-soft: rgb(168 42 42 / 0.08);
+  --color-warning: #9a6a12;
+  --color-warning-soft: rgb(154 106 18 / 0.10);
+  --color-info: #156c77;
+  --color-info-soft: rgb(21 108 119 / 0.10);
   --color-tip-bg: #eaf0f4;
   --color-canvas-3d: #0a1620;
 }
@@ -381,6 +428,10 @@
   --color-success-soft: rgb(143 184 123 / 0.14);
   --color-error: #e89095;
   --color-error-soft: rgb(232 144 149 / 0.14);
+  --color-warning: #e0b366;
+  --color-warning-soft: rgb(224 179 102 / 0.14);
+  --color-info: #8fc4cf;
+  --color-info-soft: rgb(143 196 207 / 0.14);
   --color-tip-bg: #241c2a;
   --color-canvas-3d: #0d0915;
 }

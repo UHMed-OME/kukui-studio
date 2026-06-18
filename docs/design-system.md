@@ -8,7 +8,7 @@ Single source of truth for visual design across all 7 activity types. Anything y
 2. **Layout-stable interactions.** State changes must not reflow neighbors. Reserve space; change colors only. (See `docs/lessons-learned/uss-and-ui-toolkit-runtime.md` §2.)
 3. **Touch-target minimum 44 × 44 px.** WCAG 2.2 AA target size and Apple HIG. Buttons get `min-height: 44`.
 4. **Contrast ratio ≥ 4.5:1** for body text on its background. Use the palette below; don't ad-hoc colors.
-5. **Hawaiian cultural framing without cliché.** Warm, sun-bleached neutrals; kukui-brown primary; kalo-green success. No tropical-blue cyans, no cocktail-umbrella aesthetics.
+5. **Hawaiian cultural framing without cliché.** Warm, sun-bleached neutrals; kukui-brown primary; kalo-green success; a warm ochre `Warning` and a restrained deep-ocean (`kai`) `Info` teal round out the semantic palette. No garish tropical cyans, no cocktail-umbrella aesthetics — the ocean accent stays muted and content-driven.
 
 ## Color tokens
 
@@ -29,6 +29,10 @@ Defined as `static readonly Color` constants. Do not introduce new hex values wi
 | `SuccessSoft` | `Success @ 0.10 alpha` | — | Correct answer fill |
 | `Error` | `0.764, 0.255, 0.196` | `#C34132` | Wrong answers, validation errors |
 | `ErrorSoft` | `Error @ 0.08 alpha` | — | Wrong answer fill |
+| `Warning` | `0.541, 0.353, 0.071` | `#8A5A12` | Caution / "watch" / urgent / danger-zone accents — warm ochre. ≈ 5.1:1 on `Surface`. Always paired with an icon + text label, never color alone. Per-scheme overrides keep it AA (lighter ambers on dark schemes) |
+| `WarningSoft` | `Warning @ 0.10 alpha` | — | Caution fill (watch vitals, urgent steps) |
+| `Info` | `0.122, 0.435, 0.471` | `#1F6F78` | Neutral / anatomical / informational accents — a muted deep-ocean (`kai`) teal, not a tropical cyan. ≈ 4.9:1 on `Surface`. Per-scheme overrides keep it AA |
+| `InfoSoft` | `Info @ 0.10 alpha` | — | Informational fill (neutral findings, legend swatches) |
 | `TipBg` | `0.95, 0.94, 0.91` | `#F2F0E8` | Tip / hint area |
 | `TextMuted` | `0.431, 0.431, 0.463` | `#6E6E76` | Tertiary / fine-print text (model attribution footers). ≈ 5.1:1 on `Surface` — passes AA for body text; reserve for 12–13 px asides |
 | `Revealed` | `0.478, 0.361, 0.678` | `#7A5CAD` | "Revealed" state (e.g. crossword reveal-letter). Used only as a ≤ 22% tint over `Surface` and always paired with a mark glyph (◔) — never as a text color. White text on the full hex is ≈ 5.3:1 if ever needed |
@@ -63,6 +67,17 @@ Use these values only. Skip granularity that isn't here.
 - **All visible borders are 2 px.** Don't change widths between states (layout shift). Change color only.
 - 1 px is acceptable for whisper-quiet card outline only.
 - 0 px on filled buttons (they use color contrast, not stroke).
+
+## Elevation
+
+One shared shadow token for cards/panels. Subtle by design — depth as a quiet
+cue, not a drop-shadow flourish. Pair with a 1 px border (the shadow softens the
+edge; the border keeps the boundary crisp on dark schemes where the shadow
+disappears).
+
+| Token | Value | Use |
+|---|---|---|
+| `--shadow-card` | `0 1px 2px rgb(0 0 0 / 0.06), 0 6px 16px rgb(0 0 0 / 0.07)` | Activity card / panel elevation |
 
 ## Type scale
 

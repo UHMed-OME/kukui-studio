@@ -1,22 +1,28 @@
 /**
  * RJSF uiSchema for the clinical-case activity. Drives Studio's form editor —
- * field order, labels, help text. A generated starting point; hand-tune the
- * per-field copy and widget choices as a follow-up.
+ * field order, labels, help text, widget choices. Prose/HTML fields use the
+ * shared Tiptap WYSIWYG widget (`ui:widget: "html"`) so authors format with a
+ * toolbar instead of typing tags.
  *
  * COMMON / APPEARANCE / TITLE / AUTHOR / f() mirror the conventions in the
- * sibling activities' ui-schema modules so the shared sections render
- * identically. Kept standalone (no cross-import) on purpose.
+ * sibling activities' ui-schema modules. Kept standalone (no cross-import).
  */
 
 const HIDDEN = { "ui:widget": "hidden" } as const;
+const HTML = { "ui:widget": "html" } as const;
 
-/** Compact builder: f(label, help, opts?) → uiSchema fragment for a leaf field. */
+/** Leaf field: f(label, help, opts?). */
 function f(title: string, help?: string, extra: Record<string, unknown> = {}) {
   return {
     "ui:title": title,
     ...(help ? { "ui:help": help } : {}),
     ...extra,
   };
+}
+
+/** Rich-text (WYSIWYG) leaf field. */
+function fh(title: string, help?: string) {
+  return f(title, help, HTML);
 }
 
 const APPEARANCE = {
@@ -36,11 +42,7 @@ const COMMON = {
   appearance: APPEARANCE,
 } as const;
 
-const TITLE = f(
-  "Case title",
-  "Shown at the top of the activity and as the SCORM activity name.",
-);
-
+const TITLE = f("Case title", "Shown in the banner and as the SCORM activity name.");
 const AUTHOR = f("Author (optional)", "Your name. Shown in a small credit line.");
 
 const uiSchema = {
@@ -60,7 +62,7 @@ const uiSchema = {
   ],
   title: TITLE,
   author: AUTHOR,
-  course: f("Course (optional)", "Course code or name shown in the case header."),
+  course: f("Course (optional)", "Course code or name shown in the banner."),
   school: f("School (optional)"),
   week: f("Module label (optional)", "e.g. \"Week 1\"."),
   presentation: {
@@ -68,8 +70,8 @@ const uiSchema = {
     "ui:help": "Chief complaint, vitals, exam findings, labs, and a reflection cue.",
     label: f("Section badge", "Short label, e.g. \"Clinical Presentation\"."),
     title: f("Section title"),
-    lead: f("Intro", "Optional HTML shown under the section title."),
-    chiefComplaint: f("Chief complaint", "HTML — the history of present illness."),
+    lead: fh("Intro", "Shown under the section title."),
+    chiefComplaint: fh("Chief complaint", "The history of present illness."),
     vitals: {
       "ui:title": "Vital signs",
       items: {
@@ -83,61 +85,71 @@ const uiSchema = {
       "ui:title": "Exam findings",
       items: {
         type: f("Type", "present, absent (pertinent negative), or neutral."),
-        text: f("Finding", "HTML."),
+        text: fh("Finding"),
       },
     },
-    labResults: { "ui:title": "Lab results", items: { text: f("Lab row", "HTML.") } },
-    reflectionPrompt: f("Reflection cue", "HTML shown in the callout box."),
+    labResults: { "ui:title": "Lab results", items: { text: fh("Lab row") } },
+    reflectionPrompt: fh("Reflection cue", "Shown in the callout box."),
   },
   anatomy: {
     "ui:title": "2. Anatomy & imaging",
     label: f("Section badge"),
     title: f("Section title"),
-    lead: f("Intro"),
-    imagingFinding: f("Imaging finding", "HTML."),
+    lead: fh("Intro"),
+    imagingFinding: fh("Imaging finding"),
     diagram: {
-      "ui:title": "Diagram (optional image)",
-      "ui:help": "A hosted image URL. Inline SVG is not supported.",
-      src: f("Image URL"),
+      "ui:title": "Diagram (optional)",
+      "ui:help": "Provide either a hosted image URL or inline SVG markup.",
+      src: f("Image URL", "A hosted image. Leave blank if using inline SVG."),
+      svg: f("Inline SVG", "Paste SVG source. Sanitized at render (scripts removed).", {
+        "ui:widget": "textarea",
+        "ui:options": { rows: 8 },
+      }),
       alt: f("Alt text", "Required description of the diagram for screen readers."),
       caption: f("Caption"),
     },
-    diagramLegend: { "ui:title": "Diagram legend", items: { label: f("Legend entry") } },
+    diagramLegend: {
+      "ui:title": "Diagram legend",
+      items: {
+        label: f("Legend entry"),
+        tone: f("Swatch color", "Maps the swatch to a design token."),
+      },
+    },
     spaces: {
       "ui:title": "Anatomical spaces",
-      items: { name: f("Space name"), detail: f("Detail", "HTML.") },
+      items: { name: f("Space name"), detail: fh("Detail") },
     },
     notes: {
       "ui:title": "Anatomy notes",
-      items: { highlight: f("Highlight this note"), text: f("Note", "HTML.") },
+      items: { highlight: f("Highlight this note"), text: fh("Note") },
     },
   },
   diagnosis: {
     "ui:title": "3. Diagnosis & management",
     label: f("Section badge"),
     title: f("Section title"),
-    lead: f("Intro"),
-    keyFinding: f("Key finding", "HTML — the pathognomonic finding."),
+    lead: fh("Intro"),
+    keyFinding: fh("Key finding", "The pathognomonic finding."),
     differential: {
       "ui:title": "Differential diagnosis",
       items: {
         verdict: f("Verdict", "in = confirmed/ruled-in, out = excluded."),
-        text: f("Item", "HTML."),
+        text: fh("Item"),
       },
     },
     causes: { "ui:title": "Aetiology tags" },
     management: {
       "ui:title": "Management steps",
-      items: { urgent: f("Urgent / priority"), text: f("Step", "HTML.") },
+      items: { urgent: f("Urgent / priority"), text: fh("Step") },
     },
-    references: { "ui:title": "References" },
+    references: { "ui:title": "References", items: fh("Reference") },
   },
   quiz: {
     "ui:title": "4. Formative quiz",
     "ui:help": "Multiple-choice questions with immediate per-option feedback.",
     label: f("Section badge"),
     title: f("Section title"),
-    lead: f("Intro"),
+    lead: fh("Intro"),
     questions: {
       "ui:title": "Questions",
       items: {
@@ -160,7 +172,7 @@ const uiSchema = {
     "ui:title": "5. Activity / assignment",
     label: f("Section badge"),
     title: f("Section title"),
-    lead: f("Intro"),
+    lead: fh("Intro"),
     objectives: {
       "ui:title": "Learning objectives",
       items: { text: f("Objective"), hint: f("Hint") },
@@ -173,8 +185,8 @@ const uiSchema = {
         icon: f("Icon", "Optional emoji."),
         name: f("Format name"),
         desc: f("Short description"),
-        guidance: f("Guidance", "HTML — detailed instructions."),
-        submission: f("Submission instructions", "HTML."),
+        guidance: fh("Guidance", "Detailed instructions."),
+        submission: fh("Submission instructions"),
       },
     },
   },
