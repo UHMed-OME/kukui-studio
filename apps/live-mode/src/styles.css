@@ -276,6 +276,29 @@ html[data-color-scheme="dark"] {
   --color-tip-bg: #241c2a;
 }
 
+/* Kai (clinical ocean-blue light) — mirrors the JABSOM clinical-case palette. */
+[data-color-scheme="kai"] {
+  --color-bg: #f4f8fd;
+  --color-surface: #ffffff;
+  --color-surface-alt: #e8f0fe;
+  --color-text-primary: #0d2440;
+  --color-text-secondary: #3d5878;
+  --color-border: #c5d8ee;
+  --color-border-hover: #9bbce0;
+  --color-primary: #1a4d8f;
+  --color-primary-hover: #2a63b5;
+  --color-primary-soft: rgb(26 77 143 / 0.08);
+  --color-success: #1a7a47;
+  --color-success-soft: rgb(26 122 71 / 0.10);
+  --color-error: #c0392b;
+  --color-error-soft: rgb(192 57 43 / 0.09);
+  --color-warning: #b45309;
+  --color-warning-soft: rgb(180 83 9 / 0.10);
+  --color-info: #0e7490;
+  --color-info-soft: rgb(14 116 144 / 0.10);
+  --color-tip-bg: #e8f0fe;
+}
+
 html,
 body,
 #root {

@@ -99,11 +99,14 @@ const uiSchema = {
     imagingFinding: fh("Imaging finding"),
     diagram: {
       "ui:title": "Diagram (optional)",
-      "ui:help": "Provide either a hosted image URL or inline SVG markup.",
-      src: f("Image URL", "A hosted image. Leave blank if using inline SVG."),
-      svg: f("Inline SVG", "Paste SVG source. Sanitized at render (scripts removed).", {
-        "ui:widget": "textarea",
-        "ui:options": { rows: 8 },
+      "ui:help": "Upload (or paste) an image OR an inline SVG. Use one or the other.",
+      src: f("Image (upload or URL)", "Upload an image file or paste a hosted URL. Leave blank if using SVG.", {
+        "ui:widget": "file",
+        "ui:options": { kind: "image", accept: "image/png,image/jpeg,image/gif,image/webp", maxSizeMb: 2 },
+      }),
+      svg: f("Inline SVG (upload or paste)", "Upload an .svg file or paste markup. Sanitized at render (scripts removed).", {
+        "ui:widget": "svgUpload",
+        "ui:options": { rows: 8, maxSizeMb: 1 },
       }),
       alt: f("Alt text", "Required description of the diagram for screen readers."),
       caption: f("Caption"),

@@ -37,6 +37,7 @@ export const THEME_VALUES = [
   "kalo",
   "lab",
   "twilight",
+  "kai",
 ] as const;
 
 export type Theme = (typeof THEME_VALUES)[number];

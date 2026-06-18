@@ -30,6 +30,7 @@ const RESOLVED_SCHEMES = [
   "kalo",
   "lab",
   "twilight",
+  "kai",
 ] as const;
 
 export type ResolvedColorScheme = (typeof RESOLVED_SCHEMES)[number];
