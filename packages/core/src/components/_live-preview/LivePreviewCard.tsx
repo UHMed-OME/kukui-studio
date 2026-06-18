@@ -1,5 +1,8 @@
 import { useId } from "react";
 import { SafeHtml } from "../../safe-html.js";
+import { ActivityHeader, type ActivityHeaderVariant } from "../_shared/ActivityHeader.js";
+import { StatusBadge } from "../_shared/StatusBadge.js";
+import { DotIcon } from "../_shared/icons.js";
 import "./LivePreviewCard.css";
 
 /**
@@ -22,6 +25,7 @@ export function LivePreviewCard({
   description,
   onSubmit,
   headingLevel = 1,
+  headerVariant = "full",
   children,
 }: {
   title: string;
@@ -30,20 +34,26 @@ export function LivePreviewCard({
   description?: string;
   onSubmit: (s: { raw: number; max: number; success: boolean; suspendData?: string }) => void;
   headingLevel?: 1 | 2 | 3;
+  /** From config.appearance?.header — full gradient banner or minimal. */
+  headerVariant?: ActivityHeaderVariant;
   children?: React.ReactNode;
 }) {
-  const HeadingTag = `h${headingLevel}` as "h1" | "h2" | "h3";
   const headingId = useId();
 
   return (
     <article className="kukui-live-preview" aria-labelledby={headingId}>
-      <header className="kukui-live-preview__header">
-        <span className="kukui-live-preview__badge">Live activity · {kindLabel}</span>
-        <HeadingTag id={headingId} className="kukui-live-preview__title">
-          {title}
-        </HeadingTag>
-      </header>
-      <SafeHtml className="kukui-live-preview__prompt" html={prompt} />
+      <ActivityHeader
+        title={title}
+        titleId={headingId}
+        headingLevel={headingLevel}
+        variant={headerVariant}
+        prompt={<SafeHtml html={prompt} />}
+        badge={
+          <StatusBadge tone="info" icon={<DotIcon />}>
+            Live · {kindLabel}
+          </StatusBadge>
+        }
+      />
 
       <p className="kukui-live-preview__hint">
         {description ??

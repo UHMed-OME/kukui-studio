@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "title": "Match the symbol to the element",
+  "title": "🃏 Match the symbol to the element",
   "prompt": "<p>Step through each card. Click to reveal the element name, then rate yourself honestly — you'll see the cards you didn't know again before finishing.</p>",
   "cards": [
     {

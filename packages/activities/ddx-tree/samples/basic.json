@@ -1,7 +1,7 @@
 {
   "_comment": "Differential Diagnosis Tree — chest pain workup leading to inferior STEMI vs. PE.",
   "version": "1.0",
-  "title": "Acute chest pain in a 52-year-old",
+  "title": "🔍 Acute chest pain in a 52-year-old",
   "caseHeader": "<p><strong>Chief complaint:</strong> 52-year-old male presents to the emergency department with sudden substernal chest pain that started 45 minutes ago, radiating to the left jaw.</p><p><strong>Vitals:</strong> BP 138/86, HR 102, RR 20, SpO2 96% on room air, T 37.0°C. Diaphoretic, mildly anxious.</p>",
   "startNodeId": "n-initial",
   "nodes": [

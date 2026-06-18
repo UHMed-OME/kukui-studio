@@ -1,7 +1,7 @@
 import { useEffect, useId, useMemo, useState } from "react";
 import type { ReflectionPromptConfig } from "./schema.js";
 import type { ActivityProps } from "@kukui/core/types";
-import { ActivityHeader, SafeHtml } from "@kukui/core";
+import { ActivityHeader, SafeHtml, StatusBadge, DotIcon, CheckIcon } from "@kukui/core";
 import "./Component.css";
 
 type Stage = "writing" | "submitted";
@@ -92,6 +92,16 @@ function Component({
 
   const submitted = state.stage === "submitted";
 
+  const headerBadge = submitted ? (
+    <StatusBadge tone="success" icon={<CheckIcon />}>
+      Complete
+    </StatusBadge>
+  ) : (
+    <StatusBadge tone="neutral" icon={<DotIcon />}>
+      In progress
+    </StatusBadge>
+  );
+
   const handleChange = (value: string) => {
     if (submitted) return;
     setState((s) => ({ ...s, text: value }));
@@ -119,6 +129,7 @@ function Component({
           headingLevel={headingLevel}
           variant={config.appearance?.header ?? "full"}
           prompt={config.prompt ? <SafeHtml html={config.prompt} /> : undefined}
+          badge={headerBadge}
         />
 
         <label className="kukui-rp__sr-only" htmlFor={textareaId}>

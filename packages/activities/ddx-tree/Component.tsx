@@ -1,7 +1,7 @@
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import type { DDxTreeConfig } from "./schema.js";
 import type { ActivityProps } from "@kukui/core/types";
-import { ActivityHeader, SafeHtml, htmlToText } from "@kukui/core";
+import { ActivityHeader, SafeHtml, htmlToText, StatusBadge, DotIcon, CheckIcon } from "@kukui/core";
 import "./Component.css";
 
 type State = {
@@ -151,6 +151,16 @@ export default function Component({
 
   const dx = isTerminal ? currentNode.diagnosis : null;
 
+  const headerBadge = state.terminalReached ? (
+    <StatusBadge tone="success" icon={<CheckIcon />}>
+      Complete
+    </StatusBadge>
+  ) : (
+    <StatusBadge tone="neutral" icon={<DotIcon />}>
+      In progress
+    </StatusBadge>
+  );
+
   return (
     <div className="kukui-ddx">
       <article className="kukui-ddx__card" aria-labelledby={headingId}>
@@ -159,6 +169,7 @@ export default function Component({
           titleId={headingId}
           headingLevel={headingLevel}
           variant={config.appearance?.header ?? "full"}
+          badge={headerBadge}
         />
 
         <section

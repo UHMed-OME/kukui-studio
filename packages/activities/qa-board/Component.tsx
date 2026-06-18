@@ -25,6 +25,7 @@ export default function Component({
       description="Students post questions during class; everyone can upvote; the instructor sees the list ranked by votes and can mark questions as answered. Open this in Kukui Live during class."
       onSubmit={onSubmit}
       headingLevel={headingLevel}
+      headerVariant={config.appearance?.header ?? "full"}
     />
   );
 }

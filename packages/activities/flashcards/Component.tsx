@@ -1,7 +1,15 @@
 import { useEffect, useId, useMemo, useState } from "react";
 import type { FlashcardsConfig } from "./schema.js";
 import type { ActivityProps } from "@kukui/core/types";
-import { ActivityHeader, SafeHtml, htmlToText } from "@kukui/core";
+import {
+  ActivityHeader,
+  SafeHtml,
+  htmlToText,
+  StatusBadge,
+  DotIcon,
+  CheckIcon,
+  TrophyIcon,
+} from "@kukui/core";
 import "./Component.css";
 
 type CardStatus = "knew" | "didnt" | "unanswered";
@@ -197,6 +205,23 @@ function Component({
   const submitted = state.completed;
   const knewPct = totalCount === 0 ? 0 : Math.round((knewCount / totalCount) * 100);
 
+  // Header badge: neutral while working through the deck; on completion, show
+  // "Passed" (trophy) when the learner self-rated every card "knew it",
+  // otherwise "Review" (check). Additive — does not change the heading/roles.
+  const knewAll = totalCount > 0 && knewCount === totalCount;
+  const headerBadge = submitted ? (
+    <StatusBadge
+      tone={knewAll ? "success" : "warning"}
+      icon={knewAll ? <TrophyIcon /> : <CheckIcon />}
+    >
+      {knewAll ? "Passed" : "Review"}
+    </StatusBadge>
+  ) : (
+    <StatusBadge tone="neutral" icon={<DotIcon />}>
+      In progress
+    </StatusBadge>
+  );
+
   const practiceAgain = () => {
     // Reseed so a shuffled deck comes out in a different order each round.
     setState(buildInitialState(config, Math.floor(Math.random() * 0x7fffffff)));
@@ -210,6 +235,7 @@ function Component({
           titleId={headingId}
           headingLevel={headingLevel}
           variant={config.appearance?.header ?? "full"}
+          badge={headerBadge}
         />
         {config.prompt ? (
           <SafeHtml className="kukui-fc__prompt" html={config.prompt} />

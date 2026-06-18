@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "title": "Clinical Decision Reflection",
+  "title": "✍️ Clinical Decision Reflection",
   "prompt": "<p>After today's case, what's one decision you'd make differently? Explain your reasoning, including which findings changed your thinking.</p>",
   "minWords": 30,
   "placeholder": "Take a few minutes to reflect..."

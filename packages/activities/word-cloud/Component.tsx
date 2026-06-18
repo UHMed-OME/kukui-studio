@@ -25,6 +25,7 @@ export default function Component({
       description={`Students each submit ${max === 1 ? "one short response" : `up to ${max} short responses`}; everyone watches an emergent frequency tally. Open this in Kukui Live during class.`}
       onSubmit={onSubmit}
       headingLevel={headingLevel}
+      headerVariant={config.appearance?.header ?? "full"}
     />
   );
 }

@@ -1,7 +1,17 @@
 import { useEffect, useId, useMemo, useState } from "react";
 import type { OSCEConfig } from "./schema.js";
 import type { ActivityProps, ScoreState } from "@kukui/core/types";
-import { ActivityHeader, aggregate, percentage, SafeHtml, htmlToText } from "@kukui/core";
+import {
+  ActivityHeader,
+  aggregate,
+  percentage,
+  SafeHtml,
+  htmlToText,
+  StatusBadge,
+  DotIcon,
+  CheckIcon,
+  TrophyIcon,
+} from "@kukui/core";
 import { resolveScoring } from "@kukui/core/scoring";
 import "./Component.css";
 
@@ -128,6 +138,19 @@ export default function Component({
   const selectedHere = state.selectedByPhase[phase.id] ?? [];
   const phaseScore = scoring.byPhase[phase.id];
 
+  const headerBadge = submitted ? (
+    <StatusBadge
+      tone={scoring.total.success ? "success" : "warning"}
+      icon={scoring.total.success ? <TrophyIcon /> : <CheckIcon />}
+    >
+      {scoring.total.success ? "Passed" : "Review"}
+    </StatusBadge>
+  ) : (
+    <StatusBadge tone="neutral" icon={<DotIcon />}>
+      In progress
+    </StatusBadge>
+  );
+
   return (
     <div className="kukui-osce">
       <article className="kukui-osce__card" aria-labelledby={headingId}>
@@ -136,6 +159,7 @@ export default function Component({
           titleId={headingId}
           headingLevel={headingLevel}
           variant={config.appearance?.header ?? "full"}
+          badge={headerBadge}
         />
 
         <div className="kukui-osce__header">

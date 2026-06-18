@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "title": "Pronunciation: haematopoiesis",
+  "title": "🎙️ Pronunciation: haematopoiesis",
   "prompt": "<p>Pronounce the medical term <strong>'haematopoiesis'</strong> clearly into your microphone. Aim for a single, unhurried take of about 5 seconds.</p>",
   "maxDurationSeconds": 15,
   "minDurationSeconds": 1,
