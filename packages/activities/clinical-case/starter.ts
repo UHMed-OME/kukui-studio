@@ -38,6 +38,27 @@ const starter = {
       },
     ],
   },
+  // Seeded with one complete format so Studio's RJSF form loads clean.
+  // `activity` is optional, but the editor's default-fill materializes it
+  // and pads `formats` to its min(1) with an empty item — whose required
+  // id/name/guidance then fail validation on load. Shipping a complete
+  // example item avoids that and gives authors a template to edit.
+  activity: {
+    label: "Activity",
+    title: "Choose your format",
+    objectives: [{ text: "Describe an objective the learner must meet." }],
+    submissionPlatform: "Brightspace → Assignments",
+    formats: [
+      {
+        id: "written",
+        icon: "📄",
+        name: "Written analysis",
+        desc: "A short written response",
+        guidance: "<p>Write 400–600 words addressing each objective.</p>",
+        submission: "<p>Upload a PDF to the assignment.</p>",
+      },
+    ],
+  },
   // Seeded so Studio's RJSF form loads clean: z.toJSONSchema marks a
   // .default() field as `required`, so AJV flags a missing `appearance`
   // on load even though Zod fills the default. (Same pattern as
