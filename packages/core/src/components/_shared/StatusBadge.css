@@ -1,0 +1,69 @@
+/*
+ * Shared status pill. Tone = color + icon + text (color never the sole
+ * signal). Tones map to design tokens; the `is-on-dark` variant reads on
+ * the ActivityHeader gradient banner. Tokens only.
+ */
+
+.kukui-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs, 4px);
+  padding: 2px var(--spacing-sm, 8px);
+  border: 1px solid var(--color-border, #dad2c6);
+  border-radius: 999px;
+  background: var(--color-tip-bg, #f2f0e8);
+  font-size: var(--font-size-meta, 13px);
+  font-weight: 700;
+  line-height: 1.4;
+  color: var(--color-text-secondary, #606069);
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+}
+
+.kukui-badge__icon {
+  display: inline-flex;
+  width: 14px;
+  height: 14px;
+}
+
+.kukui-badge__icon svg {
+  width: 100%;
+  height: 100%;
+}
+
+.kukui-badge--info {
+  color: var(--color-info, #1f6f78);
+  border-color: var(--color-info, #1f6f78);
+  background: var(--color-info-soft);
+}
+
+.kukui-badge--success {
+  color: var(--color-success, #2e6e41);
+  border-color: var(--color-success, #2e6e41);
+  background: var(--color-success-soft);
+}
+
+.kukui-badge--warning {
+  color: var(--color-warning, #8a5a12);
+  border-color: var(--color-warning, #8a5a12);
+  background: var(--color-warning-soft);
+}
+
+.kukui-badge--error {
+  color: var(--color-error, #c34132);
+  border-color: var(--color-error, #c34132);
+  background: var(--color-error-soft);
+}
+
+.kukui-badge--primary {
+  color: var(--color-primary, #7b4324);
+  border-color: var(--color-primary, #7b4324);
+  background: var(--color-primary-soft);
+}
+
+/* On the gradient banner: translucent white, regardless of tone. */
+.kukui-badge.is-on-dark {
+  color: #ffffff;
+  border-color: rgb(255 255 255 / 0.5);
+  background: rgb(255 255 255 / 0.18);
+}

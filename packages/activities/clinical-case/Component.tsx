@@ -1,7 +1,7 @@
 import { useEffect, useId, useMemo, useState, type ReactNode } from "react";
 import type { ClinicalCaseConfig } from "./schema.js";
 import type { ActivityProps } from "@kukui/core/types";
-import { SafeHtml, SafeSvg, percentage } from "@kukui/core";
+import { ActivityHeader, SafeHtml, SafeSvg, percentage } from "@kukui/core";
 import { resolveScoring } from "@kukui/core/scoring";
 import "./Component.css";
 
@@ -70,7 +70,6 @@ export default function Component({
   suspendData,
   headingLevel = 1,
 }: ActivityProps<ClinicalCaseConfig>) {
-  const HeadingTag = `h${headingLevel}` as "h1" | "h2" | "h3";
   const H2 = `h${Math.min(headingLevel + 1, 3)}` as "h2" | "h3";
   const headingId = useId();
   const liveId = useId();
@@ -152,16 +151,17 @@ export default function Component({
   return (
     <div className="kukui-ccase">
       <article className="kukui-ccase__card" aria-labelledby={headingId}>
-        <header className="kukui-ccase__banner">
-          <HeadingTag id={headingId} className="kukui-ccase__title">
-            {config.title}
-          </HeadingTag>
-          {(config.week || config.course || config.school) && (
-            <p className="kukui-ccase__meta">
-              {[config.week, config.course, config.school].filter(Boolean).join(" · ")}
-            </p>
-          )}
-        </header>
+        <ActivityHeader
+          title={config.title}
+          titleId={headingId}
+          headingLevel={headingLevel}
+          variant={config.appearance?.header ?? "full"}
+          meta={
+            config.week || config.course || config.school
+              ? [config.week, config.course, config.school].filter(Boolean).join(" · ")
+              : undefined
+          }
+        />
 
         <nav className="kukui-ccase__progress" aria-label="Case sections">
           <ol className="kukui-ccase__progress-labels">
