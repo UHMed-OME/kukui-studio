@@ -44,6 +44,7 @@ export {
   DotIcon,
   ClockIcon,
   TrophyIcon,
+  ActivityIcon,
 } from "./components/_shared/icons.js";
 export { tokens, tokensDark, activeTokens, type ColorToken } from "./tokens.js";
 export {

@@ -240,6 +240,12 @@ export const ClinicalCaseConfigSchema = z
     version: z.string().regex(versionRe),
     title: z.string().min(1),
     author: z.string().optional(),
+    /**
+     * Optional header icon — an emoji (e.g. "🩺") or a token-glyph code
+     * `glyph:<name>:<tone>`. Authored via Studio's icon picker, rendered by
+     * @kukui/core's <ActivityIcon>.
+     */
+    icon: z.string().optional(),
     /** Course code, e.g. "MDED-556L". Shown in the case header. */
     course: z.string().optional(),
     school: z.string().optional(),

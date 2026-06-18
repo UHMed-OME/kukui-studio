@@ -3229,6 +3229,139 @@ button {
   line-height: 1.4;
 }
 
+/* Notion-style icon picker (IconPickerWidget). Glyph colours are tokens. */
+.ks-iconpicker {
+  position: relative;
+}
+.ks-iconpicker__row {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm, 8px);
+}
+.ks-iconpicker__trigger {
+  min-width: 44px;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 var(--spacing-sm, 8px);
+  font-size: 22px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm, 8px);
+  cursor: pointer;
+}
+.ks-iconpicker__trigger:hover {
+  border-color: var(--color-border-hover);
+}
+.ks-iconpicker__placeholder {
+  font-size: var(--font-size-meta, 13px);
+  color: var(--color-text-secondary);
+}
+.ks-iconpicker__current svg {
+  width: 22px;
+  height: 22px;
+}
+.ks-iconpicker__clear {
+  background: none;
+  border: none;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-meta, 13px);
+  cursor: pointer;
+  text-decoration: underline;
+}
+.ks-iconpicker__panel {
+  position: absolute;
+  z-index: 20;
+  margin-top: 4px;
+  width: 288px;
+  padding: var(--spacing-sm, 8px);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md, 10px);
+  box-shadow: var(--shadow-card);
+}
+.ks-iconpicker__tabs {
+  display: flex;
+  gap: var(--spacing-xs, 4px);
+  margin-bottom: var(--spacing-sm, 8px);
+}
+.ks-iconpicker__tabs button {
+  flex: 1;
+  min-height: 32px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm, 6px);
+  background: var(--color-surface);
+  color: var(--color-text-secondary);
+  font-weight: 700;
+  font-size: var(--font-size-meta, 13px);
+  cursor: pointer;
+}
+.ks-iconpicker__tabs button.is-active {
+  background: var(--color-primary-soft);
+  color: var(--color-primary);
+  border-color: var(--color-primary);
+}
+.ks-iconpicker__input {
+  width: 100%;
+  margin-bottom: var(--spacing-sm, 8px);
+}
+.ks-iconpicker__grid {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 2px;
+  max-height: 184px;
+  overflow-y: auto;
+}
+.ks-iconpicker__cell {
+  min-height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  background: none;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm, 6px);
+  cursor: pointer;
+}
+.ks-iconpicker__cell:hover {
+  background: var(--color-tip-bg);
+  border-color: var(--color-border);
+}
+.ks-iconpicker__tones {
+  display: flex;
+  gap: var(--spacing-xs, 4px);
+  margin-bottom: var(--spacing-sm, 8px);
+}
+.ks-iconpicker__tone {
+  width: 24px;
+  height: 24px;
+  border-radius: 999px;
+  border: 2px solid transparent;
+  cursor: pointer;
+}
+.ks-iconpicker__tone.is-active {
+  border-color: var(--color-text-primary);
+}
+.ks-iconpicker__tone--primary {
+  background: var(--color-primary);
+}
+.ks-iconpicker__tone--success {
+  background: var(--color-success);
+}
+.ks-iconpicker__tone--warning {
+  background: var(--color-warning);
+}
+.ks-iconpicker__tone--info {
+  background: var(--color-info);
+}
+.ks-iconpicker__tone--error {
+  background: var(--color-error);
+}
+.ks-iconpicker__tone--neutral {
+  background: var(--color-text-secondary);
+}
+
 .ks-file__row {
   display: flex;
   flex-wrap: wrap;

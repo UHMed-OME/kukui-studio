@@ -1,7 +1,7 @@
 import { useEffect, useId, useMemo, useState, type ReactNode } from "react";
 import type { ClinicalCaseConfig } from "./schema.js";
 import type { ActivityProps } from "@kukui/core/types";
-import { ActivityHeader, SafeHtml, SafeSvg, percentage } from "@kukui/core";
+import { ActivityHeader, ActivityIcon, SafeHtml, SafeSvg, percentage } from "@kukui/core";
 import { resolveScoring } from "@kukui/core/scoring";
 import "./Component.css";
 
@@ -156,6 +156,7 @@ export default function Component({
           titleId={headingId}
           headingLevel={headingLevel}
           variant={config.appearance?.header ?? "full"}
+          icon={config.icon ? <ActivityIcon value={config.icon} /> : undefined}
           meta={
             config.week || config.course || config.school
               ? [config.week, config.course, config.school].filter(Boolean).join(" · ")

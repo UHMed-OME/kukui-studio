@@ -1,7 +1,8 @@
 {
   "_comment": "Faithful transcription of Dr. Aytac's Week 1 Clinical Anatomy Case (cervicofacial subcutaneous emphysema). The original's inline style attributes and embedded SVG diagram are intentionally omitted — Kukui sanitizes author HTML, and color is owned by design tokens.",
   "version": "1.0",
-  "title": "Post-procedure facial swelling — cervicofacial subcutaneous emphysema",
+  "title": "🩺 Post-procedure facial swelling — cervicofacial subcutaneous emphysema",
+  "icon": "glyph:kukui:primary",
   "course": "MDED-556L-012: MD 6 Locomotor System, Nervous System & Behavioral Problems",
   "school": "John A. Burns School of Medicine",
   "week": "Week 1",
