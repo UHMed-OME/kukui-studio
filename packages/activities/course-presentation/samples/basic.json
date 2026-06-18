@@ -1,0 +1,69 @@
+{
+  "_comment": "A five-slide course presentation introducing the cardiac cycle, with an embedded multiple-choice check and an embedded fill-in-the-blanks check. Authored as a teaching deck; embedded activity configs are validated at render against the multiple-choice and fill-in-the-blanks schemas.",
+  "version": "1.0",
+  "title": "❤️ The Cardiac Cycle",
+  "author": "Kukui sample content",
+  "slides": [
+    {
+      "id": "overview",
+      "title": "What is the cardiac cycle?",
+      "body": "<p>The <strong>cardiac cycle</strong> is the sequence of events in a single heartbeat: the alternating contraction (<em>systole</em>) and relaxation (<em>diastole</em>) of the heart's chambers that move blood through the circulation.</p><p>Over the next few slides we will walk through the phases, then check your understanding.</p>"
+    },
+    {
+      "id": "phases",
+      "title": "Systole and diastole",
+      "body": "<ul><li><strong>Atrial systole</strong> — the atria contract, topping off the ventricles.</li><li><strong>Ventricular systole</strong> — the ventricles contract, ejecting blood into the aorta and pulmonary artery.</li><li><strong>Diastole</strong> — the chambers relax and refill.</li></ul><p>The valves open and close in response to pressure changes, producing the familiar &ldquo;lub-dub&rdquo; heart sounds.</p>"
+    },
+    {
+      "id": "check-valves",
+      "title": "Check: heart sounds",
+      "body": "<p>Think about which valves are involved in the first heart sound before you answer.</p>",
+      "activity": {
+        "kind": "multipleChoice",
+        "config": {
+          "version": "1.0",
+          "title": "The first heart sound (S1)",
+          "question": "<p>The first heart sound (&ldquo;lub&rdquo;) is produced primarily by the closure of which valves?</p>",
+          "answers": [
+            {
+              "text": "The aortic and pulmonary (semilunar) valves",
+              "correct": false,
+              "feedback": "Not quite — closure of the semilunar valves produces the second heart sound (S2), the &ldquo;dub.&rdquo;"
+            },
+            {
+              "text": "The mitral and tricuspid (atrioventricular) valves",
+              "correct": true,
+              "feedback": "Correct — S1 marks the start of ventricular systole as the AV valves snap shut."
+            },
+            {
+              "text": "The mitral and aortic valves",
+              "correct": false,
+              "feedback": "Not quite — these valves close at different points in the cycle, so they do not produce a single combined sound."
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "check-fill",
+      "title": "Check: name the phase",
+      "body": "<p>Fill in the missing terms from this slide's content.</p>",
+      "activity": {
+        "kind": "fillInTheBlanks",
+        "config": {
+          "version": "1.0",
+          "title": "Phases of the cycle",
+          "text": "During *systole* the heart muscle contracts, while during *diastole* it relaxes and refills with blood."
+        }
+      }
+    },
+    {
+      "id": "summary",
+      "title": "Summary",
+      "body": "<p>You stepped through the cardiac cycle: atrial and ventricular <strong>systole</strong>, then <strong>diastole</strong>, with valve closures producing the two heart sounds.</p><p>Use the dots above to revisit any slide, then finish when you are ready.</p>"
+    }
+  ],
+  "appearance": {
+    "theme": "auto"
+  }
+}

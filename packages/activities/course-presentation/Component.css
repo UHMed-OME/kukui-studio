@@ -1,0 +1,231 @@
+/*
+ * Course Presentation — a navigable slide deck with a gradient banner header,
+ * a per-slide content area (prose + image + optional embedded activity),
+ * prev/next navigation, and a clickable dot indicator. Layout-stable: borders
+ * are a constant 2px and only color changes between states. Color is never the
+ * sole signal — every state pairs color with an icon and a text label. Tokens
+ * only; no raw hex.
+ *
+ * `--kukui-card-pad` defines the card's horizontal padding; the shared
+ * ActivityHeader bleeds edge-to-edge because the card's own top padding is 0
+ * and it clips with overflow: hidden.
+ */
+
+.kukui-cp {
+  display: flex;
+  justify-content: center;
+  padding: var(--spacing-2xl, 24px);
+  --kukui-card-pad: var(--spacing-3xl, 28px);
+}
+
+.kukui-cp__card {
+  width: 100%;
+  max-width: 760px;
+  background: var(--color-surface, #ffffff);
+  border: 1px solid var(--color-border, #dad2c6);
+  border-radius: var(--radius-card, 12px);
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
+}
+
+.kukui-cp__sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Header is the shared @kukui/core <ActivityHeader>. */
+
+.kukui-cp__credit {
+  margin: 0;
+  padding: 0 var(--kukui-card-pad) var(--spacing-xl, 20px);
+  font-size: var(--font-size-meta, 13px);
+  color: var(--color-text-secondary, #606069);
+}
+
+/* Slide -------------------------------------------------------------------- */
+
+.kukui-cp__slide {
+  padding: var(--spacing-xl, 20px) var(--kukui-card-pad) 0;
+}
+
+.kukui-cp__slide-title {
+  margin: 0 0 var(--spacing-md, 12px);
+  font-size: var(--font-size-subtitle, 18px);
+  font-weight: 700;
+  color: var(--color-text-primary, #1c1e20);
+}
+
+.kukui-cp__body {
+  margin: 0 0 var(--spacing-lg, 16px);
+  font-size: var(--font-size-prompt, 16px);
+  line-height: 1.5;
+  color: var(--color-text-primary, #1c1e20);
+}
+
+.kukui-cp__figure {
+  margin: 0 0 var(--spacing-lg, 16px);
+}
+
+.kukui-cp__media {
+  display: block;
+  width: 100%;
+  height: auto;
+  border: 1px solid var(--color-border, #dad2c6);
+  border-radius: var(--radius-md, 8px);
+  background: var(--color-surface, #ffffff);
+}
+
+.kukui-cp__figcaption {
+  margin-top: var(--spacing-sm, 8px);
+  font-size: var(--font-size-meta, 13px);
+  color: var(--color-text-secondary, #606069);
+}
+
+/* Embedded activity -------------------------------------------------------- */
+
+.kukui-cp__embed {
+  margin: var(--spacing-lg, 16px) 0 0;
+  padding: var(--spacing-md, 12px);
+  border: 1px solid var(--color-border, #dad2c6);
+  border-radius: var(--radius-lg, 10px);
+  background: var(--color-tip-bg, #f2f0e8);
+}
+
+/* Dots --------------------------------------------------------------------- */
+
+.kukui-cp__dots {
+  padding: var(--spacing-lg, 16px) var(--kukui-card-pad) 0;
+}
+
+.kukui-cp__dot-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-sm, 8px);
+}
+
+.kukui-cp__dot {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  background: var(--color-surface, #ffffff);
+  border: 2px solid var(--color-border, #dad2c6);
+  border-radius: var(--radius-pill, 999px);
+  font-size: var(--font-size-meta, 13px);
+  font-weight: 700;
+  color: var(--color-text-secondary, #606069);
+  cursor: pointer;
+  transition: background-color 150ms ease, border-color 150ms ease, color 150ms ease;
+}
+
+.kukui-cp__dot:hover:not(.is-current) {
+  border-color: var(--color-border-hover, #bbae9a);
+}
+
+.kukui-cp__dot:focus-visible {
+  outline: 2px solid var(--color-primary, #7b4324);
+  outline-offset: 2px;
+}
+
+.kukui-cp__dot.is-answered {
+  border-color: var(--color-success, #2e6e41);
+  color: var(--color-success, #2e6e41);
+  background: var(--color-success-soft);
+}
+
+.kukui-cp__dot.is-current {
+  border-color: var(--color-primary, #7b4324);
+  color: var(--color-primary, #7b4324);
+  background: var(--color-primary-soft);
+}
+
+.kukui-cp__dot-mark {
+  line-height: 1;
+}
+
+/* Status line -------------------------------------------------------------- */
+
+.kukui-cp__status {
+  min-height: 24px;
+  margin: var(--spacing-md, 12px) var(--kukui-card-pad) 0;
+  font-size: var(--font-size-meta, 13px);
+  font-weight: 600;
+  color: var(--color-text-secondary, #606069);
+}
+
+/* Nav ---------------------------------------------------------------------- */
+
+.kukui-cp__nav {
+  margin-top: var(--spacing-md, 12px);
+  padding: var(--spacing-md, 12px) var(--kukui-card-pad) var(--spacing-xl, 20px);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-md, 12px);
+}
+
+.kukui-cp__nav-end {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--spacing-md, 12px);
+}
+
+.kukui-cp__primary,
+.kukui-cp__secondary {
+  min-height: 44px;
+  padding: 10px 20px;
+  border-radius: var(--radius-md, 8px);
+  font-size: var(--font-size-answer, 15px);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.kukui-cp__primary {
+  background: var(--color-primary, #7b4324);
+  color: #ffffff;
+  border: none;
+}
+
+.kukui-cp__primary:hover:not(:disabled) {
+  background: var(--color-primary-hover, #9b5830);
+}
+
+.kukui-cp__primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.kukui-cp__secondary {
+  background: transparent;
+  color: var(--color-primary, #7b4324);
+  border: 2px solid var(--color-primary, #7b4324);
+}
+
+.kukui-cp__secondary:hover:not(:disabled) {
+  background: var(--color-primary-soft);
+}
+
+.kukui-cp__secondary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kukui-cp__dot {
+    transition: none;
+  }
+}

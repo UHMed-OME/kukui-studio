@@ -60,6 +60,7 @@ export type BuiltActivityKind =
   | "branching-scenario"
   | "image-annotation"
   | "concept-map"
+  | "course-presentation"
   | "interactive-video"
   | "audio-recording"
   | "video-reflection"
@@ -99,6 +100,7 @@ export const BUILT_ACTIVITY_KINDS: readonly BuiltActivityKind[] = [
   "branching-scenario",
   "image-annotation",
   "concept-map",
+  "course-presentation",
   "interactive-video",
   "audio-recording",
   "video-reflection",
