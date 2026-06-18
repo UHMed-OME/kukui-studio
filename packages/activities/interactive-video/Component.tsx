@@ -13,6 +13,7 @@ import { aggregate, resolveScoring } from "@kukui/core/scoring";
 import MultipleChoice from "@kukui/activities/multiple-choice/Component";
 import FillInTheBlanks from "@kukui/activities/fill-in-the-blanks/Component";
 import { ActivityHeader, SafeHtml } from "@kukui/core";
+import { YouTubeStage, type VideoController } from "./YouTubeStage.js";
 import "./Component.css";
 
 type Stage = "watching" | "submitted";
@@ -52,6 +53,7 @@ export default function Component({
 }: ActivityProps<InteractiveVideoConfig>) {
   const headingId = useId();
   const videoRef = useRef<HTMLVideoElement | null>(null);
+  const controllerRef = useRef<VideoController | null>(null);
 
   const validated = useMemo<ValidatedInteraction[]>(() => {
     const out: ValidatedInteraction[] = [];
@@ -134,7 +136,26 @@ export default function Component({
   const resumeLabel = ui.resumeButtonLabel ?? "Resume";
   const tryAgainLabel = "Try again";
   const videoType = config.video.type ?? "html5";
-  const isUnsupportedSource = videoType === "youtube" || videoType === "vimeo";
+  const isYouTube = videoType === "youtube";
+  const isVimeo = videoType === "vimeo";
+
+  // Unified control surface over the native <video> (html5) and the YouTube
+  // IFrame player, so the checkpoint logic is backend-agnostic.
+  const ctl = (): VideoController | null => {
+    if (isYouTube) return controllerRef.current;
+    const v = videoRef.current;
+    if (!v) return null;
+    return {
+      play: () => {
+        const p = v.play();
+        if (p && typeof p.catch === "function") p.catch(() => {});
+      },
+      pause: () => v.pause(),
+      seek: (s) => {
+        v.currentTime = s;
+      },
+    };
+  };
 
   const tryAgain = () => {
     setActiveId(null);
@@ -143,10 +164,7 @@ export default function Component({
       resolvedInteractions: {},
       currentTime: 0,
     });
-    const v = videoRef.current;
-    if (v) {
-      v.currentTime = 0;
-    }
+    ctl()?.seek(0);
   };
 
   // Internal: compute + emit the SCORM payload from a known-good snapshot
@@ -190,31 +208,34 @@ export default function Component({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [allRequiredResolved, state]);
 
-  const handleTimeUpdate = () => {
-    const v = videoRef.current;
-    if (!v) return;
-    const t = v.currentTime;
+  // Checkpoint evaluation for a given playback time. Driven by the native
+  // <video> timeupdate (html5) or the YouTube poll. Uses the unified `ctl()`
+  // for pause/seek so both backends behave identically.
+  const tick = (t: number) => {
     setState((s) => (s.currentTime === t ? s : { ...s, currentTime: t }));
     if (activeId !== null) return;
     if (state.stage !== "watching") return;
-    // First pass: in-window trigger (chronological order). If the learner
-    // seeks forward past an unresolved REQUIRED interaction, rewind to it
-    // and pause — mirrors handleEnded's behaviour, but mid-playback.
+    const c = ctl();
     for (const it of validated) {
       if (state.resolvedInteractions[it.id]) continue;
       if (Math.abs(t - it.atSeconds) < TRIGGER_WINDOW && t >= it.atSeconds - TRIGGER_WINDOW) {
-        v.pause();
+        c?.pause();
         setActiveId(it.id);
         return;
       }
       if (it.required && t > it.atSeconds + TRIGGER_WINDOW) {
         // Learner skipped past this required interaction. Seek back so the
         // overlay fires as playback re-enters its trigger window.
-        v.currentTime = Math.max(0, it.atSeconds - 0.5);
-        v.pause();
+        c?.seek(Math.max(0, it.atSeconds - 0.5));
+        c?.pause();
         return;
       }
     }
+  };
+
+  const handleTimeUpdate = () => {
+    const v = videoRef.current;
+    if (v) tick(v.currentTime);
   };
 
   const handlePlayPause = () => {
@@ -232,9 +253,10 @@ export default function Component({
     const unresolvedRequired = validated.find(
       (v) => v.required && !state.resolvedInteractions[v.id],
     );
-    if (unresolvedRequired && videoRef.current) {
-      videoRef.current.currentTime = Math.max(0, unresolvedRequired.atSeconds - 0.5);
-      videoRef.current.play().catch(() => {});
+    const c = ctl();
+    if (unresolvedRequired && c) {
+      c.seek(Math.max(0, unresolvedRequired.atSeconds - 0.5));
+      c.play();
       return;
     }
     finish();
@@ -249,12 +271,7 @@ export default function Component({
 
   const resume = () => {
     setActiveId(null);
-    const v = videoRef.current;
-    if (v && typeof v.play === "function") {
-      // Browsers return a promise from play(); ignore rejections (autoplay policy).
-      const p = v.play();
-      if (p && typeof p.catch === "function") p.catch(() => {});
-    }
+    ctl()?.play();
   };
 
   const active = activeId ? validated.find((v) => v.id === activeId) ?? null : null;
@@ -275,10 +292,20 @@ export default function Component({
         />
 
         <div className="kukui-iv__stage">
-          {isUnsupportedSource ? (
+          {isYouTube ? (
+            <YouTubeStage
+              src={config.video.src}
+              className="kukui-iv__video"
+              onController={(c) => {
+                controllerRef.current = c;
+              }}
+              onTick={tick}
+              onEnded={handleEnded}
+            />
+          ) : isVimeo ? (
             <div role="note" className="kukui-iv__placeholder">
-              {videoType === "youtube" ? "YouTube" : "Vimeo"} embeds are not yet
-              supported in this build. Use a hosted MP4 (type "html5") for now.
+              Vimeo embeds aren&rsquo;t supported yet — use a hosted MP4 (type
+              &ldquo;html5&rdquo;) or a YouTube URL.
             </div>
           ) : (
             <video

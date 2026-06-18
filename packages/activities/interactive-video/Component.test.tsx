@@ -192,15 +192,26 @@ describe("interactive-video Component", () => {
     expect(last).toMatch(/"q1"/);
   });
 
-  it("renders a placeholder note for YouTube/Vimeo sources (deferred)", () => {
+  it("mounts a YouTube player container for youtube sources", () => {
     const yt: InteractiveVideoConfig = {
       ...cfg,
-      video: { src: "https://youtube.com/watch?v=abc", type: "youtube" },
+      video: { src: "https://youtube.com/watch?v=abc12345678", type: "youtube" },
       interactions: [],
     };
     render(<Component config={yt} onSubmit={vi.fn()} />);
+    // No native <video>; the YouTube IFrame host div is mounted instead.
     expect(screen.queryByTestId("kukui-iv-video")).not.toBeInTheDocument();
-    expect(screen.getByText(/youtube embeds are not yet supported/i)).toBeInTheDocument();
+    expect(screen.getByTestId("kukui-iv-youtube")).toBeInTheDocument();
+  });
+
+  it("still shows a placeholder for Vimeo (not implemented)", () => {
+    const vm: InteractiveVideoConfig = {
+      ...cfg,
+      video: { src: "https://vimeo.com/123", type: "vimeo" },
+      interactions: [],
+    };
+    render(<Component config={vm} onSubmit={vi.fn()} />);
+    expect(screen.getByText(/vimeo embeds aren.t supported yet/i)).toBeInTheDocument();
   });
 
   it("seeking forward past an unresolved required interaction rewinds and pauses", () => {
