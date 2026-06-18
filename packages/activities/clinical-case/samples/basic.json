@@ -1,0 +1,243 @@
+{
+  "_comment": "Faithful transcription of Dr. Aytac's Week 1 Clinical Anatomy Case (cervicofacial subcutaneous emphysema). The original's inline style attributes and embedded SVG diagram are intentionally omitted — Kukui sanitizes author HTML, and color is owned by design tokens.",
+  "version": "1.0",
+  "title": "Post-procedure facial swelling — cervicofacial subcutaneous emphysema",
+  "course": "MDED-556L-012: MD 6 Locomotor System, Nervous System & Behavioral Problems",
+  "school": "John A. Burns School of Medicine",
+  "week": "Week 1",
+  "presentation": {
+    "label": "🩺 Clinical Presentation",
+    "title": "33-year-old female — Emergency Room",
+    "lead": "A patient arrives 2 hours after a root canal procedure with rapidly worsening right-sided facial and neck swelling. Review all findings carefully before proceeding.",
+    "chiefComplaint": "Rapid right-sided facial swelling and pain beginning approximately 1 hour after an endodontic (root canal) procedure. Swelling has progressed from the right buccal region down to the clavicle.",
+    "vitals": [
+      { "value": "97.6°F", "label": "Temperature", "flag": "normal", "flagText": "Normal" },
+      { "value": "144/67", "label": "BP (mmHg)", "flag": "watch", "flagText": "Elevated SBP" },
+      { "value": "87", "label": "Heart Rate (bpm)", "flag": "normal", "flagText": "Normal" },
+      { "value": "18", "label": "Resp. Rate (/min)", "flag": "normal", "flagText": "Normal" },
+      { "value": "98%", "label": "O₂ Saturation", "flag": "normal", "flagText": "Normal" }
+    ],
+    "examFindings": [
+      { "type": "present", "text": "<strong>Swelling:</strong> Non-erythematous, non-tender; extends from right buccal region to clavicle; follows cervical fascial planes" },
+      { "type": "present", "text": "<strong>Crepitus:</strong> Present on palpation — a crackling sensation under the skin" },
+      { "type": "present", "text": "<strong>Jaw symptoms:</strong> Pain on opening and with lateral excursion (trismus)" },
+      { "type": "present", "text": "<strong>Respiratory:</strong> Mild dyspnea; no dysphagia" },
+      { "type": "absent", "text": "<strong>Absent:</strong> No fever, no chills, no nausea, no headache, no systemic infection signs" }
+    ],
+    "labResults": [
+      { "text": "<strong>WBC:</strong> 4,450/µL (normal: 4,000–10,800/µL) — <strong>Within normal limits</strong>" },
+      { "text": "<strong>Neutrophil %:</strong> 66% (normal: 40–73%) — <strong>Within normal limits</strong>" },
+      { "text": "<strong>Neutrophil count:</strong> 2,750/µL (normal: 2,000–7,000/µL) — <strong>Within normal limits</strong>" }
+    ],
+    "reflectionPrompt": "💡 <strong>Stop and think:</strong> What does the combination of rapid swelling + crepitus + a recent dental procedure suggest? Why is the absence of fever and normal WBC clinically important? Formulate a working diagnosis before continuing."
+  },
+  "anatomy": {
+    "label": "🔬 Radiology + Anatomy",
+    "title": "CBCT Findings & Fascial Pathways",
+    "lead": "CBCT revealed radiolucency (air) extending into multiple fascial spaces, following the deep investing layer of the cervical fascia. The SCM outline was visible — indicating air is deep to this layer. Explore the anatomy below.",
+    "imagingFinding": "Air tracking was identified in the lateral pharyngeal, pterygomandibular, submandibular, and sub-masseteric spaces — all following the deep investing layer of the cervical fascia. The outline of the sternocleidomastoid muscle (SCM) was visible, confirming air is positioned deep to this layer.",
+    "spaces": [
+      { "name": "Pterygomandibular Space", "detail": "<strong>Boundaries:</strong> Medial pterygoid muscle (medially) · Mandibular ramus (laterally) · Pterygomandibular raphe (anteriorly). The inferior alveolar nerve and artery pass through here — direct route for air injected during root canal treatment." },
+      { "name": "Lateral Pharyngeal Space", "detail": "<strong>Boundaries:</strong> Pharyngeal constrictor muscles (medially) · Pterygoid muscles and parotid gland (laterally). Connects the oral cavity to the retropharyngeal space with direct routes toward the mediastinum." },
+      { "name": "Submandibular Space", "detail": "<strong>Boundaries:</strong> Mylohyoid muscle (superiorly) · Hyoid bone (inferiorly) · Mandible (laterally) · Anterior digastric belly (anteriorly). Explains why swelling extended all the way to the clavicle." },
+      { "name": "Sub-masseteric Space", "detail": "<strong>Boundaries:</strong> Lateral ramus of mandible (medially) · Masseter muscle (laterally). Air here compresses the masseter, producing trismus and the jaw pain on lateral excursion seen in this patient." }
+    ],
+    "notes": [
+      { "highlight": true, "text": "<strong>Deep investing layer:</strong> Surrounds SCM + trapezius; communicates with endothoracic fascia of the thorax — the pathway in this case. Particularly thick in the posterior triangle." },
+      { "highlight": false, "text": "<strong>Pretracheal fascia:</strong> Envelopes the anterior visceral compartment (trachea, thyroid gland, esophagus)" },
+      { "highlight": false, "text": "<strong>Prevertebral fascia:</strong> Surrounds the vertebral column and muscles of the vertebral column" },
+      { "highlight": false, "text": "<strong>Carotid sheath:</strong> Encloses the common and internal carotid artery, internal jugular vein, and vagus nerve" },
+      { "highlight": false, "text": "<strong>Alar fascia:</strong> Thin tissue in the retropharyngeal space — creates a danger space for further inferior spread" },
+      { "highlight": false, "text": "<strong>Buccopharyngeal fascia:</strong> Continuation of pretracheal fascia posteriorly around the visceral compartment" }
+    ]
+  },
+  "diagnosis": {
+    "label": "🔎 Diagnosis & Etiology",
+    "title": "Cervicofacial Subcutaneous Emphysema",
+    "lead": "This is a rare but potentially life-threatening complication of routine dental procedures. Air escaped under pressure from the dental handpiece into soft tissue planes.",
+    "keyFinding": "Crepitus on palpation — the characteristic crackling sensation felt when pressing on skin over trapped air — is considered pathognomonic for subcutaneous emphysema. It may not appear for several hours after the causative event, consistent with this patient's 1-hour post-procedure onset.",
+    "differential": [
+      { "verdict": "out", "text": "<strong>Soft tissue infection / Ludwig's angina:</strong> Excluded — normal WBC (4,450/µL), afebrile (97.6°F), no systemic infection signs. Infection would show elevated WBC, fever, and rapid systemic deterioration." },
+      { "verdict": "out", "text": "<strong>Angioedema / Allergic reaction:</strong> Excluded — no urticaria, no pruritus; swelling is unilateral and follows fascial planes; no systemic allergic signs." },
+      { "verdict": "out", "text": "<strong>Hematoma:</strong> Excluded — no discoloration; CBCT shows radiolucency (air = dark/black), not radiodensity (blood = white/bright)." },
+      { "verdict": "in", "text": "<strong>Subcutaneous emphysema — CONFIRMED:</strong> Crepitus on palpation, CBCT radiolucency tracking along cervical fascia, procedural history, rapid onset within 1 hour of treatment." }
+    ],
+    "causes": [
+      "High-speed dental handpiece",
+      "Air-water syringe",
+      "Tooth extractions",
+      "Subgingival curettage",
+      "Crown preparations",
+      "Blunt facial trauma",
+      "Gas-forming bacteria",
+      "Laparoscopic procedures"
+    ],
+    "management": [
+      { "urgent": true, "text": "<strong>Airway management — chief priority.</strong> Expanding air in cervical fascial planes can compromise the airway. Monitor O₂ saturation continuously." },
+      { "urgent": true, "text": "<strong>Antibiotic prophylaxis.</strong> Oral flora bacteria enter with trapped air and can rapidly establish abscess or cellulitis. Broad-spectrum antibiotics (e.g. penicillin for non-allergic patients) are indicated." },
+      { "urgent": true, "text": "<strong>Imaging and extent assessment.</strong> Determine if air has extended to the mediastinum (CBCT ± chest CT). If mediastinal involvement: urgent cardiothoracic surgery consult." },
+      { "urgent": true, "text": "<strong>Monitor for complications:</strong> Pneumomediastinum, pleural effusion, arrhythmia, cardiac tamponade, ischemia due to air emboli." },
+      { "urgent": false, "text": "<strong>Spontaneous resolution.</strong> Trapped air is naturally absorbed and excreted via the lungs within <strong>3–10 days</strong>. Monitor until fully resolved." }
+    ],
+    "references": [
+      "Rad MV, Chan EKY, Ahmed IH. Cervicofacial subcutaneous and pneumomediastinum secondary to dental treatment. <em>Respir Med Case Reports.</em> 2019;28:100918.",
+      "Jeong C, Yoon S, Chung S, et al. Subcutaneous emphysema related to dental procedures. <em>J Korean Assoc Oral Maxillofac Surg.</em> 2018;44:212–219.",
+      "Wong P, Palacios S, Kashtwari D. Managing subcutaneous emphysema following dental procedures. <em>Decisions in Dentistry.</em> 2017;3(9):36,39–41."
+    ]
+  },
+  "quiz": {
+    "label": "📋 Formative Assessment",
+    "title": "Test Your Understanding",
+    "lead": "Five questions based on this case. Answer each to receive immediate feedback.",
+    "questions": [
+      {
+        "id": "q1",
+        "question": "The patient's crepitus on palpation is best explained by which of the following?",
+        "options": [
+          "A. Accumulation of pus within the submandibular space",
+          "B. Subcutaneous air dissecting along fascial planes",
+          "C. Hematoma formation following vascular injury during the procedure",
+          "D. Tissue edema from an IgE-mediated allergic reaction"
+        ],
+        "correctIndex": 1,
+        "feedbackPerOption": [
+          "Incorrect. Pus accumulation causes firm, fluctuant swelling — not crepitus. Ludwig's angina would also present with fever, elevated WBC, and systemic signs.",
+          "Correct! Subcutaneous air produces the characteristic crackling/popping sensation (crepitus) when compressed. Crepitus is considered pathognomonic for subcutaneous emphysema.",
+          "Incorrect. A hematoma produces discoloration and firm non-compressible swelling. On CBCT, blood appears as radiodensity, not radiolucency. Crepitus is not a feature of hematoma.",
+          "Incorrect. IgE-mediated angioedema produces smooth, diffuse, non-crepitant swelling — typically bilateral, pruritic, and with systemic signs."
+        ]
+      },
+      {
+        "id": "q2",
+        "question": "The CBCT showed the sternocleidomastoid outline was clearly visible, with air positioned beneath it. Which fascial layer does this finding indicate was involved?",
+        "options": [
+          "A. Prevertebral fascia",
+          "B. Pretracheal fascia",
+          "C. Deep investing layer of the cervical fascia",
+          "D. Carotid sheath"
+        ],
+        "correctIndex": 2,
+        "feedbackPerOption": [
+          "Incorrect. The prevertebral fascia wraps the vertebral column and its associated muscles — it does not surround or define the contour of the SCM.",
+          "Incorrect. The pretracheal fascia envelopes the anterior visceral compartment (trachea, thyroid, esophagus) — not the SCM.",
+          "Correct! The deep investing layer of the cervical fascia specifically surrounds both the SCM and trapezius muscles. When air accumulates deep to this layer, it outlines the SCM on imaging — exactly what was seen on CBCT. This layer also communicates with the endothoracic fascia, enabling mediastinal spread.",
+          "Incorrect. The carotid sheath is a tubular fascial condensation containing the carotid artery, internal jugular vein, and vagus nerve. It does not encase the SCM."
+        ]
+      },
+      {
+        "id": "q3",
+        "question": "This patient's normal WBC count (4,450/µL) and absence of fever are most useful for excluding which condition from the differential?",
+        "options": [
+          "A. Hematoma",
+          "B. Subcutaneous emphysema",
+          "C. Acute odontogenic infection / Ludwig's angina",
+          "D. Angioedema"
+        ],
+        "correctIndex": 2,
+        "feedbackPerOption": [
+          "Incorrect. A hematoma is a vascular complication — it would not produce fever or leukocytosis. Normal WBC does not help differentiate hematoma from emphysema.",
+          "Incorrect. Subcutaneous emphysema does NOT cause elevated WBC or fever — in fact, normal labs support this diagnosis. Normal inflammatory markers are consistent with emphysema.",
+          "Correct! Acute bacterial infections such as Ludwig's angina, cellulitis, or abscess reliably produce fever, leukocytosis, and elevated neutrophil counts. The absence of all three strongly argues against an infectious process as the primary diagnosis.",
+          "Incorrect. Angioedema is a type I hypersensitivity reaction — it does not cause leukocytosis or fever. Normal labs do not specifically help rule out angioedema."
+        ]
+      },
+      {
+        "id": "q4",
+        "question": "Why is antibiotic prophylaxis initiated even though there are currently no signs of infection?",
+        "options": [
+          "A. The patient's history of asthma predisposes her to pulmonary infection",
+          "B. Oral flora bacteria introduced with the trapped air can rapidly establish abscess or cellulitis in fascial spaces",
+          "C. Antibiotics accelerate the reabsorption of subcutaneous air via the lungs",
+          "D. Penicillin physically seals the fascial planes and prevents further air spread"
+        ],
+        "correctIndex": 1,
+        "feedbackPerOption": [
+          "Incorrect. The history of childhood asthma is noted but is currently inactive and unrelated to the fascial emphysema. Asthma history does not indicate antibiotic prophylaxis here.",
+          "Correct! The dental procedure introduces pressurized air — along with oral microorganisms — directly into sterile fascial planes. The warm, nutrient-rich environment allows rapid bacterial growth. Oral flora (especially anaerobes and streptococci) can quickly establish abscess or cellulitis, justifying immediate prophylaxis.",
+          "Incorrect. Antibiotics have no effect on gas reabsorption. Air is gradually absorbed into surrounding capillaries and excreted via the lungs over 3–10 days — a passive physiological process.",
+          "Incorrect. Antibiotics are antimicrobial agents — they cannot physically seal fascial planes or alter the mechanical spread of air, which follows anatomical paths of least resistance."
+        ]
+      },
+      {
+        "id": "q5",
+        "question": "The deep investing layer of the cervical fascia communicates directly with which structure, making mediastinal spread a serious potential complication?",
+        "options": [
+          "A. Buccopharyngeal fascia",
+          "B. Endothoracic fascia of the thorax",
+          "C. Alar fascia of the retropharyngeal space",
+          "D. Periosteum of the clavicle"
+        ],
+        "correctIndex": 1,
+        "feedbackPerOption": [
+          "Incorrect. The buccopharyngeal fascia is a continuation of the pretracheal fascia posteriorly around the visceral compartment. It does not provide a direct pathway to the thorax.",
+          "Correct! The deep investing layer communicates inferiorly with the endothoracic fascia of the thorax. This anatomical continuity creates a direct conduit for air (or infection) to spread into the mediastinum — producing pneumomediastinum, a life-threatening complication requiring urgent monitoring and possible cardiothoracic surgery consultation.",
+          "Incorrect. The alar fascia in the retropharyngeal space creates a 'danger space' for posterior spread, but it is not the primary communication between the cervical investing layer and the thoracic cavity.",
+          "Incorrect. The periosteum of the clavicle is not a fascial layer and plays no role in facilitating communication between the cervical and thoracic compartments."
+        ]
+      }
+    ],
+    "scoreMessages": [
+      "Keep reviewing — revisit the anatomy and diagnosis sections before completing your activity.",
+      "Good effort — check the feedback on each missed question and review the relevant sections.",
+      "Solid understanding — a couple of areas to revisit before finalizing your activity.",
+      "Strong work — you have a good command of the case. Review any missed feedback.",
+      "Almost perfect — review the one missed question's feedback before proceeding.",
+      "Excellent — perfect score! You are well prepared to complete your chosen activity format."
+    ]
+  },
+  "activity": {
+    "label": "🎓 Your Learning Activity",
+    "title": "Choose Your Format",
+    "lead": "Select the format that best supports your learning. All formats address the same five required learning objectives — only the method differs.",
+    "objectives": [
+      { "text": "Identify all anatomical structures involved in the spread of air", "hint": "Name each fascial space and the layer serving as the conduit to the thorax" },
+      { "text": "Explain the anatomical basis of each symptom and sign", "hint": "Link crepitus, trismus, dyspnea, and the craniocaudal extent of swelling to specific structures" },
+      { "text": "Interpret the imaging findings using anatomical knowledge", "hint": "Explain why the SCM outline is visible on CBCT and what that indicates about fascial layer involvement" },
+      { "text": "Construct and justify a differential diagnosis", "hint": "Explain what evidence ruled in emphysema and ruled out infection, hematoma, and angioedema" },
+      { "text": "Describe the treatment rationale with anatomical reasoning", "hint": "Explain why airway management and antibiotics are prioritized given the fascial pathways involved" }
+    ],
+    "submissionPlatform": "Brightspace → Assignments → Clinical Case Week 1",
+    "formats": [
+      {
+        "id": "written",
+        "icon": "📄",
+        "name": "Written Case Analysis",
+        "desc": "A structured written response addressing each required objective in paragraph or outline form (400–600 words)",
+        "guidance": "Write 400–600 words organized around the five required objectives. Use clear section headings. Move logically: anatomy → symptoms → diagnosis → management. Cite at least 2 of the 3 provided references. Submit as a .PDF or Word document.",
+        "submission": "📤 Upload to Brightspace → Assignments → Clinical Case Week 1 before the Week 1 synchronous session."
+      },
+      {
+        "id": "concept",
+        "icon": "🗺️",
+        "name": "Concept Map",
+        "desc": "A diagram linking symptoms → anatomical structures → pathophysiology → clinical outcomes with labeled relationship arrows",
+        "guidance": "Use any tool: Lucidchart, Miro, draw.io, PowerPoint SmartArt, or hand-drawn (photographed clearly). Requirements: minimum 12 labeled nodes; every connection arrow must carry a relationship label (e.g. 'causes', 'enables spread to', 'rules out'). Color-coding by category is encouraged.",
+        "submission": "📤 Export as PNG or PDF. Upload to Brightspace → Assignments → Clinical Case Week 1."
+      },
+      {
+        "id": "annotated",
+        "icon": "🖼️",
+        "name": "Annotated Images",
+        "desc": "Annotated screenshots of the CBCT or 3D anatomy models with labeled structures and one-sentence clinical relevance notes",
+        "guidance": "Take screenshots from the 3D models and/or CBCT viewer in the case. Annotate using Preview (Mac), Paint/Photos (Windows), PowerPoint, or any annotation app. Each annotation must include: (1) the structure name, and (2) a one-sentence statement of clinical relevance. Minimum 4 annotated images.",
+        "submission": "📤 Export as PDF or a single combined image file. Upload to Brightspace → Assignments → Clinical Case Week 1."
+      },
+      {
+        "id": "video",
+        "icon": "🎥",
+        "name": "Video Explanation",
+        "desc": "A 3–5 minute recorded walkthrough explaining the anatomical basis of the patient's presentation to a peer",
+        "guidance": "Record a 3–5 minute video speaking through the case as if explaining it to a classmate. You may use annotated images, the 3D models, or the anatomy diagram as on-screen visual aids. No formal slides required. Tools: phone camera, Zoom recording, Loom, QuickTime, or similar.",
+        "submission": "📤 Upload the video file directly, or paste a shareable link (Loom, Google Drive) into the Brightspace assignment text box."
+      },
+      {
+        "id": "presentation",
+        "icon": "📊",
+        "name": "Small-Group Presentation",
+        "desc": "A 5–7 minute group presentation summarizing case findings, anatomy, and management (2–3 students per group)",
+        "guidance": "Form a group of 2–3 students. Prepare a 5–7 minute presentation for the Week 1 synchronous session. Divide the case so each member presents at least one section. Cover: patient presentation, anatomical pathway of air spread, differential diagnosis rationale, and management priorities.",
+        "submission": "📅 Register your group with the course coordinator before the deadline. Attendance and presentation during the synchronous session serves as your submission — no Brightspace upload required."
+      }
+    ]
+  }
+}
