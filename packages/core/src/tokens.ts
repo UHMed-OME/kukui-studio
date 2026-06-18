@@ -26,6 +26,10 @@ export const tokens = {
   primaryHover: "#9b5830",
   success: "#2e6e41",
   error: "#c34132",
+  /** Caution / "watch" / urgent — warm ochre. See docs/design-system.md. */
+  warning: "#8a5a12",
+  /** Neutral / informational — muted deep-ocean (kai) teal. */
+  info: "#1f6f78",
   tipBg: "#f2f0e8",
   /** 3D canvas backdrop — added 2026-05-06 for r3f scenes. */
   canvas3d: "#0b0b10",
@@ -42,6 +46,8 @@ export const tokensDark = {
   primaryHover: "#e6b693",
   success: "#86c79a",
   error: "#ed9183",
+  warning: "#e0b35e",
+  info: "#7fc3cc",
   tipBg: "#292524",
   canvas3d: "#000000",
 } as const;

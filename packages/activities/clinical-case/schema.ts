@@ -59,21 +59,41 @@ const Anatomy = z
     /** HTML — the key imaging finding narrative. */
     imagingFinding: z.string().optional(),
     /**
-     * Optional hosted anatomy diagram image. (The legacy builder embedded
-     * inline SVG; Kukui sanitizes HTML and strips SVG, so diagrams are hosted
-     * images referenced by URL.)
+     * Optional anatomy diagram — either a hosted image (`src`) or inline
+     * `svg` markup (rendered through @kukui/core's SafeSvg, which strips
+     * scripts/handlers/foreignObject). Provide at least one of the two.
      */
     diagram: z
       .object({
-        src: SAFE_MEDIA_URL,
-        /** Required alt text for the diagram (WCAG 1.1.1). */
+        /** Hosted image URL. */
+        src: SAFE_MEDIA_URL.optional(),
+        /** Inline SVG source. Sanitized at render. */
+        svg: z.string().min(1).optional(),
+        /** Required alt / accessible name for the diagram (WCAG 1.1.1). */
         alt: z.string().min(1),
         caption: z.string().optional(),
       })
       .strict()
+      .refine((d) => Boolean(d.src) || Boolean(d.svg), {
+        message: "diagram needs either an image src or inline svg",
+      })
       .optional(),
-    /** Plain-text legend entries describing the diagram. */
-    diagramLegend: z.array(z.object({ label: z.string().min(1) }).strict()).optional(),
+    /**
+     * Plain-text legend entries. Optional `tone` maps the swatch to a
+     * design token (color is paired with the label, never the sole signal).
+     */
+    diagramLegend: z
+      .array(
+        z
+          .object({
+            label: z.string().min(1),
+            tone: z
+              .enum(["primary", "success", "error", "warning", "info", "neutral"])
+              .optional(),
+          })
+          .strict(),
+      )
+      .optional(),
     /** Expandable anatomical-space cards: a name and an HTML detail body. */
     spaces: z
       .array(z.object({ name: z.string().min(1), detail: z.string().min(1) }).strict())

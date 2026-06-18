@@ -26,7 +26,7 @@ MIT. See `LICENSE`.
 
 ## Hard rules — apply to every artifact written in this repo
 
-1. **Follow the Kukui design system** (canonical at `docs/design-system.md`). Don't invent hex values, spacing, font sizes, or border widths that aren't in the documented tokens. Add tokens to the doc *before* using new values. WCAG 2.2 AA is non-negotiable for educational content.
+1. **Follow the Kukui design system** (canonical at `docs/design-system.md`). Reach for the documented semantic color ramps — `primary`, `success`, `error`, `warning`, `info` (each with a `-soft` fill) plus the neutrals — as the sanctioned way to make an activity vivid; that palette is meant to grow. Never inline a raw per-case hex (no author-supplied banner gradients or badge colors baked into JSON/CSS). When the palette genuinely lacks a hue, add a new token *first* — design-system.md table → every `[data-color-scheme]` block in all three `apps/*/src/styles.css` → the `tokens.ts` mirror — WCAG-audited (≥ 4.5:1 for text) across every scheme. Same rule for spacing, font sizes, and border widths: documented tokens only. WCAG 2.2 AA is non-negotiable for educational content.
 2. **Layout-stable interactions.** State changes (selected / correct / incorrect) must not reflow neighbors. Reserve space; change colors only. Border widths constant across states.
 3. **Tap targets ≥ 44 × 44 px** (WCAG 2.5.5).
 4. **Color is never the sole signal** — pair every color cue with text, icon, or position.

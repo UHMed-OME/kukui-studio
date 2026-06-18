@@ -26,7 +26,7 @@ export {
   type CompletionPayload,
   type ResultsDocument,
 } from "./web-results.js";
-export { SafeHtml, htmlToText, type SafeHtmlProps } from "./safe-html.js";
+export { SafeHtml, SafeSvg, htmlToText, type SafeHtmlProps, type SafeSvgProps } from "./safe-html.js";
 export { tokens, tokensDark, activeTokens, type ColorToken } from "./tokens.js";
 export {
   applyTheme,

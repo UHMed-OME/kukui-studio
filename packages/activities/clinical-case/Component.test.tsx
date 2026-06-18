@@ -179,6 +179,30 @@ describe("ClinicalCase", () => {
     expect(screen.getByText(/air crackles/i)).toBeInTheDocument();
   });
 
+  it("renders an inline SVG anatomy diagram and strips embedded scripts", async () => {
+    const user = userEvent.setup();
+    const withSvg: ClinicalCaseConfig = {
+      ...cfg,
+      anatomy: {
+        ...cfg.anatomy,
+        diagram: {
+          svg: '<svg viewBox="0 0 10 10"><rect width="10" height="10"/><script>alert(1)</script></svg>',
+          alt: "Air spread pathway diagram",
+        },
+        diagramLegend: [{ label: "Air origin", tone: "info" }],
+      },
+    };
+    const { container } = render(<Component config={withSvg} onSubmit={vi.fn()} />);
+    // Go to the Anatomy section (progress button index 1).
+    const nav = screen.getByRole("navigation", { name: /case sections/i });
+    await user.click(within(nav).getAllByRole("button")[1]!);
+
+    expect(container.querySelector("svg")).not.toBeNull();
+    expect(container.querySelector("svg rect")).not.toBeNull();
+    expect(container.querySelector("script")).toBeNull();
+    expect(screen.getByText(/Air origin/i)).toBeInTheDocument();
+  });
+
   it("renders the activity title as h2 when headingLevel=2", () => {
     render(<Component config={cfg} onSubmit={vi.fn()} headingLevel={2} />);
     expect(

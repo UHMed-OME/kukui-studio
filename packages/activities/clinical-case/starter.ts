@@ -38,6 +38,11 @@ const starter = {
       },
     ],
   },
+  // Seeded so Studio's RJSF form loads clean: z.toJSONSchema marks a
+  // .default() field as `required`, so AJV flags a missing `appearance`
+  // on load even though Zod fills the default. (Same pattern as
+  // isometric-chatroom's starter.)
+  appearance: { theme: "auto" },
 };
 
 export default starter;
