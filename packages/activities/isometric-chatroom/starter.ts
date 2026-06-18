@@ -62,6 +62,12 @@ const starter = {
   },
   emoji: {
     preset: "standard",
+    custom: [
+      { name: "Thumbs up", char: "👍" },
+      { name: "Thinking", char: "🤔" },
+      { name: "Clap", char: "👏" },
+      { name: "Question", char: "❓" },
+    ],
   },
   appearance: { theme: "auto" },
   live: {

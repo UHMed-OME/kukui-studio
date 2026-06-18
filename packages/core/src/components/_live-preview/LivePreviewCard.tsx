@@ -37,10 +37,12 @@ export function LivePreviewCard({
 
   return (
     <article className="kukui-live-preview" aria-labelledby={headingId}>
-      <span className="kukui-live-preview__badge">Live activity · {kindLabel}</span>
-      <HeadingTag id={headingId} className="kukui-live-preview__title">
-        {title}
-      </HeadingTag>
+      <header className="kukui-live-preview__header">
+        <span className="kukui-live-preview__badge">Live activity · {kindLabel}</span>
+        <HeadingTag id={headingId} className="kukui-live-preview__title">
+          {title}
+        </HeadingTag>
+      </header>
       <SafeHtml className="kukui-live-preview__prompt" html={prompt} />
 
       <p className="kukui-live-preview__hint">

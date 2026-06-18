@@ -10,10 +10,16 @@
   background: var(--color-surface, #ffffff);
   border: 1px solid var(--color-border, #dad2c6);
   border-radius: var(--radius-card, 12px);
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
 }
 
+/* Full-bleed gradient banner: the header band spans the full card width
+ * (the card has no padding) and the radius is clipped by overflow:hidden. */
 .kukui-qs__header {
-  padding: var(--spacing-lg, 16px) var(--spacing-3xl, 28px) 0;
+  padding: var(--spacing-2xl, 24px) var(--spacing-3xl, 28px);
+  margin-bottom: var(--spacing-lg, 16px);
+  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-hover));
 }
 
 .kukui-qs__title {
@@ -22,13 +28,13 @@
   font-size: var(--font-size-title, 22px);
   font-weight: 500;
   letter-spacing: -0.005em;
-  color: var(--color-text-primary);
+  color: #ffffff;
 }
 
 .kukui-qs__progress {
   margin: var(--spacing-xs, 4px) 0 0;
   font-size: var(--font-size-meta, 13px);
-  color: var(--color-text-secondary);
+  color: #ffffff;
 }
 
 .kukui-qs__body {

@@ -10,8 +10,8 @@ const starter = {
   panel: {
     name: "Sample panel",
     values: [
-      { id: "v1", analyte: "Analyte A", result: "10", isAbnormal: false },
-      { id: "v2", analyte: "Analyte B", result: "100", isAbnormal: true },
+      { id: "v1", analyte: "Analyte A", result: "10", flag: "normal", isAbnormal: false },
+      { id: "v2", analyte: "Analyte B", result: "100", flag: "high", isAbnormal: true },
     ],
   },
   interpretation: {
