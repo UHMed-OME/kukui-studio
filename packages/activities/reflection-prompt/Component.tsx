@@ -1,7 +1,7 @@
 import { useEffect, useId, useMemo, useState } from "react";
 import type { ReflectionPromptConfig } from "./schema.js";
 import type { ActivityProps } from "@kukui/core/types";
-import { SafeHtml } from "@kukui/core";
+import { ActivityHeader, SafeHtml } from "@kukui/core";
 import "./Component.css";
 
 type Stage = "writing" | "submitted";
@@ -53,8 +53,6 @@ function Component({
   suspendData,
   headingLevel = 1,
 }: ActivityProps<ReflectionPromptConfig>) {
-  const HeadingTag = `h${headingLevel}` as "h1" | "h2" | "h3";
-
   const [state, setState] = useState<State>(
     () => parseSuspend(suspendData) ?? { stage: "writing", text: "" },
   );
@@ -115,11 +113,13 @@ function Component({
   return (
     <div className="kukui-rp">
       <article className="kukui-rp__card" aria-labelledby={headingId}>
-        <HeadingTag id={headingId} className="kukui-rp__title">
-          {config.title}
-        </HeadingTag>
-
-        <SafeHtml html={config.prompt} className="kukui-rp__prompt" />
+        <ActivityHeader
+          title={config.title}
+          titleId={headingId}
+          headingLevel={headingLevel}
+          variant={config.appearance?.header ?? "full"}
+          prompt={config.prompt ? <SafeHtml html={config.prompt} /> : undefined}
+        />
 
         <label className="kukui-rp__sr-only" htmlFor={textareaId}>
           Your reflection

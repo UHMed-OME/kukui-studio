@@ -11,7 +11,7 @@ import {
 } from "react";
 import type { ConceptMapConfig } from "./schema.js";
 import type { ActivityProps } from "@kukui/core/types";
-import { SafeHtml } from "@kukui/core";
+import { ActivityHeader, SafeHtml } from "@kukui/core";
 import "./Component.css";
 
 type NodeShape = { id: string; label: string; position: { x: number; y: number } };
@@ -68,7 +68,6 @@ export default function Component({
   suspendData,
   headingLevel = 1,
 }: ActivityProps<ConceptMapConfig>) {
-  const HeadingTag = `h${headingLevel}` as "h1" | "h2" | "h3";
   const headingId = useId();
 
   const initial = useMemo<State>(
@@ -461,10 +460,13 @@ export default function Component({
   return (
     <div className="kukui-cm">
       <article className="kukui-cm__card" aria-labelledby={headingId}>
-        <HeadingTag id={headingId} className="kukui-cm__title">
-          {config.title}
-        </HeadingTag>
-        <SafeHtml html={config.prompt} className="kukui-cm__prompt" />
+        <ActivityHeader
+          title={config.title}
+          titleId={headingId}
+          headingLevel={headingLevel}
+          variant={config.appearance?.header ?? "full"}
+          prompt={config.prompt ? <SafeHtml html={config.prompt} /> : undefined}
+        />
 
         <div className="kukui-cm__toolbar" role="toolbar" aria-label="Concept map tools">
           <button

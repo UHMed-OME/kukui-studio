@@ -24,17 +24,9 @@
   padding: var(--spacing-3xl, 28px);
   overflow: hidden;
   box-shadow: var(--shadow-card);
-}
-
-.kukui-fc__title {
-  margin: calc(-1 * var(--spacing-3xl, 28px)) calc(-1 * var(--spacing-3xl, 28px)) var(--spacing-xl, 20px);
-  padding: var(--spacing-2xl, 24px) var(--spacing-3xl, 28px);
-  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-hover));
-  font-family: var(--font-family-display, "Iowan Old Style", "Apple Garamond", Baskerville, "Times New Roman", serif);
-  font-size: var(--font-size-title, 22px);
-  font-weight: 500;
-  letter-spacing: -0.005em;
-  color: #ffffff;
+  /* Card pads its children, so the shared ActivityHeader banner cancels this
+   * to bleed edge-to-edge (clipped to the radius by overflow:hidden). */
+  --kukui-card-pad: var(--spacing-3xl, 28px);
 }
 
 .kukui-fc__prompt {
@@ -405,6 +397,7 @@
 
   .kukui-fc__card-frame {
     padding: var(--spacing-lg, 16px);
+    --kukui-card-pad: var(--spacing-lg, 16px);
   }
 
   .kukui-fc__progress {

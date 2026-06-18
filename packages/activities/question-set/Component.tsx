@@ -12,6 +12,7 @@ import type { ActivityProps, ScoreState } from "@kukui/core/types";
 import { resolveScoring } from "@kukui/core/scoring";
 import MultipleChoice from "@kukui/activities/multiple-choice/Component";
 import FillInTheBlanks from "@kukui/activities/fill-in-the-blanks/Component";
+import { ActivityHeader } from "@kukui/core";
 import "./Component.css";
 
 type Stage = "answering" | "submitted";
@@ -58,7 +59,6 @@ export default function Component({
   suspendData,
   headingLevel = 1,
 }: ActivityProps<QuestionSetConfig>) {
-  const HeadingTag = `h${headingLevel}` as "h1" | "h2" | "h3";
   const headingId = useId();
 
   // Validate every nested config once. Drop invalid entries with a warning.
@@ -194,16 +194,20 @@ export default function Component({
   return (
     <div className="kukui-qs">
       <article className="kukui-qs__card" aria-labelledby={headingId}>
-        <header className="kukui-qs__header">
-          <HeadingTag id={headingId} className="kukui-qs__title">
-            {config.title}
-          </HeadingTag>
-          {showProgressBar ? (
+        <ActivityHeader
+          title={config.title}
+          titleId={headingId}
+          headingLevel={headingLevel}
+          variant={config.appearance?.header ?? "full"}
+        />
+
+        {showProgressBar ? (
+          <div className="kukui-qs__header">
             <p className="kukui-qs__progress" aria-live="polite">
               Question {state.current + 1} of {total}
             </p>
-          ) : null}
-        </header>
+          </div>
+        ) : null}
 
         {current ? (
           // key includes attempts so Try Again actually remounts the

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useId, useRef, useState } from "react";
 import type { AudioRecordingConfig } from "./schema.js";
-import { SafeHtml, type ActivityProps } from "@kukui/core";
+import { ActivityHeader, SafeHtml, type ActivityProps } from "@kukui/core";
 import "./Component.css";
 
 type Stage =
@@ -124,8 +124,6 @@ export default function Component({
   suspendData,
   headingLevel = 1,
 }: ActivityProps<AudioRecordingConfig>) {
-  const HeadingTag = `h${headingLevel}` as "h1" | "h2" | "h3";
-
   const headingId = useId();
 
   const maxSeconds = config.maxDurationSeconds ?? DEFAULT_MAX_SECONDS;
@@ -421,11 +419,13 @@ export default function Component({
   return (
     <div className="kukui-ar">
       <article className="kukui-ar__card" aria-labelledby={headingId}>
-        <HeadingTag id={headingId} className="kukui-ar__title">
-          {config.title}
-        </HeadingTag>
-
-        <SafeHtml html={config.prompt} className="kukui-ar__prompt" />
+        <ActivityHeader
+          title={config.title}
+          titleId={headingId}
+          headingLevel={headingLevel}
+          variant={config.appearance?.header ?? "full"}
+          prompt={config.prompt ? <SafeHtml html={config.prompt} /> : undefined}
+        />
 
         {config.referenceAudio ? (
           <div className="kukui-ar__reference">

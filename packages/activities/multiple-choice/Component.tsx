@@ -7,7 +7,7 @@ import {
   resolveScoring,
   scoreSelection,
 } from "@kukui/core/scoring";
-import { SafeHtml, htmlToText } from "@kukui/core";
+import { ActivityHeader, SafeHtml, htmlToText } from "@kukui/core";
 import "./Component.css";
 
 type Stage = "answering" | "submitted";
@@ -51,7 +51,6 @@ export function Component({
   suspendData,
   headingLevel = 1,
 }: ActivityProps<MultipleChoiceConfig>) {
-  const HeadingTag = `h${headingLevel}` as "h1" | "h2" | "h3";
   const [state, setState] = useState<State>(() => parseSuspend(suspendData) ?? initialState);
   const headingId = useId();
 
@@ -140,10 +139,13 @@ export function Component({
   return (
     <div className="kukui-mc">
       <article className="kukui-mc__card" aria-labelledby={headingId}>
-        <HeadingTag id={headingId} className="kukui-mc__title">
-          {config.title}
-        </HeadingTag>
-        <SafeHtml className="kukui-mc__question" html={config.question} />
+        <ActivityHeader
+          title={config.title}
+          titleId={headingId}
+          headingLevel={headingLevel}
+          variant={config.appearance?.header ?? "full"}
+          prompt={<SafeHtml html={config.question} />}
+        />
         {/* Drop the radiogroup ARIA role — implementing it correctly requires
             roving tabindex + arrow-key navigation, which we don't yet do.
             A plain group with aria-pressed buttons gives accurate semantics. */}

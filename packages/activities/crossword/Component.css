@@ -35,20 +35,7 @@
   box-shadow: var(--shadow-card);
   padding: var(--spacing-3xl, 28px);
   overflow: hidden;
-}
-
-.kukui-cw__title {
-  /* Full-bleed gradient banner: negative margins cancel the card's
-     padding so the band runs edge-to-edge; the card's overflow:hidden
-     clips the gradient corners to the radius. */
-  margin: calc(-1 * var(--spacing-3xl, 28px)) calc(-1 * var(--spacing-3xl, 28px)) var(--spacing-lg, 16px);
-  padding: var(--spacing-2xl, 24px) var(--spacing-3xl, 28px);
-  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-hover));
-  font-family: var(--font-family-display, "Iowan Old Style", "Apple Garamond", Baskerville, "Times New Roman", serif);
-  font-size: var(--font-size-title, 22px);
-  font-weight: 500;
-  letter-spacing: -0.005em;
-  color: #ffffff;
+  --kukui-card-pad: var(--spacing-3xl, 28px);
 }
 
 .kukui-cw__prompt {

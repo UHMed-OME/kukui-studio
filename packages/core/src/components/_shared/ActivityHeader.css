@@ -42,6 +42,15 @@
 .kukui-actheader--full {
   position: relative;
   overflow: hidden;
+  /*
+   * Bleed to the card edges. A card with uniform padding sets
+   * `--kukui-card-pad` to that padding so the banner's negative margins
+   * cancel it and the gradient spans edge-to-edge; the card must also set
+   * `overflow: hidden`. Cards that already pad their children (pad 0 on the
+   * card itself, e.g. clinical-case) leave the var at its 0 default.
+   */
+  margin: calc(-1 * var(--kukui-card-pad, 0px))
+    calc(-1 * var(--kukui-card-pad, 0px)) var(--kukui-header-gap, var(--spacing-xl, 20px));
   padding: var(--spacing-2xl, 24px) var(--spacing-3xl, 28px);
   background: linear-gradient(
     135deg,
@@ -49,6 +58,11 @@
     var(--color-primary-hover, #9b5830)
   );
   color: #ffffff;
+}
+
+.kukui-actheader--minimal {
+  margin: calc(-1 * var(--kukui-card-pad, 0px))
+    calc(-1 * var(--kukui-card-pad, 0px)) var(--kukui-header-gap, var(--spacing-xl, 20px));
 }
 
 .kukui-actheader--full .kukui-actheader__title {

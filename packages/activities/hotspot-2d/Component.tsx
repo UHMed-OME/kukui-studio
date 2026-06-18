@@ -1,7 +1,7 @@
 import { useEffect, useId, useMemo, useState } from "react";
 import type { Hotspot2DConfig } from "./schema.js";
 import type { ActivityProps } from "@kukui/core/types";
-import { SafeHtml } from "@kukui/core";
+import { ActivityHeader, SafeHtml } from "@kukui/core";
 import "./Component.css";
 
 type Stage = "answering" | "submitted";
@@ -27,7 +27,6 @@ export default function Component({
   suspendData,
   headingLevel = 1,
 }: ActivityProps<Hotspot2DConfig>) {
-  const HeadingTag = `h${headingLevel}` as "h1" | "h2" | "h3";
   const headingId = useId();
   const [state, setState] = useState<State>(
     () => parseSuspend(suspendData) ?? { stage: "answering", selectedHotspotId: null, attempts: 0 },
@@ -88,10 +87,13 @@ export default function Component({
   return (
     <div className="kukui-h2d">
       <article className="kukui-h2d__card" aria-labelledby={headingId}>
-        <HeadingTag id={headingId} className="kukui-h2d__title">
-          {config.title}
-        </HeadingTag>
-        <SafeHtml className="kukui-h2d__prompt" html={config.prompt} />
+        <ActivityHeader
+          title={config.title}
+          titleId={headingId}
+          headingLevel={headingLevel}
+          variant={config.appearance?.header ?? "full"}
+          prompt={config.prompt ? <SafeHtml html={config.prompt} /> : undefined}
+        />
 
         <div className="kukui-h2d__image-wrap">
           {config.image ? (

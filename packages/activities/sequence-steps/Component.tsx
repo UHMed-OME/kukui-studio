@@ -19,7 +19,7 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 import type { SequenceStepsConfig } from "@kukui/schemas";
 import type { ActivityProps } from "@kukui/core/types";
-import { SafeHtml } from "@kukui/core";
+import { ActivityHeader, SafeHtml } from "@kukui/core";
 import { resolveScoring } from "@kukui/core/scoring";
 import "./Component.css";
 
@@ -87,7 +87,6 @@ export function Component({
   suspendData,
   headingLevel = 1,
 }: ActivityProps<SequenceStepsConfig>) {
-  const HeadingTag = `h${headingLevel}` as "h1" | "h2" | "h3";
   const headingId = useId();
   const liveId = useId();
 
@@ -197,10 +196,13 @@ export function Component({
   return (
     <div className="kukui-seq">
       <article className="kukui-seq__card" aria-labelledby={headingId}>
-        <HeadingTag id={headingId} className="kukui-seq__title">
-          {config.title}
-        </HeadingTag>
-        <SafeHtml className="kukui-seq__prompt" html={config.prompt} />
+        <ActivityHeader
+          title={config.title}
+          titleId={headingId}
+          headingLevel={headingLevel}
+          variant={config.appearance?.header ?? "full"}
+          prompt={config.prompt ? <SafeHtml html={config.prompt} /> : undefined}
+        />
 
         <DndContext
           sensors={sensors}

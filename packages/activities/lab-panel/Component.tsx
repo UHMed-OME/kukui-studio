@@ -1,6 +1,6 @@
 import { useEffect, useId, useMemo, useState } from "react";
 import type { LabPanelConfig } from "./schema.js";
-import { bandMessage, percentage, scoreSelection, SafeHtml, htmlToText, type ActivityProps } from "@kukui/core";
+import { ActivityHeader, bandMessage, percentage, scoreSelection, SafeHtml, htmlToText, type ActivityProps } from "@kukui/core";
 import { resolveScoring } from "@kukui/core/scoring";
 import "./Component.css";
 
@@ -29,7 +29,6 @@ export default function Component({
   suspendData,
   headingLevel = 1,
 }: ActivityProps<LabPanelConfig>) {
-  const HeadingTag = `h${headingLevel}` as "h1" | "h2" | "h3";
   const [state, setState] = useState<State>(
     () => parseSuspend(suspendData) ?? initialState,
   );
@@ -154,10 +153,13 @@ export default function Component({
   return (
     <div className="kukui-lp">
       <article className="kukui-lp__card" aria-labelledby={headingId}>
-        <HeadingTag id={headingId} className="kukui-lp__title">
-          {config.title}
-        </HeadingTag>
-        <SafeHtml className="kukui-lp__prompt" html={config.prompt} />
+        <ActivityHeader
+          title={config.title}
+          titleId={headingId}
+          headingLevel={headingLevel}
+          variant={config.appearance?.header ?? "full"}
+          prompt={config.prompt ? <SafeHtml html={config.prompt} /> : undefined}
+        />
 
         <section
           className="kukui-lp__panel"

@@ -1,7 +1,7 @@
 import { useEffect, useId, useMemo, useState } from "react";
 import type { OSCEConfig } from "./schema.js";
 import type { ActivityProps, ScoreState } from "@kukui/core/types";
-import { aggregate, percentage, SafeHtml, htmlToText } from "@kukui/core";
+import { ActivityHeader, aggregate, percentage, SafeHtml, htmlToText } from "@kukui/core";
 import { resolveScoring } from "@kukui/core/scoring";
 import "./Component.css";
 
@@ -36,7 +36,6 @@ export default function Component({
   suspendData,
   headingLevel = 1,
 }: ActivityProps<OSCEConfig>) {
-  const HeadingTag = `h${headingLevel}` as "h1" | "h2" | "h3";
   const headingId = useId();
   const liveId = useId();
 
@@ -132,12 +131,16 @@ export default function Component({
   return (
     <div className="kukui-osce">
       <article className="kukui-osce__card" aria-labelledby={headingId}>
-        <header className="kukui-osce__header">
-          <HeadingTag id={headingId} className="kukui-osce__title">
-            {config.title}
-          </HeadingTag>
+        <ActivityHeader
+          title={config.title}
+          titleId={headingId}
+          headingLevel={headingLevel}
+          variant={config.appearance?.header ?? "full"}
+        />
+
+        <div className="kukui-osce__header">
           <SafeHtml className="kukui-osce__case-header" html={config.caseHeader} />
-        </header>
+        </div>
 
         <nav className="kukui-osce__stepper" aria-label="OSCE phases">
           <ol className="kukui-osce__stepper-list">

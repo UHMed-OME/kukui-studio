@@ -1,7 +1,7 @@
 import { useEffect, useId, useMemo, useState } from "react";
 import type { MatchingPairsConfig } from "./schema.js";
 import type { ActivityProps } from "@kukui/core/types";
-import { SafeHtml } from "@kukui/core";
+import { ActivityHeader, SafeHtml } from "@kukui/core";
 import { resolveScoring } from "@kukui/core/scoring";
 import "./Component.css";
 
@@ -58,7 +58,6 @@ function Component({
   suspendData,
   headingLevel = 1,
 }: ActivityProps<MatchingPairsConfig>) {
-  const HeadingTag = `h${headingLevel}` as "h1" | "h2" | "h3";
   const headingId = useId();
   const promptId = useId();
 
@@ -197,10 +196,13 @@ function Component({
   return (
     <div className="kukui-mp">
       <article className="kukui-mp__card" aria-labelledby={headingId} aria-describedby={promptId}>
-        <HeadingTag id={headingId} className="kukui-mp__title">
-          {config.title}
-        </HeadingTag>
-        <SafeHtml className="kukui-mp__prompt" html={config.prompt} as="div" />
+        <ActivityHeader
+          title={config.title}
+          titleId={headingId}
+          headingLevel={headingLevel}
+          variant={config.appearance?.header ?? "full"}
+          prompt={config.prompt ? <SafeHtml html={config.prompt} as="div" /> : undefined}
+        />
         <p
           id={promptId}
           className="kukui-mp__instructions"

@@ -13,7 +13,7 @@ import {
 } from "@dnd-kit/core";
 import type { AnatomyLabelingConfig } from "./schema.js";
 import type { ActivityProps } from "@kukui/core/types";
-import { SafeHtml } from "@kukui/core";
+import { ActivityHeader, SafeHtml } from "@kukui/core";
 import { resolveScoring } from "@kukui/core/scoring";
 import "./Component.css";
 
@@ -47,7 +47,6 @@ export default function Component({
   suspendData,
   headingLevel = 1,
 }: ActivityProps<AnatomyLabelingConfig>) {
-  const HeadingTag = `h${headingLevel}` as "h1" | "h2" | "h3";
   const headingId = useId();
 
   const initial = useMemo<State>(
@@ -199,10 +198,13 @@ export default function Component({
   return (
     <div className="kukui-al">
       <article className="kukui-al__card" aria-labelledby={headingId}>
-        <HeadingTag id={headingId} className="kukui-al__title">
-          {config.title}
-        </HeadingTag>
-        <SafeHtml html={config.prompt} className="kukui-al__prompt" />
+        <ActivityHeader
+          title={config.title}
+          titleId={headingId}
+          headingLevel={headingLevel}
+          variant={config.appearance?.header ?? "full"}
+          prompt={config.prompt ? <SafeHtml html={config.prompt} /> : undefined}
+        />
 
         <DndContext
           sensors={sensors}
