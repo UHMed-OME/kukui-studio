@@ -12,7 +12,7 @@ import type { ActivityProps, ScoreState } from "@kukui/core/types";
 import { aggregate, resolveScoring } from "@kukui/core/scoring";
 import MultipleChoice from "@kukui/activities/multiple-choice/Component";
 import FillInTheBlanks from "@kukui/activities/fill-in-the-blanks/Component";
-import { SafeHtml } from "@kukui/core";
+import { ActivityHeader, SafeHtml } from "@kukui/core";
 import "./Component.css";
 
 type Stage = "watching" | "submitted";
@@ -50,7 +50,6 @@ export default function Component({
   suspendData,
   headingLevel = 1,
 }: ActivityProps<InteractiveVideoConfig>) {
-  const HeadingTag = `h${headingLevel}` as "h1" | "h2" | "h3";
   const headingId = useId();
   const videoRef = useRef<HTMLVideoElement | null>(null);
 
@@ -263,14 +262,17 @@ export default function Component({
   return (
     <div className="kukui-iv">
       <article className="kukui-iv__card" aria-labelledby={headingId}>
-        <header className="kukui-iv__header">
-          <HeadingTag id={headingId} className="kukui-iv__title">
-            {config.title}
-          </HeadingTag>
-          {config.prompt ? (
-            <SafeHtml className="kukui-iv__prompt" html={config.prompt} />
-          ) : null}
-        </header>
+        <ActivityHeader
+          title={config.title}
+          titleId={headingId}
+          headingLevel={headingLevel}
+          variant={config.appearance?.header ?? "full"}
+          prompt={
+            config.prompt ? (
+              <SafeHtml className="kukui-iv__prompt" html={config.prompt} />
+            ) : undefined
+          }
+        />
 
         <div className="kukui-iv__stage">
           {isUnsupportedSource ? (

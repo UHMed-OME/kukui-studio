@@ -13,7 +13,7 @@ import {
 } from "@dnd-kit/core";
 import type { CategorizationConfig } from "./schema.js";
 import type { ActivityProps } from "@kukui/core/types";
-import { SafeHtml } from "@kukui/core";
+import { ActivityHeader, SafeHtml } from "@kukui/core";
 import { resolveScoring } from "@kukui/core/scoring";
 import "./Component.css";
 
@@ -35,7 +35,6 @@ export default function Component({
   suspendData,
   headingLevel = 1,
 }: ActivityProps<CategorizationConfig>) {
-  const HeadingTag = `h${headingLevel}` as "h1" | "h2" | "h3";
   const headingId = useId();
   const promptId = useId();
 
@@ -166,10 +165,13 @@ export default function Component({
         aria-labelledby={headingId}
         aria-describedby={promptId}
       >
-        <HeadingTag id={headingId} className="kukui-cat__title">
-          {config.title}
-        </HeadingTag>
-        <SafeHtml html={config.prompt} className="kukui-cat__prompt" />
+        <ActivityHeader
+          title={config.title}
+          titleId={headingId}
+          headingLevel={headingLevel}
+          variant={config.appearance?.header ?? "full"}
+          prompt={<SafeHtml html={config.prompt} />}
+        />
 
         <DndContext
           sensors={sensors}

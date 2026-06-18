@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
 import type { ImageAnnotationConfig } from "./schema.js";
 import type { ActivityProps } from "@kukui/core/types";
-import { SafeHtml } from "@kukui/core";
+import { ActivityHeader, SafeHtml } from "@kukui/core";
 import { resolveScoring } from "@kukui/core/scoring";
 import "./Component.css";
 
@@ -69,7 +69,6 @@ export default function Component({
   suspendData,
   headingLevel = 1,
 }: ActivityProps<ImageAnnotationConfig>) {
-  const HeadingTag = `h${headingLevel}` as "h1" | "h2" | "h3";
   const headingId = useId();
   const svgRef = useRef<SVGSVGElement>(null);
   const dragRef = useRef<Drag | null>(null);
@@ -259,10 +258,13 @@ export default function Component({
   return (
     <div className="kukui-ia">
       <article className="kukui-ia__card" aria-labelledby={headingId}>
-        <HeadingTag id={headingId} className="kukui-ia__title">
-          {config.title}
-        </HeadingTag>
-        <SafeHtml className="kukui-ia__prompt" html={config.prompt} />
+        <ActivityHeader
+          title={config.title}
+          titleId={headingId}
+          headingLevel={headingLevel}
+          variant={config.appearance?.header ?? "full"}
+          prompt={config.prompt ? <SafeHtml html={config.prompt} /> : undefined}
+        />
 
         <div
           className="kukui-ia__toolbar"

@@ -1,7 +1,7 @@
 import { useEffect, useId, useMemo, useState } from "react";
 import type { FlashcardsConfig } from "./schema.js";
 import type { ActivityProps } from "@kukui/core/types";
-import { SafeHtml, htmlToText } from "@kukui/core";
+import { ActivityHeader, SafeHtml, htmlToText } from "@kukui/core";
 import "./Component.css";
 
 type CardStatus = "knew" | "didnt" | "unanswered";
@@ -69,7 +69,6 @@ function Component({
   suspendData,
   headingLevel = 1,
 }: ActivityProps<FlashcardsConfig>) {
-  const HeadingTag = `h${headingLevel}` as "h1" | "h2" | "h3";
   const headingId = useId();
   const cardLiveId = useId();
   const progressLiveId = useId();
@@ -206,9 +205,12 @@ function Component({
   return (
     <div className="kukui-fc">
       <article className="kukui-fc__card-frame" aria-labelledby={headingId}>
-        <HeadingTag id={headingId} className="kukui-fc__title">
-          {config.title}
-        </HeadingTag>
+        <ActivityHeader
+          title={config.title}
+          titleId={headingId}
+          headingLevel={headingLevel}
+          variant={config.appearance?.header ?? "full"}
+        />
         {config.prompt ? (
           <SafeHtml className="kukui-fc__prompt" html={config.prompt} />
         ) : null}

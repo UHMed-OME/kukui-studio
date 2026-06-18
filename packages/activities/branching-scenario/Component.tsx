@@ -1,6 +1,6 @@
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import type { BranchingScenarioConfig } from "./schema.js";
-import { SafeHtml, htmlToText, type ActivityProps } from "@kukui/core";
+import { ActivityHeader, SafeHtml, htmlToText, type ActivityProps } from "@kukui/core";
 import "./Component.css";
 
 type State = {
@@ -24,7 +24,6 @@ export default function Component({
   suspendData,
   headingLevel = 1,
 }: ActivityProps<BranchingScenarioConfig>) {
-  const HeadingTag = `h${headingLevel}` as "h1" | "h2" | "h3";
   const headingId = useId();
 
   const initialState = useMemo<State>(
@@ -154,9 +153,12 @@ export default function Component({
   return (
     <div className="kukui-bs">
       <article className="kukui-bs__card" aria-labelledby={headingId}>
-        <HeadingTag id={headingId} className="kukui-bs__title">
-          {config.title}
-        </HeadingTag>
+        <ActivityHeader
+          title={config.title}
+          titleId={headingId}
+          headingLevel={headingLevel}
+          variant={config.appearance?.header ?? "full"}
+        />
 
         <SafeHtml className="kukui-bs__prompt" html={currentNode.prompt} />
 

@@ -20,33 +20,7 @@
   padding: var(--spacing-3xl, 28px);
   box-shadow: var(--shadow-card);
   overflow: hidden;
-}
-
-.kukui-cat__title {
-  /* Full-bleed gradient banner: negative margins pull the header to the card
-   * edges (card has overflow:hidden so the gradient clips to the radius). */
-  margin: calc(-1 * var(--spacing-3xl, 28px)) calc(-1 * var(--spacing-3xl, 28px))
-    var(--spacing-xl, 20px);
-  padding: var(--spacing-2xl, 24px) var(--spacing-3xl, 28px);
-  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-hover));
-  font-family: var(--font-family-display, "Iowan Old Style", "Apple Garamond", Baskerville, "Times New Roman", serif);
-  font-size: var(--font-size-title, 22px);
-  font-weight: 500;
-  letter-spacing: -0.005em;
-  color: #ffffff;
-}
-
-.kukui-cat__prompt {
-  margin: 0 0 var(--spacing-lg, 16px);
-  font-size: var(--font-size-answer, 15px);
-  color: var(--color-text-primary);
-}
-
-.kukui-cat__prompt p {
-  margin: 0 0 var(--spacing-sm, 8px);
-}
-.kukui-cat__prompt p:last-child {
-  margin-bottom: 0;
+  --kukui-card-pad: var(--spacing-3xl, 28px);
 }
 
 .kukui-cat__tray {

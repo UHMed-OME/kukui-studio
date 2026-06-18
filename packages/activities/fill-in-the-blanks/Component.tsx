@@ -2,6 +2,7 @@ import { useEffect, useId, useMemo, useState } from "react";
 import { parseClozeText, type FillInTheBlanksConfig } from "@kukui/schemas";
 import type { ActivityProps } from "@kukui/core/types";
 import { resolveScoring } from "@kukui/core/scoring";
+import { ActivityHeader } from "@kukui/core";
 import "./Component.css";
 
 type Stage = "answering" | "submitted";
@@ -68,7 +69,6 @@ export function Component({
   suspendData,
   headingLevel = 1,
 }: ActivityProps<FillInTheBlanksConfig>) {
-  const HeadingTag = `h${headingLevel}` as "h1" | "h2" | "h3";
   const segments = useMemo<Segment[]>(() => parseClozeText(config.text), [config.text]);
   const blanks = useMemo(
     () => segments.filter((s): s is Extract<Segment, { kind: "blank" }> => s.kind === "blank"),
@@ -160,9 +160,12 @@ export function Component({
   return (
     <div className="kukui-fib">
       <article className="kukui-fib__card" aria-labelledby={headingId}>
-        <HeadingTag id={headingId} className="kukui-fib__title">
-          {config.title}
-        </HeadingTag>
+        <ActivityHeader
+          title={config.title}
+          titleId={headingId}
+          headingLevel={headingLevel}
+          variant={config.appearance?.header ?? "full"}
+        />
         <div className="kukui-fib__text" aria-live="polite">
           {segments.map((seg, i) => {
             if (seg.kind === "text") {

@@ -8,7 +8,7 @@ import {
   type KeyboardEvent,
 } from "react";
 import type { CrosswordConfig } from "./schema.js";
-import { SafeHtml, type ActivityProps } from "@kukui/core";
+import { ActivityHeader, SafeHtml, type ActivityProps } from "@kukui/core";
 import {
   answerGrid,
   generateLayout,
@@ -71,7 +71,6 @@ export default function Component({
   suspendData,
   headingLevel = 1,
 }: ActivityProps<CrosswordConfig>) {
-  const HeadingTag = `h${headingLevel}` as "h1" | "h2" | "h3";
   const headingId = useId();
   const gridLiveId = useId();
 
@@ -417,12 +416,13 @@ export default function Component({
   return (
     <div className="kukui-cw">
       <article className="kukui-cw__frame" aria-labelledby={headingId}>
-        <HeadingTag id={headingId} className="kukui-cw__title">
-          {config.title}
-        </HeadingTag>
-        {config.prompt ? (
-          <SafeHtml className="kukui-cw__prompt" html={config.prompt} />
-        ) : null}
+        <ActivityHeader
+          title={config.title}
+          titleId={headingId}
+          headingLevel={headingLevel}
+          variant={config.appearance?.header ?? "full"}
+          prompt={config.prompt ? <SafeHtml html={config.prompt} /> : undefined}
+        />
 
         <div className="kukui-cw__progress" role="status" aria-live="polite" id={gridLiveId}>
           {state.submitted ? (

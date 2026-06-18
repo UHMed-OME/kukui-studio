@@ -1,7 +1,7 @@
 import { useId, useMemo, type CSSProperties, type ReactNode } from "react";
 import type { DragAndDropConfig } from "@kukui/schemas";
 import { resolveScoring } from "@kukui/core/scoring";
-import { SafeHtml } from "@kukui/core";
+import { ActivityHeader, SafeHtml } from "@kukui/core";
 import { Chip } from "./Chip.js";
 import { Zone } from "./Zone.js";
 import type { State } from "./state.js";
@@ -116,15 +116,20 @@ export function DnDActivity({
         aria-labelledby={headingId}
         aria-describedby={promptId}
       >
-        <HeadingTag id={headingId} className="kukui-dnd__title">
-          {config.title}
-        </HeadingTag>
-        <div id={promptId}>
-          <SafeHtml
-            html={config.prompt && config.prompt.trim().length > 0 ? config.prompt : DEFAULT_PROMPT}
-            className="kukui-dnd__prompt"
-          />
-        </div>
+        <ActivityHeader
+          title={config.title}
+          titleId={headingId}
+          headingLevel={Number(HeadingTag.slice(1)) as 1 | 2 | 3}
+          variant={config.appearance?.header ?? "full"}
+          prompt={
+            <div id={promptId}>
+              <SafeHtml
+                html={config.prompt && config.prompt.trim().length > 0 ? config.prompt : DEFAULT_PROMPT}
+                className="kukui-dnd__prompt"
+              />
+            </div>
+          }
+        />
         {announcerSlot}
         <div className="kukui-dnd__layout">
           <div

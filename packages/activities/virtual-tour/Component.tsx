@@ -5,7 +5,7 @@ import * as THREE from "three";
 import { HotspotPin } from "@kukui/core/components/_shared/HotspotPin";
 import type { VirtualTourConfig } from "./schema.js";
 import type { ActivityProps } from "@kukui/core/types";
-import { SafeHtml } from "@kukui/core";
+import { ActivityHeader, SafeHtml } from "@kukui/core";
 import "./Component.css";
 
 type Stage = "exploring" | "submitted";
@@ -31,7 +31,6 @@ export default function Component({
   suspendData,
   headingLevel = 1,
 }: ActivityProps<VirtualTourConfig>) {
-  const HeadingTag = `h${headingLevel}` as "h1" | "h2" | "h3";
   const headingId = useId();
   const overlayCloseRef = useRef<HTMLButtonElement | null>(null);
   const [state, setState] = useState<State>(
@@ -128,9 +127,12 @@ export default function Component({
   return (
     <div className="kukui-vt">
       <article className="kukui-vt__card" aria-labelledby={headingId}>
-        <HeadingTag id={headingId} className="kukui-vt__title">
-          {config.title}
-        </HeadingTag>
+        <ActivityHeader
+          title={config.title}
+          titleId={headingId}
+          headingLevel={headingLevel}
+          variant={config.appearance?.header ?? "full"}
+        />
 
         <VirtualTourScene
           config={config}

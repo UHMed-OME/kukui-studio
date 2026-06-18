@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useId, useRef, useState } from "react";
 import type { VideoReflectionConfig } from "./schema.js";
-import { SafeHtml, type ActivityProps } from "@kukui/core";
+import { ActivityHeader, SafeHtml, type ActivityProps } from "@kukui/core";
 import { cuesToVtt, transcribe, type Cue, type TranscribeProgress } from "./transcribe.js";
 import { burnCaptions, burnInSupported } from "./burn.js";
 import "./Component.css";
@@ -359,7 +359,6 @@ export default function Component({
   suspendData,
   headingLevel = 1,
 }: ActivityProps<VideoReflectionConfig>) {
-  const HeadingTag = `h${headingLevel}` as "h1" | "h2" | "h3";
   const headingId = useId();
 
   const maxSeconds = config.maxDurationSeconds ?? DEFAULT_MAX_SECONDS;
@@ -1195,11 +1194,13 @@ export default function Component({
   return (
     <div className="kukui-vr">
       <article className="kukui-vr__card" aria-labelledby={headingId}>
-        <HeadingTag id={headingId} className="kukui-vr__title">
-          {config.title}
-        </HeadingTag>
-
-        <SafeHtml html={config.prompt} className="kukui-vr__prompt" />
+        <ActivityHeader
+          title={config.title}
+          titleId={headingId}
+          headingLevel={headingLevel}
+          variant={config.appearance?.header ?? "full"}
+          prompt={config.prompt ? <SafeHtml html={config.prompt} /> : undefined}
+        />
 
         {/* Dedicated assertive announcer (not nested in the polite status
             region, which has undefined behavior across screen readers). */}

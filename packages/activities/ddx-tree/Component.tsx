@@ -1,7 +1,7 @@
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import type { DDxTreeConfig } from "./schema.js";
 import type { ActivityProps } from "@kukui/core/types";
-import { SafeHtml, htmlToText } from "@kukui/core";
+import { ActivityHeader, SafeHtml, htmlToText } from "@kukui/core";
 import "./Component.css";
 
 type State = {
@@ -25,7 +25,6 @@ export default function Component({
   suspendData,
   headingLevel = 1,
 }: ActivityProps<DDxTreeConfig>) {
-  const HeadingTag = `h${headingLevel}` as "h1" | "h2" | "h3";
   const headingId = useId();
   const caseHeaderId = useId();
 
@@ -155,9 +154,12 @@ export default function Component({
   return (
     <div className="kukui-ddx">
       <article className="kukui-ddx__card" aria-labelledby={headingId}>
-        <HeadingTag id={headingId} className="kukui-ddx__title">
-          {config.title}
-        </HeadingTag>
+        <ActivityHeader
+          title={config.title}
+          titleId={headingId}
+          headingLevel={headingLevel}
+          variant={config.appearance?.header ?? "full"}
+        />
 
         <section
           className="kukui-ddx__case-header"
