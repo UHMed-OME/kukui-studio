@@ -33,6 +33,10 @@ const APPEARANCE = {
     "Color scheme",
     "How the activity looks on the learner's screen. \"Auto\" lets the OS decide; pick a specific scheme to override the learner's preference.",
   ),
+  header: f(
+    "Header style",
+    "Full = gradient banner with the kukui mark; Minimal = a plain title block.",
+  ),
 } as const;
 
 const COMMON = {

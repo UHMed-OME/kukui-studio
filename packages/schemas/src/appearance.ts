@@ -42,6 +42,9 @@ export const THEME_VALUES = [
 
 export type Theme = (typeof THEME_VALUES)[number];
 
+export const HEADER_STYLES = ["full", "minimal"] as const;
+export type HeaderStyle = (typeof HEADER_STYLES)[number];
+
 export const AppearanceSchema = z
   .object({
     /**
@@ -52,6 +55,15 @@ export const AppearanceSchema = z
      * on parse; existing JSON with `theme: "dark"` is preserved.
      */
     theme: z.enum(THEME_VALUES).default("auto"),
+    /**
+     * Header treatment for the activity's shared ActivityHeader:
+     * "full" = gradient banner with the kukui watermark; "minimal" = a
+     * plain titled block. Optional (NOT defaulted): a `.default()` here
+     * would become `required` in z.toJSONSchema and trip AJV on every
+     * activity whose `appearance` default literal omits it. Consumers
+     * read `appearance?.header ?? "full"`.
+     */
+    header: z.enum(HEADER_STYLES).optional(),
   })
   .strict();
 

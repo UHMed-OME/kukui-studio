@@ -1,0 +1,104 @@
+/*
+ * Canonical activity header. "full" = gradient banner + candlenut watermark
+ * (white text); "minimal" = plain titled block. Place as the first child of
+ * an overflow-hidden card with zero top padding so "full" bleeds edge-to-edge
+ * and clips to the card radius. Tokens only; sole raw hex is #ffffff on the
+ * gradient (matches the primary-button convention).
+ */
+
+.kukui-actheader__row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--spacing-md, 12px);
+}
+
+.kukui-actheader__title {
+  margin: 0;
+  font-family: var(--font-family-display, "Iowan Old Style", "Apple Garamond", Baskerville, "Times New Roman", serif);
+  font-size: var(--font-size-title, 22px);
+  font-weight: 600;
+  letter-spacing: -0.005em;
+}
+
+.kukui-actheader__badge {
+  flex: 0 0 auto;
+  margin-top: 2px;
+}
+
+.kukui-actheader__meta {
+  margin: var(--spacing-sm, 8px) 0 0;
+  font-size: var(--font-size-meta, 13px);
+}
+
+.kukui-actheader__prompt {
+  margin-top: var(--spacing-sm, 8px);
+  font-size: var(--font-size-prompt, 16px);
+  line-height: 1.5;
+}
+
+/* Full (gradient banner) ---------------------------------------------------- */
+
+.kukui-actheader--full {
+  position: relative;
+  overflow: hidden;
+  padding: var(--spacing-2xl, 24px) var(--spacing-3xl, 28px);
+  background: linear-gradient(
+    135deg,
+    var(--color-primary, #7b4324),
+    var(--color-primary-hover, #9b5830)
+  );
+  color: #ffffff;
+}
+
+.kukui-actheader--full .kukui-actheader__title {
+  color: #ffffff;
+}
+
+.kukui-actheader--full .kukui-actheader__meta {
+  color: #ffffff;
+  opacity: 0.9;
+}
+
+.kukui-actheader--full .kukui-actheader__prompt {
+  color: #ffffff;
+  opacity: 0.95;
+}
+
+/* Candlenut watermark — bleeds off the right edge, subtle brand signal. */
+.kukui-actheader__glyph {
+  position: absolute;
+  right: -18px;
+  top: 50%;
+  transform: translateY(-50%) rotate(-12deg);
+  width: 120px;
+  height: 120px;
+  color: #ffffff;
+  opacity: 0.12;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.kukui-actheader--full > :not(.kukui-actheader__glyph) {
+  position: relative;
+  z-index: 1;
+}
+
+/* Minimal (plain titled block) --------------------------------------------- */
+
+.kukui-actheader--minimal {
+  padding: var(--spacing-2xl, 24px) var(--spacing-3xl, 28px);
+  border-bottom: 1px solid var(--color-border, #dad2c6);
+}
+
+.kukui-actheader--minimal .kukui-actheader__title {
+  color: var(--color-text-primary, #1c1e20);
+}
+
+.kukui-actheader--minimal .kukui-actheader__meta {
+  color: var(--color-text-secondary, #606069);
+}
+
+.kukui-actheader--minimal .kukui-actheader__prompt {
+  color: var(--color-text-primary, #1c1e20);
+}

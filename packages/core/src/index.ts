@@ -27,6 +27,24 @@ export {
   type ResultsDocument,
 } from "./web-results.js";
 export { SafeHtml, SafeSvg, htmlToText, type SafeHtmlProps, type SafeSvgProps } from "./safe-html.js";
+export {
+  ActivityHeader,
+  type ActivityHeaderProps,
+  type ActivityHeaderVariant,
+} from "./components/_shared/ActivityHeader.js";
+export {
+  StatusBadge,
+  type StatusBadgeProps,
+  type StatusTone,
+} from "./components/_shared/StatusBadge.js";
+export {
+  KukuiGlyphIcon,
+  CheckIcon,
+  XIcon,
+  DotIcon,
+  ClockIcon,
+  TrophyIcon,
+} from "./components/_shared/icons.js";
 export { tokens, tokensDark, activeTokens, type ColorToken } from "./tokens.js";
 export {
   applyTheme,

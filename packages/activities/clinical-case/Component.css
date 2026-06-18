@@ -35,33 +35,7 @@
   border: 0;
 }
 
-/* Banner header ------------------------------------------------------------ */
-
-.kukui-ccase__banner {
-  padding: var(--spacing-2xl, 24px) var(--spacing-3xl, 28px);
-  background: linear-gradient(
-    135deg,
-    var(--color-primary, #7b4324) 0%,
-    var(--color-primary-hover, #9b5830) 100%
-  );
-  color: #ffffff;
-}
-
-.kukui-ccase__title {
-  margin: 0;
-  font-family: var(--font-family-display, "Iowan Old Style", "Apple Garamond", Baskerville, "Times New Roman", serif);
-  font-size: var(--font-size-title, 22px);
-  font-weight: 600;
-  letter-spacing: -0.005em;
-  color: #ffffff;
-}
-
-.kukui-ccase__meta {
-  margin: var(--spacing-sm, 8px) 0 0;
-  font-size: var(--font-size-meta, 13px);
-  color: #ffffff;
-  opacity: 0.9;
-}
+/* Header is the shared @kukui/core <ActivityHeader>. */
 
 .kukui-ccase__credit {
   margin: 0;
