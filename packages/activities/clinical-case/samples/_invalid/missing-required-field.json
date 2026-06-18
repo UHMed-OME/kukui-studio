@@ -1,0 +1,15 @@
+{
+  "_comment": "Negative fixture — presentation.title is missing, so the schema must reject this.",
+  "version": "1.0",
+  "title": "Invalid clinical case (missing presentation.title)",
+  "presentation": {
+    "chiefComplaint": "<p>Chief complaint without a section title.</p>"
+  },
+  "anatomy": { "title": "Anatomy" },
+  "diagnosis": { "title": "Diagnosis" },
+  "quiz": {
+    "questions": [
+      { "id": "q1", "question": "A question?", "options": ["A", "B"], "correctIndex": 0 }
+    ]
+  }
+}

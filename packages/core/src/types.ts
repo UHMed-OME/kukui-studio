@@ -66,6 +66,7 @@ export type BuiltActivityKind =
   | "lab-panel"
   | "ddx-tree"
   | "osce"
+  | "clinical-case"
   | "crossword"
   | "straw-poll"
   | "confidence-meter"
@@ -104,6 +105,7 @@ export const BUILT_ACTIVITY_KINDS: readonly BuiltActivityKind[] = [
   "lab-panel",
   "ddx-tree",
   "osce",
+  "clinical-case",
   "crossword",
   "straw-poll",
   "confidence-meter",

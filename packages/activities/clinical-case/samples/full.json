@@ -1,0 +1,121 @@
+{
+  "_comment": "Feature showcase — exercises every optional field (diagram image, legend, scoring bands, appearance pin). Not a real teaching case.",
+  "version": "1.0",
+  "title": "Full-feature clinical anatomy case",
+  "author": "Dr. Example",
+  "course": "ANAT-101",
+  "school": "Example School of Medicine",
+  "week": "Week 2",
+  "presentation": {
+    "label": "🩺 Presentation",
+    "title": "Patient presentation",
+    "lead": "<p>Every presentation field is populated here.</p>",
+    "chiefComplaint": "<p>Chief complaint with <strong>emphasis</strong> and an <em>aside</em>.</p>",
+    "vitals": [
+      { "value": "98.6°F", "label": "Temperature", "flag": "normal", "flagText": "Normal" },
+      { "value": "160/95", "label": "BP (mmHg)", "flag": "watch", "flagText": "Elevated" },
+      { "value": "82%", "label": "O₂ Saturation", "flag": "alert", "flagText": "Hypoxic" }
+    ],
+    "examFindings": [
+      { "type": "present", "text": "<strong>Present:</strong> a positive finding" },
+      { "type": "absent", "text": "<strong>Absent:</strong> a pertinent negative" },
+      { "type": "neutral", "text": "<strong>Note:</strong> contextual observation" }
+    ],
+    "labResults": [{ "text": "<strong>WBC:</strong> 12,000/µL — elevated" }],
+    "reflectionPrompt": "💡 <strong>Stop and think:</strong> what is your differential?"
+  },
+  "anatomy": {
+    "label": "🔬 Anatomy",
+    "title": "Relevant anatomy",
+    "lead": "<p>Imaging and fascial pathways.</p>",
+    "imagingFinding": "<p>Key imaging finding described here.</p>",
+    "diagram": {
+      "src": "https://example.org/anatomy-diagram.png",
+      "alt": "Schematic of air spread from the procedural origin through fascial spaces toward the mediastinum.",
+      "caption": "Replace with a hosted diagram image — inline SVG is not supported."
+    },
+    "diagramLegend": [
+      { "label": "Air origin" },
+      { "label": "Primary spaces affected" },
+      { "label": "Danger zone" }
+    ],
+    "spaces": [{ "name": "Example space", "detail": "<strong>Boundaries:</strong> described here." }],
+    "notes": [
+      { "highlight": true, "text": "<strong>Key note:</strong> the load-bearing fact." },
+      { "highlight": false, "text": "A supporting note." }
+    ]
+  },
+  "diagnosis": {
+    "label": "🔎 Diagnosis",
+    "title": "Diagnosis & management",
+    "lead": "<p>Working through the differential.</p>",
+    "keyFinding": "<p>The pathognomonic finding.</p>",
+    "differential": [
+      { "verdict": "out", "text": "<strong>Alternative:</strong> excluded because …" },
+      { "verdict": "in", "text": "<strong>Diagnosis:</strong> confirmed because …" }
+    ],
+    "causes": ["Cause one", "Cause two", "Cause three"],
+    "management": [
+      { "urgent": true, "text": "<strong>Priority:</strong> airway first." },
+      { "urgent": false, "text": "Routine follow-up." }
+    ],
+    "references": ["Author A, Author B. Title. <em>Journal.</em> 2024;1:1–10."]
+  },
+  "quiz": {
+    "label": "📋 Quiz",
+    "title": "Check your understanding",
+    "lead": "<p>Answer for immediate feedback.</p>",
+    "questions": [
+      {
+        "id": "q1",
+        "question": "Which option is correct?",
+        "options": ["A. Distractor", "B. Correct answer", "C. Another distractor"],
+        "correctIndex": 1,
+        "feedbackPerOption": [
+          "Not quite — here is why.",
+          "Correct — here is the reasoning.",
+          "Not quite — here is why."
+        ]
+      }
+    ],
+    "scoreMessages": ["Review the material.", "Perfect — well done!"]
+  },
+  "activity": {
+    "label": "🎓 Activity",
+    "title": "Choose your format",
+    "lead": "<p>All formats meet the same objectives.</p>",
+    "objectives": [
+      { "text": "Identify the involved structures", "hint": "Name each one" },
+      { "text": "Justify the diagnosis", "hint": "Cite the evidence" }
+    ],
+    "submissionPlatform": "Brightspace → Assignments",
+    "formats": [
+      {
+        "id": "written",
+        "icon": "📄",
+        "name": "Written analysis",
+        "desc": "A short written response",
+        "guidance": "<p>Write 400–600 words.</p>",
+        "submission": "<p>Upload a PDF.</p>"
+      },
+      {
+        "id": "video",
+        "icon": "🎥",
+        "name": "Video explanation",
+        "desc": "A short recorded walkthrough",
+        "guidance": "<p>Record 3–5 minutes.</p>"
+      }
+    ]
+  },
+  "scoring": {
+    "mode": "points",
+    "passPercentage": 60,
+    "enableRetry": true,
+    "enableSolutionsButton": false,
+    "bands": [
+      { "from": 0, "to": 59, "message": "Keep reviewing." },
+      { "from": 60, "to": 100, "message": "Nicely done." }
+    ]
+  },
+  "appearance": { "theme": "auto" }
+}
