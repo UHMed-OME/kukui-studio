@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import { ActivityHeader } from "./ActivityHeader.js";
 import { StatusBadge } from "./StatusBadge.js";
-import { CheckIcon } from "./icons.js";
+import { CheckIcon, ActivityIcon } from "./icons.js";
 
 describe("ActivityHeader", () => {
   it("full variant renders a gradient banner with the kukui watermark", () => {
@@ -51,6 +51,13 @@ describe("StatusBadge", () => {
     expect(out).toContain("Passed");
     expect(out).toContain("kukui-badge__icon");
     expect(out).toContain("<svg");
+  });
+
+  it("ActivityIcon renders an emoji as text and a glyph code as a tinted svg", () => {
+    expect(renderToStaticMarkup(<ActivityIcon value="🩺" />)).toContain("🩺");
+    const glyph = renderToStaticMarkup(<ActivityIcon value="glyph:trophy:success" />);
+    expect(glyph).toContain("<svg");
+    expect(glyph).toContain("var(--color-success)");
   });
 
   it("defaults to neutral and supports the on-dark variant", () => {

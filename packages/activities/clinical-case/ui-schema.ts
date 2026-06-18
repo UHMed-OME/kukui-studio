@@ -53,6 +53,7 @@ const uiSchema = {
   ...COMMON,
   "ui:order": [
     "title",
+    "icon",
     "author",
     "course",
     "school",
@@ -65,6 +66,9 @@ const uiSchema = {
     "*",
   ],
   title: TITLE,
+  icon: f("Header icon", "Pick an emoji or a coloured glyph.", {
+    "ui:widget": "iconPicker",
+  }),
   author: AUTHOR,
   course: f("Course (optional)", "Course code or name shown in the banner."),
   school: f("School (optional)"),

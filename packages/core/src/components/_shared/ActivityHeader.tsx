@@ -13,6 +13,8 @@ export type ActivityHeaderProps = {
   meta?: ReactNode;
   /** Optional sub-content under the title (e.g. a sanitized prompt). */
   prompt?: ReactNode;
+  /** Leading icon before the title (e.g. <ActivityIcon value={config.icon} />). */
+  icon?: ReactNode;
   /** Right-slot, typically a <StatusBadge>. */
   badge?: ReactNode;
   /**
@@ -40,6 +42,7 @@ export function ActivityHeader({
   headingLevel = 1,
   meta,
   prompt,
+  icon,
   badge,
   variant = "full",
   className,
@@ -59,6 +62,7 @@ export function ActivityHeader({
         <KukuiGlyphIcon className="kukui-actheader__glyph" aria-hidden="true" />
       ) : null}
       <div className="kukui-actheader__row">
+        {icon ? <span className="kukui-actheader__icon" aria-hidden="true">{icon}</span> : null}
         <HeadingTag id={titleId} className="kukui-actheader__title">
           {title}
         </HeadingTag>

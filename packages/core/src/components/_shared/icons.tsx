@@ -1,4 +1,4 @@
-import type { SVGProps } from "react";
+import type { ReactElement, SVGProps } from "react";
 
 /**
  * Shared inline icons for activity chrome (status badges, headers).
@@ -79,6 +79,51 @@ export function ClockIcon(props: IconProps) {
 }
 
 /** Trophy — for "complete" / passed. */
+const GLYPHS: Record<string, (p: IconProps) => ReactElement> = {
+  kukui: KukuiGlyphIcon,
+  check: CheckIcon,
+  x: XIcon,
+  dot: DotIcon,
+  clock: ClockIcon,
+  trophy: TrophyIcon,
+};
+
+const TONE_VAR: Record<string, string> = {
+  primary: "var(--color-primary)",
+  success: "var(--color-success)",
+  warning: "var(--color-warning)",
+  info: "var(--color-info)",
+  error: "var(--color-error)",
+  neutral: "var(--color-text-secondary)",
+};
+
+/**
+ * Renders an author-chosen icon value (from the Studio IconPicker). The value
+ * is either a plain emoji (e.g. "🩺") rendered as text, or a token-glyph code
+ * `glyph:<name>:<tone>` (e.g. "glyph:trophy:success") rendered as the named
+ * stroke icon tinted with a design token. Colour comes from a token only.
+ */
+export function ActivityIcon({ value, className }: { value: string; className?: string }) {
+  if (value.startsWith("glyph:")) {
+    const [, name = "dot", tone = "primary"] = value.split(":");
+    const Glyph = GLYPHS[name] ?? DotIcon;
+    return (
+      <span
+        className={className}
+        aria-hidden="true"
+        style={{ color: TONE_VAR[tone] ?? TONE_VAR.primary, display: "inline-flex" }}
+      >
+        <Glyph />
+      </span>
+    );
+  }
+  return (
+    <span className={className} aria-hidden="true">
+      {value}
+    </span>
+  );
+}
+
 export function TrophyIcon(props: IconProps) {
   return base(props, (
     <>
