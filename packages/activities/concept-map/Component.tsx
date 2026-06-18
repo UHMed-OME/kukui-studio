@@ -11,7 +11,13 @@ import {
 } from "react";
 import type { ConceptMapConfig } from "./schema.js";
 import type { ActivityProps } from "@kukui/core/types";
-import { ActivityHeader, SafeHtml } from "@kukui/core";
+import {
+  ActivityHeader,
+  SafeHtml,
+  StatusBadge,
+  DotIcon,
+  CheckIcon,
+} from "@kukui/core";
 import "./Component.css";
 
 type NodeShape = { id: string; label: string; position: { x: number; y: number } };
@@ -114,6 +120,19 @@ export default function Component({
   }, [state.nodes, state.edges, onPersist]);
 
   const submitted = state.stage === "submitted";
+
+  // Header badge: completion-only — "Complete" once the map is submitted,
+  // "In progress" while the learner is still building. Additive; leaves the
+  // heading/roles untouched.
+  const headerBadge = submitted ? (
+    <StatusBadge tone="success" icon={<CheckIcon />}>
+      Complete
+    </StatusBadge>
+  ) : (
+    <StatusBadge tone="neutral" icon={<DotIcon />}>
+      In progress
+    </StatusBadge>
+  );
 
   const toNormalized = useCallback((clientX: number, clientY: number) => {
     const el = canvasRef.current;
@@ -466,6 +485,7 @@ export default function Component({
           headingLevel={headingLevel}
           variant={config.appearance?.header ?? "full"}
           prompt={config.prompt ? <SafeHtml html={config.prompt} /> : undefined}
+          badge={headerBadge}
         />
 
         <div className="kukui-cm__toolbar" role="toolbar" aria-label="Concept map tools">

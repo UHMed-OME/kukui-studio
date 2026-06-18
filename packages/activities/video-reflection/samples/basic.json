@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "title": "Reflection: a patient encounter that challenged you",
+  "title": "🎬 Reflection: a patient encounter that challenged you",
   "prompt": "<p>Record a short reflection (1–2 minutes) on a recent patient encounter that challenged you. What happened, how did you respond, and what would you do differently next time?</p><p>You can record yourself talking, and on a laptop you may also share your screen if you want to walk through notes.</p>",
   "submissionTarget": "the Reflection 1 dropbox in Lamakū",
   "maxDurationSeconds": 120,

@@ -31,6 +31,7 @@ export default function Component({
       description={`Students drag a slider from ${scale.min}${unit} to ${scale.max}${unit}; the instructor sees a real-time histogram + mean. Open this in Kukui Live during class.`}
       onSubmit={onSubmit}
       headingLevel={headingLevel}
+      headerVariant={config.appearance?.header ?? "full"}
     />
   );
 }

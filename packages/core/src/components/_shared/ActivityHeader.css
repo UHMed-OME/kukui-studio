@@ -98,6 +98,18 @@
   z-index: 1;
 }
 
+/*
+ * Any StatusBadge dropped into the full banner reads as translucent-white,
+ * regardless of its tone — so activities can pass a tone-coloured badge
+ * (e.g. success/warning for completion) without knowing the header variant.
+ * On the minimal header the badge keeps its tone colour.
+ */
+.kukui-actheader--full .kukui-badge {
+  color: #ffffff;
+  border-color: rgb(255 255 255 / 0.5);
+  background: rgb(255 255 255 / 0.18);
+}
+
 /* Minimal (plain titled block) --------------------------------------------- */
 
 .kukui-actheader--minimal {

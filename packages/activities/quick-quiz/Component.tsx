@@ -25,6 +25,7 @@ export default function Component({
       description={`Single multiple-choice question (${config.choices.length} options) — students answer in real time, the instructor sees the distribution + reveals the correct answer. Open this in Kukui Live during class.`}
       onSubmit={onSubmit}
       headingLevel={headingLevel}
+      headerVariant={config.appearance?.header ?? "full"}
     >
       <ul className="kukui-live-preview__choices" aria-label="Choices">
         {config.choices.map((choice, idx) => (

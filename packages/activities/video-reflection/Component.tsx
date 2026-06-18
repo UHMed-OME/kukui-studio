@@ -1,6 +1,13 @@
 import { useCallback, useEffect, useId, useRef, useState } from "react";
 import type { VideoReflectionConfig } from "./schema.js";
-import { ActivityHeader, SafeHtml, type ActivityProps } from "@kukui/core";
+import {
+  ActivityHeader,
+  SafeHtml,
+  StatusBadge,
+  DotIcon,
+  CheckIcon,
+  type ActivityProps,
+} from "@kukui/core";
 import { cuesToVtt, transcribe, type Cue, type TranscribeProgress } from "./transcribe.js";
 import { burnCaptions, burnInSupported } from "./burn.js";
 import "./Component.css";
@@ -1191,6 +1198,18 @@ export default function Component({
   const ccBusy = cc.status === "transcribing" || cc.status === "burning";
   const transcriptText = cc.cues.map((c) => c.text).join("\n");
 
+  // Header badge: completion-only — "Complete" once the reflection is marked
+  // complete, "In progress" otherwise. Additive; heading/roles unchanged.
+  const headerBadge = isSubmitted ? (
+    <StatusBadge tone="success" icon={<CheckIcon />}>
+      Complete
+    </StatusBadge>
+  ) : (
+    <StatusBadge tone="neutral" icon={<DotIcon />}>
+      In progress
+    </StatusBadge>
+  );
+
   return (
     <div className="kukui-vr">
       <article className="kukui-vr__card" aria-labelledby={headingId}>
@@ -1200,6 +1219,7 @@ export default function Component({
           headingLevel={headingLevel}
           variant={config.appearance?.header ?? "full"}
           prompt={config.prompt ? <SafeHtml html={config.prompt} /> : undefined}
+          badge={headerBadge}
         />
 
         {/* Dedicated assertive announcer (not nested in the polite status

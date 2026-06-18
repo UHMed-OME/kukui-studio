@@ -1,7 +1,7 @@
 {
   "_comment": "Demo fixture: a short OSCE for an acute chest-pain encounter with three phases. expectedOrder defines the intended workflow.",
   "version": "1.0",
-  "title": "Acute chest pain — OSCE encounter",
+  "title": "🩺 Acute chest pain — OSCE encounter",
   "caseHeader": "<p>A 55-year-old man presents to the emergency department with sudden-onset substernal chest pain radiating to the left arm, beginning 30 minutes ago while at rest. He describes it as a heavy, crushing pressure.</p><p><strong>Vitals:</strong> BP 145/92 mmHg, HR 102 bpm, RR 20, SpO<sub>2</sub> 96% on room air, T 37.0&deg;C.</p>",
   "phases": [
     {

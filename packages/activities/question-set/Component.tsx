@@ -12,7 +12,7 @@ import type { ActivityProps, ScoreState } from "@kukui/core/types";
 import { resolveScoring } from "@kukui/core/scoring";
 import MultipleChoice from "@kukui/activities/multiple-choice/Component";
 import FillInTheBlanks from "@kukui/activities/fill-in-the-blanks/Component";
-import { ActivityHeader } from "@kukui/core";
+import { ActivityHeader, StatusBadge, DotIcon, CheckIcon, TrophyIcon } from "@kukui/core";
 import "./Component.css";
 
 type Stage = "answering" | "submitted";
@@ -191,6 +191,33 @@ export default function Component({
   const submitted = state.stage === "submitted";
   const current = ordered[state.current];
 
+  // Aggregated pass/fail for the header badge once submitted. Mirrors the
+  // weighted-percent logic in submitSet so the badge reflects the same result.
+  const setSuccess = (() => {
+    let weightedRaw = 0;
+    let weightedMax = 0;
+    for (const q of validated) {
+      const sc = state.scores[q.index];
+      if (!sc || sc.max === 0) continue;
+      weightedRaw += (sc.raw / sc.max) * q.weight;
+      weightedMax += q.weight;
+    }
+    return weightedMax > 0 ? (weightedRaw / weightedMax) * 100 >= passPct : false;
+  })();
+
+  const headerBadge = submitted ? (
+    <StatusBadge
+      tone={setSuccess ? "success" : "warning"}
+      icon={setSuccess ? <TrophyIcon /> : <CheckIcon />}
+    >
+      {setSuccess ? "Passed" : "Review"}
+    </StatusBadge>
+  ) : (
+    <StatusBadge tone="neutral" icon={<DotIcon />}>
+      In progress
+    </StatusBadge>
+  );
+
   return (
     <div className="kukui-qs">
       <article className="kukui-qs__card" aria-labelledby={headingId}>
@@ -199,6 +226,7 @@ export default function Component({
           titleId={headingId}
           headingLevel={headingLevel}
           variant={config.appearance?.header ?? "full"}
+          badge={headerBadge}
         />
 
         {showProgressBar ? (

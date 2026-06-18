@@ -1,7 +1,7 @@
 {
   "_comment": "Sample concept-map fixture: relationships between cell organelles. Seed nodes pre-place the central organelles; learners drag in the remaining concepts from the palette and connect them with edges.",
   "version": "1.0",
-  "title": "Map relationships between cell organelles",
+  "title": "🗺️ Map relationships between cell organelles",
   "prompt": "<p>Drag each organelle onto the canvas and connect related items with edges. Use the toolbar's <strong>+ Edge</strong> button, then click two nodes in succession to connect them.</p>",
   "seedNodes": [
     { "id": "nucleus", "label": "Nucleus", "position": { "x": 0.5, "y": 0.2 } },

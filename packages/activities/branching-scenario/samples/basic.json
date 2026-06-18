@@ -1,7 +1,7 @@
 {
   "_comment": "Demo fixture: a small clinical-decision branching scenario. Two paths from the start node lead to different outcomes.",
   "version": "1.0",
-  "title": "Triage: chest pain",
+  "title": "🌳 Triage: chest pain",
   "startNodeId": "start",
   "nodes": [
     {

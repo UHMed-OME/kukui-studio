@@ -1,6 +1,6 @@
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import type { BranchingScenarioConfig } from "./schema.js";
-import { ActivityHeader, SafeHtml, htmlToText, type ActivityProps } from "@kukui/core";
+import { ActivityHeader, SafeHtml, htmlToText, StatusBadge, DotIcon, CheckIcon, type ActivityProps } from "@kukui/core";
 import "./Component.css";
 
 type State = {
@@ -150,6 +150,16 @@ export default function Component({
 
   const outcome = currentNode.outcome ?? (isTerminal ? COMPLETION_DEFAULT : null);
 
+  const headerBadge = state.terminalReached ? (
+    <StatusBadge tone="success" icon={<CheckIcon />}>
+      Complete
+    </StatusBadge>
+  ) : (
+    <StatusBadge tone="neutral" icon={<DotIcon />}>
+      In progress
+    </StatusBadge>
+  );
+
   return (
     <div className="kukui-bs">
       <article className="kukui-bs__card" aria-labelledby={headingId}>
@@ -158,6 +168,7 @@ export default function Component({
           titleId={headingId}
           headingLevel={headingLevel}
           variant={config.appearance?.header ?? "full"}
+          badge={headerBadge}
         />
 
         <SafeHtml className="kukui-bs__prompt" html={currentNode.prompt} />
