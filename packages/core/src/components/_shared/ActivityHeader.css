@@ -67,8 +67,8 @@
   padding: var(--spacing-2xl, 24px) var(--spacing-3xl, 28px);
   background: linear-gradient(
     135deg,
-    var(--color-primary, #7b4324),
-    var(--color-primary-hover, #9b5830)
+    var(--color-accent, #024731),
+    var(--color-accent-hover, #0a5e41)
   );
   color: #ffffff;
 }
@@ -131,7 +131,7 @@
 }
 
 .kukui-actheader--minimal .kukui-actheader__title {
-  color: var(--color-text-primary, #1c1e20);
+  color: var(--color-accent, #024731);
 }
 
 .kukui-actheader--minimal .kukui-actheader__meta {

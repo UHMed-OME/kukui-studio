@@ -1091,28 +1091,27 @@ button {
 .kukui-studio-sidebar__heading {
   font-family: var(--font-family-display);
   font-size: 15px;
-  font-weight: 500;
+  font-weight: 600;
   letter-spacing: 0;
-  color: var(--color-accent);
+  color: var(--color-text-primary);
   margin: 0;
   padding: 0 var(--spacing-sm);
   text-transform: none;
 }
 
-/* Collapsible Bloom section header — a floating, bloom-tinted card so each
-   section reads as its own grouped surface instead of plain text. The chevron
-   rotates when the section is open. */
+/* Collapsible Bloom section header — a clean neutral disclosure card with the
+   chevron on the trailing edge. Quiet at rest; lifts subtly on hover and when
+   the section is open, so it reads as a grouped surface without shouting. */
 .kukui-studio-sidebar__heading-btn {
   display: flex;
   align-items: center;
-  gap: var(--spacing-xs);
+  gap: var(--spacing-sm);
   width: 100%;
-  min-height: 40px;
-  padding: var(--spacing-xs) var(--spacing-sm);
-  background: color-mix(in oklab, var(--color-accent) 9%, var(--color-surface));
-  border: 1px solid color-mix(in oklab, var(--color-accent) 22%, transparent);
+  min-height: 44px;
+  padding: var(--spacing-sm) var(--spacing-md);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
-  box-shadow: 0 1px 2px rgb(0 0 0 / 0.04);
   cursor: pointer;
   text-align: left;
   transition:
@@ -1122,9 +1121,15 @@ button {
 }
 
 .kukui-studio-sidebar__heading-btn:hover {
-  background: color-mix(in oklab, var(--color-accent) 15%, var(--color-surface));
-  border-color: color-mix(in oklab, var(--color-accent) 34%, transparent);
-  box-shadow: 0 2px 8px rgb(0 0 0 / 0.06);
+  background: var(--color-surface-alt);
+  border-color: var(--color-border-hover);
+}
+
+/* Open section: a touch of lift + a slightly darker border so the expanded
+   group is easy to scan back to. */
+.kukui-studio-sidebar__heading-btn[aria-expanded="true"] {
+  border-color: var(--color-border-hover);
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.05);
 }
 
 .kukui-studio-sidebar__heading-btn:focus-visible {
@@ -1222,14 +1227,14 @@ button {
 }
 
 .kukui-studio-sidebar__btn.is-active {
-  background: var(--color-accent-soft);
-  color: var(--color-accent);
+  background: color-mix(in oklab, var(--bloom-color) 12%, transparent);
+  color: var(--color-primary);
   font-weight: 600;
 }
 
 .kukui-studio-sidebar__btn.is-active::after {
   opacity: 1;
-  color: var(--color-accent);
+  color: var(--color-primary);
 }
 
 .kukui-studio-sidebar__btn-icon {
@@ -1325,7 +1330,7 @@ button {
   margin: 0;
   font-size: var(--font-size-meta);
   font-weight: 600;
-  color: var(--color-accent);
+  color: var(--color-text-primary);
   letter-spacing: -0.005em;
 }
 
@@ -2891,6 +2896,7 @@ button {
   font-size: var(--font-size-title);
   font-weight: 700;
   letter-spacing: -0.01em;
+  color: var(--color-accent);
 }
 
 .ks-stage-head__prompt {

@@ -15,6 +15,9 @@
   --color-primary: #7b4324;
   --color-primary-hover: #9b5830;
   --color-primary-soft: rgb(123 67 36 / 0.07);
+  --color-accent: #024731;
+  --color-accent-hover: #0a5e41;
+  --color-accent-soft: rgb(2 71 49 / 0.10);
   --color-success: #2e6e41;
   --color-success-soft: rgb(46 110 65 / 0.1);
   --color-error: #c34132;
@@ -82,6 +85,9 @@ html[data-color-scheme="dark"] {
   --color-primary: #d39872;
   --color-primary-hover: #e6b693;
   --color-primary-soft: rgb(211 152 114 / 0.14);
+  --color-accent: #5fc28f;
+  --color-accent-hover: #7fd0a8;
+  --color-accent-soft: rgb(95 194 143 / 0.16);
   --color-success: #86c79a;
   --color-success-soft: rgb(134 199 154 / 0.16);
   --color-error: #ed9183;
@@ -133,6 +139,9 @@ html[data-color-scheme="dark"] {
   --color-primary: #ffc77a;
   --color-primary-hover: #ffd9a0;
   --color-primary-soft: rgb(255 199 122 / 0.18);
+  --color-accent: #9be0ad;
+  --color-accent-hover: #b8eccb;
+  --color-accent-soft: rgb(155 224 173 / 0.2);
   --color-success: #9be0ad;
   --color-success-soft: rgb(155 224 173 / 0.18);
   --color-error: #ffa898;
@@ -179,6 +188,9 @@ html[data-color-scheme="dark"] {
   --color-primary: #d39872;
   --color-primary-hover: #e6b693;
   --color-primary-soft: rgb(211 152 114 / 0.14);
+  --color-accent: #5fc28f;
+  --color-accent-hover: #7fd0a8;
+  --color-accent-soft: rgb(95 194 143 / 0.18);
   --color-success: #86c79a;
   --color-success-soft: rgb(134 199 154 / 0.16);
   --color-error: #ed9183;
@@ -202,6 +214,9 @@ html[data-color-scheme="dark"] {
   --color-primary: #000000;
   --color-primary-hover: #000000;
   --color-primary-soft: #f5f5f5;
+  --color-accent: #000000;
+  --color-accent-hover: #000000;
+  --color-accent-soft: #f5f5f5;
   --color-success: #000000;
   --color-success-soft: #f5f5f5;
   --color-error: #000000;
@@ -248,6 +263,9 @@ html[data-color-scheme="dark"] {
   --color-primary: #a3cc8d;
   --color-primary-hover: #b8d9a5;
   --color-primary-soft: rgb(163 204 141 / 0.14);
+  --color-accent: #a3cc8d;
+  --color-accent-hover: #b8d9a5;
+  --color-accent-soft: rgb(163 204 141 / 0.16);
   --color-success: #a3cc8d;
   --color-success-soft: rgb(163 204 141 / 0.16);
   --color-error: #e89880;
@@ -294,6 +312,9 @@ html[data-color-scheme="dark"] {
   --color-primary: #c69adb;
   --color-primary-hover: #d6b3e4;
   --color-primary-soft: rgb(198 154 219 / 0.14);
+  --color-accent: #6fc99c;
+  --color-accent-hover: #8fdcb6;
+  --color-accent-soft: rgb(111 201 156 / 0.16);
   --color-success: #8fb87b;
   --color-success-soft: rgb(143 184 123 / 0.14);
   --color-error: #e89095;

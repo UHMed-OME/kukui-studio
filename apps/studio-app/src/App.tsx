@@ -762,6 +762,10 @@ export function App() {
                 onClick={() => toggleBloom(level)}
                 title={BLOOM_TAGLINES[level]}
               >
+                <span className="kukui-studio-sidebar__heading-text">
+                  <span className="kukui-studio-sidebar__heading">{BLOOM_LABELS[level]}</span>
+                  <span className="kukui-studio-sidebar__tagline">{BLOOM_TAGLINES[level]}</span>
+                </span>
                 <ChevronIcon
                   className={[
                     "kukui-studio-sidebar__chevron",
@@ -771,10 +775,6 @@ export function App() {
                     .join(" ")}
                   aria-hidden="true"
                 />
-                <span className="kukui-studio-sidebar__heading-text">
-                  <span className="kukui-studio-sidebar__heading">{BLOOM_LABELS[level]}</span>
-                  <span className="kukui-studio-sidebar__tagline">{BLOOM_TAGLINES[level]}</span>
-                </span>
               </button>
               {open ? (
                 <ul className="kukui-studio-sidebar__list">
