@@ -23,8 +23,8 @@ export const tokens = {
   border: "#d4d8dd",
   borderHover: "#b3b9c0",
   /** JABSOM green — primary brand accent. See docs/design-system.md. */
-  primary: "#3d6130",
-  primaryHover: "#4a7240",
+  primary: "#15803d",
+  primaryHover: "#166534",
   success: "#2e6e41",
   error: "#c34132",
   /** Caution / "watch" / urgent — warm ochre. See docs/design-system.md. */
@@ -44,8 +44,8 @@ export const tokensDark = {
   border: "#383b40",
   borderHover: "#4c4f55",
   /** JABSOM green, lightened for dark surfaces. */
-  primary: "#8cc486",
-  primaryHover: "#a5d4a0",
+  primary: "#4ade80",
+  primaryHover: "#86efac",
   success: "#86c79a",
   error: "#ed9183",
   warning: "#e0b35e",
