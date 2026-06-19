@@ -19,6 +19,12 @@ export function ArrayFieldTemplate(props: ArrayFieldTemplateProps) {
   const title = typeof uiTitle === "string" ? uiTitle : props.title;
   const description = schema?.description;
   const arr = Array.isArray(formData) ? formData : [];
+  // Some lists (e.g. crossword terms) hide the row index because its "1, 2, 3…"
+  // reads like a clue number the puzzle doesn't actually use.
+  const uiOptions = (uiSchema as Record<string, unknown> | undefined)?.["ui:options"] as
+    | Record<string, unknown>
+    | undefined;
+  const hideIndex = uiOptions?.hideItemIndex === true;
 
   return (
     <div className="ks-array">
@@ -31,6 +37,7 @@ export function ArrayFieldTemplate(props: ArrayFieldTemplateProps) {
               key={item.key}
               item={item}
               index={idx + 1}
+              hideIndex={hideIndex}
               itemLabel={titleCase(singular(title))}
               preview={previewLabel(arr[idx])}
             />
@@ -94,11 +101,13 @@ function previewLabel(item: unknown): string | undefined {
 function ArrayItem({
   item,
   index,
+  hideIndex,
   itemLabel,
   preview,
 }: {
   item: ArrayFieldTemplateItemType;
   index: number;
+  hideIndex?: boolean;
   itemLabel: string;
   preview?: string;
 }) {
@@ -116,7 +125,7 @@ function ArrayItem({
     <li className="ks-array-item">
       <div className="ks-array-item__bar">
         <span className="ks-array-item__index">
-          {itemLabel} {index}
+          {hideIndex ? itemLabel : `${itemLabel} ${index}`}
           {preview ? (
             <span className="ks-array-item__preview"> · {preview}</span>
           ) : null}
