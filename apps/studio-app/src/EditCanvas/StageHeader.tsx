@@ -72,7 +72,6 @@ export function StageHeader({
         editLabel="Edit activity title"
         placeholder="Untitled activity"
         valueClassName="ks-stage-head__title"
-        inputClassName="ks-stage-head__title"
         onCommit={(next) => onPatch({ title: next })}
       />
       {rich ? (
@@ -94,7 +93,6 @@ export function StageHeader({
           editLabel="Edit activity prompt"
           placeholder={promptPlaceholder}
           valueClassName="ks-stage-head__prompt"
-          inputClassName="ks-stage-head__prompt"
           onCommit={(next) => onPatch({ prompt: plainToHtml(next) })}
         />
       )}

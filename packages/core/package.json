@@ -12,6 +12,7 @@
     "./content": "./src/content.ts",
     "./scorm": "./src/scorm.ts",
     "./activity-host": "./src/activity-host.tsx",
+    "./activity-footer": "./src/activity-footer.tsx",
     "./components/_shared/HotspotPin": "./src/components/_shared/HotspotPin.tsx",
     "./components/_shared/glb-loader": "./src/components/_shared/glb-loader.tsx",
     "./components/_shared/SketchfabViewer": "./src/components/_shared/SketchfabViewer.tsx",

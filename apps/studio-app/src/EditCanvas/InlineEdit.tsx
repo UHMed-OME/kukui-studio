@@ -1,20 +1,20 @@
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState } from "react";
 import { PencilIcon } from "../icons.js";
 
 /**
- * Hover-to-edit inline field for the visual editors. A value renders read-only
- * on the canvas; hovering (or keyboard-focusing) the row reveals a pencil
- * button; activating it swaps the value for an inline input that commits on
- * blur / Enter and cancels on Escape.
+ * In-place editable field for the visual editors. The value renders as styled
+ * text on the canvas with a small pencil cue beside it; clicking the text (or
+ * the pencil) turns that same text editable in place — no separate input box
+ * pops up — committing on blur / Enter and cancelling on Escape.
  *
- * This is the primitive behind moving form fields onto the stage so the Editor
- * form can shrink. Layout-stable per the hard rules: the pencil occupies
- * reserved space (it fades in, never shifts neighbours), and the read ↔ edit
- * swap keeps the row's box the same height.
+ * Editing happens via `contentEditable` on the value element itself, so the
+ * text never shifts into a "bubble" and the pencil hugs the content instead of
+ * floating to the far right of the row. The element is left uncontrolled while
+ * editing (we seed its text on entry and read it back on commit) so the caret
+ * doesn't jump and an unrelated parent re-render mid-edit can't wipe the draft.
  *
- * Plain text only — callers serialise richer values (e.g. HTML prompt) to/from
- * text at the boundary. For values that can't be edited as plain text, render a
- * custom `display` and route the pencil elsewhere via `onRequestEdit`.
+ * Plain text only — callers serialise richer values (e.g. an HTML prompt) to and
+ * from text at the boundary.
  */
 export function InlineEdit({
   value,
@@ -23,131 +23,105 @@ export function InlineEdit({
   editLabel,
   placeholder = "",
   multiline = false,
-  display,
   valueClassName,
-  inputClassName,
-  onRequestEdit,
 }: {
   value: string;
   onCommit: (next: string) => void;
-  /** Accessible name for the editor input. */
+  /** Accessible name for the editable text. */
   ariaLabel: string;
-  /** Accessible name for the pencil button, e.g. "Edit title". */
+  /** Accessible name for the pencil cue, e.g. "Edit title". */
   editLabel: string;
   placeholder?: string;
+  /** Allow newlines (Enter inserts a line; Cmd/Ctrl+Enter commits). */
   multiline?: boolean;
-  /** Custom read-only rendering; defaults to the value (or placeholder when empty). */
-  display?: ReactNode;
-  /** Class applied to the read-only value text (drives size/weight per field). */
+  /** Class applied to the editable text (drives size/weight per field). */
   valueClassName?: string;
-  /** Class applied to the editor input/textarea. */
-  inputClassName?: string;
-  /**
-   * When set, the pencil calls this instead of opening the inline editor — for
-   * fields whose editor lives elsewhere (e.g. a rich-text field that defers to
-   * the form). `onCommit` is then unused.
-   */
-  onRequestEdit?: () => void;
 }) {
+  const ref = useRef<HTMLSpanElement>(null);
   const [editing, setEditing] = useState(false);
-  const [draft, setDraft] = useState(value);
-  const inputRef = useRef<HTMLInputElement & HTMLTextAreaElement>(null);
 
+  // Keep the DOM text in sync with `value` while NOT editing. During an edit we
+  // leave the node alone (it's uncontrolled) so typing isn't fought by React.
   useEffect(() => {
-    if (editing) {
-      const el = inputRef.current;
-      el?.focus();
-      el?.select?.();
+    if (!editing && ref.current && ref.current.innerText !== value) {
+      ref.current.innerText = value;
     }
+  }, [value, editing]);
+
+  // On entering edit mode, focus and drop the caret at the end of the text.
+  useEffect(() => {
+    if (!editing || !ref.current) return;
+    const el = ref.current;
+    el.focus();
+    const range = document.createRange();
+    range.selectNodeContents(el);
+    range.collapse(false);
+    const sel = window.getSelection();
+    sel?.removeAllRanges();
+    sel?.addRange(range);
   }, [editing]);
 
-  const open = () => {
-    if (onRequestEdit) {
-      onRequestEdit();
-      return;
-    }
-    setDraft(value);
+  const start = () => {
+    if (ref.current) ref.current.innerText = value;
     setEditing(true);
   };
 
   const commit = () => {
+    const raw = ref.current?.innerText ?? "";
+    const next = multiline ? raw.replace(/\n+$/, "") : raw.replace(/\s*\n\s*/g, " ").trim();
     setEditing(false);
-    if (draft !== value) onCommit(draft);
+    if (next !== value) onCommit(next);
   };
 
   const cancel = () => {
+    if (ref.current) ref.current.innerText = value;
     setEditing(false);
-    setDraft(value);
   };
 
-  if (editing) {
-    const common = {
-      ref: inputRef,
-      className: ["ks-inline__input", inputClassName].filter(Boolean).join(" "),
-      value: draft,
-      placeholder,
-      "aria-label": ariaLabel,
-      onChange: (e: { target: { value: string } }) => setDraft(e.target.value),
-      onBlur: commit,
-    };
-    return (
-      <div className="ks-inline ks-inline--editing">
-        {multiline ? (
-          <textarea
-            {...common}
-            rows={2}
-            onKeyDown={(e) => {
-              if (e.key === "Escape") cancel();
-              // Cmd/Ctrl+Enter commits a multiline field; plain Enter inserts a line.
-              if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) commit();
-            }}
-          />
-        ) : (
-          <input
-            {...common}
-            type="text"
-            onKeyDown={(e) => {
-              if (e.key === "Escape") cancel();
-              if (e.key === "Enter") commit();
-            }}
-          />
-        )}
-      </div>
-    );
-  }
-
-  const isEmpty = value.trim() === "";
   return (
-    <div className="ks-inline">
+    <span className={["ks-inline", editing ? "is-editing" : ""].filter(Boolean).join(" ")}>
       <span
-        className={[
-          "ks-inline__value",
-          isEmpty ? "ks-inline__value--empty" : "",
-          valueClassName,
-        ]
-          .filter(Boolean)
-          .join(" ")}
-        onClick={open}
-        role="button"
+        ref={ref}
+        className={["ks-inline__value", valueClassName].filter(Boolean).join(" ")}
+        contentEditable={editing}
+        suppressContentEditableWarning
+        role="textbox"
+        aria-label={ariaLabel}
+        aria-multiline={multiline || undefined}
+        data-placeholder={placeholder}
         tabIndex={0}
+        onClick={editing ? undefined : start}
         onKeyDown={(e) => {
-          if (e.key === "Enter" || e.key === " ") {
+          if (!editing) {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              start();
+            }
+            return;
+          }
+          if (e.key === "Escape") {
             e.preventDefault();
-            open();
+            cancel();
+          } else if (e.key === "Enter" && (!multiline || e.metaKey || e.ctrlKey)) {
+            e.preventDefault();
+            commit();
           }
         }}
-      >
-        {display ?? (isEmpty ? placeholder : value)}
-      </span>
-      <button
-        type="button"
-        className="ks-inline__edit"
-        aria-label={editLabel}
-        title={editLabel}
-        onClick={open}
-      >
-        <PencilIcon />
-      </button>
-    </div>
+        onBlur={editing ? commit : undefined}
+      />
+      {!editing ? (
+        <button
+          type="button"
+          className="ks-inline__edit"
+          aria-label={editLabel}
+          title={editLabel}
+          // Pointer-down (not click) so the value's blur doesn't fire first and
+          // race the state; we just enter edit mode.
+          onClick={start}
+        >
+          <PencilIcon />
+        </button>
+      ) : null}
+    </span>
   );
 }

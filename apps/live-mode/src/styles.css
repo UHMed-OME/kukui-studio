@@ -1,19 +1,19 @@
 @import "tailwindcss";
 
 @theme {
-  /* Cream-and-brown — original palette restored 2026-05-12. Mirrors
-     studio-app + engine-web. Dark and other named schemes override
-     below. */
-  --color-bg: #fcf8f2;
+  /* Cool kai-leaning neutrals with JABSOM green (#024731) as the primary —
+     green-forward so the warm kukui-brown logo reads as an accent. Mirrors
+     studio-app + engine-web. Dark and other named schemes override below. */
+  --color-bg: #f3f6f4;
   --color-surface: #ffffff;
-  --color-surface-alt: #faf6ee;
-  --color-text-primary: #1c1e20;
-  --color-text-secondary: #606069;
-  --color-border: #dad2c6;
-  --color-border-hover: #bbae9a;
-  --color-primary: #7b4324;
-  --color-primary-hover: #9b5830;
-  --color-primary-soft: rgb(123 67 36 / 0.07);
+  --color-surface-alt: #e9efea;
+  --color-text-primary: #16201b;
+  --color-text-secondary: #4b5a52;
+  --color-border: #ccd8d1;
+  --color-border-hover: #a7bcb1;
+  --color-primary: #024731;
+  --color-primary-hover: #0a5e41;
+  --color-primary-soft: rgb(2 71 49 / 0.07);
   --color-success: #2e6e41;
   --color-success-soft: rgb(46 110 65 / 0.1);
   --color-error: #c34132;
@@ -22,7 +22,7 @@
   --color-warning-soft: rgb(138 90 18 / 0.10);
   --color-info: #1f6f78;
   --color-info-soft: rgb(31 111 120 / 0.10);
-  --color-tip-bg: #f2f0e8;
+  --color-tip-bg: #e4ebe6;
 
   /* Elevation — subtle card depth. See docs/design-system.md. */
   --shadow-card: 0 1px 2px rgb(0 0 0 / 0.06), 0 6px 16px rgb(0 0 0 / 0.07);
@@ -52,16 +52,16 @@
    follow the host OS theme by default. Operators landing on the
    classroom URL also pick up dark automatically. */
 html[data-color-scheme="dark"] {
-  --color-bg: #1c1917;
-  --color-surface: #292524;
-  --color-surface-alt: #1c1917;
-  --color-text-primary: #fafaf9;
-  --color-text-secondary: #d6d3d1;
-  --color-border: #44403c;
-  --color-border-hover: #57534e;
-  --color-primary: #d39872;
-  --color-primary-hover: #e6b693;
-  --color-primary-soft: rgb(211 152 114 / 0.14);
+  --color-bg: #121815;
+  --color-surface: #1b2420;
+  --color-surface-alt: #121815;
+  --color-text-primary: #f2f6f3;
+  --color-text-secondary: #c7d2cc;
+  --color-border: #35423b;
+  --color-border-hover: #495a51;
+  --color-primary: #5fc28f;
+  --color-primary-hover: #7fd0a8;
+  --color-primary-soft: rgb(95 194 143 / 0.16);
   --color-success: #86c79a;
   --color-success-soft: rgb(134 199 154 / 0.16);
   --color-error: #ed9183;
@@ -70,7 +70,7 @@ html[data-color-scheme="dark"] {
   --color-warning-soft: rgb(224 179 94 / 0.16);
   --color-info: #7fc3cc;
   --color-info-soft: rgb(127 195 204 / 0.16);
-  --color-tip-bg: #292524;
+  --color-tip-bg: #1b2420;
 }
 
 /* =================================================================== */
@@ -555,7 +555,7 @@ html[data-theme="glass"] .live-card {
   backdrop-filter: blur(22px) saturate(170%);
   border: 1px solid rgba(255, 255, 255, 0.55);
   box-shadow:
-    0 12px 32px rgb(123 67 36 / 0.08),
+    0 12px 32px rgb(2 71 49 / 0.08),
     0 2px 8px rgb(0 0 0 / 0.04),
     inset 0 1px 0 rgba(255, 255, 255, 0.5);
 }

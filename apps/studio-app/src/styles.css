@@ -35,26 +35,26 @@
 }
 
 @theme {
-  /* Soft-stone cream — middle ground between the original peach-cream
-     (which read too orange) and the earlier stone-neutral experiment
-     (which read too cool). Surfaces lose ~30% of the yellow saturation
-     while staying recognizably warm; the kukui-brown accent stays
-     unchanged so the brand identity holds.
-     Dark mode and the other schemes (high-contrast, sepia, OLED,
-     aloha, kalo, lab, twilight, print) still override via
-     [data-color-scheme="<name>"] blocks below; this @theme block is
-     the light default they overlay on top of. */
-  --color-bg: #f7f5f0;
-  --color-surface: #fdfcf9;
-  --color-surface-alt: #f1eee6;
-  --color-text-primary: #1c1e20;
-  --color-text-secondary: #606069;
-  --color-text-muted: #6e6e76;
-  --color-border: #cfc9bc;
-  --color-border-hover: #b5ad9c;
-  --color-primary: #7b4324;
-  --color-primary-hover: #9b5830;
-  --color-primary-soft: rgb(123 67 36 / 0.07);
+  /* Cool kai-leaning neutrals with JABSOM green (#024731) as the primary —
+     a green-forward identity that lets the warm kukui-brown logo read as a
+     deliberate accent rather than disappearing into a brown-on-brown field.
+     Surfaces are clean near-white with the faintest green-grey tint; text and
+     borders are cool greys. The semantic ramps (success/error/warning/info)
+     keep their audited values.
+     Dark mode and the other schemes (high-contrast, sepia, OLED, aloha, kai,
+     kalo, lab, twilight, print) still override via [data-color-scheme="<name>"]
+     blocks below; this @theme block is the light default they overlay on. */
+  --color-bg: #f3f6f4;
+  --color-surface: #ffffff;
+  --color-surface-alt: #e9efea;
+  --color-text-primary: #16201b;
+  --color-text-secondary: #4b5a52;
+  --color-text-muted: #5c6a62;
+  --color-border: #ccd8d1;
+  --color-border-hover: #a7bcb1;
+  --color-primary: #024731;
+  --color-primary-hover: #0a5e41;
+  --color-primary-soft: rgb(2 71 49 / 0.07);
   --color-on-primary: #ffffff;
   --color-success: #2e6e41;
   --color-success-soft: rgb(46 110 65 / 0.1);
@@ -64,7 +64,7 @@
   --color-warning-soft: rgb(138 90 18 / 0.10);
   --color-info: #1f6f78;
   --color-info-soft: rgb(31 111 120 / 0.10);
-  --color-tip-bg: #ebe8de;
+  --color-tip-bg: #e4ebe6;
   --color-canvas-3d: #0b0b10;
 
   /* Elevation — subtle card depth. See docs/design-system.md. */
@@ -118,7 +118,7 @@
   --bloom-apply: #b5532a; /* terracotta */
   --bloom-analyze: #7a5680; /* dusty plum */
   --bloom-evaluate: #2e6e41; /* kalo (matches --color-success) */
-  --bloom-create: #7b4324; /* kukui (matches --color-primary) */
+  --bloom-create: #7b4324; /* kukui brand brown (the logo hue) */
 }
 
 /* Dark mode — selected by `[data-color-scheme="dark"]` (at <html> for
@@ -131,18 +131,18 @@
    surfaces. Bloom hues get a parallel set of lighter values so the
    indicator dots stay legible. */
 [data-color-scheme="dark"] {
-  --color-bg: #1c1917;
-  --color-surface: #292524;
-  --color-surface-alt: #1c1917;
-  --color-text-primary: #fafaf9;
-  --color-text-secondary: #d6d3d1;
-  --color-text-muted: #a8a29e;
-  --color-border: #44403c;
-  --color-border-hover: #57534e;
-  --color-primary: #d39872;
-  --color-primary-hover: #e6b693;
-  --color-primary-soft: rgb(211 152 114 / 0.14);
-  --color-on-primary: #1c140d;
+  --color-bg: #121815;
+  --color-surface: #1b2420;
+  --color-surface-alt: #121815;
+  --color-text-primary: #f2f6f3;
+  --color-text-secondary: #c7d2cc;
+  --color-text-muted: #94a39b;
+  --color-border: #35423b;
+  --color-border-hover: #495a51;
+  --color-primary: #5fc28f;
+  --color-primary-hover: #7fd0a8;
+  --color-primary-soft: rgb(95 194 143 / 0.16);
+  --color-on-primary: #07140e;
   --color-success: #86c79a;
   --color-success-soft: rgb(134 199 154 / 0.16);
   --color-error: #ed9183;
@@ -151,7 +151,7 @@
   --color-warning-soft: rgb(224 179 94 / 0.16);
   --color-info: #7fc3cc;
   --color-info-soft: rgb(127 195 204 / 0.16);
-  --color-tip-bg: #292524;
+  --color-tip-bg: #1b2420;
   --color-canvas-3d: #000000;
 
   --bloom-remember: #e0a64a;
@@ -179,17 +179,17 @@
    activity's author has pinned appearance.theme to "light"). Mirrors
    the @theme cream defaults at :root. */
 [data-color-scheme="light"] {
-  --color-bg: #f7f5f0;
-  --color-surface: #fdfcf9;
-  --color-surface-alt: #f1eee6;
-  --color-text-primary: #1c1e20;
-  --color-text-secondary: #606069;
-  --color-text-muted: #6e6e76;
-  --color-border: #cfc9bc;
-  --color-border-hover: #b5ad9c;
-  --color-primary: #7b4324;
-  --color-primary-hover: #9b5830;
-  --color-primary-soft: rgb(123 67 36 / 0.07);
+  --color-bg: #f3f6f4;
+  --color-surface: #ffffff;
+  --color-surface-alt: #e9efea;
+  --color-text-primary: #16201b;
+  --color-text-secondary: #4b5a52;
+  --color-text-muted: #5c6a62;
+  --color-border: #ccd8d1;
+  --color-border-hover: #a7bcb1;
+  --color-primary: #024731;
+  --color-primary-hover: #0a5e41;
+  --color-primary-soft: rgb(2 71 49 / 0.07);
   --color-on-primary: #ffffff;
   --color-success: #2e6e41;
   --color-success-soft: rgb(46 110 65 / 0.1);
@@ -199,7 +199,7 @@
   --color-warning-soft: rgb(138 90 18 / 0.10);
   --color-info: #1f6f78;
   --color-info-soft: rgb(31 111 120 / 0.10);
-  --color-tip-bg: #ebe8de;
+  --color-tip-bg: #e4ebe6;
   --color-canvas-3d: #0b0b10;
 
   --bloom-remember: #c2861c;
@@ -811,7 +811,7 @@ button {
   background: var(--color-primary-hover);
   border-color: var(--color-primary-hover);
   box-shadow:
-    0 6px 16px rgb(123 67 36 / 0.18),
+    0 6px 16px rgb(2 71 49 / 0.18),
     inset 0 1px 0 rgb(255 255 255 / 0.15);
 }
 
@@ -1069,6 +1069,59 @@ button {
   margin: 0;
   padding: 0 var(--spacing-sm);
   text-transform: none;
+}
+
+/* Collapsible Bloom section header — a full-width disclosure button. The
+   chevron rotates when the section is open; a count shows how many activities
+   are tucked inside while collapsed. */
+.kukui-studio-sidebar__heading-btn {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  width: 100%;
+  min-height: 36px;
+  padding: 4px var(--spacing-sm);
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  text-align: left;
+}
+
+.kukui-studio-sidebar__heading-btn:hover {
+  background: color-mix(in oklab, var(--bloom-color, var(--color-primary)) 8%, transparent);
+}
+
+.kukui-studio-sidebar__heading-btn:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 1px;
+}
+
+/* Inside the disclosure button the heading drops its own horizontal padding
+   (the button supplies it) and flexes to push the count to the right. */
+.kukui-studio-sidebar__heading-btn .kukui-studio-sidebar__heading {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 0;
+}
+
+.kukui-studio-sidebar__chevron {
+  flex: 0 0 auto;
+  width: 14px;
+  height: 14px;
+  color: var(--color-text-muted);
+  transition: transform 140ms ease;
+}
+
+.kukui-studio-sidebar__chevron.is-open {
+  transform: rotate(90deg);
+}
+
+.kukui-studio-sidebar__count {
+  flex: 0 0 auto;
+  font-size: var(--font-size-micro);
+  color: var(--color-text-muted);
+  font-variant-numeric: tabular-nums;
 }
 
 .kukui-studio-sidebar__tagline {
@@ -1608,7 +1661,7 @@ button {
 }
 
 .ks-password-field__input:focus-visible {
-  outline: 2px solid var(--color-primary, #7b4324);
+  outline: 2px solid var(--color-primary, #024731);
   outline-offset: 1px;
 }
 
@@ -2570,16 +2623,16 @@ button {
 }
 
 .ks-edit-dnd__zone:hover {
-  background: rgb(123 67 36 / 0.14);
+  background: rgb(2 71 49 / 0.14);
   border-color: var(--color-primary-hover);
 }
 
 .ks-edit-dnd__zone.is-selected {
   border-style: solid;
-  background: rgb(123 67 36 / 0.16);
+  background: rgb(2 71 49 / 0.16);
   box-shadow:
     0 0 0 2px var(--color-primary),
-    0 4px 14px rgb(123 67 36 / 0.24);
+    0 4px 14px rgb(2 71 49 / 0.24);
 }
 
 .ks-edit-dnd__zone.is-dragging {
@@ -2587,10 +2640,10 @@ button {
   /* Disable color transitions during the drag — visual changes should be
      instantaneous so the drag feels glued to the cursor. */
   transition: none;
-  background: rgb(123 67 36 / 0.22);
+  background: rgb(2 71 49 / 0.22);
   box-shadow:
     0 0 0 2px var(--color-primary),
-    0 8px 22px rgb(123 67 36 / 0.32);
+    0 8px 22px rgb(2 71 49 / 0.32);
   z-index: 2;
 }
 
@@ -2660,7 +2713,7 @@ button {
 .ks-edit-dnd__draft {
   position: absolute;
   border: 1.5px solid var(--color-primary);
-  background: rgb(123 67 36 / 0.18);
+  background: rgb(2 71 49 / 0.18);
   border-radius: 6px;
   pointer-events: none;
   box-shadow: 0 0 0 2px var(--color-primary-soft);
@@ -2689,36 +2742,53 @@ button {
   font-size: var(--font-size-meta);
 }
 
-/* ---------- Inline hover-to-edit field (stage migration primitive) ---------- */
-/* A value renders read-only on the canvas; hovering or keyboard-focusing the
-   row reveals a pencil, which swaps the value for an inline input. The pencil
-   occupies reserved space and only fades in, so revealing it never reflows the
-   canvas (layout-stable hard rule). */
+/* ---------- Inline in-place editable field (stage migration primitive) ------- */
+/* The value renders as styled text sized to its content, with a small pencil
+   cue right beside it (so the affordance hugs the text instead of floating to
+   the far right). Clicking the text — or the pencil — turns that same text
+   editable in place via contentEditable; no separate input box appears. */
 .ks-inline {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: var(--spacing-xs);
-  min-height: 44px;
-}
-
-.ks-inline--editing {
-  display: block;
+  gap: 2px;
+  max-width: 100%;
+  vertical-align: top;
 }
 
 .ks-inline__value {
-  flex: 1 1 auto;
-  min-width: 0;
+  min-width: 1ch;
   padding: var(--spacing-xs) var(--spacing-sm);
   border: 1px solid transparent;
   border-radius: var(--radius-sm);
   cursor: text;
   white-space: pre-wrap;
   overflow-wrap: anywhere;
-  transition: background-color 120ms ease;
+  transition:
+    background-color 120ms ease,
+    border-color 120ms ease;
 }
 
+/* The text itself is the primary (large) edit target; hovering hints that it's
+   editable. The pencil is a secondary cue. */
 .ks-inline__value:hover {
   background: color-mix(in oklab, var(--color-border) 35%, transparent);
+}
+
+/* Placeholder for an empty field — shown via the contentEditable :empty state. */
+.ks-inline__value:empty::before {
+  content: attr(data-placeholder);
+  color: var(--color-text-muted);
+  font-weight: 400;
+}
+
+/* Editing in place: the same text node gets a primary border + surface fill so
+   it reads as an active field without a separate bubble. */
+.ks-inline.is-editing .ks-inline__value {
+  background: var(--color-surface);
+  border-color: var(--color-primary);
+  outline: 2px solid var(--color-primary-soft);
+  outline-offset: 0;
+  cursor: text;
 }
 
 .ks-inline__value:focus-visible {
@@ -2726,21 +2796,15 @@ button {
   outline-offset: 1px;
 }
 
-/* Empty value reads like placeholder text until the author fills it. */
-.ks-inline__value--empty {
-  color: var(--color-text-muted);
-  font-weight: 400;
-}
-
-/* Pencil affordance: reserved 44×44 tap target (hard rule #3), hidden until the
-   row is hovered or holds focus. */
+/* Pencil cue: small (the text is the real ≥44px target), hugs the text, and
+   fades in on hover/focus so it never clutters the canvas at rest. */
 .ks-inline__edit {
   flex: 0 0 auto;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 44px;
-  height: 44px;
+  width: 24px;
+  height: 24px;
   padding: 0;
   background: transparent;
   border: none;
@@ -2771,30 +2835,15 @@ button {
 }
 
 .ks-inline__edit svg {
-  width: 16px;
-  height: 16px;
-}
-
-.ks-inline__input {
-  width: 100%;
-  font-family: inherit;
-  color: var(--color-text-primary);
-  background: var(--color-surface);
-  border: 1px solid var(--color-primary);
-  border-radius: var(--radius-sm);
-  padding: var(--spacing-xs) var(--spacing-sm);
-  resize: vertical;
-}
-
-.ks-inline__input:focus {
-  outline: 2px solid var(--color-primary);
-  outline-offset: 1px;
+  width: 14px;
+  height: 14px;
 }
 
 /* ---------- Shared stage header (inline title + prompt) ---------- */
 .ks-stage-head {
   display: flex;
   flex-direction: column;
+  align-items: flex-start;
   gap: var(--spacing-xs);
   margin-bottom: var(--spacing-md);
 }
@@ -3193,7 +3242,7 @@ button {
 .ks-edit-dnd__chip-row.is-selected {
   background: var(--color-primary-soft);
   border-color: var(--color-primary);
-  box-shadow: 0 0 0 2px rgb(123 67 36 / 0.18);
+  box-shadow: 0 0 0 2px rgb(2 71 49 / 0.18);
 }
 
 .ks-edit-dnd__chip-row.is-zone-target {
@@ -3383,7 +3432,7 @@ button {
 .ks-edit-canvas__draft {
   position: absolute;
   border: 1.5px solid var(--color-primary);
-  background: rgb(123 67 36 / 0.18);
+  background: rgb(2 71 49 / 0.18);
   border-radius: 6px;
   pointer-events: none;
   box-shadow: 0 0 0 2px var(--color-primary-soft);
@@ -3407,21 +3456,21 @@ button {
 }
 
 .ks-edit-rect:hover {
-  background: rgb(123 67 36 / 0.14);
+  background: rgb(2 71 49 / 0.14);
   border-color: var(--color-primary-hover);
 }
 
 .ks-edit-rect.is-selected {
   border-style: solid;
-  background: rgb(123 67 36 / 0.16);
-  box-shadow: 0 0 0 2px var(--color-primary), 0 4px 14px rgb(123 67 36 / 0.24);
+  background: rgb(2 71 49 / 0.16);
+  box-shadow: 0 0 0 2px var(--color-primary), 0 4px 14px rgb(2 71 49 / 0.24);
 }
 
 .ks-edit-rect.is-dragging {
   cursor: grabbing;
   transition: none;
-  background: rgb(123 67 36 / 0.22);
-  box-shadow: 0 0 0 2px var(--color-primary), 0 8px 22px rgb(123 67 36 / 0.32);
+  background: rgb(2 71 49 / 0.22);
+  box-shadow: 0 0 0 2px var(--color-primary), 0 8px 22px rgb(2 71 49 / 0.32);
   z-index: 2;
 }
 
@@ -3508,13 +3557,13 @@ button {
 
 .ks-edit-node.is-selected {
   background: var(--color-primary-soft);
-  box-shadow: 0 0 0 2px var(--color-primary), 0 6px 16px rgb(123 67 36 / 0.25);
+  box-shadow: 0 0 0 2px var(--color-primary), 0 6px 16px rgb(2 71 49 / 0.25);
 }
 
 .ks-edit-node.is-dragging {
   cursor: grabbing;
   transition: none;
-  box-shadow: 0 0 0 2px var(--color-primary), 0 10px 24px rgb(123 67 36 / 0.35);
+  box-shadow: 0 0 0 2px var(--color-primary), 0 10px 24px rgb(2 71 49 / 0.35);
   z-index: 2;
 }
 
@@ -3543,20 +3592,20 @@ button {
 }
 
 .ks-edit-point:hover {
-  background: rgb(123 67 36 / 0.18);
+  background: rgb(2 71 49 / 0.18);
   transform: scale(1.06);
 }
 
 .ks-edit-point.is-selected {
-  background: rgb(123 67 36 / 0.22);
-  box-shadow: 0 0 0 3px var(--color-primary), 0 6px 16px rgb(123 67 36 / 0.3);
+  background: rgb(2 71 49 / 0.22);
+  box-shadow: 0 0 0 3px var(--color-primary), 0 6px 16px rgb(2 71 49 / 0.3);
 }
 
 .ks-edit-point.is-dragging {
   cursor: grabbing;
   transition: none;
-  background: rgb(123 67 36 / 0.3);
-  box-shadow: 0 0 0 3px var(--color-primary), 0 8px 22px rgb(123 67 36 / 0.36);
+  background: rgb(2 71 49 / 0.3);
+  box-shadow: 0 0 0 3px var(--color-primary), 0 8px 22px rgb(2 71 49 / 0.36);
   z-index: 2;
 }
 
@@ -4050,9 +4099,9 @@ html[data-theme="glass"] {
   --color-surface-glass: rgba(253, 248, 240, 0.68);
   --color-surface-glass-strong: rgba(253, 248, 240, 0.86);
   --color-border-glass: rgba(255, 255, 255, 0.55);
-  --color-border-glass-deep: rgba(123, 67, 36, 0.10);
-  --shadow-glass-card: 0 12px 32px rgb(123 67 36 / 0.08), 0 2px 8px rgb(0 0 0 / 0.04);
-  --shadow-glass-pop: 0 18px 48px rgb(123 67 36 / 0.14), 0 4px 12px rgb(0 0 0 / 0.05);
+  --color-border-glass-deep: rgba(2, 71, 49, 0.10);
+  --shadow-glass-card: 0 12px 32px rgb(2 71 49 / 0.08), 0 2px 8px rgb(0 0 0 / 0.04);
+  --shadow-glass-pop: 0 18px 48px rgb(2 71 49 / 0.14), 0 4px 12px rgb(0 0 0 / 0.05);
   --backdrop-glass: blur(20px) saturate(180%);
 }
 
@@ -4124,7 +4173,7 @@ html[data-theme="glass"] .ks-html,
 html[data-theme="glass"] .ks-file,
 html[data-theme="glass"] .ks-json__textarea {
   background: rgba(255, 255, 255, 0.78);
-  border-color: rgba(123, 67, 36, 0.18);
+  border-color: rgba(2, 71, 49, 0.18);
 }
 
 html[data-theme="glass"] .rjsf input:focus-visible,
@@ -4299,7 +4348,7 @@ html[data-theme="glass"] .kukui-theme-toggle {
 
 html[data-theme="glass"][data-color-scheme="dark"] body {
   background:
-    radial-gradient(at 12% 8%, rgba(123, 67, 36, 0.28) 0%, transparent 48%),
+    radial-gradient(at 12% 8%, rgba(2, 71, 49, 0.28) 0%, transparent 48%),
     radial-gradient(at 88% 12%, rgba(122, 86, 128, 0.24) 0%, transparent 52%),
     radial-gradient(at 84% 88%, rgba(46, 110, 65, 0.22) 0%, transparent 56%),
     radial-gradient(at 8% 92%, rgba(93, 138, 74, 0.18) 0%, transparent 52%),

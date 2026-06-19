@@ -16,6 +16,7 @@ export {
   type WebResults,
 } from "./scorm.js";
 export { ActivityHost } from "./activity-host.js";
+export { ActivityFooter } from "./activity-footer.js";
 export { parseCollectConfig, type CollectConfig } from "./collect.js";
 export {
   buildPayload,

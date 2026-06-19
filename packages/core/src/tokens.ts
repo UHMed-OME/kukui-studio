@@ -16,39 +16,41 @@
  * means: design-system.md → CSS @theme → here.
  */
 export const tokens = {
-  bg: "#fcf8f2",
+  bg: "#f3f6f4",
   surface: "#ffffff",
-  textPrimary: "#1c1e20",
-  textSecondary: "#606069",
-  border: "#dad2c6",
-  borderHover: "#bbae9a",
-  primary: "#7b4324",
-  primaryHover: "#9b5830",
+  textPrimary: "#16201b",
+  textSecondary: "#4b5a52",
+  border: "#ccd8d1",
+  borderHover: "#a7bcb1",
+  /** JABSOM green — primary brand accent. See docs/design-system.md. */
+  primary: "#024731",
+  primaryHover: "#0a5e41",
   success: "#2e6e41",
   error: "#c34132",
   /** Caution / "watch" / urgent — warm ochre. See docs/design-system.md. */
   warning: "#8a5a12",
   /** Neutral / informational — muted deep-ocean (kai) teal. */
   info: "#1f6f78",
-  tipBg: "#f2f0e8",
+  tipBg: "#e4ebe6",
   /** 3D canvas backdrop — added 2026-05-06 for r3f scenes. */
   canvas3d: "#0b0b10",
 } as const;
 
 export const tokensDark = {
-  bg: "#1c1917",
-  surface: "#292524",
-  textPrimary: "#fafaf9",
-  textSecondary: "#d6d3d1",
-  border: "#44403c",
-  borderHover: "#57534e",
-  primary: "#d39872",
-  primaryHover: "#e6b693",
+  bg: "#121815",
+  surface: "#1b2420",
+  textPrimary: "#f2f6f3",
+  textSecondary: "#c7d2cc",
+  border: "#35423b",
+  borderHover: "#495a51",
+  /** JABSOM green, lightened for dark surfaces. */
+  primary: "#5fc28f",
+  primaryHover: "#7fd0a8",
   success: "#86c79a",
   error: "#ed9183",
   warning: "#e0b35e",
   info: "#7fc3cc",
-  tipBg: "#292524",
+  tipBg: "#1b2420",
   canvas3d: "#000000",
 } as const;
 

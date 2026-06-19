@@ -21,14 +21,23 @@ describe("Studio sidebar — activity search", () => {
   });
   afterEach(() => cleanup());
 
-  it("renders every Bloom-grouped activity by default", () => {
+  it("expands the active Bloom section by default and collapses the rest", async () => {
+    const user = userEvent.setup();
     renderApp();
     const sidebar = screen.getByRole("navigation", { name: /activity type/i });
+    // Studio opens on Flashcards (Remember), so that section is expanded.
     expect(within(sidebar).getByRole("button", { name: /flashcards/i }))
       .toBeInTheDocument();
+    // Activities in other sections start collapsed, so they aren't rendered
+    // until their section is expanded (or a search reveals them).
+    expect(within(sidebar).queryByRole("button", { name: /drag and drop/i }))
+      .toBeNull();
+    // Searching forces every section open so matches are never hidden.
+    const input = within(sidebar).getByRole("searchbox", {
+      name: /search activities/i,
+    });
+    await user.type(input, "drag");
     expect(within(sidebar).getByRole("button", { name: /drag and drop/i }))
-      .toBeInTheDocument();
-    expect(within(sidebar).getByRole("button", { name: /lab panel/i }))
       .toBeInTheDocument();
   });
 
@@ -73,13 +82,16 @@ describe("Studio sidebar — activity search", () => {
     }) as HTMLInputElement;
 
     await user.type(input, "flash");
+    expect(within(sidebar).getByRole("button", { name: /flashcards/i }))
+      .toBeInTheDocument();
     expect(
       within(sidebar).queryByRole("button", { name: /drag and drop/i }),
     ).toBeNull();
 
     await user.click(within(sidebar).getByRole("button", { name: /clear search/i }));
     expect(input.value).toBe("");
-    expect(within(sidebar).getByRole("button", { name: /drag and drop/i }))
+    // Filter is cleared; the active (Remember) section's activities show again.
+    expect(within(sidebar).getByRole("button", { name: /flashcards/i }))
       .toBeInTheDocument();
   });
 

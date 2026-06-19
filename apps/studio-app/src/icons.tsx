@@ -72,6 +72,15 @@ export function SearchIcon(props: SVGProps<SVGSVGElement>) {
   );
 }
 
+/** Right-pointing chevron. Rotate 90° via CSS to indicate an expanded section. */
+export function ChevronIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg {...baseProps} {...props}>
+      <path d="M9 6l6 6-6 6" />
+    </svg>
+  );
+}
+
 export function DownloadIcon(props: SVGProps<SVGSVGElement>) {
   return (
     <svg {...baseProps} {...props}>

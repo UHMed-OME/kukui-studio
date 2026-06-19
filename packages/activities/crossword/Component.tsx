@@ -245,11 +245,28 @@ export default function Component({
   };
 
   const handleCellClick = (r: number, c: number) => {
-    if (!cellIndex.active.has(keyOf(r, c))) return;
+    const k = keyOf(r, c);
+    if (!cellIndex.active.has(k)) return;
+    // A cell can belong to an across word, a down word, or both. Keep
+    // `direction` in sync with what's actually answerable here: otherwise a
+    // cell with only an across word, clicked while direction is still "down",
+    // leaves `step()` advancing vertically — so typing jumps to the next row
+    // instead of running along the across answer the learner sees highlighted.
+    const hasAcross = cellIndex.across.has(k);
+    const hasDown = cellIndex.down.has(k);
     if (selected && selected.row === r && selected.col === c) {
-      setDirection((d) => (d === "across" ? "down" : "across"));
+      // Re-clicking the same cell toggles orientation, but only when the cell
+      // genuinely has both — never flip into an orientation with no word.
+      if (hasAcross && hasDown) {
+        setDirection((d) => (d === "across" ? "down" : "across"));
+      }
     } else {
       setSelected({ row: r, col: c });
+      // Prefer the current direction when this cell supports it; otherwise
+      // snap to the one orientation it does have.
+      setDirection((d) =>
+        d === "across" ? (hasAcross ? "across" : "down") : hasDown ? "down" : "across",
+      );
     }
     focusCell(r, c);
   };

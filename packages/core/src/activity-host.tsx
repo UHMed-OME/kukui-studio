@@ -8,6 +8,7 @@ import { ACTIVITY_REGISTRY, StubActivityLazy } from "./components/registry.js";
 import { PLANNED_ACTIVITY_KINDS } from "./planned.js";
 import { applyColorScheme, type ResolvedColorScheme } from "./colorScheme.js";
 import { WebCompletionPanel } from "./WebCompletionPanel.js";
+import { ActivityFooter } from "./activity-footer.js";
 
 export type { ActivityKind };
 
@@ -171,53 +172,6 @@ export function ActivityHost({
       ) : null}
       <ActivityFooter author={cfg?.author} />
     </>
-  );
-}
-
-/**
- * Tiny credit line shown beneath every activity. Identifies the platform
- * (links back to the open-source repo + license) and surfaces the author's
- * name when the JSON sets one. Stays out of the way visually so it doesn't
- * compete with the activity's own UI.
- */
-function ActivityFooter({ author }: { author?: string }) {
-  return (
-    <footer
-      style={{
-        maxWidth: 720,
-        margin: "12px auto 16px",
-        padding: "0 28px",
-        fontSize: 12,
-        color: "var(--color-text-muted, #6e6e76)",
-        textAlign: "center",
-        lineHeight: 1.6,
-      }}
-    >
-      {author ? (
-        <>
-          Authored by <strong>{author}</strong>
-          {" · "}
-        </>
-      ) : null}
-      Made with{" "}
-      <a
-        href="https://github.com/anthropics/kukui"
-        target="_blank"
-        rel="noopener noreferrer"
-        style={{ color: "inherit", textDecoration: "underline" }}
-      >
-        Kukui Studio
-      </a>
-      {" · "}
-      <a
-        href="https://opensource.org/license/mit"
-        target="_blank"
-        rel="noopener noreferrer"
-        style={{ color: "inherit", textDecoration: "underline" }}
-      >
-        MIT
-      </a>
-    </footer>
   );
 }
 

@@ -37,6 +37,7 @@ import { AsyncStatusStrip, type AsyncStatus } from "./AsyncStatusStrip.js";
 import { ValidationBadge } from "./ValidationBadge.js";
 import { humanizeMessage } from "./validation/humanizeIssue.js";
 import {
+  ChevronIcon,
   DownloadIcon,
   GearIcon,
   KukuiGlyphIcon,
@@ -197,12 +198,33 @@ export function App() {
   // hide one or the other. Desktop CSS ignores this — both panels show.
   const [mobilePanel, setMobilePanel] = useState<"edit" | "preview">("edit");
   const [search, setSearch] = useState("");
+  // Bloom sections in the sidebar collapse to cut nav clutter. Start with only
+  // the section that holds the current activity open (Remember on first load,
+  // since Studio opens on Flashcards); the rest collapse until clicked.
+  const [openBlooms, setOpenBlooms] = useState<Set<BloomLevel>>(
+    () => new Set<BloomLevel>([BLOOM_BY_KIND[kind] ?? "remember"]),
+  );
+  const toggleBloom = (level: BloomLevel) =>
+    setOpenBlooms((prev) => {
+      const next = new Set(prev);
+      if (next.has(level)) next.delete(level);
+      else next.add(level);
+      return next;
+    });
 
   // Reset preview mode whenever the picked activity changes — kinds with
   // an editor default to "edit", everything else to "live". Keeps the
   // toggle's hidden/shown state in sync with the rendered preview.
   useEffect(() => {
     setPreviewMode(hasEditor(kind) ? "edit" : "live");
+  }, [kind]);
+
+  // Whenever the active activity changes, make sure its Bloom section is
+  // expanded so the current selection is always visible in the sidebar.
+  useEffect(() => {
+    const level = BLOOM_BY_KIND[kind];
+    if (!level) return;
+    setOpenBlooms((prev) => (prev.has(level) ? prev : new Set(prev).add(level)));
   }, [kind]);
 
   // If the author is on the Scoring tab and switches to a Live activity
@@ -274,6 +296,10 @@ export function App() {
   const visibleAvailable = STUDIO_AVAILABLE.filter(matchesSearch);
   const visiblePlanned = STUDIO_PLANNED.filter(matchesSearch);
   const noVisibleActivities = visibleAvailable.length + visiblePlanned.length === 0;
+  // A Bloom section shows its activities when expanded — or always while a
+  // search is active, so matches are never hidden inside a collapsed section.
+  const isBloomOpen = (level: BloomLevel) =>
+    normalizedSearch !== "" || openBlooms.has(level);
 
   const handleSearchKeydown = (e: ReactKeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Escape") {
@@ -726,35 +752,60 @@ export function App() {
             .slice()
             .sort((a, b) => ACTIVITY_LABELS[a].localeCompare(ACTIVITY_LABELS[b]));
           if (kindsAtLevel.length === 0) return null;
+          const open = isBloomOpen(level);
           return (
             <div key={level} className="kukui-studio-sidebar__group" data-bloom={level}>
-              <h2 className="kukui-studio-sidebar__heading">{BLOOM_LABELS[level]}</h2>
-              <p className="kukui-studio-sidebar__tagline">{BLOOM_TAGLINES[level]}</p>
-              <ul className="kukui-studio-sidebar__list">
-                {kindsAtLevel.map((k) => (
-                  <li key={k}>
-                    <button
-                      type="button"
-                      className={[
-                        "kukui-studio-sidebar__btn",
-                        k === kind ? "is-active" : "",
-                      ]
-                        .filter(Boolean)
-                        .join(" ")}
-                      onClick={() => setKind(k)}
-                      aria-current={k === kind ? "true" : undefined}
-                    >
-                      <ActivityIcon
-                        kind={k}
-                        className="kukui-studio-sidebar__btn-icon"
-                      />
-                      <span className="kukui-studio-sidebar__btn-label">
-                        {ACTIVITY_LABELS[k]}
-                      </span>
-                    </button>
-                  </li>
-                ))}
-              </ul>
+              <button
+                type="button"
+                className="kukui-studio-sidebar__heading-btn"
+                aria-expanded={open}
+                onClick={() => toggleBloom(level)}
+                title={BLOOM_TAGLINES[level]}
+              >
+                <ChevronIcon
+                  className={[
+                    "kukui-studio-sidebar__chevron",
+                    open ? "is-open" : "",
+                  ]
+                    .filter(Boolean)
+                    .join(" ")}
+                  aria-hidden="true"
+                />
+                <span className="kukui-studio-sidebar__heading">{BLOOM_LABELS[level]}</span>
+                <span className="kukui-studio-sidebar__count" aria-hidden="true">
+                  {kindsAtLevel.length}
+                </span>
+              </button>
+              {open ? (
+                <>
+                  <p className="kukui-studio-sidebar__tagline">{BLOOM_TAGLINES[level]}</p>
+                  <ul className="kukui-studio-sidebar__list">
+                    {kindsAtLevel.map((k) => (
+                      <li key={k}>
+                        <button
+                          type="button"
+                          className={[
+                            "kukui-studio-sidebar__btn",
+                            k === kind ? "is-active" : "",
+                          ]
+                            .filter(Boolean)
+                            .join(" ")}
+                          onClick={() => setKind(k)}
+                          aria-current={k === kind ? "true" : undefined}
+                        >
+                          <ActivityIcon
+                            kind={k}
+                            className="kukui-studio-sidebar__btn-icon"
+                          />
+                          <span className="kukui-studio-sidebar__btn-label">
+                            {ACTIVITY_LABELS[k]}
+                          </span>
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                </>
+              ) : null}
             </div>
           );
         })}
@@ -885,70 +936,11 @@ export function App() {
                 AI Assist
               </button>
             </div>
-            <div className="kukui-studio-panel-actions">
-              <ValidationBadge result={validation} disabled={tab === "json"} />
-              <AsyncStatusStrip
-                status={asyncStatus}
-                onDismiss={() => setAsyncStatus(null)}
-              />
-              <MenuButton
-                label="Import"
-                icon={<UploadIcon />}
-                title="Import an activity"
-                items={[
-                  {
-                    label: "From local file…",
-                    icon: <UploadIcon />,
-                    onClick: triggerImport,
-                    title: "Open a JSON or SCORM zip from this computer",
-                    disabled: busy,
-                  },
-                  ...(driveEnabled()
-                    ? ([
-                        {
-                          label: "From Google Drive…",
-                          icon: <UploadIcon />,
-                          onClick: openFromDrive,
-                          title: "Pick a JSON file from your Google Drive",
-                          disabled: busy,
-                        },
-                      ] satisfies MenuItem[])
-                    : []),
-                ]}
-              />
-              <MenuButton
-                label="Export"
-                icon={<DownloadIcon />}
-                title="Export this activity"
-                items={[
-                  {
-                    label: "Download as JSON file",
-                    icon: <DownloadIcon />,
-                    onClick: exportJson,
-                    title: "Download a portable JSON snapshot",
-                    disabled: busy,
-                  },
-                  ...(driveEnabled()
-                    ? ([
-                        {
-                          label: "Save to Google Drive",
-                          icon: <DownloadIcon />,
-                          onClick: saveToDrive,
-                          title: "Save this activity to your Google Drive",
-                          disabled: busy,
-                        },
-                      ] satisfies MenuItem[])
-                    : []),
-                ]}
-              />
-              <button
-                type="button"
-                onClick={reset}
-                className="kukui-studio-btn kukui-studio-btn--ghost kukui-studio-btn--sm"
-              >
-                Reset
-              </button>
-            </div>
+            {/* Only the validation badge stays in this narrow right rail; the
+                document-level actions (import/export/reset) and the async
+                status strip moved to the wider preview/edit header so they
+                don't get clipped here. */}
+            <ValidationBadge result={validation} disabled={tab === "json"} />
           </div>
           <div className="kukui-studio-panel-body">
             {tab === "form" ? (
@@ -1021,14 +1013,77 @@ export function App() {
             ) : (
               <h2 className="kukui-studio-panel__heading">Live preview</h2>
             )}
-            <Tooltip
-              label="What does this mode show?"
-              text={
-                hasEditor(kind) && previewMode === "edit"
-                  ? "Drag elements directly on the canvas. The form on the right updates live."
-                  : "Renders the actual learner-facing component, exactly as it will appear after the SCORM zip is uploaded."
-              }
-            />
+            <div className="kukui-studio-panel-actions">
+              <Tooltip
+                label="What does this mode show?"
+                text={
+                  hasEditor(kind) && previewMode === "edit"
+                    ? "Drag elements directly on the canvas. The form on the right updates live."
+                    : "Renders the actual learner-facing component, exactly as it will appear after the SCORM zip is uploaded."
+                }
+              />
+              <AsyncStatusStrip
+                status={asyncStatus}
+                onDismiss={() => setAsyncStatus(null)}
+              />
+              <MenuButton
+                label="Import"
+                icon={<UploadIcon />}
+                title="Import an activity"
+                items={[
+                  {
+                    label: "From local file…",
+                    icon: <UploadIcon />,
+                    onClick: triggerImport,
+                    title: "Open a JSON or SCORM zip from this computer",
+                    disabled: busy,
+                  },
+                  ...(driveEnabled()
+                    ? ([
+                        {
+                          label: "From Google Drive…",
+                          icon: <UploadIcon />,
+                          onClick: openFromDrive,
+                          title: "Pick a JSON file from your Google Drive",
+                          disabled: busy,
+                        },
+                      ] satisfies MenuItem[])
+                    : []),
+                ]}
+              />
+              <MenuButton
+                label="Export"
+                icon={<DownloadIcon />}
+                title="Export this activity"
+                items={[
+                  {
+                    label: "Download as JSON file",
+                    icon: <DownloadIcon />,
+                    onClick: exportJson,
+                    title: "Download a portable JSON snapshot",
+                    disabled: busy,
+                  },
+                  ...(driveEnabled()
+                    ? ([
+                        {
+                          label: "Save to Google Drive",
+                          icon: <DownloadIcon />,
+                          onClick: saveToDrive,
+                          title: "Save this activity to your Google Drive",
+                          disabled: busy,
+                        },
+                      ] satisfies MenuItem[])
+                    : []),
+                ]}
+              />
+              <button
+                type="button"
+                onClick={reset}
+                className="kukui-studio-btn kukui-studio-btn--ghost kukui-studio-btn--sm"
+              >
+                Reset
+              </button>
+            </div>
           </div>
           <div className="kukui-studio-panel-body kukui-studio-preview">
             <Preview

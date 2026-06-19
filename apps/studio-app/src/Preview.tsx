@@ -1,6 +1,6 @@
 import { Component, Suspense, useMemo, useRef, useState, type ReactNode } from "react";
 import { SchemaRegistry, type SchemaRegistryKey } from "@kukui/schemas";
-import { type ActivityKind, PLANNED_ACTIVITY_KINDS } from "@kukui/core";
+import { type ActivityKind, PLANNED_ACTIVITY_KINDS, ActivityFooter } from "@kukui/core";
 import {
   ACTIVITY_REGISTRY,
   StubActivityLazy,
@@ -183,6 +183,9 @@ export function Preview({
             ) : (
               <Component config={fallbackConfig} onSubmit={() => {}} />
             )}
+            {/* Mirror the integrated runtime's credit line so the preview shows
+                exactly what learners see at the bottom of the activity. */}
+            <ActivityFooter author={(fallbackConfig as { author?: string })?.author} />
             {isLiveActivity(kind) ? (
               <LiveTestLauncher kind={kind} config={fallbackConfig} onChange={onChange} />
             ) : null}
@@ -233,6 +236,9 @@ export function Preview({
           ) : (
             <Component config={config} onSubmit={noop} />
           )}
+          {/* Mirror the integrated runtime's credit line so the preview shows
+              exactly what learners see at the bottom of the activity. */}
+          <ActivityFooter author={(config as { author?: string })?.author} />
           {isLiveActivity(kind) ? (
             <LiveTestLauncher kind={kind} config={config} onChange={onChange} />
           ) : null}
