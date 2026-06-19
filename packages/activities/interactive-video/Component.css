@@ -56,9 +56,20 @@
   background: var(--color-tip-bg, #f2f0e8);
 }
 
+/* Full-stage dim + pointer trap shown behind the interaction overlay. Covers
+   the whole stage (including a YouTube IFrame, whose own controls can't be
+   disabled) so the video can't be scrubbed or resumed mid-question. */
+.kukui-iv__scrim {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: rgb(0 0 0 / 0.5);
+}
+
 .kukui-iv__overlay {
   position: absolute;
   inset: auto 0 0 0;
+  z-index: 2;
   display: flex;
   justify-content: center;
   padding: var(--spacing-md, 12px);

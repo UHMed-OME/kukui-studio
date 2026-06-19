@@ -224,10 +224,16 @@ export default function Component({
         return;
       }
       if (it.required && t > it.atSeconds + TRIGGER_WINDOW) {
-        // Learner skipped past this required interaction. Seek back so the
-        // overlay fires as playback re-enters its trigger window.
-        c?.seek(Math.max(0, it.atSeconds - 0.5));
+        // Learner skipped past this required interaction — by scrubbing the
+        // timeline, or on a backend whose native scrubber we can't lock (the
+        // YouTube IFrame). Rewind to just *inside* the trigger window, pause,
+        // and present the overlay now. We can't wait to "re-enter the window
+        // on a later tick": the player is paused, and YouTube's poll reads a
+        // frozen currentTime, so on its own the overlay would never appear and
+        // the learner would be stuck at a rewound, paused video.
+        c?.seek(Math.max(0, it.atSeconds - TRIGGER_WINDOW / 2));
         c?.pause();
+        setActiveId(it.id);
         return;
       }
     }
@@ -325,12 +331,18 @@ export default function Component({
           )}
 
           {active ? (
-            <div
-              className="kukui-iv__overlay"
-              role="dialog"
-              aria-modal="true"
-              aria-label={`Interaction at ${Math.round(active.atSeconds)} seconds`}
-            >
+            <>
+              {/* Full-stage scrim: intercepts pointer events so the player
+                  underneath (notably the YouTube IFrame, whose own controls we
+                  can't disable) can't be scrubbed or resumed while a required
+                  interaction is open. Also dims the video to focus the task. */}
+              <div className="kukui-iv__scrim" aria-hidden="true" />
+              <div
+                className="kukui-iv__overlay"
+                role="dialog"
+                aria-modal="true"
+                aria-label={`Interaction at ${Math.round(active.atSeconds)} seconds`}
+              >
               <div className="kukui-iv__overlay-body">
                 {active.kind === "multipleChoice" ? (
                   <MultipleChoice
@@ -356,7 +368,8 @@ export default function Component({
                   </button>
                 </div>
               </div>
-            </div>
+              </div>
+            </>
           ) : null}
         </div>
 
