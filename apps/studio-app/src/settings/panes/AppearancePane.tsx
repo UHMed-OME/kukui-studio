@@ -28,9 +28,8 @@ const GROUPS: Group[] = [
   {
     label: "Display",
     options: [
-      { value: "system", label: "System", description: "Match your operating system theme." },
-      { value: "light", label: "Light", description: "Off-white stone palette." },
-      { value: "dark", label: "Dark", description: "Dark stone palette." },
+      { value: "light", label: "Light", description: "Neutral light with green accents (default)." },
+      { value: "dark", label: "Dark", description: "Neutral dark with green accents." },
     ],
   },
   {

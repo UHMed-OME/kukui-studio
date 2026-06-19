@@ -231,17 +231,32 @@ export default function Component({
         e.preventDefault();
         break;
       }
-      case " ":
-      case "Tab":
-        // Space toggles across/down; Tab is reserved for native flow.
-        if (e.key === " ") {
-          e.preventDefault();
+      case " ": {
+        // Space toggles across/down — but only on a cell that genuinely has
+        // both, so we never flip into an orientation with no word. (Tab is
+        // left to native focus flow; the input's onFocus reconciles direction.)
+        e.preventDefault();
+        const k = keyOf(r, c);
+        if (cellIndex.across.has(k) && cellIndex.down.has(k)) {
           setDirection((d) => (d === "across" ? "down" : "across"));
         }
         break;
+      }
       default:
         break;
     }
+  };
+
+  // Resolve a valid orientation for a cell, preferring `pref` when the cell
+  // supports it. Keeps `direction` in sync with what's actually answerable so
+  // step() never advances off the highlighted word — whether the cell was
+  // reached by click, Tab, or arrow navigation.
+  const orientationFor = (r: number, c: number, pref: Direction): Direction => {
+    const k = keyOf(r, c);
+    const hasAcross = cellIndex.across.has(k);
+    const hasDown = cellIndex.down.has(k);
+    if (pref === "across") return hasAcross ? "across" : hasDown ? "down" : "across";
+    return hasDown ? "down" : hasAcross ? "across" : "down";
   };
 
   const handleCellClick = (r: number, c: number) => {
@@ -531,7 +546,12 @@ export default function Component({
                         aria-label={`Row ${r + 1}, column ${c + 1}`}
                         onChange={(e) => handleInputChange(r, c, e.target.value)}
                         onKeyDown={(e) => handleKeyDown(e, r, c)}
-                        onFocus={() => setSelected({ row: r, col: c })}
+                        onFocus={() => {
+                          // Reconcile direction too — Tab/native focus moves
+                          // here without going through handleCellClick.
+                          setSelected({ row: r, col: c });
+                          setDirection((d) => orientationFor(r, c, d));
+                        }}
                       />
                       {/* Text mark paired with the colour so it still reads
                        *   when colour alone isn't perceivable (WCAG 1.4.1). */}

@@ -32,19 +32,35 @@ function isRichHtml(html: string): boolean {
 
 /** Render simple prompt HTML as the plain text an author would type. */
 function htmlToPlain(html: string): string {
-  return html
-    .replace(/<br\s*\/?>/gi, "\n")
-    .replace(/<\/p>\s*<p>/gi, "\n")
-    .replace(/<[^>]+>/g, "")
+  return decodeEntities(
+    html
+      .replace(/<br\s*\/?>/gi, "\n")
+      .replace(/<\/p>\s*<p>/gi, "\n")
+      .replace(/<[^>]+>/g, ""),
+  ).trim();
+}
+
+/** Decode the handful of entities our HTML uses, &amp; last to avoid double-decoding. */
+function decodeEntities(s: string): string {
+  return s
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
     .replace(/&nbsp;/gi, " ")
-    .trim();
+    .replace(/&amp;/g, "&");
+}
+
+/** Escape text so author-typed <, >, & can't inject markup when wrapped in HTML. */
+function escapeHtml(s: string): string {
+  return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
 
 /** Wrap freshly-typed plain text back into the <p>-wrapped HTML the runtime expects. */
 function plainToHtml(text: string): string {
   const trimmed = text.trim();
   if (trimmed === "") return "";
-  return `<p>${trimmed.replace(/\n/g, "<br>")}</p>`;
+  return `<p>${escapeHtml(trimmed).replace(/\n/g, "<br>")}</p>`;
 }
 
 export function StageHeader({
@@ -82,7 +98,7 @@ export function StageHeader({
             dangerouslySetInnerHTML={{ __html: prompt }}
           />
           <p className="ks-stage-head__hint">
-            Formatted prompt — edit it in <strong>Settings → Editor</strong> to keep its formatting.
+            Formatted prompt — edit it in the <strong>Editor</strong> form on the right to keep its formatting.
           </p>
         </div>
       ) : (

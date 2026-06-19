@@ -85,12 +85,19 @@ export function InlineEdit({
         className={["ks-inline__value", valueClassName].filter(Boolean).join(" ")}
         contentEditable={editing}
         suppressContentEditableWarning
-        role="textbox"
-        aria-label={ariaLabel}
-        aria-multiline={multiline || undefined}
+        // At rest it's a button (click to edit); while editing it's the textbox.
+        role={editing ? "textbox" : "button"}
+        aria-label={editing ? ariaLabel : editLabel}
+        aria-multiline={editing && multiline ? true : undefined}
         data-placeholder={placeholder}
         tabIndex={0}
         onClick={editing ? undefined : start}
+        onInput={(e) => {
+          // contentEditable can leave a stray <br> after a full clear, which
+          // defeats the :empty placeholder — normalise it back to truly empty.
+          const el = e.currentTarget;
+          if (el.textContent === "") el.innerHTML = "";
+        }}
         onKeyDown={(e) => {
           if (!editing) {
             if (e.key === "Enter" || e.key === " ") {
@@ -115,8 +122,6 @@ export function InlineEdit({
           className="ks-inline__edit"
           aria-label={editLabel}
           title={editLabel}
-          // Pointer-down (not click) so the value's blur doesn't fire first and
-          // race the state; we just enter edit mode.
           onClick={start}
         >
           <PencilIcon />

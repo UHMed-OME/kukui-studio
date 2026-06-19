@@ -35,16 +35,32 @@ const newHotspotId = (existing: string[]): string => {
   return `h-${i}`;
 };
 
-function Hotspot3DEditorEmpty() {
+function Hotspot3DEditorEmpty({
+  config,
+  onChange,
+}: {
+  config: Hotspot3DConfig;
+  onChange: (next: Hotspot3DConfig) => void;
+}) {
+  // Keep the stage header here too — title/prompt are hidden from the form, so
+  // without this the author couldn't name the activity until a model loads.
   return (
-    <div className="ks-edit-empty">
-      <p style={{ margin: "0 0 8px", fontWeight: 700, color: "var(--color-text-primary)" }}>
-        Set a model first.
-      </p>
-      <p style={{ margin: 0 }}>
-        Enter a GLB URL or a Sketchfab UID in the <strong>Model</strong> section of the
-        form on the right, then this canvas will load so you can place hotspots.
-      </p>
+    <div className="ks-edit-canvas">
+      <StageHeader
+        title={typeof config.title === "string" ? config.title : ""}
+        prompt={typeof config.prompt === "string" ? config.prompt : ""}
+        promptRequired
+        onPatch={(patch) => onChange({ ...config, ...patch })}
+      />
+      <div className="ks-edit-empty">
+        <p style={{ margin: "0 0 8px", fontWeight: 700, color: "var(--color-text-primary)" }}>
+          Set a model to place hotspots.
+        </p>
+        <p style={{ margin: 0 }}>
+          Enter a GLB URL or a Sketchfab UID in the <strong>Model</strong> section of the
+          form on the right, then this canvas will load so you can place hotspots.
+        </p>
+      </div>
     </div>
   );
 }
@@ -82,7 +98,7 @@ export function Hotspot3DEditor(props: {
 }) {
   const model = props.config.model;
   if (!model || (!model.src && !model.sketchfabUid)) {
-    return <Hotspot3DEditorEmpty />;
+    return <Hotspot3DEditorEmpty config={props.config} onChange={props.onChange} />;
   }
   return <Hotspot3DEditorInner {...props} />;
 }

@@ -57,9 +57,12 @@ export function resolveColorScheme(pref: ColorSchemePreference): ResolvedColorSc
 }
 
 export function getColorSchemePreference(): ColorSchemePreference {
-  if (typeof localStorage === "undefined") return "system";
+  // Light is the product default; dark is an explicit opt-in. "system" is no
+  // longer offered in the UI but stays valid here so any previously-stored
+  // preference still resolves (resolveColorScheme handles it).
+  if (typeof localStorage === "undefined") return "light";
   const raw = localStorage.getItem(STORAGE_KEY);
-  return isPreference(raw) ? raw : "system";
+  return isPreference(raw) ? raw : "light";
 }
 
 export function persistColorSchemePreference(pref: ColorSchemePreference): void {

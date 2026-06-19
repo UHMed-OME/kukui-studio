@@ -8,7 +8,7 @@ Single source of truth for visual design across all 7 activity types. Anything y
 2. **Layout-stable interactions.** State changes must not reflow neighbors. Reserve space; change colors only. (See `docs/lessons-learned/uss-and-ui-toolkit-runtime.md` §2.)
 3. **Touch-target minimum 44 × 44 px.** WCAG 2.2 AA target size and Apple HIG. Buttons get `min-height: 44`.
 4. **Contrast ratio ≥ 4.5:1** for body text on its background. Use the palette below; don't ad-hoc colors.
-5. **Hawaiian cultural framing without cliché.** Cool, clinical green-grey neutrals anchored by a deep JABSOM green (`#024731`) primary; kalo-green success; a warm ochre `Warning` and a restrained deep-ocean (`kai`) `Info` teal round out the semantic palette. The warm kukui-brown logo reads as a deliberate accent against the green-forward field (not brown-on-brown). No garish tropical cyans, no cocktail-umbrella aesthetics — the ocean accent stays muted and content-driven.
+5. **Hawaiian cultural framing without cliché.** Neutral cool-grey surfaces; the brand kukui-brown drives **primary actions** (buttons, selection, focus); a deep JABSOM green (`#024731`) **accent** marks structure & wayfinding (section headers, panel titles, active nav). Kalo-green success; a warm ochre `Warning` and a restrained deep-ocean (`kai`) `Info` teal round out the semantic palette. Brown + green are color-balanced on grey, with the brown logo harmonizing with brown actions. No garish tropical cyans, no cocktail-umbrella aesthetics — accents stay muted and content-driven.
 
 ## Color tokens
 
@@ -16,16 +16,18 @@ Defined as `static readonly Color` constants. Do not introduce new hex values wi
 
 | Token | RGB | Hex | Use |
 |---|---|---|---|
-| `Bg` | `0.953, 0.965, 0.957` | `#F3F6F4` | Page background (cool green-grey) |
+| `Bg` | `0.957, 0.961, 0.965` | `#F4F5F6` | Page background (neutral cool grey) |
 | `Surface` | `1, 1, 1` | `#FFFFFF` | Card/answer background |
-| `TextPrimary` | `0.086, 0.125, 0.106` | `#16201B` | Body text, titles (dark green-charcoal) |
-| `TextSecondary` | `0.294, 0.353, 0.322` | `#4B5A52` | Subtitles, captions, secondary copy. ≈ 7.3:1 on `Surface` |
-| `Border` | `0.800, 0.847, 0.820` | `#CCD8D1` | Default 1–2 px borders |
-| `BorderHover` | `0.655, 0.737, 0.694` | `#A7BCB1` | Border on hover (no fill change) |
-| `Primary` | `0.008, 0.278, 0.192` | `#024731` | Primary action, selection state — JABSOM green. ≈ 14:1 on `Surface` |
-| `PrimaryHover` | `0.039, 0.369, 0.255` | `#0A5E41` | Primary on hover |
+| `TextPrimary` | `0.094, 0.102, 0.110` | `#181A1C` | Body text, titles |
+| `TextSecondary` | `0.306, 0.329, 0.357` | `#4E545B` | Subtitles, captions, secondary copy. ≈ 7.1:1 on `Surface` |
+| `Border` | `0.831, 0.847, 0.867` | `#D4D8DD` | Default 1–2 px borders |
+| `BorderHover` | `0.702, 0.725, 0.753` | `#B3B9C0` | Border on hover (no fill change) |
+| `Primary` | `0.482, 0.263, 0.141` | `#7B4324` | Primary action, selection, focus — kukui brown. ≈ 8:1 on `Surface` |
+| `PrimaryHover` | `0.608, 0.345, 0.188` | `#9B5830` | Primary on hover |
 | `OnPrimary` | — | `#FFFFFF` | **Foreground for anything filled with `Primary`.** Always use this token, never a literal white — themes whose `Primary` is a *light* color (dark, OLED, high-contrast-dark, kalo, twilight) override it to a dark value so text/icons stay ≥4.5:1. Each `[data-color-scheme]` block sets its own `--color-on-primary`. |
 | `PrimarySoft` | `Primary @ 0.07 alpha` | — | Selected answer fill (very light) |
+| `Accent` | `0.008, 0.278, 0.192` | `#024731` | Structure & wayfinding — section headers, panel titles, active nav. JABSOM green. ≈ 10.8:1 on `Surface`. Dark scheme lightens to `#5FC28F`. Not for buttons (that's `Primary`). |
+| `AccentSoft` | `Accent @ 0.10 alpha` | — | Active-nav fill, header card tint |
 | `Success` | `0.180, 0.431, 0.255` | `#2E6E41` | Correct answers, kalo green |
 | `SuccessSoft` | `Success @ 0.10 alpha` | — | Correct answer fill |
 | `Error` | `0.764, 0.255, 0.196` | `#C34132` | Wrong answers, validation errors |
@@ -34,8 +36,8 @@ Defined as `static readonly Color` constants. Do not introduce new hex values wi
 | `WarningSoft` | `Warning @ 0.10 alpha` | — | Caution fill (watch vitals, urgent steps) |
 | `Info` | `0.122, 0.435, 0.471` | `#1F6F78` | Neutral / anatomical / informational accents — a muted deep-ocean (`kai`) teal, not a tropical cyan. ≈ 4.9:1 on `Surface`. Per-scheme overrides keep it AA |
 | `InfoSoft` | `Info @ 0.10 alpha` | — | Informational fill (neutral findings, legend swatches) |
-| `TipBg` | `0.894, 0.922, 0.902` | `#E4EBE6` | Tip / hint area |
-| `TextMuted` | `0.361, 0.416, 0.384` | `#5C6A62` | Tertiary / fine-print text (model attribution footers). ≈ 5.7:1 on `Surface`, ≈ 4.8:1 on `SurfaceAlt` — passes AA for body text; reserve for 12–13 px asides |
+| `TipBg` | `0.925, 0.933, 0.945` | `#ECEEF1` | Tip / hint area |
+| `TextMuted` | `0.369, 0.392, 0.420` | `#5E646B` | Tertiary / fine-print text (model attribution footers). ≈ 5.5:1 on `Surface`, ≈ 4.6:1 on `SurfaceAlt` — passes AA for body text; reserve for 12–13 px asides |
 | `Revealed` | `0.478, 0.361, 0.678` | `#7A5CAD` | "Revealed" state (e.g. crossword reveal-letter). Used only as a ≤ 22% tint over `Surface` and always paired with a mark glyph (◔) — never as a text color. White text on the full hex is ≈ 5.3:1 if ever needed |
 | `Canvas3D` | `0.043, 0.043, 0.063` | `#0B0B10` | 3D viewport backdrop (Hotspot 3D, Virtual Tour). White pin text on it is ≈ 19:1; per-scheme overrides keep it near-black so pins stay AA |
 

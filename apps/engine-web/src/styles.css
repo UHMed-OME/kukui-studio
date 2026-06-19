@@ -1,20 +1,20 @@
 @import "tailwindcss";
 
 @theme {
-  /* Cool kai-leaning neutrals with JABSOM green (#024731) as the primary —
+  /* Cool kai-leaning neutrals with JABSOM green (#7b4324) as the primary —
      green-forward so the warm kukui-brown logo reads as an accent. Mirrors
      studio-app and docs/design-system.md. Dark and other named schemes
      override below. */
-  --color-bg: #f3f6f4;
+  --color-bg: #f4f5f6;
   --color-surface: #ffffff;
-  --color-text-primary: #16201b;
-  --color-text-secondary: #4b5a52;
-  --color-text-muted: #5c6a62;
-  --color-border: #ccd8d1;
-  --color-border-hover: #a7bcb1;
-  --color-primary: #024731;
-  --color-primary-hover: #0a5e41;
-  --color-primary-soft: rgb(2 71 49 / 0.07);
+  --color-text-primary: #181a1c;
+  --color-text-secondary: #4e545b;
+  --color-text-muted: #5e646b;
+  --color-border: #d4d8dd;
+  --color-border-hover: #b3b9c0;
+  --color-primary: #7b4324;
+  --color-primary-hover: #9b5830;
+  --color-primary-soft: rgb(123 67 36 / 0.07);
   --color-success: #2e6e41;
   --color-success-soft: rgb(46 110 65 / 0.1);
   --color-error: #c34132;
@@ -23,7 +23,7 @@
   --color-warning-soft: rgb(138 90 18 / 0.10);
   --color-info: #1f6f78;
   --color-info-soft: rgb(31 111 120 / 0.10);
-  --color-tip-bg: #e4ebe6;
+  --color-tip-bg: #eceef1;
   --color-canvas-3d: #0b0b10;
 
   /* Elevation — subtle card depth. See docs/design-system.md. */
@@ -72,16 +72,16 @@
    preference doesn't reach the engine (different origin once unzipped),
    which is the right behavior: each context picks its own scheme. */
 html[data-color-scheme="dark"] {
-  --color-bg: #121815;
-  --color-surface: #1b2420;
-  --color-text-primary: #f2f6f3;
-  --color-text-secondary: #c7d2cc;
-  --color-text-muted: #94a39b;
-  --color-border: #35423b;
-  --color-border-hover: #495a51;
-  --color-primary: #5fc28f;
-  --color-primary-hover: #7fd0a8;
-  --color-primary-soft: rgb(95 194 143 / 0.16);
+  --color-bg: #161719;
+  --color-surface: #212327;
+  --color-text-primary: #f3f4f5;
+  --color-text-secondary: #c8cbcf;
+  --color-text-muted: #969aa0;
+  --color-border: #383b40;
+  --color-border-hover: #4c4f55;
+  --color-primary: #d39872;
+  --color-primary-hover: #e6b693;
+  --color-primary-soft: rgb(211 152 114 / 0.14);
   --color-success: #86c79a;
   --color-success-soft: rgb(134 199 154 / 0.16);
   --color-error: #ed9183;
@@ -90,7 +90,7 @@ html[data-color-scheme="dark"] {
   --color-warning-soft: rgb(224 179 94 / 0.16);
   --color-info: #7fc3cc;
   --color-info-soft: rgb(127 195 204 / 0.16);
-  --color-tip-bg: #1b2420;
+  --color-tip-bg: #212327;
   --color-canvas-3d: #000000;
 }
 

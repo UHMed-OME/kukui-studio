@@ -771,16 +771,14 @@ export function App() {
                     .join(" ")}
                   aria-hidden="true"
                 />
-                <span className="kukui-studio-sidebar__heading">{BLOOM_LABELS[level]}</span>
-                <span className="kukui-studio-sidebar__count" aria-hidden="true">
-                  {kindsAtLevel.length}
+                <span className="kukui-studio-sidebar__heading-text">
+                  <span className="kukui-studio-sidebar__heading">{BLOOM_LABELS[level]}</span>
+                  <span className="kukui-studio-sidebar__tagline">{BLOOM_TAGLINES[level]}</span>
                 </span>
               </button>
               {open ? (
-                <>
-                  <p className="kukui-studio-sidebar__tagline">{BLOOM_TAGLINES[level]}</p>
-                  <ul className="kukui-studio-sidebar__list">
-                    {kindsAtLevel.map((k) => (
+                <ul className="kukui-studio-sidebar__list">
+                  {kindsAtLevel.map((k) => (
                       <li key={k}>
                         <button
                           type="button"
@@ -804,7 +802,6 @@ export function App() {
                       </li>
                     ))}
                   </ul>
-                </>
               ) : null}
             </div>
           );
