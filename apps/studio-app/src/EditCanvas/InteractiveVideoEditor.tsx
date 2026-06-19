@@ -80,6 +80,141 @@ function htmlToText(html: string): string {
   return html.replace(/<[^>]+>/g, "").trim();
 }
 
+/** Extract the 11-char video id from watch / youtu.be / embed URLs. */
+function parseYouTubeId(src: string): string | null {
+  try {
+    const u = new URL(src);
+    if (u.hostname.includes("youtu.be")) return u.pathname.slice(1) || null;
+    const v = u.searchParams.get("v");
+    if (v) return v;
+    const m = u.pathname.match(/\/embed\/([^/?]+)/);
+    if (m) return m[1] ?? null;
+    return null;
+  } catch {
+    return /^[\w-]{6,}$/.test(src) ? src : null;
+  }
+}
+
+// --- Minimal YouTube IFrame Player API plumbing (editor-side) ----------------
+// We can't reuse the runtime YouTubeStage: it has no duration readout and bakes
+// in checkpoint polling. This loader is the same singleton pattern, but exposes
+// getDuration + a seek handle so the timeline can drive the player.
+type YTPlayer = {
+  playVideo: () => void;
+  pauseVideo: () => void;
+  seekTo: (seconds: number, allowSeekAhead: boolean) => void;
+  getCurrentTime: () => number;
+  getDuration: () => number;
+  destroy: () => void;
+};
+type YTNamespace = {
+  Player: new (
+    el: HTMLElement,
+    opts: {
+      videoId: string;
+      host?: string;
+      playerVars?: Record<string, number>;
+      events?: { onReady?: () => void };
+    },
+  ) => YTPlayer;
+};
+// Access the global without re-augmenting Window (YouTubeStage already does,
+// with a different shape — a second global augmentation would conflict).
+type YTWindow = Window & {
+  YT?: YTNamespace;
+  onYouTubeIframeAPIReady?: () => void;
+};
+
+let ytApiPromise: Promise<YTNamespace> | null = null;
+function loadYouTubeApi(): Promise<YTNamespace> {
+  const w = window as YTWindow;
+  if (w.YT?.Player) return Promise.resolve(w.YT);
+  if (ytApiPromise) return ytApiPromise;
+  ytApiPromise = new Promise<YTNamespace>((resolve) => {
+    const prev = w.onYouTubeIframeAPIReady;
+    w.onYouTubeIframeAPIReady = () => {
+      prev?.();
+      if (w.YT) resolve(w.YT);
+    };
+    const tag = document.createElement("script");
+    tag.src = "https://www.youtube.com/iframe_api";
+    document.head.appendChild(tag);
+  });
+  return ytApiPromise;
+}
+
+/**
+ * YouTube player for the editor. Renders the IFrame (with its native controls,
+ * so the author can scrub directly), reports currentTime + duration up via
+ * callbacks, and assigns a seek function into `seekRef` so the timeline track
+ * and markers can move the playhead.
+ */
+function YouTubeScrubber({
+  videoId,
+  onTime,
+  onDuration,
+  seekRef,
+}: {
+  videoId: string;
+  onTime: (seconds: number) => void;
+  onDuration: (seconds: number) => void;
+  seekRef: { current: ((seconds: number) => void) | null };
+}) {
+  const hostRef = useRef<HTMLDivElement>(null);
+  const onTimeRef = useRef(onTime);
+  const onDurationRef = useRef(onDuration);
+  onTimeRef.current = onTime;
+  onDurationRef.current = onDuration;
+
+  useEffect(() => {
+    if (!hostRef.current) return;
+    let cancelled = false;
+    let player: YTPlayer | null = null;
+    let poll: ReturnType<typeof setInterval> | null = null;
+
+    loadYouTubeApi()
+      .then((YT) => {
+        if (cancelled || !hostRef.current) return;
+        player = new YT.Player(hostRef.current, {
+          videoId,
+          host: "https://www.youtube-nocookie.com",
+          playerVars: { rel: 0, modestbranding: 1, playsinline: 1 },
+          events: {
+            onReady: () => {
+              seekRef.current = (s) => player?.seekTo(s, true);
+              poll = setInterval(() => {
+                if (!player) return;
+                if (typeof player.getCurrentTime === "function") {
+                  onTimeRef.current(player.getCurrentTime());
+                }
+                if (typeof player.getDuration === "function") {
+                  const d = player.getDuration();
+                  if (d > 0) onDurationRef.current(d);
+                }
+              }, 250);
+            },
+          },
+        });
+      })
+      .catch(() => {
+        /* API blocked/offline — falls back to the manual-length UI below. */
+      });
+
+    return () => {
+      cancelled = true;
+      if (poll) clearInterval(poll);
+      seekRef.current = null;
+      try {
+        player?.destroy();
+      } catch {
+        /* noop */
+      }
+    };
+  }, [videoId, seekRef]);
+
+  return <div ref={hostRef} className="ks-iv-tl__video" />;
+}
+
 export function InteractiveVideoEditor({
   config,
   onChange,
@@ -89,6 +224,8 @@ export function InteractiveVideoEditor({
 }) {
   const trackRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
+  // Seek handle for the YouTube player; assigned once the IFrame is ready.
+  const ytSeekRef = useRef<((seconds: number) => void) | null>(null);
 
   const interactions = useMemo<Interaction[]>(
     () => (Array.isArray(config.interactions) ? config.interactions : []),
@@ -97,7 +234,13 @@ export function InteractiveVideoEditor({
 
   const videoType = config.video?.type ?? "html5";
   const isHtml5 = videoType === "html5";
+  const isYouTube = videoType === "youtube";
   const src = config.video?.src ?? "";
+  const youTubeId = useMemo(
+    () => (isYouTube ? parseYouTubeId(src) : null),
+    [isYouTube, src],
+  );
+  const canScrub = (isHtml5 && !!src) || (isYouTube && !!youTubeId);
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [playhead, setPlayhead] = useState(0);
@@ -112,7 +255,7 @@ export function InteractiveVideoEditor({
   const [mediaDuration, setMediaDuration] = useState<number | null>(null);
   const [dragId, setDragId] = useState<string | null>(null);
 
-  const duration = isHtml5 && mediaDuration ? mediaDuration : manualDuration;
+  const duration = mediaDuration ?? manualDuration;
 
   // Reset transient UI when the activity (or its video) changes underneath us.
   useEffect(() => {
@@ -140,8 +283,13 @@ export function InteractiveVideoEditor({
 
   const seekTo = (t: number) => {
     setPlayhead(t);
-    const v = videoRef.current;
-    if (v && isHtml5 && Number.isFinite(t)) v.currentTime = t;
+    if (!Number.isFinite(t)) return;
+    if (isHtml5) {
+      const v = videoRef.current;
+      if (v) v.currentTime = t;
+    } else if (isYouTube) {
+      ytSeekRef.current?.(t);
+    }
   };
 
   const addAtPlayhead = () => {
@@ -195,9 +343,7 @@ export function InteractiveVideoEditor({
   return (
     <div className="ks-iv-tl">
       <p className="ks-edit-canvas__hint">
-        {isHtml5
-          ? "Scrub the video, then "
-          : "Set the clip length, then "}
+        {canScrub ? "Scrub the video, then " : "Set the clip length, then "}
         <strong>Add interaction</strong> drops a checkpoint at the playhead. Drag a
         marker to re-time it; click one to edit its question. Use the <strong>Live</strong>
         tab to test playback.
@@ -219,11 +365,18 @@ export function InteractiveVideoEditor({
             }}
             onTimeUpdate={(e) => setPlayhead(e.currentTarget.currentTime)}
           />
+        ) : isYouTube && youTubeId ? (
+          <YouTubeScrubber
+            videoId={youTubeId}
+            seekRef={ytSeekRef}
+            onTime={(t) => setPlayhead(t)}
+            onDuration={(d) => setMediaDuration(d)}
+          />
         ) : (
           <div className="ks-iv-tl__noscrub">
             <p>
               {src ? (
-                <>Live scrubbing here is MP4-only. This is a <strong>{videoType}</strong> source —
+                <>In-canvas scrubbing supports MP4 and YouTube. This is a <strong>{videoType}</strong> source —
                 set the length below, place markers, and test in the <strong>Live</strong> tab.</>
               ) : (
                 <>Add a video URL in the form to start placing interactions.</>
@@ -237,7 +390,7 @@ export function InteractiveVideoEditor({
         <button type="button" className="kukui-studio-btn kukui-studio-btn--primary" onClick={addAtPlayhead}>
           + Add interaction at {fmt(playhead)}
         </button>
-        {!(isHtml5 && mediaDuration) ? (
+        {!mediaDuration ? (
           <label className="ks-iv-tl__len">
             Clip length (s)
             <input
