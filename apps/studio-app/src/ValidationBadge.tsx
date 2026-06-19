@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import type { SchemaRegistry, SchemaRegistryKey } from "@kukui/schemas";
+import { humanizeFieldLabel, humanizeMessage } from "./validation/humanizeIssue.js";
 
 /**
  * Validation summary in the panel header. When the form is clean, renders
@@ -54,7 +55,11 @@ export function ValidationBadge({
     );
   }
 
-  const issues = result.error.issues;
+  const issues = result.error.issues as Array<{
+    path: ReadonlyArray<PropertyKey>;
+    message: string;
+    code?: string;
+  }>;
   const count = issues.length;
   const label = `${count} validation issue${count === 1 ? "" : "s"}`;
 
@@ -122,28 +127,23 @@ export function ValidationBadge({
             </button>
           </div>
           <ul className="kukui-studio-validation__list">
-            {issues.map((issue, i) => {
-              const pathStr = issue.path.length
-                ? issue.path.map((p) => String(p)).join(".")
-                : "(form)";
-              return (
-                <li key={i} className="kukui-studio-validation__item">
-                  <button
-                    type="button"
-                    className="kukui-studio-validation__btn"
-                    onClick={() => focusIssue(issue.path)}
-                  >
-                    <span className="kukui-studio-validation__path">
-                      {pathStr}
-                    </span>
-                    <span className="kukui-studio-validation__sep">:</span>{" "}
-                    <span className="kukui-studio-validation__msg">
-                      {issue.message}
-                    </span>
-                  </button>
-                </li>
-              );
-            })}
+            {issues.map((issue, i) => (
+              <li key={i} className="kukui-studio-validation__item">
+                <button
+                  type="button"
+                  className="kukui-studio-validation__btn"
+                  onClick={() => focusIssue(issue.path)}
+                >
+                  <span className="kukui-studio-validation__path">
+                    {humanizeFieldLabel(issue.path)}
+                  </span>
+                  <span className="kukui-studio-validation__sep">:</span>{" "}
+                  <span className="kukui-studio-validation__msg">
+                    {humanizeMessage(issue)}
+                  </span>
+                </button>
+              </li>
+            ))}
           </ul>
         </div>
       ) : null}

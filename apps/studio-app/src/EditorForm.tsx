@@ -104,6 +104,11 @@ export function EditorForm({
           liveValidate
           showErrorList={false}
           extraErrors={extraErrors}
+          // Drop AJV's raw, jargon-y messages ("must match format \"uri\"").
+          // Zod is the source of truth and its issues come through
+          // `extraErrors` already rewritten into plain English, so AJV only
+          // needs to flag *that* a field is invalid, not phrase it.
+          transformErrors={() => []}
           uiSchema={uiSchema}
           templates={{
             ArrayFieldTemplate,

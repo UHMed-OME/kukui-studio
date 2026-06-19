@@ -80,6 +80,84 @@ function htmlToText(html: string): string {
   return html.replace(/<[^>]+>/g, "").trim();
 }
 
+/**
+ * Parse a timecode the way an author would type it: "1:05" → 65, "12:03:40" →
+ * 43420, or a bare "90" → 90 seconds. Returns null on anything unparseable so
+ * the caller can revert to the last good value.
+ */
+function parseTimecode(input: string): number | null {
+  const s = input.trim();
+  if (s === "") return null;
+  if (/^\d+(\.\d+)?$/.test(s)) return parseFloat(s);
+  if (!/^\d{1,2}(:\d{1,2}){1,2}(\.\d+)?$/.test(s)) return null;
+  const parts = s.split(":").map(Number);
+  if (parts.some((n) => !Number.isFinite(n) || n < 0)) return null;
+  // Allow 60+ in the leading field (e.g. "80:00") but seconds/minutes columns
+  // that follow stay 0–59 by convention; we don't hard-reject to keep it lenient.
+  return parts.reduce((acc, n) => acc * 60 + n, 0);
+}
+
+/**
+ * Text input that shows/accepts m:ss timecodes but stores seconds. Keeps a
+ * local draft string while focused so typing isn't fought by reformatting;
+ * commits (parsed + clamped) on blur or Enter, reverting if unparseable.
+ */
+function TimecodeField({
+  label,
+  value,
+  onCommit,
+  max,
+  min = 0,
+  wrapClassName = "ks-iv-tl__field",
+}: {
+  label: string;
+  value: number;
+  onCommit: (seconds: number) => void;
+  max?: number;
+  min?: number;
+  wrapClassName?: string;
+}) {
+  const [text, setText] = useState(() => fmt(value));
+  const [focused, setFocused] = useState(false);
+
+  useEffect(() => {
+    if (!focused) setText(fmt(value));
+  }, [value, focused]);
+
+  const commit = () => {
+    const parsed = parseTimecode(text);
+    if (parsed === null) {
+      setText(fmt(value));
+      return;
+    }
+    let v = Math.max(min, parsed);
+    if (max != null) v = Math.min(v, max);
+    onCommit(v);
+    setText(fmt(v));
+  };
+
+  return (
+    <label className={wrapClassName}>
+      {label}
+      <input
+        type="text"
+        inputMode="numeric"
+        placeholder="m:ss"
+        value={text}
+        onChange={(e) => setText(e.target.value)}
+        onFocus={() => setFocused(true)}
+        onBlur={() => {
+          setFocused(false);
+          commit();
+        }}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") e.currentTarget.blur();
+        }}
+      />
+    </label>
+  );
+}
+
 /** Extract the 11-char video id from watch / youtu.be / embed URLs. */
 function parseYouTubeId(src: string): string | null {
   try {
@@ -391,18 +469,13 @@ export function InteractiveVideoEditor({
           + Add interaction at {fmt(playhead)}
         </button>
         {!mediaDuration ? (
-          <label className="ks-iv-tl__len">
-            Clip length (s)
-            <input
-              type="number"
-              min={1}
-              value={Math.round(manualDuration)}
-              onChange={(e) => {
-                const v = Number(e.target.value);
-                if (Number.isFinite(v) && v >= 1) setManualDuration(v);
-              }}
-            />
-          </label>
+          <TimecodeField
+            label="Clip length (m:ss)"
+            value={manualDuration}
+            min={1}
+            onCommit={(v) => setManualDuration(v)}
+            wrapClassName="ks-iv-tl__len"
+          />
         ) : (
           <span className="ks-iv-tl__len-readout">Length {fmt(duration)}</span>
         )}
@@ -502,20 +575,12 @@ function Inspector({
       </div>
 
       <div className="ks-iv-tl__row">
-        <label className="ks-iv-tl__field">
-          Time (s)
-          <input
-            type="number"
-            min={0}
-            max={Math.ceil(duration)}
-            step={0.5}
-            value={interaction.atSeconds}
-            onChange={(e) => {
-              const v = Number(e.target.value);
-              if (Number.isFinite(v) && v >= 0) onPatch({ atSeconds: v });
-            }}
-          />
-        </label>
+        <TimecodeField
+          label="Time (m:ss)"
+          value={interaction.atSeconds}
+          max={Math.ceil(duration)}
+          onCommit={(v) => onPatch({ atSeconds: v })}
+        />
         <label className="ks-iv-tl__check">
           <input
             type="checkbox"

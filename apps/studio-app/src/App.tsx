@@ -35,6 +35,7 @@ const AIEditor = lazy(() =>
 import { Tooltip } from "./Tooltip.js";
 import { AsyncStatusStrip, type AsyncStatus } from "./AsyncStatusStrip.js";
 import { ValidationBadge } from "./ValidationBadge.js";
+import { humanizeMessage } from "./validation/humanizeIssue.js";
 import {
   DownloadIcon,
   GearIcon,
@@ -1205,7 +1206,7 @@ function zodErrorsToExtraErrors(err: ZodError): ErrorSchema {
     const path = issue.path;
     if (path.length === 0) {
       const list = (root.__errors ??= []);
-      list.push(issue.message);
+      list.push(humanizeMessage(issue));
       continue;
     }
     // ErrorSchema is recursive: each path segment becomes a nested key.
@@ -1221,7 +1222,7 @@ function zodErrorsToExtraErrors(err: ZodError): ErrorSchema {
       node = node[seg] as Record<string, unknown>;
     }
     const list = (node.__errors as string[] | undefined) ?? [];
-    list.push(issue.message);
+    list.push(humanizeMessage(issue));
     node.__errors = list;
   }
   return root;
