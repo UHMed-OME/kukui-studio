@@ -1169,11 +1169,26 @@ button {
 .kukui-studio-main {
   grid-area: main;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  /* The edit/preview stage is the centre of gravity — give it the wide track
+     next to the activity sidebar so it reads as the artifact. Settings drop to
+     a narrower right rail (min 320px keeps form inputs usable). The visual
+     order is set with `order` on the panels below, so DOM/tab order keeps the
+     form (primary editing surface) ahead of the preview. */
+  grid-template-columns: minmax(0, 1.7fr) minmax(320px, 0.85fr);
   gap: var(--spacing-md);
   padding: var(--spacing-lg) var(--spacing-2xl);
   overflow: hidden;
   min-height: 0;
+}
+
+/* Centre stage first (wide, left/centre), settings rail second (narrow, right).
+   `order` rather than a DOM swap so keyboard/reading order is unaffected. */
+.kukui-studio-panel--preview {
+  order: 1;
+}
+
+.kukui-studio-panel--edit {
+  order: 2;
 }
 
 @media (max-width: 1100px) {
@@ -2672,6 +2687,155 @@ button {
   text-align: center;
   color: var(--color-text-secondary);
   font-size: var(--font-size-meta);
+}
+
+/* ---------- Inline hover-to-edit field (stage migration primitive) ---------- */
+/* A value renders read-only on the canvas; hovering or keyboard-focusing the
+   row reveals a pencil, which swaps the value for an inline input. The pencil
+   occupies reserved space and only fades in, so revealing it never reflows the
+   canvas (layout-stable hard rule). */
+.ks-inline {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  min-height: 44px;
+}
+
+.ks-inline--editing {
+  display: block;
+}
+
+.ks-inline__value {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  cursor: text;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  transition: background-color 120ms ease;
+}
+
+.ks-inline__value:hover {
+  background: color-mix(in oklab, var(--color-border) 35%, transparent);
+}
+
+.ks-inline__value:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 1px;
+}
+
+/* Empty value reads like placeholder text until the author fills it. */
+.ks-inline__value--empty {
+  color: var(--color-text-muted);
+  font-weight: 400;
+}
+
+/* Pencil affordance: reserved 44×44 tap target (hard rule #3), hidden until the
+   row is hovered or holds focus. */
+.ks-inline__edit {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-sm);
+  color: var(--color-text-muted);
+  cursor: pointer;
+  opacity: 0;
+  transition:
+    opacity 120ms ease,
+    background-color 120ms ease,
+    color 120ms ease;
+}
+
+.ks-inline:hover .ks-inline__edit,
+.ks-inline:focus-within .ks-inline__edit {
+  opacity: 1;
+}
+
+.ks-inline__edit:hover {
+  background: var(--color-primary-soft);
+  color: var(--color-primary);
+}
+
+.ks-inline__edit:focus-visible {
+  opacity: 1;
+  outline: 2px solid var(--color-primary);
+  outline-offset: 1px;
+}
+
+.ks-inline__edit svg {
+  width: 16px;
+  height: 16px;
+}
+
+.ks-inline__input {
+  width: 100%;
+  font-family: inherit;
+  color: var(--color-text-primary);
+  background: var(--color-surface);
+  border: 1px solid var(--color-primary);
+  border-radius: var(--radius-sm);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  resize: vertical;
+}
+
+.ks-inline__input:focus {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 1px;
+}
+
+/* ---------- Shared stage header (inline title + prompt) ---------- */
+.ks-stage-head {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  margin-bottom: var(--spacing-md);
+}
+
+/* Typography for the title/prompt — applied to both the read-only value and
+   the editor input so the row doesn't resize when it swaps to edit mode. */
+.ks-stage-head__title {
+  font-size: var(--font-size-title);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.ks-stage-head__prompt {
+  font-size: var(--font-size-prompt);
+  line-height: 1.5;
+}
+
+/* Read-only render shown when the prompt carries rich formatting the inline
+   plain-text editor would flatten. Matches the live component's HTML output. */
+.ks-stage-head__prompt-rich {
+  padding: var(--spacing-xs) var(--spacing-sm);
+}
+
+.ks-stage-head__prompt-render {
+  font-size: var(--font-size-prompt);
+  line-height: 1.5;
+  color: var(--color-text-secondary);
+}
+
+.ks-stage-head__prompt-render :first-child {
+  margin-top: 0;
+}
+
+.ks-stage-head__prompt-render :last-child {
+  margin-bottom: 0;
+}
+
+.ks-stage-head__hint {
+  margin: var(--spacing-xs) 0 0;
+  font-size: var(--font-size-micro);
+  color: var(--color-text-muted);
 }
 
 /* ---------- Interactive-video timeline editor ---------- */
@@ -5295,6 +5459,13 @@ html[data-theme="glass"] .kukui-studio-footer {
   gap: var(--spacing-md);
   height: 100%;
   min-height: 480px;
+}
+
+/* The stage header sits as a full-width row above the viewport/inspector grid
+   tracks. The grid gap supplies its bottom spacing, so zero its own margin. */
+.ks-h3d-editor > .ks-stage-head {
+  grid-column: 1 / -1;
+  margin-bottom: 0;
 }
 
 @media (max-width: 880px) {

@@ -1025,7 +1025,7 @@ export function App() {
               label="What does this mode show?"
               text={
                 hasEditor(kind) && previewMode === "edit"
-                  ? "Drag elements directly on the canvas. The form on the left updates live."
+                  ? "Drag elements directly on the canvas. The form on the right updates live."
                   : "Renders the actual learner-facing component, exactly as it will appear after the SCORM zip is uploaded."
               }
             />

@@ -8,6 +8,7 @@ import {
 } from "react";
 import type { AnatomyLabelingConfig } from "@kukui/schemas";
 import { ContextMenu, type ContextMenuPos } from "./ContextMenu.js";
+import { StageHeader } from "./StageHeader.js";
 import { reorder, roundCoord, type ZOrderOp } from "./zorder.js";
 
 const roundPoint = <T extends { x: number; y: number }>(p: T): T => ({
@@ -192,10 +193,16 @@ export function AnatomyLabelingEditor({
 
   return (
     <div className="ks-edit-canvas">
+      <StageHeader
+        title={typeof config.title === "string" ? config.title : ""}
+        prompt={typeof config.prompt === "string" ? config.prompt : ""}
+        promptRequired
+        onPatch={(patch) => onChange({ ...config, ...patch })}
+      />
       <p className="ks-edit-canvas__hint">
         Click the image to drop a target. Drag to reposition. Right-click for stacking.
         <kbd>Delete</kbd> removes the selected target. Labels are edited in the form on the
-        left — they reference targets by id.
+        right — they reference targets by id.
       </p>
       <div
         ref={boardRef}

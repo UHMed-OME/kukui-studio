@@ -29,8 +29,6 @@ function f(title: string, help?: string, extra: Record<string, unknown> = {}) {
   };
 }
 
-const TITLE = f("Activity title", "Shown at the top of the activity and as the SCORM activity name.");
-
 const AUTHOR = f(
   "Author (optional)",
   "Your name. Shown in the small credit line at the bottom of the activity.",
@@ -43,7 +41,8 @@ const BEHAVIOUR_RETRY = HIDDEN;
 const uiSchema = {
   ...COMMON,
   "ui:order": ["title", "prompt", "model", "camera", "hotspots", "behaviour", "ui", "*"],
-  title: TITLE,
+  // Title is authored on the visual editor's stage header, not the form.
+  title: HIDDEN,
   author: AUTHOR,
   prompt: f(
     "Prompt shown to the learner",

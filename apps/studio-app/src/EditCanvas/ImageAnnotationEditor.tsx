@@ -8,6 +8,7 @@ import {
 } from "react";
 import type { ImageAnnotationConfig } from "@kukui/schemas";
 import { ContextMenu, type ContextMenuPos } from "./ContextMenu.js";
+import { StageHeader } from "./StageHeader.js";
 import { reorder, roundCoord, type ZOrderOp } from "./zorder.js";
 import {
   minNormalized,
@@ -232,6 +233,12 @@ export function ImageAnnotationEditor({
 
   return (
     <div className="ks-edit-canvas">
+      <StageHeader
+        title={typeof config.title === "string" ? config.title : ""}
+        prompt={typeof config.prompt === "string" ? config.prompt : ""}
+        promptRequired
+        onPatch={(patch) => onChange({ ...config, ...patch })}
+      />
       <p className="ks-edit-canvas__hint">
         Drag on the image to draw an expected-answer region. These are the marks the activity
         will compare learner annotations against. Right-click for stacking. <kbd>Delete</kbd>

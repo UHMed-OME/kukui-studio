@@ -4,6 +4,7 @@ import { OrbitControls } from "@react-three/drei";
 import * as THREE from "three";
 import type { Hotspot3DConfig } from "@kukui/schemas";
 import { HotspotPin } from "@kukui/core/components/_shared/HotspotPin";
+import { StageHeader } from "./StageHeader.js";
 import {
   GLBErrorBoundary,
   GLBLoadingOverlay,
@@ -42,7 +43,7 @@ function Hotspot3DEditorEmpty() {
       </p>
       <p style={{ margin: 0 }}>
         Enter a GLB URL or a Sketchfab UID in the <strong>Model</strong> section of the
-        form on the left, then this canvas will load so you can place hotspots.
+        form on the right, then this canvas will load so you can place hotspots.
       </p>
     </div>
   );
@@ -298,6 +299,12 @@ function Hotspot3DEditorInner({
 
   return (
     <div className="ks-h3d-editor">
+      <StageHeader
+        title={typeof config.title === "string" ? config.title : ""}
+        prompt={typeof config.prompt === "string" ? config.prompt : ""}
+        promptRequired
+        onPatch={(patch) => onChange({ ...config, ...patch })}
+      />
       <div
         className="ks-h3d-editor__viewport"
         ref={canvasRef}

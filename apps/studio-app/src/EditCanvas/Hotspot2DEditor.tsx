@@ -8,6 +8,7 @@ import {
 } from "react";
 import type { Hotspot2DConfig } from "@kukui/schemas";
 import { ContextMenu, type ContextMenuPos } from "./ContextMenu.js";
+import { StageHeader } from "./StageHeader.js";
 import { reorder, roundCoord, type ZOrderOp } from "./zorder.js";
 import {
   minNormalized,
@@ -241,6 +242,12 @@ export function Hotspot2DEditor({
 
   return (
     <div className="ks-edit-canvas">
+      <StageHeader
+        title={typeof config.title === "string" ? config.title : ""}
+        prompt={typeof config.prompt === "string" ? config.prompt : ""}
+        promptRequired
+        onPatch={(patch) => onChange({ ...config, ...patch })}
+      />
       <p className="ks-edit-canvas__hint">
         Drag on the image to draw a hotspot. Click to select; drag to move, corner handle to
         resize. Toggle <em>Correct</em> on a selected hotspot. Right-click a hotspot for

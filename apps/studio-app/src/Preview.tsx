@@ -145,7 +145,7 @@ export function Preview({
               ))}
           </ul>
           <p style={{ fontSize: 12, color: "var(--color-text-secondary)" }}>
-            Fill in the highlighted fields on the left, then the preview reappears.
+            Fill in the highlighted fields in the form, then the preview reappears.
           </p>
         </div>
       );
@@ -172,7 +172,7 @@ export function Preview({
         <Suspense fallback={<PreviewLoading />}>
           <div className="kukui-studio-preview-stale" role="status" aria-live="polite">
             <strong>Form has unresolved errors</strong> — preview is paused at the last valid
-            state. Fix the highlighted fields on the left to resume live updates.
+            state. Fix the highlighted fields in the form to resume live updates.
           </div>
           <div
             className="kukui-studio-preview-scheme"

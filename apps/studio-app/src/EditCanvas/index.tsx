@@ -80,7 +80,7 @@ function EditUnsupported({ kind }: { kind: ActivityKind }) {
         Visual editor for <em>{kind}</em> is on the way.
       </p>
       <p style={{ margin: 0 }}>
-        For now, edit values in the form on the left and switch to <strong>Live</strong> here to
+        For now, edit values in the form on the right and switch to <strong>Live</strong> here to
         see them rendered.
       </p>
     </div>

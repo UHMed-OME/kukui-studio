@@ -5,6 +5,7 @@ import {
   useState,
   type PointerEvent as ReactPointerEvent,
 } from "react";
+import { StageHeader } from "./StageHeader.js";
 
 /**
  * Visual timeline editor for the interactive-video activity.
@@ -426,6 +427,11 @@ export function InteractiveVideoEditor({
 
   return (
     <div className="ks-iv-tl">
+      <StageHeader
+        title={typeof config.title === "string" ? config.title : ""}
+        prompt={typeof config.prompt === "string" ? config.prompt : ""}
+        onPatch={(patch) => onChange({ ...config, ...patch })}
+      />
       <p className="ks-edit-canvas__hint">
         {canScrub ? "Scrub the video, then " : "Set the clip length, then "}
         <strong>Add interaction</strong> drops a checkpoint at the playhead. Drag a
@@ -650,7 +656,7 @@ function Inspector({
         </>
       ) : (
         <p className="ks-iv-tl__note">
-          This is a fill-in-the-blanks checkpoint. Edit its content in the form on the left.
+          This is a fill-in-the-blanks checkpoint. Edit its content in the form on the right.
         </p>
       )}
     </div>

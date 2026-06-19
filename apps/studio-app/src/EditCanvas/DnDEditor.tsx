@@ -9,6 +9,7 @@ import {
 } from "react";
 import type { DragAndDropConfig } from "@kukui/schemas";
 import { ContextMenu, type ContextMenuPos } from "./ContextMenu.js";
+import { StageHeader } from "./StageHeader.js";
 import { DnDChipPanel } from "./DnDChipPanel.js";
 import { DnDLinkOverlay } from "./DnDLinkOverlay.js";
 import { reorder, roundCoord, type ZOrderOp } from "./zorder.js";
@@ -304,6 +305,11 @@ export function DnDEditor({
 
   return (
     <div className="ks-edit-dnd">
+      <StageHeader
+        title={typeof config.title === "string" ? config.title : ""}
+        prompt={typeof config.prompt === "string" ? config.prompt : ""}
+        onPatch={(patch) => onChange({ ...config, ...patch })}
+      />
       <div className="ks-edit-dnd__toolbar">
         <p className="ks-edit-dnd__hint">
           Drag on the background to draw a zone. Click a zone to select; drag to move, corner

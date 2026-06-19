@@ -8,6 +8,7 @@ import {
 } from "react";
 import type { ConceptMapConfig } from "@kukui/schemas";
 import { ContextMenu, type ContextMenuPos } from "./ContextMenu.js";
+import { StageHeader } from "./StageHeader.js";
 import { reorder, roundCoord, type ZOrderOp } from "./zorder.js";
 
 const roundPoint = <T extends { x: number; y: number }>(p: T): T => ({
@@ -188,9 +189,15 @@ export function ConceptMapEditor({
 
   return (
     <div className="ks-edit-canvas">
+      <StageHeader
+        title={typeof config.title === "string" ? config.title : ""}
+        prompt={typeof config.prompt === "string" ? config.prompt : ""}
+        promptRequired
+        onPatch={(patch) => onChange({ ...config, ...patch })}
+      />
       <p className="ks-edit-canvas__hint">
         Click the canvas to drop a starter node. Drag to reposition. Right-click for stacking.
-        <kbd>Delete</kbd> removes the selected node. Labels are edited in the form on the left.
+        <kbd>Delete</kbd> removes the selected node. Labels are edited in the form on the right.
       </p>
       <div
         ref={boardRef}

@@ -43,11 +43,6 @@ const COMMON = {
   appearance: APPEARANCE,
 } as const;
 
-const TITLE = f(
-  "Activity title",
-  "Shown at the top of the activity and as the SCORM activity name.",
-);
-
 const AUTHOR = f(
   "Author (optional)",
   "Your name. Shown in the small credit line at the bottom of the activity.",
@@ -61,7 +56,8 @@ const BEHAVIOUR_SINGLEPOINT = HIDDEN;
 const uiSchema = {
   ...COMMON,
   "ui:order": ["title", "prompt", "image", "labels", "targets", "behaviour", "ui", "*"],
-  title: TITLE,
+  // Title is authored on the visual editor's stage header, not the form.
+  title: HIDDEN,
   author: AUTHOR,
   prompt: f("Prompt", "Tells the learner what to label.", {
     "ui:widget": "html",
