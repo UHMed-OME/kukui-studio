@@ -69,17 +69,11 @@ const uiSchema = {
     type: f("Source type", "html5 for direct MP4; otherwise youtube / vimeo."),
     poster: f("Poster image", "Optional. Shown before play."),
   },
-  interactions: {
-    "ui:title": "Time-coded interactions",
-    "ui:help": "Each interaction pauses the video and renders a sub-activity.",
-    items: {
-      id: HIDDEN,
-      // Timing is set on the Edit timeline (as m:ss), not as raw seconds here.
-      atSeconds: HIDDEN,
-      kind: f("Interaction kind", "Which sub-activity to render."),
-      required: f("Required", "Block playback resume until answered."),
-    },
-  },
+  // Interactions are authored on the visual timeline (the Edit tab), not in
+  // this form: a raw RJSF array can't seed a valid sub-activity `config` (it's
+  // a free-form record) or set timecodes, so adding one here produced a broken,
+  // unfixable item. Hidden so the timeline is the single, working path.
+  interactions: HIDDEN,
   behaviour: {
     "ui:title": "Activity behaviour",
     enableRetry: BEHAVIOUR_RETRY,

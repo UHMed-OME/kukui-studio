@@ -396,7 +396,13 @@ export function InteractiveVideoEditor({
     e.stopPropagation();
     setSelectedId(id);
     setDragId(id);
-    (e.target as HTMLElement).setPointerCapture(e.pointerId);
+    // Pointer capture keeps the drag tracking if the cursor leaves the marker.
+    // Guarded: it can throw InvalidStateError, and isn't present in jsdom.
+    try {
+      (e.target as HTMLElement).setPointerCapture?.(e.pointerId);
+    } catch {
+      /* capture unavailable — drag still works via the track's move handler */
+    }
   };
 
   const onTrackPointerMove = (e: ReactPointerEvent<HTMLDivElement>) => {
