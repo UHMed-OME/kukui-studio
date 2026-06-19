@@ -52,9 +52,9 @@
   --color-text-muted: #5e646b;
   --color-border: #d4d8dd;
   --color-border-hover: #b3b9c0;
-  --color-primary: #7b4324;
-  --color-primary-hover: #9b5830;
-  --color-primary-soft: rgb(123 67 36 / 0.07);
+  --color-primary: #024731;
+  --color-primary-hover: #0a5e41;
+  --color-primary-soft: rgb(2 71 49 / 0.07);
   --color-on-primary: #ffffff;
   /* JABSOM green accent — structure & wayfinding (section headers, panel
      titles, active nav). Primary (brown) stays for buttons/selection/focus. */
@@ -144,10 +144,10 @@
   --color-text-muted: #969aa0;
   --color-border: #383b40;
   --color-border-hover: #4c4f55;
-  --color-primary: #d39872;
-  --color-primary-hover: #e6b693;
-  --color-primary-soft: rgb(211 152 114 / 0.14);
-  --color-on-primary: #1c140d;
+  --color-primary: #5fc28f;
+  --color-primary-hover: #7fd0a8;
+  --color-primary-soft: rgb(95 194 143 / 0.16);
+  --color-on-primary: #07140e;
   --color-accent: #5fc28f;
   --color-accent-hover: #7fd0a8;
   --color-accent-soft: rgb(95 194 143 / 0.16);
@@ -195,9 +195,9 @@
   --color-text-muted: #5e646b;
   --color-border: #d4d8dd;
   --color-border-hover: #b3b9c0;
-  --color-primary: #7b4324;
-  --color-primary-hover: #9b5830;
-  --color-primary-soft: rgb(123 67 36 / 0.07);
+  --color-primary: #024731;
+  --color-primary-hover: #0a5e41;
+  --color-primary-soft: rgb(2 71 49 / 0.07);
   --color-on-primary: #ffffff;
   /* JABSOM green accent — structure & wayfinding (section headers, panel
      titles, active nav). Primary (brown) stays for buttons/selection/focus. */
@@ -839,7 +839,7 @@ button {
   background: var(--color-primary-hover);
   border-color: var(--color-primary-hover);
   box-shadow:
-    0 6px 16px rgb(123 67 36 / 0.18),
+    0 6px 16px rgb(2 71 49 / 0.18),
     inset 0 1px 0 rgb(255 255 255 / 0.15);
 }
 
@@ -1103,6 +1103,7 @@ button {
    chevron on the trailing edge. Quiet at rest; lifts subtly on hover and when
    the section is open, so it reads as a grouped surface without shouting. */
 .kukui-studio-sidebar__heading-btn {
+  position: relative;
   display: flex;
   align-items: center;
   gap: var(--spacing-sm);
@@ -1118,6 +1119,17 @@ button {
     background-color 140ms ease,
     border-color 140ms ease,
     box-shadow 140ms ease;
+}
+
+/* Bloom-coloured edge — a thin bar on the leading edge tints each section by
+   its Bloom verb (Remember=amber, Understand=sage, …) for at-a-glance level. */
+.kukui-studio-sidebar__heading-btn::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 3px;
+  background: var(--bloom-color, var(--color-border));
+  border-radius: var(--radius-md) 0 0 var(--radius-md);
 }
 
 .kukui-studio-sidebar__heading-btn:hover {
@@ -2665,16 +2677,16 @@ button {
 }
 
 .ks-edit-dnd__zone:hover {
-  background: rgb(123 67 36 / 0.14);
+  background: rgb(2 71 49 / 0.14);
   border-color: var(--color-primary-hover);
 }
 
 .ks-edit-dnd__zone.is-selected {
   border-style: solid;
-  background: rgb(123 67 36 / 0.16);
+  background: rgb(2 71 49 / 0.16);
   box-shadow:
     0 0 0 2px var(--color-primary),
-    0 4px 14px rgb(123 67 36 / 0.24);
+    0 4px 14px rgb(2 71 49 / 0.24);
 }
 
 .ks-edit-dnd__zone.is-dragging {
@@ -2682,10 +2694,10 @@ button {
   /* Disable color transitions during the drag — visual changes should be
      instantaneous so the drag feels glued to the cursor. */
   transition: none;
-  background: rgb(123 67 36 / 0.22);
+  background: rgb(2 71 49 / 0.22);
   box-shadow:
     0 0 0 2px var(--color-primary),
-    0 8px 22px rgb(123 67 36 / 0.32);
+    0 8px 22px rgb(2 71 49 / 0.32);
   z-index: 2;
 }
 
@@ -2755,7 +2767,7 @@ button {
 .ks-edit-dnd__draft {
   position: absolute;
   border: 1.5px solid var(--color-primary);
-  background: rgb(123 67 36 / 0.18);
+  background: rgb(2 71 49 / 0.18);
   border-radius: 6px;
   pointer-events: none;
   box-shadow: 0 0 0 2px var(--color-primary-soft);
@@ -3285,7 +3297,7 @@ button {
 .ks-edit-dnd__chip-row.is-selected {
   background: var(--color-primary-soft);
   border-color: var(--color-primary);
-  box-shadow: 0 0 0 2px rgb(123 67 36 / 0.18);
+  box-shadow: 0 0 0 2px rgb(2 71 49 / 0.18);
 }
 
 .ks-edit-dnd__chip-row.is-zone-target {
@@ -3475,7 +3487,7 @@ button {
 .ks-edit-canvas__draft {
   position: absolute;
   border: 1.5px solid var(--color-primary);
-  background: rgb(123 67 36 / 0.18);
+  background: rgb(2 71 49 / 0.18);
   border-radius: 6px;
   pointer-events: none;
   box-shadow: 0 0 0 2px var(--color-primary-soft);
@@ -3499,21 +3511,21 @@ button {
 }
 
 .ks-edit-rect:hover {
-  background: rgb(123 67 36 / 0.14);
+  background: rgb(2 71 49 / 0.14);
   border-color: var(--color-primary-hover);
 }
 
 .ks-edit-rect.is-selected {
   border-style: solid;
-  background: rgb(123 67 36 / 0.16);
-  box-shadow: 0 0 0 2px var(--color-primary), 0 4px 14px rgb(123 67 36 / 0.24);
+  background: rgb(2 71 49 / 0.16);
+  box-shadow: 0 0 0 2px var(--color-primary), 0 4px 14px rgb(2 71 49 / 0.24);
 }
 
 .ks-edit-rect.is-dragging {
   cursor: grabbing;
   transition: none;
-  background: rgb(123 67 36 / 0.22);
-  box-shadow: 0 0 0 2px var(--color-primary), 0 8px 22px rgb(123 67 36 / 0.32);
+  background: rgb(2 71 49 / 0.22);
+  box-shadow: 0 0 0 2px var(--color-primary), 0 8px 22px rgb(2 71 49 / 0.32);
   z-index: 2;
 }
 
@@ -3600,13 +3612,13 @@ button {
 
 .ks-edit-node.is-selected {
   background: var(--color-primary-soft);
-  box-shadow: 0 0 0 2px var(--color-primary), 0 6px 16px rgb(123 67 36 / 0.25);
+  box-shadow: 0 0 0 2px var(--color-primary), 0 6px 16px rgb(2 71 49 / 0.25);
 }
 
 .ks-edit-node.is-dragging {
   cursor: grabbing;
   transition: none;
-  box-shadow: 0 0 0 2px var(--color-primary), 0 10px 24px rgb(123 67 36 / 0.35);
+  box-shadow: 0 0 0 2px var(--color-primary), 0 10px 24px rgb(2 71 49 / 0.35);
   z-index: 2;
 }
 
@@ -3635,20 +3647,20 @@ button {
 }
 
 .ks-edit-point:hover {
-  background: rgb(123 67 36 / 0.18);
+  background: rgb(2 71 49 / 0.18);
   transform: scale(1.06);
 }
 
 .ks-edit-point.is-selected {
-  background: rgb(123 67 36 / 0.22);
-  box-shadow: 0 0 0 3px var(--color-primary), 0 6px 16px rgb(123 67 36 / 0.3);
+  background: rgb(2 71 49 / 0.22);
+  box-shadow: 0 0 0 3px var(--color-primary), 0 6px 16px rgb(2 71 49 / 0.3);
 }
 
 .ks-edit-point.is-dragging {
   cursor: grabbing;
   transition: none;
-  background: rgb(123 67 36 / 0.3);
-  box-shadow: 0 0 0 3px var(--color-primary), 0 8px 22px rgb(123 67 36 / 0.36);
+  background: rgb(2 71 49 / 0.3);
+  box-shadow: 0 0 0 3px var(--color-primary), 0 8px 22px rgb(2 71 49 / 0.36);
   z-index: 2;
 }
 
@@ -4142,9 +4154,9 @@ html[data-theme="glass"] {
   --color-surface-glass: rgba(253, 248, 240, 0.68);
   --color-surface-glass-strong: rgba(253, 248, 240, 0.86);
   --color-border-glass: rgba(255, 255, 255, 0.55);
-  --color-border-glass-deep: rgba(123, 67, 36, 0.10);
-  --shadow-glass-card: 0 12px 32px rgb(123 67 36 / 0.08), 0 2px 8px rgb(0 0 0 / 0.04);
-  --shadow-glass-pop: 0 18px 48px rgb(123 67 36 / 0.14), 0 4px 12px rgb(0 0 0 / 0.05);
+  --color-border-glass-deep: rgba(2, 71, 49, 0.10);
+  --shadow-glass-card: 0 12px 32px rgb(2 71 49 / 0.08), 0 2px 8px rgb(0 0 0 / 0.04);
+  --shadow-glass-pop: 0 18px 48px rgb(2 71 49 / 0.14), 0 4px 12px rgb(0 0 0 / 0.05);
   --backdrop-glass: blur(20px) saturate(180%);
 }
 
@@ -4216,7 +4228,7 @@ html[data-theme="glass"] .ks-html,
 html[data-theme="glass"] .ks-file,
 html[data-theme="glass"] .ks-json__textarea {
   background: rgba(255, 255, 255, 0.78);
-  border-color: rgba(123, 67, 36, 0.18);
+  border-color: rgba(2, 71, 49, 0.18);
 }
 
 html[data-theme="glass"] .rjsf input:focus-visible,
@@ -4391,7 +4403,7 @@ html[data-theme="glass"] .kukui-theme-toggle {
 
 html[data-theme="glass"][data-color-scheme="dark"] body {
   background:
-    radial-gradient(at 12% 8%, rgba(123, 67, 36, 0.28) 0%, transparent 48%),
+    radial-gradient(at 12% 8%, rgba(2, 71, 49, 0.28) 0%, transparent 48%),
     radial-gradient(at 88% 12%, rgba(122, 86, 128, 0.24) 0%, transparent 52%),
     radial-gradient(at 84% 88%, rgba(46, 110, 65, 0.22) 0%, transparent 56%),
     radial-gradient(at 8% 92%, rgba(93, 138, 74, 0.18) 0%, transparent 52%),
