@@ -8,7 +8,7 @@ Single source of truth for visual design across all 7 activity types. Anything y
 2. **Layout-stable interactions.** State changes must not reflow neighbors. Reserve space; change colors only. (See `docs/lessons-learned/uss-and-ui-toolkit-runtime.md` §2.)
 3. **Touch-target minimum 44 × 44 px.** WCAG 2.2 AA target size and Apple HIG. Buttons get `min-height: 44`.
 4. **Contrast ratio ≥ 4.5:1** for body text on its background. Use the palette below; don't ad-hoc colors.
-5. **Hawaiian cultural framing without cliché.** Neutral cool-grey surfaces with a deep JABSOM green (`#024731`, lightened to `#5FC28F` on dark) as the single brand color — it drives **primary actions** (buttons, selection, focus) and the **activity-header accent**. Kalo-green success; a warm ochre `Warning` and a restrained deep-ocean (`kai`) `Info` teal round out the semantic palette. The kukui-brown survives as the **logo** and the "Create" Bloom dot. No garish tropical cyans, no cocktail-umbrella aesthetics — accents stay muted and content-driven.
+5. **Hawaiian cultural framing without cliché.** Neutral cool-grey surfaces with a warm forest-green (`#3D6130`, lightened to `#8CC486` on dark) as the single brand color — an earthy green chosen to sit in the same warm family as the kukui-brown (bark + leaf), not the cold institutional teal. It drives **primary actions** (buttons, selection, focus) and the **activity-header accent**. Kalo-green success; a warm ochre `Warning` and a restrained deep-ocean (`kai`) `Info` teal round out the semantic palette. The kukui-brown survives as the **logo** and the "Create" Bloom dot. No garish tropical cyans, no cocktail-umbrella aesthetics — accents stay muted and content-driven.
 
 ## Color tokens
 
@@ -22,12 +22,12 @@ Defined as `static readonly Color` constants. Do not introduce new hex values wi
 | `TextSecondary` | `0.306, 0.329, 0.357` | `#4E545B` | Subtitles, captions, secondary copy. ≈ 7.1:1 on `Surface` |
 | `Border` | `0.831, 0.847, 0.867` | `#D4D8DD` | Default 1–2 px borders |
 | `BorderHover` | `0.702, 0.725, 0.753` | `#B3B9C0` | Border on hover (no fill change) |
-| `Primary` | `0.008, 0.278, 0.192` | `#024731` | Primary action, selection, focus — JABSOM green. ≈ 10.8:1 on `Surface`. Dark scheme lightens to `#5FC28F` (with a dark `OnPrimary`). |
-| `PrimaryHover` | `0.039, 0.369, 0.255` | `#0A5E41` | Primary on hover |
+| `Primary` | `0.239, 0.380, 0.188` | `#3D6130` | Primary action, selection, focus — warm forest green (kukui-brown's leaf). ≈ 7.1:1 on `Surface`. Dark scheme lightens to `#8CC486` (with a dark `OnPrimary`). |
+| `PrimaryHover` | `0.290, 0.447, 0.251` | `#4A7240` | Primary on hover |
 | `OnPrimary` | — | `#FFFFFF` | **Foreground for anything filled with `Primary`.** Always use this token, never a literal white — themes whose `Primary` is a *light* color (dark, OLED, high-contrast-dark, kalo, twilight) override it to a dark value so text/icons stay ≥4.5:1. Each `[data-color-scheme]` block sets its own `--color-on-primary`. |
 | `PrimarySoft` | `Primary @ 0.07 alpha` | — | Selected answer fill (very light) |
-| `Accent` | `0.008, 0.278, 0.192` | `#024731` | Structure & wayfinding — section headers, panel titles, active nav. JABSOM green. ≈ 10.8:1 on `Surface`. Dark scheme lightens to `#5FC28F`. Not for buttons (that's `Primary`). |
-| `AccentSoft` | `Accent @ 0.10 alpha` | — | Active-nav fill, header card tint |
+| `Accent` | `0.239, 0.380, 0.188` | `#3D6130` | Activity-header accent (same warm forest green as `Primary`; kept as its own token so the header can diverge later). Dark scheme lightens to `#8CC486`. |
+| `AccentSoft` | `Accent @ 0.10 alpha` | — | Header/active-state fill tint |
 | `Success` | `0.180, 0.431, 0.255` | `#2E6E41` | Correct answers, kalo green |
 | `SuccessSoft` | `Success @ 0.10 alpha` | — | Correct answer fill |
 | `Error` | `0.764, 0.255, 0.196` | `#C34132` | Wrong answers, validation errors |
