@@ -55,6 +55,7 @@
   --color-primary: #7b4324;
   --color-primary-hover: #9b5830;
   --color-primary-soft: rgb(123 67 36 / 0.07);
+  --color-on-primary: #ffffff;
   --color-success: #2e6e41;
   --color-success-soft: rgb(46 110 65 / 0.1);
   --color-error: #c34132;
@@ -81,6 +82,16 @@
   --radius-md: 10px;
   --radius-lg: 14px;
   --radius-card: 18px;
+
+  /* Form field width caps. Inputs stay width:100% (fluid on narrow panels)
+     but never exceed these on wide ones — keeps short fields from sprawling
+     edge-to-edge. --form-measure caps the whole form to a reading column
+     (matches the design-system card max-width of 720). */
+  --field-w-xs: 7rem;
+  --field-w-sm: 14rem;
+  --field-w-md: 24rem;
+  --field-w-lg: 38rem;
+  --form-measure: 44rem;
 
   --font-size-display: 28px;
   --font-size-title: 22px;
@@ -131,6 +142,7 @@
   --color-primary: #d39872;
   --color-primary-hover: #e6b693;
   --color-primary-soft: rgb(211 152 114 / 0.14);
+  --color-on-primary: #1c140d;
   --color-success: #86c79a;
   --color-success-soft: rgb(134 199 154 / 0.16);
   --color-error: #ed9183;
@@ -178,6 +190,7 @@
   --color-primary: #7b4324;
   --color-primary-hover: #9b5830;
   --color-primary-soft: rgb(123 67 36 / 0.07);
+  --color-on-primary: #ffffff;
   --color-success: #2e6e41;
   --color-success-soft: rgb(46 110 65 / 0.1);
   --color-error: #c34132;
@@ -225,6 +238,7 @@
   --color-primary: #5a2f17;
   --color-primary-hover: #7a4220;
   --color-primary-soft: rgb(90 47 23 / 0.12);
+  --color-on-primary: #ffffff;
   --color-success: #1a4d2e;
   --color-success-soft: rgb(26 77 46 / 0.12);
   --color-error: #8a1f1f;
@@ -249,6 +263,7 @@
   --color-primary: #ffc77a;
   --color-primary-hover: #ffd9a0;
   --color-primary-soft: rgb(255 199 122 / 0.18);
+  --color-on-primary: #1a1205;
   --color-success: #9be0ad;
   --color-success-soft: rgb(155 224 173 / 0.18);
   --color-error: #ffa898;
@@ -274,6 +289,7 @@
   --color-primary: #7b4324;
   --color-primary-hover: #9b5830;
   --color-primary-soft: rgb(123 67 36 / 0.10);
+  --color-on-primary: #ffffff;
   --color-success: #2d5e3a;
   --color-success-soft: rgb(45 94 58 / 0.12);
   --color-error: #a93226;
@@ -299,6 +315,7 @@
   --color-primary: #d39872;
   --color-primary-hover: #e6b693;
   --color-primary-soft: rgb(211 152 114 / 0.14);
+  --color-on-primary: #1c140d;
   --color-success: #86c79a;
   --color-success-soft: rgb(134 199 154 / 0.16);
   --color-error: #ed9183;
@@ -324,6 +341,7 @@
   --color-primary: #000000;
   --color-primary-hover: #000000;
   --color-primary-soft: #f5f5f5;
+  --color-on-primary: #ffffff;
   --color-success: #000000;
   --color-success-soft: #f5f5f5;
   --color-error: #000000;
@@ -349,6 +367,7 @@
   --color-primary: #a83a22;
   --color-primary-hover: #c44a30;
   --color-primary-soft: rgb(168 58 34 / 0.10);
+  --color-on-primary: #ffffff;
   --color-success: #2c5c39;
   --color-success-soft: rgb(44 92 57 / 0.10);
   --color-error: #8a1f1f;
@@ -374,6 +393,7 @@
   --color-primary: #a3cc8d;
   --color-primary-hover: #b8d9a5;
   --color-primary-soft: rgb(163 204 141 / 0.14);
+  --color-on-primary: #0f2410;
   --color-success: #a3cc8d;
   --color-success-soft: rgb(163 204 141 / 0.16);
   --color-error: #e89880;
@@ -399,6 +419,7 @@
   --color-primary: #1e3a5f;
   --color-primary-hover: #2a5085;
   --color-primary-soft: rgb(30 58 95 / 0.08);
+  --color-on-primary: #ffffff;
   --color-success: #0e5c4a;
   --color-success-soft: rgb(14 92 74 / 0.10);
   --color-error: #a82a2a;
@@ -424,6 +445,7 @@
   --color-primary: #c69adb;
   --color-primary-hover: #d6b3e4;
   --color-primary-soft: rgb(198 154 219 / 0.14);
+  --color-on-primary: #2a1838;
   --color-success: #8fb87b;
   --color-success-soft: rgb(143 184 123 / 0.14);
   --color-error: #e89095;
@@ -716,7 +738,7 @@ button {
 
 .kukui-studio-btn--primary {
   background: var(--color-primary);
-  color: #ffffff;
+  color: var(--color-on-primary);
   border: 1px solid var(--color-primary);
   box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.12);
 }
@@ -1645,6 +1667,7 @@ button {
   display: flex;
   flex-direction: column;
   gap: var(--spacing-xl);
+  max-width: var(--form-measure);
 }
 
 .ks-object--root > .ks-field > .ks-object {
@@ -1762,6 +1785,43 @@ button {
   font-size: var(--font-size-caption);
   font-family: inherit;
   transition: border-color 120ms ease, box-shadow 120ms ease;
+}
+
+/* Per-type intrinsic width caps. width:100% above keeps fields fluid below
+   the cap (so they shrink on narrow / mobile panels); these stop short
+   fields sprawling edge-to-edge on a wide editor column. :where() keeps
+   specificity at zero so a .ks-field--w-* author hint always wins.
+   textarea + rich text are intentionally uncapped — bounded by the form
+   reading column instead. */
+.rjsf :where(input[type="number"]) {
+  max-width: var(--field-w-xs);
+}
+.rjsf :where(input[type="text"]) {
+  max-width: var(--field-w-md);
+}
+.rjsf :where(input[type="url"], input[type="email"]) {
+  max-width: var(--field-w-lg);
+}
+.rjsf :where(select) {
+  max-width: var(--field-w-sm);
+}
+
+/* Author width override: uiSchema `ui:options.width` ("xs"|"sm"|"md"|"lg"|
+   "full") → ks-field--w-* on the field wrapper (see FieldTemplate.tsx). */
+.ks-field--w-xs :is(input, select, textarea) {
+  max-width: var(--field-w-xs);
+}
+.ks-field--w-sm :is(input, select, textarea) {
+  max-width: var(--field-w-sm);
+}
+.ks-field--w-md :is(input, select, textarea) {
+  max-width: var(--field-w-md);
+}
+.ks-field--w-lg :is(input, select, textarea) {
+  max-width: var(--field-w-lg);
+}
+.ks-field--w-full :is(input, select, textarea) {
+  max-width: 100%;
 }
 
 .rjsf input:focus-visible,
@@ -1942,7 +2002,7 @@ button {
 }
 
 .ks-array__add {
-  align-self: stretch;
+  align-self: flex-start;
   min-height: 38px;
   padding: 8px 14px;
   background: color-mix(in oklab, var(--color-primary) 8%, transparent);
@@ -1996,7 +2056,7 @@ button {
 
 .ks-oneof__btn.is-active {
   background: var(--color-primary);
-  color: #ffffff;
+  color: var(--color-on-primary);
 }
 
 .ks-oneof__btn:hover:not(.is-active) {
@@ -2039,7 +2099,7 @@ button {
   min-height: 40px;
   padding: 6px 14px;
   background: var(--color-primary);
-  color: #ffffff;
+  color: var(--color-on-primary);
   border: none;
   border-radius: var(--radius-md);
   font-size: var(--font-size-meta);
@@ -2806,7 +2866,7 @@ button {
 .ks-edit-dnd__zone-pill.is-on {
   background: var(--color-primary);
   border-color: var(--color-primary);
-  color: #ffffff;
+  color: var(--color-on-primary);
 }
 
 .ks-edit-dnd__chip-add {
@@ -2829,7 +2889,7 @@ button {
 .ks-edit-dnd__chip-add-btn {
   padding: 6px 10px;
   background: var(--color-primary);
-  color: #ffffff;
+  color: var(--color-on-primary);
   border: none;
   border-radius: var(--radius-sm);
   font-size: var(--font-size-meta);
@@ -2983,7 +3043,7 @@ button {
 
 .ks-edit-rect__correct-toggle[aria-pressed="true"] {
   background: var(--color-primary);
-  color: #ffffff;
+  color: var(--color-on-primary);
 }
 
 /* Concept-map mode: no background image; light grid suggests a free canvas. */
@@ -3373,7 +3433,7 @@ button {
   min-height: 36px;
   padding: 6px 14px;
   background: var(--color-primary);
-  color: #ffffff;
+  color: var(--color-on-primary);
   border-radius: var(--radius-md, 8px);
   font-size: var(--font-size-meta, 13px);
   font-weight: 700;
@@ -4239,7 +4299,7 @@ html[data-theme="glass"] .kukui-studio-footer {
   .kukui-studio-mobile-switch__btn.is-active {
     background: var(--color-primary);
     border-color: var(--color-primary);
-    color: #ffffff;
+    color: var(--color-on-primary);
   }
   .kukui-studio-mobile-switch__btn:focus-visible {
     outline: 2px solid var(--color-primary);
@@ -5048,7 +5108,7 @@ html[data-theme="glass"] .kukui-studio-footer {
 
 .ks-h3d-editor__save-view:hover {
   background: var(--color-primary);
-  color: #ffffff;
+  color: var(--color-on-primary);
 }
 
 .ks-h3d-editor__save-view:focus-visible {

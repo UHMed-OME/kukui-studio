@@ -24,6 +24,7 @@ Defined as `static readonly Color` constants. Do not introduce new hex values wi
 | `BorderHover` | `0.733, 0.682, 0.604` | `#BBAE9A` | Border on hover (no fill change) |
 | `Primary` | `0.482, 0.263, 0.141` | `#7B4324` | Primary action, selection state |
 | `PrimaryHover` | `0.608, 0.345, 0.188` | `#9B5830` | Primary on hover |
+| `OnPrimary` | — | `#FFFFFF` | **Foreground for anything filled with `Primary`.** Always use this token, never a literal white — themes whose `Primary` is a *light* color (dark, OLED, high-contrast-dark, kalo, twilight) override it to a dark value so text/icons stay ≥4.5:1. Each `[data-color-scheme]` block sets its own `--color-on-primary`. |
 | `PrimarySoft` | `Primary @ 0.07 alpha` | — | Selected answer fill (very light) |
 | `Success` | `0.180, 0.431, 0.255` | `#2E6E41` | Correct answers, kalo green |
 | `SuccessSoft` | `Success @ 0.10 alpha` | — | Correct answer fill |
@@ -51,6 +52,20 @@ Use these values only. Skip granularity that isn't here.
 | `xl` | 20 | Section breathing room |
 | `xxl` | 24 | Page-level padding |
 | `xxxl` | 28 | Card padding |
+
+## Form field widths (Studio editor)
+
+Authoring inputs are fluid (`width: 100%`) but **capped** so a one-digit number field and a long URL don't both stretch the full panel width. Caps are content-type tokens; the form itself is bounded to a reading column.
+
+| Token | Value | Use |
+|---|---|---|
+| `--field-w-xs` | `7rem` | Number / integer / stepper |
+| `--field-w-sm` | `14rem` | Slug, short code, `<select>` |
+| `--field-w-md` | `24rem` | Default single-line text (title, name) |
+| `--field-w-lg` | `38rem` | URL, email, long single-line |
+| `--form-measure` | `44rem` | Max width of the whole form column (`.ks-object--root`); matches the card `max-width: 720` |
+
+Textareas and the rich-text editor are intentionally **uncapped** — they earn the width and are bounded by `--form-measure`. Per-field override: set `ui:options.width` to `"xs" | "sm" | "md" | "lg" | "full"` in the uiSchema; `FieldTemplate` maps it to a `ks-field--w-*` class that wins over the per-type default. Buttons never stretch — the array **Add** button is `align-self: flex-start`, not `stretch`.
 
 ## Border radius scale
 

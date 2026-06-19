@@ -33,6 +33,7 @@ export function FieldTemplate(props: FieldTemplateProps) {
   if (widget === "hidden") return null;
 
   const helpText = readHelp(uiSchema);
+  const widthClass = readWidthClass(uiSchema);
   // Dedupe — RJSF + the Zod extraErrors path can produce overlapping
   // messages for the same issue (e.g. "Required" from AJV plus the more
   // specific Zod message). Showing both is noisy; collapse to unique
@@ -46,6 +47,7 @@ export function FieldTemplate(props: FieldTemplateProps) {
       className={[
         "ks-field",
         hasErrors ? "ks-field--has-error" : "",
+        widthClass,
         classNames,
       ]
         .filter(Boolean)
@@ -95,5 +97,26 @@ function readHelp(uiSchema: UiSchema | undefined): string | null {
   if (!uiSchema) return null;
   const help = (uiSchema as Record<string, unknown>)["ui:help"];
   return typeof help === "string" ? help : null;
+}
+
+const WIDTHS = new Set(["xs", "sm", "md", "lg", "full"]);
+
+/**
+ * Optional per-field width override from `ui:options.width`. Maps to a
+ * `ks-field--w-*` modifier that caps the input/select/textarea width (see
+ * the width tokens + rules in styles.css). Without a hint, fields fall back
+ * to the per-type intrinsic caps. Returns "" when unset/invalid so the
+ * className filter drops it.
+ */
+function readWidthClass(uiSchema: UiSchema | undefined): string {
+  if (!uiSchema) return "";
+  const options = (uiSchema as Record<string, unknown>)["ui:options"];
+  const width =
+    options && typeof options === "object"
+      ? (options as Record<string, unknown>).width
+      : undefined;
+  return typeof width === "string" && WIDTHS.has(width)
+    ? `ks-field--w-${width}`
+    : "";
 }
 
