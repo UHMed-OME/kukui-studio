@@ -1183,6 +1183,11 @@ button {
   font-size: var(--font-size-micro);
   color: var(--color-text-muted);
   line-height: 1.3;
+  /* Keep each tagline to a single line — shortened copy fits; this guards the
+     longest ones (and any future i18n) from wrapping the card to two rows. */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .kukui-studio-sidebar__list {
