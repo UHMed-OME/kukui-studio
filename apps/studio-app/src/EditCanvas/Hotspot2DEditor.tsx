@@ -9,6 +9,12 @@ import {
 import type { Hotspot2DConfig } from "@kukui/schemas";
 import { ContextMenu, type ContextMenuPos } from "./ContextMenu.js";
 import { reorder, roundCoord, type ZOrderOp } from "./zorder.js";
+import {
+  minNormalized,
+  enforceMinRect,
+  rectMaxPx,
+  DRAG_THRESHOLD_PX,
+} from "./minRect.js";
 
 const roundRect = <T extends { x: number; y: number; w: number; h: number }>(r: T): T => ({
   ...r,
@@ -39,8 +45,6 @@ type DragState =
       anchorY: number;
       rect: Rect;
     };
-
-const MIN_RECT = 0.02;
 
 const newHotspotId = (existing: string[]): string => {
   let i = existing.length + 1;
@@ -152,15 +156,17 @@ export function Hotspot2DEditor({
     }
 
     if (drag.kind === "resize") {
-      const w = Math.max(MIN_RECT, x - drag.anchorX);
-      const h = Math.max(MIN_RECT, y - drag.anchorY);
+      const { mw, mh } = minNormalized(boardRef.current);
+      const w = Math.max(mw, x - drag.anchorX);
+      const h = Math.max(mh, y - drag.anchorY);
       setDrag({ ...drag, rect: { x: drag.anchorX, y: drag.anchorY, w, h } });
     }
   };
 
   const handlePointerUp = () => {
     if (drag.kind === "draw") {
-      if (drag.rect.w >= MIN_RECT && drag.rect.h >= MIN_RECT) {
+      if (rectMaxPx(boardRef.current, drag.rect) >= DRAG_THRESHOLD_PX) {
+        const { mw, mh } = minNormalized(boardRef.current);
         const id = newHotspotId(config.hotspots.map((h) => h.id));
         onChange({
           ...config,
@@ -169,7 +175,7 @@ export function Hotspot2DEditor({
             {
               id,
               label: `Region ${config.hotspots.length + 1}`,
-              rect: roundRect(drag.rect),
+              rect: roundRect(enforceMinRect(drag.rect, mw, mh)),
               correct: config.hotspots.length === 0,
             },
           ],

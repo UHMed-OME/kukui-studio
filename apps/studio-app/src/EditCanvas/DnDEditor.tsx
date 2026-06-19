@@ -12,6 +12,12 @@ import { ContextMenu, type ContextMenuPos } from "./ContextMenu.js";
 import { DnDChipPanel } from "./DnDChipPanel.js";
 import { DnDLinkOverlay } from "./DnDLinkOverlay.js";
 import { reorder, roundCoord, type ZOrderOp } from "./zorder.js";
+import {
+  minNormalized,
+  enforceMinRect,
+  rectMaxPx,
+  DRAG_THRESHOLD_PX,
+} from "./minRect.js";
 
 const roundRect = <T extends { x: number; y: number; w: number; h: number }>(r: T): T => ({
   ...r,
@@ -42,8 +48,6 @@ type DragState =
       anchorY: number;
       rect: Rect;
     };
-
-const MIN_RECT = 0.02;
 
 const DEFAULT_NEW_ZONE_ID = (existing: string[]): string => {
   let i = existing.length + 1;
@@ -165,21 +169,27 @@ export function DnDEditor({
     }
 
     if (drag.kind === "resize") {
-      const w = Math.max(MIN_RECT, x - drag.anchorX);
-      const h = Math.max(MIN_RECT, y - drag.anchorY);
+      const { mw, mh } = minNormalized(boardRef.current);
+      const w = Math.max(mw, x - drag.anchorX);
+      const h = Math.max(mh, y - drag.anchorY);
       setDrag({ ...drag, rect: { x: drag.anchorX, y: drag.anchorY, w, h } });
     }
   };
 
   const handlePointerUp = () => {
     if (drag.kind === "draw") {
-      if (drag.rect.w >= MIN_RECT && drag.rect.h >= MIN_RECT) {
+      if (rectMaxPx(boardRef.current, drag.rect) >= DRAG_THRESHOLD_PX) {
+        const { mw, mh } = minNormalized(boardRef.current);
         const id = DEFAULT_NEW_ZONE_ID(config.dropZones.map((z) => z.id));
         onChange({
           ...config,
           dropZones: [
             ...config.dropZones,
-            { id, label: `Zone ${config.dropZones.length + 1}`, rect: roundRect(drag.rect) },
+            {
+              id,
+              label: `Zone ${config.dropZones.length + 1}`,
+              rect: roundRect(enforceMinRect(drag.rect, mw, mh)),
+            },
           ],
         });
         setSelectedId(id);
