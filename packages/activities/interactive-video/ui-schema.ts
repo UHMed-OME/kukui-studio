@@ -74,6 +74,10 @@ const uiSchema = {
     "ui:help": "Each interaction pauses the video and renders a sub-activity.",
     items: {
       id: HIDDEN,
+      atSeconds: f(
+        "At (seconds)",
+        "When the video pauses for this interaction. Or place it visually on the Edit timeline.",
+      ),
       kind: f("Interaction kind", "Which sub-activity to render."),
       required: f("Required", "Block playback resume until answered."),
     },

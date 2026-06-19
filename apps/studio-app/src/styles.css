@@ -2674,6 +2674,261 @@ button {
   font-size: var(--font-size-meta);
 }
 
+/* ---------- Interactive-video timeline editor ---------- */
+.ks-iv-tl {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  padding: var(--spacing-lg);
+}
+
+.ks-iv-tl input[type="text"],
+.ks-iv-tl input[type="number"],
+.ks-iv-tl textarea {
+  min-height: 36px;
+  padding: 6px 10px;
+  border: 1px solid color-mix(in oklab, var(--color-border) 70%, transparent);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+  font: inherit;
+  font-size: var(--font-size-meta);
+}
+.ks-iv-tl input:focus-visible,
+.ks-iv-tl textarea:focus-visible {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--color-primary-soft);
+}
+
+.ks-iv-tl__stage {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  background: #000;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+.ks-iv-tl__video {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  background: #000;
+}
+.ks-iv-tl__noscrub {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  padding: var(--spacing-xl);
+  text-align: center;
+  color: var(--color-text-secondary);
+  background: var(--color-tip-bg);
+}
+.ks-iv-tl__noscrub p {
+  margin: 0;
+  max-width: 36ch;
+  font-size: var(--font-size-meta);
+}
+
+.ks-iv-tl__controls {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  flex-wrap: wrap;
+}
+.ks-iv-tl__len {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  font-size: var(--font-size-meta);
+  color: var(--color-text-secondary);
+}
+.ks-iv-tl__len input {
+  max-width: 6rem;
+}
+.ks-iv-tl__len-readout {
+  font-size: var(--font-size-meta);
+  color: var(--color-text-secondary);
+}
+
+.ks-iv-tl__track {
+  position: relative;
+  height: 64px;
+  background: var(--color-tip-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  touch-action: none;
+}
+.ks-iv-tl__playhead {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: var(--color-primary);
+  opacity: 0.7;
+  pointer-events: none;
+}
+.ks-iv-tl__track-empty {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-meta);
+  font-style: italic;
+  pointer-events: none;
+}
+
+/* Marker: a pin spanning the track height; the colored cap carries the time. */
+.ks-iv-tl__marker {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  transform: translateX(-50%);
+  width: 44px;
+  padding: 0;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  cursor: grab;
+}
+.ks-iv-tl__marker::after {
+  /* the stem */
+  content: "";
+  position: absolute;
+  top: 22px;
+  bottom: 6px;
+  width: 2px;
+  background: var(--color-border-hover);
+}
+.ks-iv-tl__marker-time {
+  position: relative;
+  z-index: 1;
+  min-width: 40px;
+  margin-top: 4px;
+  padding: 3px 6px;
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-hover);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-micro);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.ks-iv-tl__marker.is-required .ks-iv-tl__marker-time {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+.ks-iv-tl__marker.is-selected {
+  cursor: grabbing;
+  z-index: 2;
+}
+.ks-iv-tl__marker.is-selected .ks-iv-tl__marker-time {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: var(--color-on-primary);
+}
+.ks-iv-tl__marker.is-selected::after {
+  background: var(--color-primary);
+}
+.ks-iv-tl__marker:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+.ks-iv-tl__noselect {
+  margin: 0;
+  font-size: var(--font-size-meta);
+  color: var(--color-text-muted);
+  font-style: italic;
+}
+
+/* Inspector */
+.ks-iv-tl__inspector {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  padding: var(--spacing-lg);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+}
+.ks-iv-tl__inspector-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-sm);
+}
+.ks-iv-tl__inspector-head h3 {
+  margin: 0;
+  font-size: var(--font-size-subtitle);
+  color: var(--color-text-primary);
+}
+.ks-iv-tl__row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--spacing-lg);
+}
+.ks-iv-tl__field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: var(--font-size-meta);
+  font-weight: 600;
+  color: var(--color-text-secondary);
+}
+.ks-iv-tl__field input[type="number"] {
+  max-width: 8rem;
+}
+.ks-iv-tl__check {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  font-size: var(--font-size-meta);
+  color: var(--color-text-secondary);
+}
+.ks-iv-tl__check input {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--color-primary);
+}
+.ks-iv-tl__answers {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+.ks-iv-tl__answers-label {
+  font-size: var(--font-size-meta);
+  font-weight: 600;
+  color: var(--color-text-secondary);
+}
+.ks-iv-tl__answer {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+.ks-iv-tl__answer input[type="radio"] {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  accent-color: var(--color-success);
+}
+.ks-iv-tl__answer input[type="text"] {
+  flex: 1;
+}
+.ks-iv-tl__note {
+  margin: 0;
+  font-size: var(--font-size-meta);
+  color: var(--color-text-secondary);
+}
+
 /* ---------- DnD editor — side panel + link overlay ----------
    Adds chip authoring alongside the existing zone-geometry canvas.
    Layout: canvas on the left, ~280 px chip panel on the right. */
@@ -3429,7 +3684,10 @@ button {
   gap: var(--spacing-sm, 8px);
 }
 
-.ks-file__btn {
+/* `.rjsf label` sets a dark text color at (0,1,1); these upload affordances
+   are <label> elements, so qualify the selector to out-specify it — otherwise
+   the label color wins and the text is unreadable on the primary fill. */
+.rjsf label.ks-file__btn {
   min-height: 36px;
   padding: 6px 14px;
   background: var(--color-primary);
