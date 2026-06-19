@@ -129,7 +129,7 @@ const BLOOM_TAGLINES: Record<BloomLevel, string> = {
   remember: "Recall facts and terms",
   understand: "Identify, explain, classify",
   apply: "Apply to new situations",
-  analyze: "Break apart, compare, infer",
+  analyze: "Compare, contrast, infer",
   evaluate: "Judge, critique, decide",
   create: "Produce original work",
 };
