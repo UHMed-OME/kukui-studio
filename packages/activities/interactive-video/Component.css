@@ -56,41 +56,85 @@
   background: var(--color-tip-bg, #f2f0e8);
 }
 
-/* Full-stage dim + pointer trap shown behind the interaction overlay. Covers
+/* Blurred backdrop + pointer trap shown behind the interaction overlay. Covers
    the whole stage (including a YouTube IFrame, whose own controls can't be
-   disabled) so the video can't be scrubbed or resumed mid-question. */
+   disabled) so the video can't be scrubbed or resumed mid-question. The blur
+   pushes the paused frame back; the dark wash keeps contrast even where a
+   browser won't blur iframe content. */
 .kukui-iv__scrim {
   position: absolute;
   inset: 0;
   z-index: 1;
-  background: rgb(0 0 0 / 0.5);
+  background: rgb(0 0 0 / 0.42);
+  -webkit-backdrop-filter: blur(8px) saturate(0.9);
+  backdrop-filter: blur(8px) saturate(0.9);
 }
 
+/* Centering container for the floating question window. */
 .kukui-iv__overlay {
   position: absolute;
-  inset: auto 0 0 0;
+  inset: 0;
   z-index: 2;
   display: flex;
+  align-items: center;
   justify-content: center;
-  padding: var(--spacing-md, 12px);
-  background: color-mix(in srgb, var(--color-surface, #ffffff) 96%, transparent);
-  border-top: 2px solid var(--color-border, #dad2c6);
-  max-height: 80%;
-  overflow: auto;
+  padding: clamp(8px, 4%, 24px);
 }
 
+/* The floating window itself — a card sized to fit over the video, scrolling
+   internally if the question is taller than the frame. */
 .kukui-iv__overlay-body {
   width: 100%;
-  max-width: 720px;
+  max-width: 560px;
+  max-height: 100%;
+  overflow: auto;
   display: flex;
   flex-direction: column;
   gap: var(--spacing-md, 12px);
+  padding: var(--spacing-lg, 16px);
+  background: var(--color-surface, #ffffff);
+  border: 1px solid var(--color-border, #dad2c6);
+  border-radius: var(--radius-card, 12px);
+  box-shadow: 0 16px 48px rgb(0 0 0 / 0.35);
 }
 
 .kukui-iv__overlay-actions {
   display: flex;
   justify-content: flex-end;
-  padding: 0 var(--spacing-lg, 16px) var(--spacing-md, 12px);
+}
+
+/* The embedded MC / fill-in-the-blanks activities each render their own card
+   (border, shadow, padding, max-width). Inside the floating window that would
+   be a card within a card — flatten the nested one so the window reads as a
+   single surface. */
+.kukui-iv__overlay-body .kukui-mc,
+.kukui-iv__overlay-body .kukui-fib {
+  padding: 0;
+}
+.kukui-iv__overlay-body .kukui-mc__card,
+.kukui-iv__overlay-body .kukui-fib__card {
+  max-width: none;
+  padding: 0;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .kukui-iv__overlay-body {
+    animation: kukui-iv-pop 160ms ease-out;
+  }
+}
+@keyframes kukui-iv-pop {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
 }
 
 .kukui-iv__primary {
