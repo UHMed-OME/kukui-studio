@@ -3,7 +3,7 @@
  */
 const starter = {
   version: "1.0",
-  title: "Clinical Anatomy Case",
+  title: "Clinical Case",
   week: "Week 1",
   presentation: {
     label: "Clinical Presentation",

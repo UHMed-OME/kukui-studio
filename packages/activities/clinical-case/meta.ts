@@ -1,7 +1,7 @@
 import type { BloomLevel } from "@kukui/activities/types";
 
 /** Display name shown in Studio's catalog and sidebar. */
-export const label = "Clinical Anatomy Case";
+export const label = "Clinical Case";
 
 /** One-line description for Studio's catalog and learning-objective matching. */
 export const description =
