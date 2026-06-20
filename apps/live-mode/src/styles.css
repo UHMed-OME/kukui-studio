@@ -11,12 +11,12 @@
   --color-text-secondary: #4e545b;
   --color-border: #d4d8dd;
   --color-border-hover: #b3b9c0;
-  --color-primary: #15803d;
-  --color-primary-hover: #166534;
-  --color-primary-soft: rgb(21 128 61 / 0.07);
-  --color-accent: #15803d;
-  --color-accent-hover: #166534;
-  --color-accent-soft: rgb(21 128 61 / 0.10);
+  --color-primary: #4a7a5f;
+  --color-primary-hover: #3f6b52;
+  --color-primary-soft: rgb(74 122 95 / 0.07);
+  --color-accent: #4a7a5f;
+  --color-accent-hover: #3f6b52;
+  --color-accent-soft: rgb(74 122 95 / 0.10);
   --color-success: #2e6e41;
   --color-success-soft: rgb(46 110 65 / 0.1);
   --color-error: #c34132;
@@ -62,12 +62,12 @@ html[data-color-scheme="dark"] {
   --color-text-secondary: #c8cbcf;
   --color-border: #383b40;
   --color-border-hover: #4c4f55;
-  --color-primary: #4ade80;
-  --color-primary-hover: #86efac;
-  --color-primary-soft: rgb(74 222 128 / 0.16);
-  --color-accent: #4ade80;
-  --color-accent-hover: #86efac;
-  --color-accent-soft: rgb(74 222 128 / 0.16);
+  --color-primary: #8fc0a4;
+  --color-primary-hover: #a3cdb5;
+  --color-primary-soft: rgb(143 192 164 / 0.16);
+  --color-accent: #8fc0a4;
+  --color-accent-hover: #a3cdb5;
+  --color-accent-soft: rgb(143 192 164 / 0.16);
   --color-success: #86c79a;
   --color-success-soft: rgb(134 199 154 / 0.16);
   --color-error: #ed9183;
@@ -164,9 +164,9 @@ html[data-color-scheme="dark"] {
   --color-primary: #d39872;
   --color-primary-hover: #e6b693;
   --color-primary-soft: rgb(211 152 114 / 0.14);
-  --color-accent: #4ade80;
-  --color-accent-hover: #86efac;
-  --color-accent-soft: rgb(74 222 128 / 0.18);
+  --color-accent: #8fc0a4;
+  --color-accent-hover: #a3cdb5;
+  --color-accent-soft: rgb(143 192 164 / 0.18);
   --color-success: #86c79a;
   --color-success-soft: rgb(134 199 154 / 0.16);
   --color-error: #ed9183;
@@ -576,7 +576,7 @@ html[data-theme="glass"] .live-card {
   backdrop-filter: blur(22px) saturate(170%);
   border: 1px solid rgba(255, 255, 255, 0.55);
   box-shadow:
-    0 12px 32px rgb(21 128 61 / 0.08),
+    0 12px 32px rgb(74 122 95 / 0.08),
     0 2px 8px rgb(0 0 0 / 0.04),
     inset 0 1px 0 rgba(255, 255, 255, 0.5);
 }
@@ -588,7 +588,7 @@ html[data-theme="glass"] .live-banner {
 html[data-theme="glass"] .live-field input,
 html[data-theme="glass"] .live-field select {
   background: rgba(255, 255, 255, 0.78);
-  border-color: rgba(21, 128, 61, 0.18);
+  border-color: rgba(74, 122, 95, 0.18);
 }
 
 html[data-theme="glass"] .live-presence__chip {
@@ -644,7 +644,7 @@ html[data-theme="glass"] .kukui-theme-toggle {
    translucent aesthetic, dark-stone base instead of cream. */
 html[data-theme="glass"][data-color-scheme="dark"] body {
   background:
-    radial-gradient(at 20% 10%, rgba(21, 128, 61, 0.28) 0%, transparent 50%),
+    radial-gradient(at 20% 10%, rgba(74, 122, 95, 0.28) 0%, transparent 50%),
     radial-gradient(at 80% 90%, rgba(46, 110, 65, 0.2) 0%, transparent 55%),
     linear-gradient(180deg, #1c1917 0%, #14110f 100%);
   background-attachment: fixed;
