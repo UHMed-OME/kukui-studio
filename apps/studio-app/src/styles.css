@@ -44,14 +44,14 @@
      Dark mode and the other schemes (high-contrast, sepia, OLED, aloha, kai,
      kalo, lab, twilight, print) still override via [data-color-scheme="<name>"]
      blocks below; this @theme block is the light default they overlay on. */
-  --color-bg: #f4f5f6;
+  --color-bg: #f2f4f7;
   --color-surface: #ffffff;
-  --color-surface-alt: #eceef1;
-  --color-text-primary: #181a1c;
-  --color-text-secondary: #4e545b;
-  --color-text-muted: #5e646b;
-  --color-border: #d4d8dd;
-  --color-border-hover: #b3b9c0;
+  --color-surface-alt: #e9edf3;
+  --color-text-primary: #15191d;
+  --color-text-secondary: #49515b;
+  --color-text-muted: #59626c;
+  --color-border: #d1d7df;
+  --color-border-hover: #adb6c0;
   --color-primary: #4a7a5f;
   --color-primary-hover: #3f6b52;
   --color-primary-soft: rgb(74 122 95 / 0.07);
@@ -69,7 +69,7 @@
   --color-warning-soft: rgb(138 90 18 / 0.10);
   --color-info: #1f6f78;
   --color-info-soft: rgb(31 111 120 / 0.10);
-  --color-tip-bg: #eceef1;
+  --color-tip-bg: #e9edf3;
   --color-canvas-3d: #0b0b10;
 
   /* Elevation — subtle card depth. See docs/design-system.md. */
@@ -187,14 +187,14 @@
    activity's author has pinned appearance.theme to "light"). Mirrors
    the @theme cream defaults at :root. */
 [data-color-scheme="light"] {
-  --color-bg: #f4f5f6;
+  --color-bg: #f2f4f7;
   --color-surface: #ffffff;
-  --color-surface-alt: #eceef1;
-  --color-text-primary: #181a1c;
-  --color-text-secondary: #4e545b;
-  --color-text-muted: #5e646b;
-  --color-border: #d4d8dd;
-  --color-border-hover: #b3b9c0;
+  --color-surface-alt: #e9edf3;
+  --color-text-primary: #15191d;
+  --color-text-secondary: #49515b;
+  --color-text-muted: #59626c;
+  --color-border: #d1d7df;
+  --color-border-hover: #adb6c0;
   --color-primary: #4a7a5f;
   --color-primary-hover: #3f6b52;
   --color-primary-soft: rgb(74 122 95 / 0.07);
@@ -212,7 +212,7 @@
   --color-warning-soft: rgb(138 90 18 / 0.10);
   --color-info: #1f6f78;
   --color-info-soft: rgb(31 111 120 / 0.10);
-  --color-tip-bg: #eceef1;
+  --color-tip-bg: #e9edf3;
   --color-canvas-3d: #0b0b10;
 
   --bloom-remember: #e6c388;

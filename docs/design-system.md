@@ -16,12 +16,12 @@ Defined as `static readonly Color` constants. Do not introduce new hex values wi
 
 | Token | RGB | Hex | Use |
 |---|---|---|---|
-| `Bg` | `0.957, 0.961, 0.965` | `#F4F5F6` | Page background (neutral cool grey) |
+| `Bg` | `0.957, 0.961, 0.965` | `#F2F4F7` | Page background (neutral cool grey) |
 | `Surface` | `1, 1, 1` | `#FFFFFF` | Card/answer background |
-| `TextPrimary` | `0.094, 0.102, 0.110` | `#181A1C` | Body text, titles |
-| `TextSecondary` | `0.306, 0.329, 0.357` | `#4E545B` | Subtitles, captions, secondary copy. ≈ 7.1:1 on `Surface` |
-| `Border` | `0.831, 0.847, 0.867` | `#D4D8DD` | Default 1–2 px borders |
-| `BorderHover` | `0.702, 0.725, 0.753` | `#B3B9C0` | Border on hover (no fill change) |
+| `TextPrimary` | `0.094, 0.102, 0.110` | `#15191D` | Body text, titles |
+| `TextSecondary` | `0.306, 0.329, 0.357` | `#49515B` | Subtitles, captions, secondary copy. ≈ 7.1:1 on `Surface` |
+| `Border` | `0.831, 0.847, 0.867` | `#D1D7DF` | Default 1–2 px borders |
+| `BorderHover` | `0.702, 0.725, 0.753` | `#ADB6C0` | Border on hover (no fill change) |
 | `Primary` | `0.290, 0.478, 0.373` | `#4A7A5F` | Primary action, selection, focus — muted sage green. ≈ 5.0:1 on `Surface`. Dark scheme softens to `#8FC0A4` (with a dark `OnPrimary`). |
 | `PrimaryHover` | `0.247, 0.420, 0.322` | `#3F6B52` | Primary on hover |
 | `OnPrimary` | — | `#FFFFFF` | **Foreground for anything filled with `Primary`.** Always use this token, never a literal white — themes whose `Primary` is a *light* color (dark, OLED, high-contrast-dark, kalo, twilight) override it to a dark value so text/icons stay ≥4.5:1. Each `[data-color-scheme]` block sets its own `--color-on-primary`. |
@@ -36,8 +36,8 @@ Defined as `static readonly Color` constants. Do not introduce new hex values wi
 | `WarningSoft` | `Warning @ 0.10 alpha` | — | Caution fill (watch vitals, urgent steps) |
 | `Info` | `0.122, 0.435, 0.471` | `#1F6F78` | Neutral / anatomical / informational accents — a muted deep-ocean (`kai`) teal, not a tropical cyan. ≈ 4.9:1 on `Surface`. Per-scheme overrides keep it AA |
 | `InfoSoft` | `Info @ 0.10 alpha` | — | Informational fill (neutral findings, legend swatches) |
-| `TipBg` | `0.925, 0.933, 0.945` | `#ECEEF1` | Tip / hint area |
-| `TextMuted` | `0.369, 0.392, 0.420` | `#5E646B` | Tertiary / fine-print text (model attribution footers). ≈ 5.5:1 on `Surface`, ≈ 4.6:1 on `SurfaceAlt` — passes AA for body text; reserve for 12–13 px asides |
+| `TipBg` | `0.925, 0.933, 0.945` | `#E9EDF3` | Tip / hint area |
+| `TextMuted` | `0.369, 0.392, 0.420` | `#59626C` | Tertiary / fine-print text (model attribution footers). ≈ 5.5:1 on `Surface`, ≈ 4.6:1 on `SurfaceAlt` — passes AA for body text; reserve for 12–13 px asides |
 | `Revealed` | `0.478, 0.361, 0.678` | `#7A5CAD` | "Revealed" state (e.g. crossword reveal-letter). Used only as a ≤ 22% tint over `Surface` and always paired with a mark glyph (◔) — never as a text color. White text on the full hex is ≈ 5.3:1 if ever needed |
 | `Canvas3D` | `0.043, 0.043, 0.063` | `#0B0B10` | 3D viewport backdrop (Hotspot 3D, Virtual Tour). White pin text on it is ≈ 19:1; per-scheme overrides keep it near-black so pins stay AA |
 

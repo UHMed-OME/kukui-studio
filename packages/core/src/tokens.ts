@@ -16,12 +16,12 @@
  * means: design-system.md → CSS @theme → here.
  */
 export const tokens = {
-  bg: "#f4f5f6",
+  bg: "#f2f4f7",
   surface: "#ffffff",
-  textPrimary: "#181a1c",
-  textSecondary: "#4e545b",
-  border: "#d4d8dd",
-  borderHover: "#b3b9c0",
+  textPrimary: "#15191d",
+  textSecondary: "#49515b",
+  border: "#d1d7df",
+  borderHover: "#adb6c0",
   /** JABSOM green — primary brand accent. See docs/design-system.md. */
   primary: "#4a7a5f",
   primaryHover: "#3f6b52",
@@ -31,7 +31,7 @@ export const tokens = {
   warning: "#8a5a12",
   /** Neutral / informational — muted deep-ocean (kai) teal. */
   info: "#1f6f78",
-  tipBg: "#eceef1",
+  tipBg: "#e9edf3",
   /** 3D canvas backdrop — added 2026-05-06 for r3f scenes. */
   canvas3d: "#0b0b10",
 } as const;
