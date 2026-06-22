@@ -79,7 +79,14 @@ describe("interactive-video Component", () => {
     expect(video).toBeInTheDocument();
     expect(video.tagName).toBe("VIDEO");
     expect(video.getAttribute("src")).toBe("https://example.test/sample.mp4");
-    expect(video.hasAttribute("controls")).toBe(true);
+    // Native controls are replaced by the custom control bar.
+    expect(video.hasAttribute("controls")).toBe(false);
+    expect(screen.getByRole("button", { name: /play/i })).toBeInTheDocument();
+  });
+
+  it("renders a seek-bar marker per interaction", () => {
+    render(<Component config={cfg} onSubmit={vi.fn()} />);
+    expect(screen.getAllByRole("button", { name: /interaction at/i })).toHaveLength(2);
   });
 
   it("pauses the video and shows the interaction overlay when currentTime hits an interaction", () => {
@@ -180,7 +187,7 @@ describe("interactive-video Component", () => {
     tick(video, 3.5);
     expect(onPersist).toHaveBeenCalled();
     const afterTick = onPersist.mock.calls.at(-1)?.[0] as string;
-    expect(afterTick).toMatch(/"currentTime":3\.5/);
+    expect(afterTick).toMatch(/"lastTime":3/);
 
     // Trigger interaction and resolve it; expect resolvedInteractions to be persisted.
     tick(video, 5);
@@ -237,6 +244,54 @@ describe("interactive-video Component", () => {
     expect(_t).toBeLessThan(5);
     expect(_t).toBeGreaterThanOrEqual(0);
     expect(pause).toHaveBeenCalled();
+  });
+
+  it("shows a label interaction info card and resumes on Continue", async () => {
+    const user = userEvent.setup();
+    const labelCfg: InteractiveVideoConfig = {
+      ...cfg,
+      interactions: [
+        {
+          id: "note1",
+          atSeconds: 5,
+          required: false,
+          kind: "label",
+          title: "Heads up",
+          config: { html: "<p>Watch the aortic valve.</p>" },
+        },
+      ],
+    };
+    render(<Component config={labelCfg} onSubmit={vi.fn()} />);
+    const video = getVideo();
+    const { play } = stubVideoMethods(video);
+    tick(video, 5);
+    expect(screen.getByText(/watch the aortic valve/i)).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: /continue/i }));
+    expect(play).toHaveBeenCalled();
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+  });
+
+  it("shows a misconfigured notice instead of silently dropping a bad embed", () => {
+    const badCfg: InteractiveVideoConfig = {
+      ...cfg,
+      interactions: [
+        {
+          id: "bad1",
+          atSeconds: 5,
+          required: false,
+          kind: "multipleChoice",
+          // Missing required MC fields (question/answers) -> invalid.
+          config: { version: "1.0", title: "Oops" },
+        },
+      ],
+    };
+    render(<Component config={badCfg} onSubmit={vi.fn()} />);
+    // The interaction is still listed (not dropped).
+    expect(screen.getAllByRole("button", { name: /interaction at/i })).toHaveLength(1);
+    const video = getVideo();
+    stubVideoMethods(video);
+    tick(video, 5);
+    expect(screen.getByText(/this interaction is misconfigured/i)).toBeInTheDocument();
   });
 
   it("enableRetry shows Try again after submit and resets state on click", async () => {

@@ -1,7 +1,7 @@
 {
   "version": "1.0",
-  "title": "Big Buck Bunny — checkpoints",
-  "prompt": "<p>Watch the clip; questions will pop up at two timestamps.</p>",
+  "title": "🎬 Big Buck Bunny — checkpoints",
+  "prompt": "<p>Watch the clip; an info card and two questions appear on the timeline.</p>",
   "video": {
     "src": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
     "type": "html5",
@@ -9,9 +9,20 @@
   },
   "interactions": [
     {
+      "id": "iv-note",
+      "atSeconds": 2,
+      "required": false,
+      "kind": "label",
+      "title": "Before you watch",
+      "config": {
+        "html": "<p>Notice the colour palette of the opening landscape — you'll be asked about it.</p>"
+      }
+    },
+    {
       "id": "iv-q1",
       "atSeconds": 5,
       "required": true,
+      "title": "Opening shot",
       "kind": "multipleChoice",
       "config": {
         "version": "1.0",
@@ -28,6 +39,7 @@
       "id": "iv-q2",
       "atSeconds": 12,
       "required": true,
+      "title": "Name the character",
       "kind": "fillInTheBlanks",
       "config": {
         "version": "1.0",
