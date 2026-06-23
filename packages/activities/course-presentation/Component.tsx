@@ -25,48 +25,75 @@ import "./Component.css";
 
 type Stage = "viewing" | "submitted";
 
+type Slide = CoursePresentationConfig["slides"][number];
+type Overlay = Slide["overlays"][number];
+type CheckpointOverlay = Extract<Overlay, { kind: "checkpoint" }>;
+
 type State = {
   /** Index of the active slide. */
   current: number;
-  /** slideId -> ScoreState, recorded as each embedded activity is answered. */
+  /** "slideId:overlayId" -> ScoreState, recorded as each checkpoint is answered. */
   scores: Record<string, ScoreState>;
   /** Deck lifecycle. */
   stage: Stage;
 };
 
-/** A slide's embedded activity after late validation against the inner schema. */
+/** A checkpoint's inner activity after late validation against its schema. */
 type ValidatedActivity =
   | { kind: "multipleChoice"; config: MultipleChoiceConfig }
   | { kind: "fillInTheBlanks"; config: FillInTheBlanksConfig };
+
+/** Stable key for a checkpoint's score, unique across the whole deck. */
+const scoreKey = (slideId: string, overlayId: string) => `${slideId}:${overlayId}`;
 
 function initialState(): State {
   return { current: 0, scores: {}, stage: "viewing" };
 }
 
+/* -- Local icons (info / question) ------------------------------------------ */
+// core ships status glyphs but no info/question marks; these are small,
+// aria-hidden, currentColor strokes consistent with the core icon set.
+
+function InfoIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width={16} height={16} fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <circle cx="12" cy="12" r="9" />
+      <line x1="12" y1="11" x2="12" y2="16" />
+      <line x1="12" y1="8" x2="12" y2="8" />
+    </svg>
+  );
+}
+
+function QuestionIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width={16} height={16} fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M9.5 9a2.5 2.5 0 1 1 3.5 2.3c-.9.4-1.5 1.2-1.5 2.2" />
+      <line x1="11.5" y1="17" x2="11.5" y2="17" />
+    </svg>
+  );
+}
+
 /**
- * Validate a slide's embedded activity config at render time (the loose
- * `z.unknown()` from schema.ts is resolved here). Returns null when the slide
- * has no activity or the config fails validation — a malformed embed degrades
- * to a content-only slide rather than crashing the deck.
+ * Validate a checkpoint overlay's inner config at render time (the loose
+ * `z.unknown()` from schema.ts is resolved here). Returns null when the config
+ * fails validation — a malformed checkpoint degrades to a no-op marker rather
+ * than crashing the deck. Same pattern the previous embed used.
  */
-function validateActivity(
-  slideId: string,
-  activity: CoursePresentationConfig["slides"][number]["activity"],
-): ValidatedActivity | null {
-  if (!activity) return null;
-  if (activity.kind === "multipleChoice") {
-    const r = MultipleChoiceConfigSchema.safeParse(activity.config);
+function validateCheckpoint(overlay: CheckpointOverlay): ValidatedActivity | null {
+  const { kind, config } = overlay.activity;
+  if (kind === "multipleChoice") {
+    const r = MultipleChoiceConfigSchema.safeParse(config);
     if (r.success) return { kind: "multipleChoice", config: r.data };
     console.warn(
-      `[kukui:course-presentation] Slide ${slideId} multipleChoice failed validation; rendering content only.`,
+      `[kukui:course-presentation] checkpoint ${overlay.id} multipleChoice failed validation; rendering an inert marker.`,
       r.error.issues,
     );
     return null;
   }
-  const r = FillInTheBlanksConfigSchema.safeParse(activity.config);
+  const r = FillInTheBlanksConfigSchema.safeParse(config);
   if (r.success) return { kind: "fillInTheBlanks", config: r.data };
   console.warn(
-    `[kukui:course-presentation] Slide ${slideId} fillInTheBlanks failed validation; rendering content only.`,
+    `[kukui:course-presentation] checkpoint ${overlay.id} fillInTheBlanks failed validation; rendering an inert marker.`,
     r.error.issues,
   );
   return null;
@@ -83,31 +110,41 @@ export default function Component({
   const embeddedLevel = Math.min(headingLevel + 1, 3) as 1 | 2 | 3;
   const headingId = useId();
   const liveId = useId();
+  const detailId = useId();
 
   const slides = config.slides;
 
-  /** Per-slide validated embedded activity (null where none / invalid). */
-  const validatedActivities = useMemo<Record<string, ValidatedActivity | null>>(() => {
-    const out: Record<string, ValidatedActivity | null> = {};
-    for (const s of slides) out[s.id] = validateActivity(s.id, s.activity);
+  /**
+   * Per-overlay validated checkpoint configs, keyed by deck score key. Info
+   * overlays and invalid checkpoints are absent. Memoized on the deck.
+   */
+  const validated = useMemo<Record<string, ValidatedActivity>>(() => {
+    const out: Record<string, ValidatedActivity> = {};
+    for (const s of slides) {
+      for (const o of s.overlays) {
+        if (o.kind !== "checkpoint") continue;
+        const v = validateCheckpoint(o);
+        if (v) out[scoreKey(s.id, o.id)] = v;
+      }
+    }
     return out;
   }, [slides]);
 
-  /** Ids of slides that carry a valid embedded (scorable) activity. */
-  const scorableIds = useMemo(
-    () => slides.filter((s) => validatedActivities[s.id]).map((s) => s.id),
-    [slides, validatedActivities],
-  );
-  const hasScorable = scorableIds.length > 0;
+  /** Keys of every valid (scorable) checkpoint in the deck. */
+  const scorableKeys = useMemo(() => Object.keys(validated), [validated]);
+  const hasScorable = scorableKeys.length > 0;
 
   const [state, setState] = useState<State>(
-    () => parseSuspend(suspendData, slides.length, scorableIds) ?? initialState(),
+    () => parseSuspend(suspendData, slides.length, scorableKeys) ?? initialState(),
   );
+  /** Which overlay's detail panel is open on the current slide (null = none). */
+  const [openOverlayId, setOpenOverlayId] = useState<string | null>(null);
 
   // Reset local state when `config` changes externally (Studio Preview edit,
   // draft load). Reference equality on the prop — engine loads JSON once.
   useEffect(() => {
-    setState(parseSuspend(suspendData, slides.length, scorableIds) ?? initialState());
+    setState(parseSuspend(suspendData, slides.length, scorableKeys) ?? initialState());
+    setOpenOverlayId(null);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [config]);
 
@@ -126,28 +163,40 @@ export default function Component({
   const isLast = state.current === total - 1;
   const submitted = state.stage === "submitted";
 
+  // Required checkpoints on the current slide that are valid but unanswered
+  // block Next (the slide-deck analog of interactive-video's required gating).
+  const blockingRequired = useMemo(() => {
+    if (!slide) return 0;
+    return slide.overlays.filter((o) => {
+      if (o.kind !== "checkpoint" || !o.required) return false;
+      const key = scoreKey(slide.id, o.id);
+      return Boolean(validated[key]) && !state.scores[key];
+    }).length;
+  }, [slide, validated, state.scores]);
+
   const goTo = (index: number) => {
     if (index < 0 || index >= total) return;
     setState((s) => ({ ...s, current: index }));
+    setOpenOverlayId(null);
   };
 
-  const recordScore = (slideId: string, score: ScoreState) => {
-    setState((s) => ({ ...s, scores: { ...s.scores, [slideId]: score } }));
+  const recordScore = (key: string, score: ScoreState) => {
+    setState((s) => ({ ...s, scores: { ...s.scores, [key]: score } }));
   };
 
-  // Aggregate the embedded-activity scores into the SCORM payload. With no
-  // scorable slide the deck is completion-only: success on finish.
+  // Aggregate the checkpoint scores into the SCORM payload. With no scorable
+  // checkpoint the deck is completion-only: success on finish.
   const finish = () => {
     if (submitted) return;
-    const scores = scorableIds
-      .map((id) => state.scores[id])
-      .filter((x): x is ScoreState => Boolean(x));
     const next: State = { ...state, stage: "submitted" };
     setState(next);
     if (!hasScorable) {
       onSubmit({ raw: 0, max: 0, success: true, suspendData: JSON.stringify(next) });
       return;
     }
+    const scores = scorableKeys
+      .map((k) => state.scores[k])
+      .filter((x): x is ScoreState => Boolean(x));
     const aggregated = aggregate(scores, scoring.passPercentage);
     onSubmit({
       raw: aggregated.raw,
@@ -157,9 +206,12 @@ export default function Component({
     });
   };
 
-  const tryAgain = () => setState(initialState());
+  const tryAgain = () => {
+    setState(initialState());
+    setOpenOverlayId(null);
+  };
 
-  // Completion badge: aggregate of embedded scores once finished, else
+  // Completion badge: aggregate of checkpoint scores once finished, else
   // in-progress. Color is always paired with an icon + text label.
   const badge = useMemo(() => {
     if (!submitted) {
@@ -168,18 +220,20 @@ export default function Component({
     if (!hasScorable) {
       return { tone: "success" as StatusTone, icon: <CheckIcon />, label: "Complete" };
     }
-    const scores = scorableIds
-      .map((id) => state.scores[id])
+    const scores = scorableKeys
+      .map((k) => state.scores[k])
       .filter((x): x is ScoreState => Boolean(x));
     const aggregated = aggregate(scores, scoring.passPercentage);
     return aggregated.success
       ? { tone: "success" as StatusTone, icon: <TrophyIcon />, label: "Passed" }
       : { tone: "warning" as StatusTone, icon: <CheckIcon />, label: "Review" };
-  }, [submitted, hasScorable, scorableIds, state.scores, scoring.passPercentage]);
+  }, [submitted, hasScorable, scorableKeys, state.scores, scoring.passPercentage]);
 
   if (!slide) return null;
 
-  const activity = validatedActivities[slide.id] ?? null;
+  const bg = slide.background;
+  const openOverlay = slide.overlays.find((o) => o.id === openOverlayId) ?? null;
+  const slideLabelId = `${headingId}-slide-${state.current}`;
 
   return (
     <div className="kukui-cp">
@@ -196,55 +250,125 @@ export default function Component({
           }
         />
 
-        <section
-          className="kukui-cp__slide"
-          aria-labelledby={`${headingId}-slide-${state.current}`}
-        >
+        <section className="kukui-cp__slide" aria-labelledby={slideLabelId}>
           {slide.title ? (
-            <H2 id={`${headingId}-slide-${state.current}`} className="kukui-cp__slide-title">
+            <H2 id={slideLabelId} className="kukui-cp__slide-title">
               {slide.title}
             </H2>
           ) : (
-            <span id={`${headingId}-slide-${state.current}`} className="kukui-cp__sr-only">
+            <span id={slideLabelId} className="kukui-cp__sr-only">
               {`Slide ${state.current + 1}`}
             </span>
           )}
 
-          {slide.body && <SafeHtml className="kukui-cp__body" html={slide.body} />}
-
-          {slide.media && (
-            <figure className="kukui-cp__figure">
-              <img className="kukui-cp__media" src={slide.media.src} alt={slide.media.alt} />
-              {slide.media.caption && (
-                <figcaption className="kukui-cp__figcaption">{slide.media.caption}</figcaption>
-              )}
-            </figure>
-          )}
-
-          {activity && (
-            <div className="kukui-cp__embed">
-              {activity.kind === "multipleChoice" ? (
-                <MultipleChoice
-                  config={activity.config}
-                  onSubmit={(s) => recordScore(slide.id, s)}
-                  headingLevel={embeddedLevel}
-                />
+          {bg.kind === "image" ? (
+            <div
+              className="kukui-cp__stage"
+              style={{ aspectRatio: `${bg.naturalWidth} / ${bg.naturalHeight}` }}
+            >
+              {bg.src ? (
+                <img className="kukui-cp__media" src={bg.src} alt={bg.alt} />
               ) : (
-                <FillInTheBlanks
-                  config={activity.config}
-                  onSubmit={(s) => recordScore(slide.id, s)}
-                  headingLevel={embeddedLevel}
-                />
+                <div className="kukui-cp__media-missing" role="img" aria-label={bg.alt}>
+                  Slide image unavailable
+                </div>
               )}
+              {slide.overlays.map((o) => {
+                const key = scoreKey(slide.id, o.id);
+                const isCheckpoint = o.kind === "checkpoint";
+                const isValid = !isCheckpoint || Boolean(validated[key]);
+                const answered = isCheckpoint && Boolean(state.scores[key]);
+                const isOpen = o.id === openOverlayId;
+                return (
+                  <button
+                    key={o.id}
+                    type="button"
+                    className={[
+                      "kukui-cp__marker",
+                      isCheckpoint ? "is-checkpoint" : "is-info",
+                      answered ? "is-answered" : "",
+                      isCheckpoint && o.required ? "is-required" : "",
+                      isOpen ? "is-open" : "",
+                    ]
+                      .filter(Boolean)
+                      .join(" ")}
+                    style={{
+                      left: `${o.rect.x * 100}%`,
+                      top: `${o.rect.y * 100}%`,
+                      width: `${o.rect.w * 100}%`,
+                      height: `${o.rect.h * 100}%`,
+                    }}
+                    aria-expanded={isOpen}
+                    aria-controls={detailId}
+                    disabled={!isValid}
+                    onClick={() => setOpenOverlayId(isOpen ? null : o.id)}
+                  >
+                    <span className="kukui-cp__marker-icon" aria-hidden="true">
+                      {answered ? <CheckIcon /> : isCheckpoint ? <QuestionIcon /> : <InfoIcon />}
+                    </span>
+                    <span className="kukui-cp__marker-label">
+                      {o.kind === "info" ? o.label : o.activity.kind === "multipleChoice" ? "Question" : "Fill in"}
+                      {isCheckpoint && o.required ? " (required)" : ""}
+                    </span>
+                  </button>
+                );
+              })}
             </div>
+          ) : (
+            <div className="kukui-cp__blank" aria-hidden={slide.title ? "true" : undefined} />
           )}
+
+          {slide.notes && <SafeHtml className="kukui-cp__notes" html={slide.notes} />}
+
+          {/* Detail panel for the open overlay — reserved region, below the
+              slide so opening it never reflows the slide image itself. */}
+          <div id={detailId} className="kukui-cp__detail" aria-live="polite">
+            {openOverlay && openOverlay.kind === "info" && (
+              <div className="kukui-cp__info-detail">
+                <div className="kukui-cp__detail-head">
+                  <span className="kukui-cp__detail-title">{openOverlay.label}</span>
+                  <button
+                    type="button"
+                    className="kukui-cp__detail-close"
+                    onClick={() => setOpenOverlayId(null)}
+                  >
+                    Close
+                  </button>
+                </div>
+                {openOverlay.html && <SafeHtml className="kukui-cp__info-body" html={openOverlay.html} />}
+              </div>
+            )}
+            {openOverlay && openOverlay.kind === "checkpoint" && (() => {
+              const v = validated[scoreKey(slide.id, openOverlay.id)];
+              if (!v) return null;
+              return (
+                <div className="kukui-cp__embed">
+                  {v.kind === "multipleChoice" ? (
+                    <MultipleChoice
+                      config={v.config}
+                      onSubmit={(s) => recordScore(scoreKey(slide.id, openOverlay.id), s)}
+                      headingLevel={embeddedLevel}
+                    />
+                  ) : (
+                    <FillInTheBlanks
+                      config={v.config}
+                      onSubmit={(s) => recordScore(scoreKey(slide.id, openOverlay.id), s)}
+                      headingLevel={embeddedLevel}
+                    />
+                  )}
+                </div>
+              );
+            })()}
+          </div>
         </section>
 
         <nav className="kukui-cp__dots" aria-label="Slides">
           <ol className="kukui-cp__dot-list">
             {slides.map((s, i) => {
               const isCurrent = i === state.current;
-              const answered = Boolean(state.scores[s.id]);
+              const answered = s.overlays.some(
+                (o) => o.kind === "checkpoint" && state.scores[scoreKey(s.id, o.id)],
+              );
               return (
                 <li key={s.id} className="kukui-cp__dot-item">
                   <button
@@ -270,15 +394,17 @@ export default function Component({
           </ol>
         </nav>
 
-        <div
-          id={liveId}
-          className="kukui-cp__status"
-          role="status"
-          aria-live="polite"
-        >
+        <div id={liveId} className="kukui-cp__status" role="status" aria-live="polite">
           {`Slide ${state.current + 1} of ${total}`}
           {submitted ? ` — ${badge.label}` : ""}
         </div>
+
+        {blockingRequired > 0 && !isLast && (
+          <p className="kukui-cp__gate">
+            Answer the required {blockingRequired === 1 ? "checkpoint" : "checkpoints"} on this slide
+            to continue.
+          </p>
+        )}
 
         <nav className="kukui-cp__nav" aria-label="Slide navigation">
           <button
@@ -300,12 +426,18 @@ export default function Component({
                 type="button"
                 className="kukui-cp__primary"
                 onClick={() => goTo(state.current + 1)}
+                disabled={blockingRequired > 0}
               >
                 Next →
               </button>
             )}
             {isLast && !submitted && (
-              <button type="button" className="kukui-cp__primary" onClick={finish}>
+              <button
+                type="button"
+                className="kukui-cp__primary"
+                onClick={finish}
+                disabled={blockingRequired > 0}
+              >
                 Finish
               </button>
             )}
@@ -323,21 +455,20 @@ export default function Component({
 function parseSuspend(
   s: string | undefined,
   slideCount: number,
-  scorableIds: string[],
+  scorableKeys: string[],
 ): State | null {
   if (!s) return null;
   try {
     const parsed = JSON.parse(s) as Partial<State>;
     if (!parsed || typeof parsed.current !== "number") return null;
-    const current =
-      parsed.current >= 0 && parsed.current < slideCount ? parsed.current : 0;
+    const current = parsed.current >= 0 && parsed.current < slideCount ? parsed.current : 0;
 
-    const known = new Set(scorableIds);
+    const known = new Set(scorableKeys);
     const scores: Record<string, ScoreState> = {};
     if (parsed.scores && typeof parsed.scores === "object") {
-      for (const [id, sc] of Object.entries(parsed.scores)) {
-        if (known.has(id) && sc && typeof sc === "object" && typeof sc.raw === "number") {
-          scores[id] = sc as ScoreState;
+      for (const [key, sc] of Object.entries(parsed.scores)) {
+        if (known.has(key) && sc && typeof sc === "object" && typeof sc.raw === "number") {
+          scores[key] = sc as ScoreState;
         }
       }
     }

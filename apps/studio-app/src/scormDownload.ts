@@ -2,6 +2,7 @@ import type { ActivityKind } from "@kukui/core";
 import type JSZipType from "jszip";
 import { slug } from "./util/slug.js";
 import { loadCachedModelBlob } from "./sketchfab/modelCache.js";
+import { loadSlideAsset } from "./slides/slideAssetStore.js";
 
 /**
  * Build a SCORM 1.2 zip in the browser by patching a pre-built template.
@@ -34,7 +35,9 @@ export async function downloadScormZip(kind: ActivityKind, config: unknown): Pro
   // Rewrite Sketchfab-imported models BEFORE serialising. If a hotspot-3d
   // activity has model.sketchfabMode === "import", the cached .glb body
   // gets bundled into the zip and model.src is rewritten to point at it.
-  const finalConfig = await embedSketchfabImports(kind, config, zip);
+  // Then bundle any course-presentation slide images the same way (IndexedDB
+  // blob → samples/<kind>/assets/<id>.png, background.src → relative path).
+  const finalConfig = await embedSlideAssets(kind, await embedSketchfabImports(kind, config, zip), zip);
 
   // Swap in the author's JSON.
   const samplePath = `samples/${kind}/basic.json`;
@@ -113,5 +116,45 @@ export async function embedSketchfabImports(
   const nextModel = next.model as Record<string, unknown>;
   nextModel.src = `./assets/${model.sketchfabUid}.glb`;
   delete nextModel.sketchfabMode;
+  return next;
+}
+
+/**
+ * If the config is a course-presentation deck whose slides carry image
+ * backgrounds with an `assetId` (imported PDF / slide images cached in
+ * IndexedDB), bundle each PNG at `samples/<kind>/assets/<assetId>.png` inside
+ * the zip and rewrite that slide's `background.src` to the relative path,
+ * dropping `assetId` — so the SCORM/web package renders the deck fully offline.
+ *
+ * Mirrors embedSketchfabImports. Backgrounds that already have an external
+ * `src` and no `assetId` (e.g. https placeholders, or already-exported decks)
+ * pass through untouched. For any other activity kind the config is unchanged.
+ */
+export async function embedSlideAssets(
+  kind: ActivityKind,
+  config: unknown,
+  zip: JSZipType,
+): Promise<unknown> {
+  if (!config || typeof config !== "object") return config;
+  const slides = (config as { slides?: unknown }).slides;
+  if (!Array.isArray(slides)) return config;
+
+  const next = JSON.parse(JSON.stringify(config)) as { slides: Array<Record<string, unknown>> };
+  for (const slide of next.slides) {
+    const bg = slide?.background as
+      | { kind?: string; assetId?: string; src?: string }
+      | undefined;
+    if (!bg || bg.kind !== "image" || !bg.assetId) continue;
+    const blob = await loadSlideAsset(bg.assetId);
+    if (!blob) {
+      throw new Error(
+        `Slide image ${bg.assetId} is referenced but not in cache. Re-import the deck and try again.`,
+      );
+    }
+    const assetPath = `samples/${kind}/assets/${bg.assetId}.png`;
+    zip.file(assetPath, await blob.arrayBuffer());
+    bg.src = `./assets/${bg.assetId}.png`;
+    delete bg.assetId;
+  }
   return next;
 }

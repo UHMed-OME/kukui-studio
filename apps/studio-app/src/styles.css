@@ -6347,3 +6347,315 @@ html[data-theme="glass"] .kukui-studio-footer {
   font-size: 12px;
   overflow-x: auto;
 }
+
+/* ── Course Presentation editor ─────────────────────────────────────────────
+ * Visual deck editor: import bar, slide filmstrip, an overlay-placement board
+ * (normalized-rect markers reuse the same conventions as the 2D rect editors),
+ * and an inspector. Tokens only; 44px tap targets; layout-stable.
+ */
+.ks-cp-ed {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.ks-cp-ed__import {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.ks-cp-ed__slides-link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+.ks-cp-ed__slides-link input {
+  min-width: 220px;
+  min-height: 36px;
+  padding: 6px 10px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+  font-size: 13px;
+}
+
+.ks-cp-ed__notice {
+  margin: 0;
+  padding: var(--spacing-sm) var(--spacing-md);
+  border: 1px solid var(--color-info);
+  border-radius: var(--radius-sm);
+  background: var(--color-info-soft);
+  color: var(--color-text-primary);
+  font-size: 13px;
+}
+
+.ks-cp-ed__empty {
+  padding: var(--spacing-2xl);
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius-md);
+  color: var(--color-text-secondary);
+  text-align: center;
+}
+
+.ks-cp-ed__strip {
+  list-style: none;
+  display: flex;
+  gap: var(--spacing-sm);
+  margin: 0;
+  padding: var(--spacing-xs) 0;
+  overflow-x: auto;
+}
+
+.ks-cp-ed__thumb {
+  position: relative;
+  width: 96px;
+  height: 56px;
+  padding: 0;
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  cursor: pointer;
+  overflow: hidden;
+}
+
+.ks-cp-ed__thumb.is-current {
+  border-color: var(--color-primary);
+}
+
+.ks-cp-ed__thumb:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.ks-cp-ed__thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.ks-cp-ed__thumb-blank {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  font-weight: 700;
+  color: var(--color-text-secondary);
+}
+
+.ks-cp-ed__thumb-badge {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
+  border-radius: var(--radius-pill, 999px);
+  background: var(--color-primary);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 18px;
+  text-align: center;
+}
+
+.ks-cp-ed__toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-sm);
+}
+
+.ks-cp-ed__count {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+}
+
+.ks-cp-ed__toolbar-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-xs);
+}
+
+.ks-cp-ed__board {
+  position: relative;
+  width: 100%;
+  max-height: 60vh;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-tip-bg, #f2f0e8);
+  overflow: hidden;
+  touch-action: none;
+}
+
+.ks-cp-ed__board-img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  user-select: none;
+}
+
+.ks-cp-ed__board-missing,
+.ks-cp-ed__board-blank {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 160px;
+  padding: var(--spacing-lg);
+  color: var(--color-text-secondary);
+  text-align: center;
+}
+
+.ks-cp-ed__overlay {
+  position: absolute;
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 4px 6px;
+  border: 2px solid var(--color-info);
+  border-radius: var(--radius-sm);
+  background: var(--color-info-soft);
+  color: var(--color-text-primary);
+  cursor: grab;
+  touch-action: none;
+}
+
+.ks-cp-ed__overlay.is-checkpoint {
+  border-color: var(--color-primary);
+  background: var(--color-primary-soft);
+}
+
+.ks-cp-ed__overlay.is-selected {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 1px;
+}
+
+.ks-cp-ed__overlay-label {
+  font-size: 12px;
+  font-weight: 700;
+  pointer-events: none;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ks-cp-ed__overlay-resize {
+  position: absolute;
+  right: -2px;
+  bottom: -2px;
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--color-primary);
+  border-radius: 3px;
+  background: var(--color-surface);
+  cursor: nwse-resize;
+}
+
+.ks-cp-ed__notes-field,
+.ks-cp-ed__field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.ks-cp-ed__field--inline {
+  flex-direction: row;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+.ks-cp-ed__notes-field textarea,
+.ks-cp-ed__field textarea,
+.ks-cp-ed__field input[type="text"],
+.ks-cp-ed__field select {
+  padding: 6px 10px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+  font-size: 14px;
+  font-weight: 400;
+}
+
+.ks-cp-ed__noselect {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: 13px;
+}
+
+.ks-cp-ed__inspector {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-md);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+}
+
+.ks-cp-ed__inspector-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.ks-cp-ed__inspector-head h3 {
+  margin: 0;
+  font-size: 15px;
+}
+
+.ks-cp-ed__row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+.ks-cp-ed__check {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.ks-cp-ed__answers {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.ks-cp-ed__answers-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+}
+
+.ks-cp-ed__answer {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+.ks-cp-ed__answer input[type="text"] {
+  flex: 1;
+  padding: 6px 10px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+  font-size: 14px;
+}

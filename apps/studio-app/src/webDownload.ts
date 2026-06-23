@@ -1,7 +1,7 @@
 import type { ActivityKind } from "@kukui/core";
 import type { CollectConfig } from "@kukui/core";
 import { slug } from "./util/slug.js";
-import { embedSketchfabImports } from "./scormDownload.js";
+import { embedSketchfabImports, embedSlideAssets } from "./scormDownload.js";
 
 /**
  * Build a non-LMS "web" package in the browser by patching a pre-built
@@ -31,10 +31,10 @@ export async function downloadWebZip(
   }
   const zip = await JSZip.loadAsync(await response.arrayBuffer());
 
-  // Same Sketchfab-import embedding as the SCORM path: a hotspot-3d model
-  // imported into IndexedDB is bundled and model.src rewritten to a relative
-  // asset, so the package is self-contained.
-  const finalConfig = await embedSketchfabImports(kind, config, zip);
+  // Same Sketchfab-import + slide-image embedding as the SCORM path: imported
+  // models / slide PNGs in IndexedDB are bundled and their src rewritten to a
+  // relative asset, so the package is self-contained.
+  const finalConfig = await embedSlideAssets(kind, await embedSketchfabImports(kind, config, zip), zip);
 
   zip.file(`samples/${kind}/basic.json`, JSON.stringify(finalConfig, null, 2));
 

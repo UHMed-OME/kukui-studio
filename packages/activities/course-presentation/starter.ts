@@ -1,7 +1,8 @@
 /**
- * Minimal valid config used as Studio's "new activity" template. Two slides,
- * the second carrying a complete embedded multiple-choice activity so authors
- * have a working example to edit.
+ * Minimal valid config used as Studio's "new activity" template. A single
+ * blank title slide — the author builds the real deck by importing a PDF /
+ * PowerPoint / Google Slides deck on the Edit canvas, then dropping info
+ * hotspots and checkpoints onto the slides.
  */
 const starter = {
   version: "1.0",
@@ -10,26 +11,11 @@ const starter = {
     {
       id: "slide-1",
       title: "Welcome",
-      body: "<p>Introduce the topic on this first slide. Use the Next button to advance.</p>",
-    },
-    {
-      id: "slide-2",
-      title: "Check your understanding",
-      body: "<p>Add some content, then answer the embedded question below.</p>",
-      // Seeded with a complete embedded multiple-choice config so the deck
-      // demonstrates the embed and the form loads with a working example.
-      activity: {
-        kind: "multipleChoice",
-        config: {
-          version: "1.0",
-          title: "Quick check",
-          question: "<p>Which option is correct?</p>",
-          answers: [
-            { text: "The correct option", correct: true },
-            { text: "A distractor", correct: false },
-          ],
-        },
-      },
+      background: { kind: "blank" },
+      notes:
+        "<p>Open the <strong>Edit</strong> tab and import a PDF, PowerPoint export, or Google Slides link to build your deck. Then drop info hotspots and question checkpoints onto each slide.</p>",
+      // Overlays are placed on the canvas; a fresh deck starts with none.
+      overlays: [],
     },
   ],
   // Seeded so Studio's RJSF form loads clean: z.toJSONSchema marks a

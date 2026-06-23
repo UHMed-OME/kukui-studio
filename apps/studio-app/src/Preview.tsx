@@ -6,8 +6,29 @@ import {
   StubActivityLazy,
 } from "@kukui/core/components/registry";
 import { EditCanvas } from "./EditCanvas/index.js";
+import { useResolvedDeck } from "./slides/resolveDeckAssets.js";
 
 export type PreviewMode = "live" | "edit";
+
+/**
+ * Course-presentation live preview: resolves slide-image assetIds (stored in
+ * IndexedDB) into object URLs before handing the deck to the runtime Component,
+ * which only reads `background.src`. Without this, imported slides preview
+ * blank because their PNGs never live in the persisted config.
+ */
+function ResolvedDeckPreview({
+  Component,
+  config,
+  onSubmit,
+}: {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  Component: React.ComponentType<{ config: any; onSubmit: () => void }>;
+  config: unknown;
+  onSubmit: () => void;
+}) {
+  const resolved = useResolvedDeck(config);
+  return <Component config={resolved ?? config} onSubmit={onSubmit} />;
+}
 
 /**
  * Validation result shape — derived from SchemaRegistry's safeParse
@@ -233,6 +254,10 @@ export function Preview({
         >
           {isPlanned || !Component ? (
             <Stub config={config} kind={kind as never} onSubmit={noop} />
+          ) : kind === "course-presentation" ? (
+            // Slide backgrounds live in IndexedDB by assetId; resolve them to
+            // object URLs so the Live preview renders imported decks offline.
+            <ResolvedDeckPreview Component={Component} config={config} onSubmit={noop} />
           ) : (
             <Component config={config} onSubmit={noop} />
           )}

@@ -1,10 +1,12 @@
 /*
- * Course Presentation — a navigable slide deck with a gradient banner header,
- * a per-slide content area (prose + image + optional embedded activity),
- * prev/next navigation, and a clickable dot indicator. Layout-stable: borders
- * are a constant 2px and only color changes between states. Color is never the
- * sole signal — every state pairs color with an icon and a text label. Tokens
- * only; no raw hex.
+ * Course Presentation — a navigable deck of slide images (imported from PDF /
+ * PowerPoint / Google Slides) with positioned interactions: click-to-reveal
+ * info hotspots and embedded multiple-choice / fill-in-the-blanks checkpoints.
+ * A gradient banner header, prev/next navigation, and a clickable dot strip.
+ *
+ * Layout-stable: border widths are constant and only color changes between
+ * states. Color is never the sole signal — every state pairs color with an
+ * icon and a text label. Tokens only; no raw hex (fallbacks mirror the ramp).
  *
  * `--kukui-card-pad` defines the card's horizontal padding; the shared
  * ActivityHeader bleeds edge-to-edge because the card's own top padding is 0
@@ -62,36 +64,168 @@
   color: var(--color-text-primary, #1c1e20);
 }
 
-.kukui-cp__body {
-  margin: 0 0 var(--spacing-lg, 16px);
-  font-size: var(--font-size-prompt, 16px);
-  line-height: 1.5;
-  color: var(--color-text-primary, #1c1e20);
-}
-
-.kukui-cp__figure {
-  margin: 0 0 var(--spacing-lg, 16px);
+/* Stage: the slide image with absolutely-positioned overlay markers. The
+   element holds the natural aspect ratio (inline `aspect-ratio`) so markers
+   placed by percentage land in the right spot at any rendered width. */
+.kukui-cp__stage {
+  position: relative;
+  width: 100%;
+  border: 1px solid var(--color-border, #dad2c6);
+  border-radius: var(--radius-md, 8px);
+  background: var(--color-tip-bg, #f2f0e8);
+  overflow: hidden;
 }
 
 .kukui-cp__media {
   display: block;
   width: 100%;
-  height: auto;
-  border: 1px solid var(--color-border, #dad2c6);
-  border-radius: var(--radius-md, 8px);
-  background: var(--color-surface, #ffffff);
+  height: 100%;
+  object-fit: contain;
 }
 
-.kukui-cp__figcaption {
-  margin-top: var(--spacing-sm, 8px);
+.kukui-cp__media-missing {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  min-height: 120px;
   font-size: var(--font-size-meta, 13px);
   color: var(--color-text-secondary, #606069);
 }
 
-/* Embedded activity -------------------------------------------------------- */
+.kukui-cp__blank {
+  width: 100%;
+  min-height: 64px;
+}
+
+/* Overlay markers ---------------------------------------------------------- */
+
+.kukui-cp__marker {
+  position: absolute;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs, 6px);
+  /* The rect can be small; guarantee a WCAG 2.5.5 tap target regardless. */
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0 var(--spacing-sm, 8px);
+  border: 2px solid var(--color-info, #1f6f78);
+  border-radius: var(--radius-pill, 999px);
+  background: var(--color-surface, #ffffff);
+  color: var(--color-info, #1f6f78);
+  font-size: var(--font-size-meta, 13px);
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+  transition: background-color 150ms ease, border-color 150ms ease, color 150ms ease;
+}
+
+.kukui-cp__marker.is-checkpoint {
+  border-color: var(--color-primary, #7b4324);
+  color: var(--color-primary, #7b4324);
+}
+
+.kukui-cp__marker.is-required::after {
+  /* A non-color signal that the checkpoint must be answered. */
+  content: "*";
+  margin-left: 2px;
+}
+
+.kukui-cp__marker.is-answered {
+  border-color: var(--color-success, #2e6e41);
+  color: var(--color-success, #2e6e41);
+  background: var(--color-success-soft);
+}
+
+.kukui-cp__marker.is-open {
+  background: var(--color-primary-soft);
+}
+
+.kukui-cp__marker:hover {
+  background: var(--color-tip-bg, #f2f0e8);
+}
+
+.kukui-cp__marker:focus-visible {
+  outline: 2px solid var(--color-primary, #7b4324);
+  outline-offset: 2px;
+}
+
+.kukui-cp__marker:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.kukui-cp__marker-icon {
+  display: inline-flex;
+}
+
+.kukui-cp__marker-label {
+  max-width: 14ch;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Notes + detail panel ----------------------------------------------------- */
+
+.kukui-cp__notes {
+  margin: var(--spacing-lg, 16px) 0 0;
+  font-size: var(--font-size-prompt, 16px);
+  line-height: 1.5;
+  color: var(--color-text-primary, #1c1e20);
+}
+
+.kukui-cp__detail {
+  margin-top: var(--spacing-lg, 16px);
+}
+
+.kukui-cp__info-detail {
+  padding: var(--spacing-md, 12px);
+  border: 1px solid var(--color-info, #1f6f78);
+  border-radius: var(--radius-lg, 10px);
+  background: var(--color-info-soft);
+}
+
+.kukui-cp__detail-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-md, 12px);
+  margin-bottom: var(--spacing-sm, 8px);
+}
+
+.kukui-cp__detail-title {
+  font-size: var(--font-size-answer, 15px);
+  font-weight: 700;
+  color: var(--color-text-primary, #1c1e20);
+}
+
+.kukui-cp__detail-close {
+  min-height: 44px;
+  padding: 6px 14px;
+  border: 2px solid var(--color-primary, #7b4324);
+  border-radius: var(--radius-md, 8px);
+  background: transparent;
+  color: var(--color-primary, #7b4324);
+  font-size: var(--font-size-meta, 13px);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.kukui-cp__detail-close:hover {
+  background: var(--color-primary-soft);
+}
+
+.kukui-cp__info-body {
+  font-size: var(--font-size-prompt, 16px);
+  line-height: 1.5;
+  color: var(--color-text-primary, #1c1e20);
+}
+
+/* Embedded checkpoint activity --------------------------------------------- */
 
 .kukui-cp__embed {
-  margin: var(--spacing-lg, 16px) 0 0;
   padding: var(--spacing-md, 12px);
   border: 1px solid var(--color-border, #dad2c6);
   border-radius: var(--radius-lg, 10px);
@@ -155,7 +289,7 @@
   line-height: 1;
 }
 
-/* Status line -------------------------------------------------------------- */
+/* Status line + gate hint -------------------------------------------------- */
 
 .kukui-cp__status {
   min-height: 24px;
@@ -163,6 +297,17 @@
   font-size: var(--font-size-meta, 13px);
   font-weight: 600;
   color: var(--color-text-secondary, #606069);
+}
+
+.kukui-cp__gate {
+  margin: var(--spacing-sm, 8px) var(--kukui-card-pad) 0;
+  padding: var(--spacing-sm, 8px) var(--spacing-md, 12px);
+  border: 1px solid var(--color-warning, #8a5a12);
+  border-radius: var(--radius-md, 8px);
+  background: var(--color-warning-soft);
+  font-size: var(--font-size-meta, 13px);
+  font-weight: 600;
+  color: var(--color-text-primary, #1c1e20);
 }
 
 /* Nav ---------------------------------------------------------------------- */
@@ -225,7 +370,8 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .kukui-cp__dot {
+  .kukui-cp__dot,
+  .kukui-cp__marker {
     transition: none;
   }
 }

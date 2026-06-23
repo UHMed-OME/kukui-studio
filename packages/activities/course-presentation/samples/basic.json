@@ -1,66 +1,106 @@
 {
-  "_comment": "A five-slide course presentation introducing the cardiac cycle, with an embedded multiple-choice check and an embedded fill-in-the-blanks check. Authored as a teaching deck; embedded activity configs are validated at render against the multiple-choice and fill-in-the-blanks schemas.",
+  "_comment": "A four-slide interactive course presentation on the cardiac cycle. Slide backgrounds use placeholder images (as imported slides would); each slide carries positioned overlays — info hotspots that reveal text and checkpoint overlays whose inner configs are validated at render against the multiple-choice and fill-in-the-blanks schemas. The final slide is a blank summary divider.",
   "version": "1.0",
-  "title": "❤️ The Cardiac Cycle",
+  "title": "The Cardiac Cycle",
   "author": "Kukui sample content",
   "slides": [
     {
       "id": "overview",
       "title": "What is the cardiac cycle?",
-      "body": "<p>The <strong>cardiac cycle</strong> is the sequence of events in a single heartbeat: the alternating contraction (<em>systole</em>) and relaxation (<em>diastole</em>) of the heart's chambers that move blood through the circulation.</p><p>Over the next few slides we will walk through the phases, then check your understanding.</p>"
+      "background": {
+        "kind": "image",
+        "src": "https://placehold.co/1280x720/eef0f6/1c1e20?text=Cardiac+Cycle+%E2%80%94+Overview",
+        "alt": "Title slide reading: Cardiac Cycle — Overview.",
+        "naturalWidth": 1280,
+        "naturalHeight": 720
+      },
+      "notes": "<p>The <strong>cardiac cycle</strong> is the sequence of events in a single heartbeat: the alternating contraction (<em>systole</em>) and relaxation (<em>diastole</em>) of the heart's chambers. Explore the hotspot, then move on.</p>",
+      "overlays": [
+        {
+          "kind": "info",
+          "id": "ov-1",
+          "rect": { "x": 0.08, "y": 0.62, "w": 0.2, "h": 0.12 },
+          "label": "Systole vs diastole",
+          "html": "<p><strong>Systole</strong> is contraction (ejecting blood); <strong>diastole</strong> is relaxation (refilling). The two alternate roughly 60–100 times a minute at rest.</p>"
+        }
+      ]
+    },
+    {
+      "id": "sounds",
+      "title": "Heart sounds",
+      "background": {
+        "kind": "image",
+        "src": "https://placehold.co/1280x720/f2f0e8/1c1e20?text=Heart+Sounds+%E2%80%94+S1+%26+S2",
+        "alt": "Slide illustrating the first and second heart sounds, S1 and S2.",
+        "naturalWidth": 1280,
+        "naturalHeight": 720
+      },
+      "overlays": [
+        {
+          "kind": "checkpoint",
+          "id": "snd-q",
+          "rect": { "x": 0.62, "y": 0.18, "w": 0.24, "h": 0.14 },
+          "required": true,
+          "activity": {
+            "kind": "multipleChoice",
+            "config": {
+              "version": "1.0",
+              "title": "The first heart sound (S1)",
+              "question": "<p>The first heart sound (&ldquo;lub&rdquo;) is produced primarily by the closure of which valves?</p>",
+              "answers": [
+                {
+                  "text": "The aortic and pulmonary (semilunar) valves",
+                  "correct": false,
+                  "feedback": "Not quite — closure of the semilunar valves produces the second heart sound (S2), the &ldquo;dub.&rdquo;"
+                },
+                {
+                  "text": "The mitral and tricuspid (atrioventricular) valves",
+                  "correct": true,
+                  "feedback": "Correct — S1 marks the start of ventricular systole as the AV valves snap shut."
+                },
+                {
+                  "text": "The mitral and aortic valves",
+                  "correct": false,
+                  "feedback": "Not quite — these valves close at different points in the cycle, so they do not produce a single combined sound."
+                }
+              ]
+            }
+          }
+        }
+      ]
     },
     {
       "id": "phases",
-      "title": "Systole and diastole",
-      "body": "<ul><li><strong>Atrial systole</strong> — the atria contract, topping off the ventricles.</li><li><strong>Ventricular systole</strong> — the ventricles contract, ejecting blood into the aorta and pulmonary artery.</li><li><strong>Diastole</strong> — the chambers relax and refill.</li></ul><p>The valves open and close in response to pressure changes, producing the familiar &ldquo;lub-dub&rdquo; heart sounds.</p>"
-    },
-    {
-      "id": "check-valves",
-      "title": "Check: heart sounds",
-      "body": "<p>Think about which valves are involved in the first heart sound before you answer.</p>",
-      "activity": {
-        "kind": "multipleChoice",
-        "config": {
-          "version": "1.0",
-          "title": "The first heart sound (S1)",
-          "question": "<p>The first heart sound (&ldquo;lub&rdquo;) is produced primarily by the closure of which valves?</p>",
-          "answers": [
-            {
-              "text": "The aortic and pulmonary (semilunar) valves",
-              "correct": false,
-              "feedback": "Not quite — closure of the semilunar valves produces the second heart sound (S2), the &ldquo;dub.&rdquo;"
-            },
-            {
-              "text": "The mitral and tricuspid (atrioventricular) valves",
-              "correct": true,
-              "feedback": "Correct — S1 marks the start of ventricular systole as the AV valves snap shut."
-            },
-            {
-              "text": "The mitral and aortic valves",
-              "correct": false,
-              "feedback": "Not quite — these valves close at different points in the cycle, so they do not produce a single combined sound."
+      "title": "Name the phase",
+      "background": {
+        "kind": "image",
+        "src": "https://placehold.co/1280x720/eef0f6/1c1e20?text=Phases+%E2%80%94+Systole+%26+Diastole",
+        "alt": "Slide showing the contraction and relaxation phases of the cardiac cycle.",
+        "naturalWidth": 1280,
+        "naturalHeight": 720
+      },
+      "overlays": [
+        {
+          "kind": "checkpoint",
+          "id": "ph-fill",
+          "rect": { "x": 0.1, "y": 0.7, "w": 0.3, "h": 0.14 },
+          "activity": {
+            "kind": "fillInTheBlanks",
+            "config": {
+              "version": "1.0",
+              "title": "Phases of the cycle",
+              "text": "During *systole* the heart muscle contracts, while during *diastole* it relaxes and refills with blood."
             }
-          ]
+          }
         }
-      }
-    },
-    {
-      "id": "check-fill",
-      "title": "Check: name the phase",
-      "body": "<p>Fill in the missing terms from this slide's content.</p>",
-      "activity": {
-        "kind": "fillInTheBlanks",
-        "config": {
-          "version": "1.0",
-          "title": "Phases of the cycle",
-          "text": "During *systole* the heart muscle contracts, while during *diastole* it relaxes and refills with blood."
-        }
-      }
+      ]
     },
     {
       "id": "summary",
       "title": "Summary",
-      "body": "<p>You stepped through the cardiac cycle: atrial and ventricular <strong>systole</strong>, then <strong>diastole</strong>, with valve closures producing the two heart sounds.</p><p>Use the dots above to revisit any slide, then finish when you are ready.</p>"
+      "background": { "kind": "blank" },
+      "notes": "<p>You stepped through the cardiac cycle: atrial and ventricular <strong>systole</strong>, then <strong>diastole</strong>, with valve closures producing the two heart sounds. Use the dots above to revisit any slide, then finish when you are ready.</p>",
+      "overlays": []
     }
   ],
   "appearance": {

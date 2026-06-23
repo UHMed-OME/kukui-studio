@@ -5,7 +5,7 @@ export const label = "Course Presentation";
 
 /** One-line description for Studio's catalog and learning-objective matching. */
 export const description =
-  "Move through a sequenced slide deck at your own pace, study the content on each slide, and answer the embedded check-for-understanding activities — building toward the deck's overall concept. Each slide pairs prose and an optional image with an optional embedded multiple-choice or fill-in-the-blanks activity.";
+  "Import a slide deck from a PDF, PowerPoint export, or Google Slides link, then make it interactive: drop click-to-reveal info hotspots and embedded multiple-choice or fill-in-the-blanks checkpoints onto the slides. Learners move through at their own pace, explore the hotspots, and answer the checkpoints — building toward the deck's overall concept.";
 
 /**
  * Bloom's taxonomy level — drives Studio's cognitive-level filter. Working
