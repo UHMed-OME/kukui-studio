@@ -1133,6 +1133,18 @@ export function App() {
             ·
           </span>
           <a
+            href="https://github.com/UHMed-OME/kukui-studio/issues/new"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="kukui-studio-footer__link"
+            title="Report a bug or request a feature on GitHub"
+          >
+            Report Bug
+          </a>
+          <span aria-hidden="true" className="kukui-studio-footer__sep">
+            ·
+          </span>
+          <a
             href="https://github.com/UHMed-OME/kukui-studio/blob/main/LICENSE"
             target="_blank"
             rel="noopener noreferrer"
