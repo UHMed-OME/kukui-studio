@@ -1,6 +1,12 @@
-<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Kukui">
+<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Kukui">
   <title>Kukui</title>
   <defs>
+    <!-- Sage disc behind the drupe — the brand green, matching the
+         ActivityHeader banner (color-primary to color-primary-hover). -->
+    <linearGradient id="kukui-disc" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#4a7a5f"/>
+      <stop offset="100%" stop-color="#3f6b52"/>
+    </linearGradient>
     <!-- Body: subtle radial gradient (both stops in the dark primary
          palette) so the silhouette reads as a rounded form lit from the
          upper-left of the screen. -->
@@ -20,19 +26,23 @@
       <path d="M24 6 C 16 7, 8 15, 6 26 C 4 39, 12 57, 32 60 C 52 57, 60 39, 58 26 C 56 15, 48 7, 40 6 C 37 8, 35 13, 32 14 C 29 13, 27 8, 24 6 Z"/>
     </clipPath>
   </defs>
+
+  <!-- Sage disc fills the square; corners stay transparent. -->
+  <circle cx="50" cy="50" r="49" fill="url(#kukui-disc)"/>
+
   <!--
-    The silhouette is authored "dimple at top". Rotating the whole group
-    35° clockwise lands the dimple in the 1–2 o'clock area, with the soft
-    point at 7–8 o'clock; the gloss + seam come along for the ride.
+    The drupe artwork (silhouette + gloss + seam) nested so it sits centered
+    and inset on the disc at ~70% of its diameter. The silhouette is authored
+    "dimple at top"; rotating the group 35° clockwise lands the dimple in the
+    1–2 o'clock area, soft point at 7–8 o'clock.
   -->
-  <g transform="rotate(35 32 32)">
-    <!-- Silhouette -->
-    <path d="M24 6 C 16 7, 8 15, 6 26 C 4 39, 12 57, 32 60 C 52 57, 60 39, 58 26 C 56 15, 48 7, 40 6 C 37 8, 35 13, 32 14 C 29 13, 27 8, 24 6 Z" fill="url(#kukui-body)"/>
-    <!-- Glossy specular highlight, clipped to silhouette -->
-    <g clip-path="url(#kukui-clip)">
-      <ellipse cx="22" cy="22" rx="16" ry="9" fill="url(#kukui-gloss)" transform="rotate(-25 22 22)"/>
+  <svg x="15" y="15" width="70" height="70" viewBox="-5 -5 74 74" overflow="visible">
+    <g transform="rotate(35 32 32)">
+      <path d="M24 6 C 16 7, 8 15, 6 26 C 4 39, 12 57, 32 60 C 52 57, 60 39, 58 26 C 56 15, 48 7, 40 6 C 37 8, 35 13, 32 14 C 29 13, 27 8, 24 6 Z" fill="url(#kukui-body)"/>
+      <g clip-path="url(#kukui-clip)">
+        <ellipse cx="22" cy="22" rx="16" ry="9" fill="url(#kukui-gloss)" transform="rotate(-25 22 22)"/>
+      </g>
+      <path d="M32 16 C 30 24, 34 30, 32 38 C 30 46, 34 52, 32 56" stroke="#c19a6b" stroke-width="1.4" stroke-linecap="round" fill="none"/>
     </g>
-    <!-- Central seam — natural drupe groove. -->
-    <path d="M32 16 C 30 24, 34 30, 32 38 C 30 46, 34 52, 32 56" stroke="#c19a6b" stroke-width="1.4" stroke-linecap="round" fill="none"/>
-  </g>
+  </svg>
 </svg>

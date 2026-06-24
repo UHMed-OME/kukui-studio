@@ -1,6 +1,11 @@
 <svg width="120" height="120" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Kukui">
   <title>Kukui</title>
   <defs>
+    <!-- Sage disc behind the drupe — the brand green (matches the header). -->
+    <linearGradient id="kukui-disc" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#4a7a5f"/>
+      <stop offset="100%" stop-color="#3f6b52"/>
+    </linearGradient>
     <radialGradient id="kukui-body" cx="32%" cy="28%" r="64%">
       <stop offset="0%" stop-color="#3b2418"/>
       <stop offset="55%" stop-color="#1a0f08"/>
@@ -16,9 +21,10 @@
     </clipPath>
   </defs>
 
-  <!-- Drupe nested SVG: rasterizes the 74x74 source artwork into the
-       top ~62 px square of the wordmark canvas. -->
-  <svg x="29" y="5" width="62" height="62" viewBox="-5 -5 74 74" overflow="visible">
+  <!-- Sage disc, then the drupe inset on it at ~78% of the disc diameter. -->
+  <circle cx="60" cy="37" r="36" fill="url(#kukui-disc)"/>
+
+  <svg x="32" y="9" width="56" height="56" viewBox="-5 -5 74 74" overflow="visible">
     <g transform="rotate(35 32 32)">
       <path d="M24 6 C 16 7, 8 15, 6 26 C 4 39, 12 57, 32 60 C 52 57, 60 39, 58 26 C 56 15, 48 7, 40 6 C 37 8, 35 13, 32 14 C 29 13, 27 8, 24 6 Z" fill="url(#kukui-body)"/>
       <g clip-path="url(#kukui-clip)">
