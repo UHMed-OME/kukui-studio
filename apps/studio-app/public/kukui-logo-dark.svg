@@ -1,12 +1,6 @@
 <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Kukui">
   <title>Kukui</title>
   <defs>
-    <!-- Sage disc behind the drupe — same brand green as the light logo;
-         it reads on the dark substrate and ties the mark to the header. -->
-    <linearGradient id="kukui-disc" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="#4a7a5f"/>
-      <stop offset="100%" stop-color="#3f6b52"/>
-    </linearGradient>
     <!-- Dark-mode variant of kukui-logo.svg: the body is warm tan instead of
          dark brown so the silhouette reads on the disc + dark substrate.
          Lighting (upper-left) preserved; lit stop cream-tan, shadow chestnut. -->
@@ -27,10 +21,10 @@
     </clipPath>
   </defs>
 
-  <!-- Sage disc fills the square; corners stay transparent. -->
-  <circle cx="50" cy="50" r="49" fill="url(#kukui-disc)"/>
+  <!-- Simple sage ring (brand green) framing the drupe. -->
+  <circle cx="50" cy="50" r="46" fill="none" stroke="#4a7a5f" stroke-width="3"/>
 
-  <svg x="15" y="15" width="70" height="70" viewBox="-5 -5 74 74" overflow="visible">
+  <svg x="22" y="22" width="56" height="56" viewBox="-5 -5 74 74" overflow="visible">
     <g transform="rotate(35 32 32)">
       <path d="M24 6 C 16 7, 8 15, 6 26 C 4 39, 12 57, 32 60 C 52 57, 60 39, 58 26 C 56 15, 48 7, 40 6 C 37 8, 35 13, 32 14 C 29 13, 27 8, 24 6 Z" fill="url(#kukui-body)"/>
       <g clip-path="url(#kukui-clip)">
