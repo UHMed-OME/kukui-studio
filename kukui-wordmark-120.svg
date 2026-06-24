@@ -1,0 +1,34 @@
+<svg width="120" height="120" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Kukui">
+  <title>Kukui</title>
+  <defs>
+    <radialGradient id="kukui-body" cx="32%" cy="28%" r="64%">
+      <stop offset="0%" stop-color="#3b2418"/>
+      <stop offset="55%" stop-color="#1a0f08"/>
+      <stop offset="100%" stop-color="#0a0503"/>
+    </radialGradient>
+    <radialGradient id="kukui-gloss" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#c19a6b" stop-opacity="0.55"/>
+      <stop offset="55%" stop-color="#c19a6b" stop-opacity="0.10"/>
+      <stop offset="100%" stop-color="#c19a6b" stop-opacity="0"/>
+    </radialGradient>
+    <clipPath id="kukui-clip">
+      <path d="M24 6 C 16 7, 8 15, 6 26 C 4 39, 12 57, 32 60 C 52 57, 60 39, 58 26 C 56 15, 48 7, 40 6 C 37 8, 35 13, 32 14 C 29 13, 27 8, 24 6 Z"/>
+    </clipPath>
+  </defs>
+
+  <!-- Drupe nested SVG: rasterizes the 74x74 source artwork into the
+       top ~62 px square of the wordmark canvas. -->
+  <svg x="29" y="5" width="62" height="62" viewBox="-5 -5 74 74" overflow="visible">
+    <g transform="rotate(35 32 32)">
+      <path d="M24 6 C 16 7, 8 15, 6 26 C 4 39, 12 57, 32 60 C 52 57, 60 39, 58 26 C 56 15, 48 7, 40 6 C 37 8, 35 13, 32 14 C 29 13, 27 8, 24 6 Z" fill="url(#kukui-body)"/>
+      <g clip-path="url(#kukui-clip)">
+        <ellipse cx="22" cy="22" rx="16" ry="9" fill="url(#kukui-gloss)" transform="rotate(-25 22 22)"/>
+      </g>
+      <path d="M32 16 C 30 24, 34 30, 32 38 C 30 46, 34 52, 32 56" stroke="#c19a6b" stroke-width="1.4" stroke-linecap="round" fill="none"/>
+    </g>
+  </svg>
+
+  <!-- Wordmark: serif display face, dark primary so it lifts on the
+       cream backgrounds the consent screen tends to use. -->
+  <text x="60" y="102" font-family="Georgia" font-size="28" font-weight="500" letter-spacing="-0.015em" text-anchor="middle" fill="#3b2418">Kukui</text>
+</svg>
