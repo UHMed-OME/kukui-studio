@@ -185,13 +185,19 @@ const Quiz = z
   })
   .strict()
   .refine(
-    (q) => q.scoreMessages === undefined || q.scoreMessages.length === q.questions.length + 1,
+    (q) =>
+      q.scoreMessages === undefined ||
+      q.scoreMessages.length === 0 ||
+      q.scoreMessages.length === q.questions.length + 1,
     {
       // The component indexes scoreMessages[#correct], which ranges 0…N — so a
-      // complete set needs exactly N+1 entries. A short array silently shows no
-      // message for the top scores; reject it at author time instead.
+      // complete set needs exactly N+1 entries. A *partial* array silently
+      // shows no message for the top scores, so reject it at author time. An
+      // EMPTY array is treated as "none set" (same as omitting the field) —
+      // the Studio form materializes optional arrays as `[]`, and that must
+      // not trip validation on a freshly reset/loaded deck.
       message:
-        "scoreMessages, when set, must have exactly questions.length + 1 entries (one per possible score, 0…N).",
+        "scoreMessages, when set, must have exactly questions.length + 1 entries (one per possible score, 0…N), or be empty.",
       path: ["scoreMessages"],
     },
   );
