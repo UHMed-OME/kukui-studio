@@ -5,6 +5,10 @@ const starter = {
   version: "1.0",
   title: "Clinical Case",
   week: "Week 1",
+  // Grade the formative quiz by default (points + 60% pass) rather than the
+  // silent "completion = always pass" fallback. Authors can change this in the
+  // Scoring tab.
+  scoring: { mode: "points", passPercentage: 60, enableRetry: true },
   presentation: {
     label: "Clinical Presentation",
     title: "Patient presentation",

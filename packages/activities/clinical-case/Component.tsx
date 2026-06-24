@@ -72,7 +72,6 @@ export default function Component({
 }: ActivityProps<ClinicalCaseConfig>) {
   const H2 = `h${Math.min(headingLevel + 1, 3)}` as "h2" | "h3";
   const headingId = useId();
-  const liveId = useId();
 
   const sections = useMemo(() => buildSections(config), [config]);
   const initial = useMemo<State>(() => initialState(), []);
@@ -143,7 +142,15 @@ export default function Component({
     });
   };
 
-  const tryAgain = () => setState((s) => ({ ...initialState(), current: s.current, furthest: s.furthest }));
+  const tryAgain = () =>
+    setState((s) => ({
+      ...initialState(),
+      current: s.current,
+      furthest: s.furthest,
+      // Keep the running attempt count across retries (it's persisted to
+      // suspendData) — initialState() would otherwise reset it to 0 each time.
+      attempts: s.attempts,
+    }));
 
   const chooseFormat = (id: string) =>
     setState((s) => ({ ...s, selectedFormat: s.selectedFormat === id ? null : id }));
@@ -194,7 +201,7 @@ export default function Component({
             {sections.map((sec, i) => (
               <span
                 key={sec.id}
-                className={`kukui-ccase__progress-seg${i <= state.current ? " is-filled" : ""}`}
+                className={`kukui-ccase__progress-seg${i <= state.furthest ? " is-filled" : ""}`}
               />
             ))}
           </div>
@@ -235,7 +242,6 @@ export default function Component({
         </section>
 
         <div
-          id={liveId}
           className={`kukui-ccase__result${submitted ? " is-visible" : ""}`}
           role="status"
           aria-live="polite"

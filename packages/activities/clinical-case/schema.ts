@@ -183,7 +183,18 @@ const Quiz = z
      */
     scoreMessages: z.array(z.string()).optional(),
   })
-  .strict();
+  .strict()
+  .refine(
+    (q) => q.scoreMessages === undefined || q.scoreMessages.length === q.questions.length + 1,
+    {
+      // The component indexes scoreMessages[#correct], which ranges 0…N — so a
+      // complete set needs exactly N+1 entries. A short array silently shows no
+      // message for the top scores; reject it at author time instead.
+      message:
+        "scoreMessages, when set, must have exactly questions.length + 1 entries (one per possible score, 0…N).",
+      path: ["scoreMessages"],
+    },
+  );
 
 const Activity = z
   .object({
