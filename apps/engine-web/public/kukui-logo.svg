@@ -21,8 +21,9 @@
     </clipPath>
   </defs>
 
-  <!-- Simple sage ring (brand green) framing the drupe. -->
-  <circle cx="50" cy="50" r="46" fill="none" stroke="#4a7a5f" stroke-width="3"/>
+  <!-- Filled sage disc (brand green) sitting directly behind the drupe, drawn
+       before it so it reads as an even backdrop with a slim halo — not a ring. -->
+  <circle cx="50" cy="50" r="29" fill="#4a7a5f"/>
 
   <!--
     The drupe artwork (silhouette + gloss + seam) centered inside the ring at
