@@ -152,7 +152,28 @@
 }
 
 .kukui-cp__dot-mark {
+  display: inline-block;
   line-height: 1;
+}
+
+/* The ✓ pops in when a slide becomes answered — scale+fade only, no reflow
+ * (the dot is a fixed-size circle). Plays once when .is-answered is added. */
+.kukui-cp__dot.is-answered .kukui-cp__dot-mark {
+  animation: kukui-mark-pop 240ms ease-out;
+}
+
+@keyframes kukui-mark-pop {
+  0% {
+    transform: scale(0.4);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.15);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
 /* Status line -------------------------------------------------------------- */
@@ -227,5 +248,8 @@
 @media (prefers-reduced-motion: reduce) {
   .kukui-cp__dot {
     transition: none;
+  }
+  .kukui-cp__dot.is-answered .kukui-cp__dot-mark {
+    animation: none;
   }
 }

@@ -578,6 +578,27 @@
   font-size: 18px;
 }
 
+/* Correctness mark pops in on submit — scale+fade only (constant-width flex
+ * item, no reflow). Plays once when the option gains a state class. */
+.kukui-ccase__option.is-correct .kukui-ccase__option-icon,
+.kukui-ccase__option.is-incorrect .kukui-ccase__option-icon {
+  animation: kukui-mark-pop 240ms ease-out;
+}
+
+@keyframes kukui-mark-pop {
+  0% {
+    transform: scale(0.4);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.15);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
 .kukui-ccase__feedback {
   min-height: 0;
   opacity: 0;
@@ -795,5 +816,8 @@
   .kukui-ccase__progress-seg,
   .kukui-ccase__progress-label {
     transition: none;
+  }
+  .kukui-ccase__option-icon {
+    animation: none;
   }
 }

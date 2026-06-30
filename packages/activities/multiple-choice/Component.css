@@ -101,6 +101,29 @@
   color: inherit;
 }
 
+/* Correctness mark pops in on reveal — scale+fade only, so it reinforces
+ * the ✓/✗/○ cue without reflowing (the icon box is a constant-width flex
+ * item). Plays once when the parent gains a state class. */
+.kukui-mc__answer.is-correct .kukui-mc__answer-icon,
+.kukui-mc__answer.is-incorrect .kukui-mc__answer-icon,
+.kukui-mc__answer.is-reveal .kukui-mc__answer-icon {
+  animation: kukui-mark-pop 240ms ease-out;
+}
+
+@keyframes kukui-mark-pop {
+  0% {
+    transform: scale(0.4);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.15);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
 /*
  * Feedback row — pattern A: always present at constant min-height so the
  * reveal does not reflow neighbours. Default opacity 0; .is-visible fades to 1.
@@ -199,5 +222,10 @@
   .kukui-mc__feedback,
   .kukui-mc__tip {
     transition: none;
+  }
+  .kukui-mc__answer.is-correct .kukui-mc__answer-icon,
+  .kukui-mc__answer.is-incorrect .kukui-mc__answer-icon,
+  .kukui-mc__answer.is-reveal .kukui-mc__answer-icon {
+    animation: none;
   }
 }

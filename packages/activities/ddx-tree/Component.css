@@ -211,6 +211,27 @@
   color: var(--color-error, #c34132);
 }
 
+/* Correctness mark pops in on reveal — scale+fade only (constant-width
+ * flex item, no reflow). Plays once when the diagnosis gains a state class. */
+.kukui-ddx__diagnosis.is-correct .kukui-ddx__diagnosis-icon,
+.kukui-ddx__diagnosis.is-incorrect .kukui-ddx__diagnosis-icon {
+  animation: kukui-mark-pop 240ms ease-out;
+}
+
+@keyframes kukui-mark-pop {
+  0% {
+    transform: scale(0.4);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.15);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
 .kukui-ddx__diagnosis-name {
   margin: 0;
   font-size: var(--font-size-prompt, 16px);
@@ -265,5 +286,8 @@
   .kukui-ddx__choice,
   .kukui-ddx__feedback {
     transition: none;
+  }
+  .kukui-ddx__diagnosis-icon {
+    animation: none;
   }
 }

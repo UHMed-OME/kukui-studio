@@ -154,6 +154,23 @@
   line-height: 1;
   color: var(--color-text-primary, #1c1e20);
   pointer-events: none;
+  /* Pops in on check/reveal — scale+fade only (absolutely positioned, so
+   * no reflow), reinforcing the ✓/✗/◔ cue per the comment up top. */
+  animation: kukui-mark-pop 240ms ease-out;
+}
+
+@keyframes kukui-mark-pop {
+  0% {
+    transform: scale(0.4);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.15);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
 .kukui-cw__input {
@@ -315,4 +332,10 @@
   border-left: 2px solid var(--color-error, #c34132);
   border-radius: var(--radius-sm, 6px);
   font-size: var(--font-size-caption, 14px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kukui-cw__mark {
+    animation: none;
+  }
 }

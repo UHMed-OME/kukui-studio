@@ -249,8 +249,26 @@
 }
 
 .kukui-dnd__chip-icon {
+  display: inline-block;
   font-weight: 700;
   font-size: 16px;
+  /* Mark pops in when the chip locks correct/incorrect — scale+fade only,
+   * reinforcing the ✓/✗ cue. Mounts with the icon, so it plays once. */
+  animation: kukui-mark-pop 240ms ease-out;
+}
+
+@keyframes kukui-mark-pop {
+  0% {
+    transform: scale(0.4);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.15);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
 .kukui-dnd__chip.is-correct .kukui-dnd__chip-icon {
@@ -398,6 +416,9 @@
   }
   .kukui-dnd__chip:hover:not(:disabled) {
     transform: none;
+  }
+  .kukui-dnd__chip-icon {
+    animation: none;
   }
   .kukui-dnd--showing-solution .kukui-dnd__chip.is-placed {
     animation: kukui-dnd-pulse-focus 800ms ease-in-out;

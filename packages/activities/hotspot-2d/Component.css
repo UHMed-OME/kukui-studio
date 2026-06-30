@@ -153,6 +153,29 @@
   border-style: solid;
 }
 
+/* Correctness mark pops in on submit — scale+fade only (the icon is a
+ * constant-width flex item, no reflow). Plays once when the button gains a
+ * state class. */
+.kukui-h2d__fb-btn.is-correct .kukui-h2d__fb-icon,
+.kukui-h2d__fb-btn.is-incorrect .kukui-h2d__fb-icon,
+.kukui-h2d__fb-btn.is-reveal .kukui-h2d__fb-icon {
+  animation: kukui-mark-pop 240ms ease-out;
+}
+
+@keyframes kukui-mark-pop {
+  0% {
+    transform: scale(0.4);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.15);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
 .kukui-h2d__feedback {
   min-height: 0;
   margin-top: var(--spacing-lg, 16px);
@@ -225,4 +248,12 @@
 
 .kukui-h2d__empty span {
   font-size: var(--font-size-meta, 13px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kukui-h2d__fb-btn.is-correct .kukui-h2d__fb-icon,
+  .kukui-h2d__fb-btn.is-incorrect .kukui-h2d__fb-icon,
+  .kukui-h2d__fb-btn.is-reveal .kukui-h2d__fb-icon {
+    animation: none;
+  }
 }

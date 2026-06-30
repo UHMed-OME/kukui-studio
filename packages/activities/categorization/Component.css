@@ -135,6 +135,7 @@
 }
 
 .kukui-cat__chip-icon {
+  display: inline-block;
   font-weight: 700;
   font-size: 16px;
 }
@@ -144,6 +145,27 @@
 }
 .kukui-cat__chip.is-incorrect .kukui-cat__chip-icon {
   color: var(--color-error);
+}
+
+/* Correctness mark pops in on submit — scale+fade only, reinforcing the
+ * ✓/✗ cue without reflow. Plays once when the chip gains a state class. */
+.kukui-cat__chip.is-correct .kukui-cat__chip-icon,
+.kukui-cat__chip.is-incorrect .kukui-cat__chip-icon {
+  animation: kukui-mark-pop 240ms ease-out;
+}
+
+@keyframes kukui-mark-pop {
+  0% {
+    transform: scale(0.4);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.15);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
 .kukui-cat__chip-correction {
@@ -253,5 +275,8 @@
   .kukui-cat__tray,
   .kukui-cat__bin {
     transition: none;
+  }
+  .kukui-cat__chip-icon {
+    animation: none;
   }
 }

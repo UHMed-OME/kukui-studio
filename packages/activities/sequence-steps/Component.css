@@ -155,7 +155,29 @@
 }
 
 .kukui-seq__badge-icon {
+  display: inline-block;
   font-size: 16px;
+}
+
+/* Correctness mark pops in on submit — scale+fade only, reinforcing the
+ * ✓/✗ cue without reflow. Plays once when the badge gains a state class. */
+.kukui-seq__badge.is-correct .kukui-seq__badge-icon,
+.kukui-seq__badge.is-incorrect .kukui-seq__badge-icon {
+  animation: kukui-mark-pop 240ms ease-out;
+}
+
+@keyframes kukui-mark-pop {
+  0% {
+    transform: scale(0.4);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.15);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
 .kukui-seq__nudge {
@@ -257,5 +279,8 @@
   .kukui-seq__handle,
   .kukui-seq__feedback {
     transition: none;
+  }
+  .kukui-seq__badge-icon {
+    animation: none;
   }
 }

@@ -97,3 +97,12 @@
   border-style: solid;
   background: rgba(28, 30, 32, 0.7);
 }
+
+@media (prefers-reduced-motion: reduce) {
+  .kukui-pin {
+    transition: none;
+  }
+  .kukui-pin:hover {
+    transform: translate(0, -50%);
+  }
+}

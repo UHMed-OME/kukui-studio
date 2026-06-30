@@ -106,6 +106,28 @@
   color: var(--color-error, #c34132);
 }
 
+/* Mark pops in on submit — scale+fade only (the icon reserves a constant
+ * 1.25em box), reinforcing the ✓/✗ cue without reflow. */
+.kukui-fib__input.is-correct + .kukui-fib__icon,
+.kukui-fib__input.is-incorrect + .kukui-fib__icon,
+.kukui-fib__input.is-reveal + .kukui-fib__icon {
+  animation: kukui-mark-pop 240ms ease-out;
+}
+
+@keyframes kukui-mark-pop {
+  0% {
+    transform: scale(0.4);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.15);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
 /* Pattern A: feedback area is always present at constant min-height. */
 .kukui-fib__feedback {
   min-height: 28px;
@@ -163,5 +185,8 @@
   .kukui-fib__input,
   .kukui-fib__feedback {
     transition: none;
+  }
+  .kukui-fib__icon {
+    animation: none;
   }
 }
