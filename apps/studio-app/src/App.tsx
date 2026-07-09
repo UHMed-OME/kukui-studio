@@ -1173,6 +1173,17 @@ export function App() {
           <span aria-hidden="true" className="kukui-studio-footer__sep">
             ·
           </span>
+          <a
+            href="https://github.com/UHMed-OME/kukui-studio/issues/new"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="kukui-studio-footer__link"
+          >
+            Report Bug
+          </a>
+          <span aria-hidden="true" className="kukui-studio-footer__sep">
+            ·
+          </span>
           <button
             type="button"
             className="kukui-studio-footer__icon-btn"
