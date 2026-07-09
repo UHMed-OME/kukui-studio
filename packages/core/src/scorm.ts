@@ -35,6 +35,29 @@ type ScormWindow = Window & {
 const SUSPEND_DATA_MAX = 4096;
 
 /**
+ * Measure a suspend payload against the SCORM 1.2 cap and warn when it's
+ * over (or near) budget. All drivers call this — including the Memory and
+ * Local drivers — so an author building a state-heavy activity hears about
+ * the overflow in Studio preview / web mode instead of discovering broken
+ * resume in the live LMS. Returns true when the payload fits.
+ */
+function checkSuspendBudget(json: string, context: string): boolean {
+  const compressed = LZString.compressToUTF16(json);
+  if (compressed.length > SUSPEND_DATA_MAX) {
+    console.warn(
+      `[kukui:scorm${context}] suspend_data ${compressed.length} > ${SUSPEND_DATA_MAX} cap; an LMS would reject this save and resume would keep the previous state`,
+    );
+    return false;
+  }
+  if (compressed.length > SUSPEND_DATA_MAX * 0.9) {
+    console.warn(
+      `[kukui:scorm${context}] suspend_data at ${compressed.length}/${SUSPEND_DATA_MAX} chars (compressed) — within 10% of the SCORM 1.2 cap`,
+    );
+  }
+  return true;
+}
+
+/**
  * Which persistence backend a page wants.
  *   "lms"    — an LMS supplied a SCORM API; always wins when present.
  *   "web"    — no LMS, but persist + collect locally (LocalDriver).
@@ -78,12 +101,35 @@ export interface ScormDriver {
 
 class PipwerksDriver implements ScormDriver {
   private interactionIndex = 0;
+  private saveTimer: ReturnType<typeof setTimeout> | null = null;
   constructor(private readonly api: PipwerksScorm) {}
   initialize() {
     return this.api.init();
   }
   finish() {
+    this.flushSave();
     return this.api.quit();
+  }
+  /**
+   * Coalesce LMSCommit calls: activities persist on every state change, so
+   * committing per write can mean dozens of LMSCommits a minute against
+   * Brightspace. LMSSetValue still happens immediately (cheap, in-memory on
+   * the LMS API side); only the commit is trailing-debounced. `finish()`
+   * and every score/interaction write flush synchronously.
+   */
+  private scheduleSave() {
+    if (this.saveTimer !== null) clearTimeout(this.saveTimer);
+    this.saveTimer = setTimeout(() => {
+      this.saveTimer = null;
+      this.api.save();
+    }, 500);
+  }
+  private flushSave() {
+    if (this.saveTimer !== null) {
+      clearTimeout(this.saveTimer);
+      this.saveTimer = null;
+    }
+    this.api.save();
   }
   postScore(raw: number, max: number, success: boolean) {
     const scaled = max === 0 ? 0 : (raw / max) * 100;
@@ -94,21 +140,22 @@ class PipwerksDriver implements ScormDriver {
     this.api.set("cmi.core.score.min", "0");
     this.api.set("cmi.core.score.max", "100");
     this.api.set("cmi.core.lesson_status", success ? "passed" : "failed");
-    this.api.save();
+    this.flushSave();
   }
   saveSuspendData(json: string) {
-    const compressed = LZString.compressToUTF16(json);
-    if (compressed.length > SUSPEND_DATA_MAX) {
-      // Never truncate an LZ stream — a sliced stream decompresses to
-      // garbage, so the whole save (and resume) would be lost. Keep the
-      // last good value on the LMS instead.
-      console.warn(
-        `[kukui:scorm] suspend_data ${compressed.length} > ${SUSPEND_DATA_MAX} cap; skipping save to preserve the previous state`,
-      );
-      return;
-    }
-    this.api.set("cmi.suspend_data", compressed);
-    this.api.save();
+    // Never truncate an LZ stream — a sliced stream decompresses to
+    // garbage, so the whole save (and resume) would be lost. Keep the
+    // last good value on the LMS instead.
+    //
+    // Transport note: compressToUTF16 emits code units > U+00FF, which some
+    // SCORM 1.2 backends with Latin-1 CMIString handling would mangle
+    // (corrupting the stream; the ""-on-corrupt guard in loadSuspendData
+    // then silently drops resume). Brightspace — our only target LMS —
+    // round-trips it fine. If another LMS ever becomes a target, switch to
+    // compressToBase64 (~1.6x size but transport-safe).
+    if (!checkSuspendBudget(json, "")) return;
+    this.api.set("cmi.suspend_data", LZString.compressToUTF16(json));
+    this.scheduleSave();
   }
   loadSuspendData(): string | undefined {
     const raw = this.api.get("cmi.suspend_data");
@@ -147,7 +194,7 @@ class PipwerksDriver implements ScormDriver {
     if (record.latencySeconds !== undefined) {
       this.api.set(`${prefix}.latency`, encodeLatency(record.latencySeconds));
     }
-    this.api.save();
+    this.flushSave();
   }
 }
 
@@ -163,6 +210,7 @@ class MemoryDriver implements ScormDriver {
     console.info(`[kukui:scorm:dev] score ${raw}/${max} ${success ? "passed" : "failed"}`);
   }
   saveSuspendData(json: string) {
+    checkSuspendBudget(json, ":dev");
     this.suspend = json;
   }
   loadSuspendData() {
@@ -274,6 +322,7 @@ class LocalDriver implements ScormDriver {
     this.writeStore();
   }
   saveSuspendData(json: string) {
+    checkSuspendBudget(json, ":web");
     this.suspend = json;
     this.writeStore();
   }

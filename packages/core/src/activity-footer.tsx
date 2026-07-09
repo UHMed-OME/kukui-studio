@@ -19,7 +19,7 @@ export function ActivityFooter({ author }: { author?: string }) {
       ) : null}
       Made with{" "}
       <a
-        href="https://github.com/anthropics/kukui"
+        href="https://github.com/UHMed-OME/kukui-studio"
         target="_blank"
         rel="noopener noreferrer"
         style={linkStyle}

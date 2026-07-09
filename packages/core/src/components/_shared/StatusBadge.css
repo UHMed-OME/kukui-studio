@@ -9,13 +9,13 @@
   align-items: center;
   gap: var(--spacing-xs, 4px);
   padding: 2px var(--spacing-sm, 8px);
-  border: 1px solid var(--color-border, #dad2c6);
+  border: 1px solid var(--color-border, #d1d7df);
   border-radius: 999px;
   background: var(--color-tip-bg, #f2f0e8);
   font-size: var(--font-size-meta, 13px);
   font-weight: 700;
   line-height: 1.4;
-  color: var(--color-text-secondary, #606069);
+  color: var(--color-text-secondary, #49515b);
   letter-spacing: 0.01em;
   white-space: nowrap;
 }
@@ -56,14 +56,14 @@
 }
 
 .kukui-badge--primary {
-  color: var(--color-primary, #7b4324);
-  border-color: var(--color-primary, #7b4324);
+  color: var(--color-primary, #4a7a5f);
+  border-color: var(--color-primary, #4a7a5f);
   background: var(--color-primary-soft);
 }
 
 /* On the gradient banner: translucent white, regardless of tone. */
 .kukui-badge.is-on-dark {
-  color: #ffffff;
-  border-color: rgb(255 255 255 / 0.5);
-  background: rgb(255 255 255 / 0.18);
+  color: var(--color-on-primary, #ffffff);
+  border-color: color-mix(in srgb, var(--color-on-primary, #ffffff) 50%, transparent);
+  background: color-mix(in srgb, var(--color-on-primary, #ffffff) 18%, transparent);
 }

@@ -25,6 +25,8 @@ export const tokens = {
   /** JABSOM green — primary brand accent. See docs/design-system.md. */
   primary: "#4a7a5f",
   primaryHover: "#3f6b52",
+  /** Text/icon color on a Primary-filled surface. Never use a literal white. */
+  onPrimary: "#ffffff",
   success: "#2e6e41",
   error: "#c34132",
   /** Caution / "watch" / urgent — warm ochre. See docs/design-system.md. */
@@ -46,6 +48,8 @@ export const tokensDark = {
   /** JABSOM green, lightened for dark surfaces. */
   primary: "#8fc0a4",
   primaryHover: "#a3cdb5",
+  /** Dark ink on the light-sage primary fill (mirrors studio dark scheme). */
+  onPrimary: "#10291d",
   success: "#86c79a",
   error: "#ed9183",
   warning: "#e0b35e",

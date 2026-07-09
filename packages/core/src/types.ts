@@ -17,11 +17,15 @@ export type ScoreState = {
  * Common props every activity component receives. `TConfig` is the
  * activity-specific config object (validated against the matching Zod schema
  * before being handed to the component).
+ *
+ * Callback identity: hosts guarantee `onSubmit` / `onPersist` /
+ * `onInteraction` are referentially stable across re-renders (ActivityHost
+ * wraps them in useCallback), so components may safely list them in effect
+ * deps without re-firing on host re-renders.
  */
 export type ActivityProps<TConfig> = {
   config: TConfig;
   onSubmit: (s: ScoreState) => void;
-  onResume?: () => Partial<TConfig> | undefined;
   /** Latest persisted suspend data — components decode this on mount to resume. */
   suspendData?: string;
   /** Called whenever the learner makes a meaningful interaction we should persist. */

@@ -1,9 +1,9 @@
 /*
  * Canonical activity header. "full" = gradient banner + candlenut watermark
- * (white text); "minimal" = plain titled block. Place as the first child of
+ * "minimal" = plain titled block. Place as the first child of
  * an overflow-hidden card with zero top padding so "full" bleeds edge-to-edge
- * and clips to the card radius. Tokens only; sole raw hex is #ffffff on the
- * gradient (matches the primary-button convention).
+ * and clips to the card radius. Tokens only; banner text uses OnPrimary so
+ * dark schemes (light accent gradient) get dark ink, per design-system.md.
  */
 
 .kukui-actheader__row {
@@ -70,7 +70,7 @@
     var(--color-accent, #4a7a5f),
     var(--color-accent-hover, #3f6b52)
   );
-  color: #ffffff;
+  color: var(--color-on-primary, #ffffff);
 }
 
 .kukui-actheader--minimal {
@@ -79,16 +79,16 @@
 }
 
 .kukui-actheader--full .kukui-actheader__title {
-  color: #ffffff;
+  color: var(--color-on-primary, #ffffff);
 }
 
 .kukui-actheader--full .kukui-actheader__meta {
-  color: #ffffff;
+  color: var(--color-on-primary, #ffffff);
   opacity: 0.9;
 }
 
 .kukui-actheader--full .kukui-actheader__prompt {
-  color: #ffffff;
+  color: var(--color-on-primary, #ffffff);
   opacity: 0.95;
 }
 
@@ -100,7 +100,7 @@
   transform: translateY(-50%) rotate(-12deg);
   width: 120px;
   height: 120px;
-  color: #ffffff;
+  color: var(--color-on-primary, #ffffff);
   opacity: 0.12;
   pointer-events: none;
   z-index: 0;
@@ -118,16 +118,16 @@
  * On the minimal header the badge keeps its tone colour.
  */
 .kukui-actheader--full .kukui-badge {
-  color: #ffffff;
-  border-color: rgb(255 255 255 / 0.5);
-  background: rgb(255 255 255 / 0.18);
+  color: var(--color-on-primary, #ffffff);
+  border-color: color-mix(in srgb, var(--color-on-primary, #ffffff) 50%, transparent);
+  background: color-mix(in srgb, var(--color-on-primary, #ffffff) 18%, transparent);
 }
 
 /* Minimal (plain titled block) --------------------------------------------- */
 
 .kukui-actheader--minimal {
   padding: var(--spacing-2xl, 24px) var(--spacing-3xl, 28px);
-  border-bottom: 1px solid var(--color-border, #dad2c6);
+  border-bottom: 1px solid var(--color-border, #d1d7df);
 }
 
 .kukui-actheader--minimal .kukui-actheader__title {
@@ -135,7 +135,7 @@
 }
 
 .kukui-actheader--minimal .kukui-actheader__meta {
-  color: var(--color-text-secondary, #606069);
+  color: var(--color-text-secondary, #49515b);
 }
 
 .kukui-actheader--minimal .kukui-actheader__prompt {

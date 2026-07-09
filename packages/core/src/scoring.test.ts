@@ -110,9 +110,17 @@ describe("aggregate", () => {
     expect(r).toEqual({ raw: 4, max: 5, success: true });
   });
 
-  it("returns success=false when no max", () => {
+  it("returns success=true when nothing is scorable (zero-max convention)", () => {
     const r = aggregate([], 50);
-    expect(r).toEqual({ raw: 0, max: 0, success: false });
+    expect(r).toEqual({ raw: 0, max: 0, success: true });
+  });
+
+  it("zero-max convention matches scoreSelection with no correct answers", () => {
+    const r = scoreSelection({
+      selectedIndices: new Set<number>(),
+      correctIndices: new Set<number>(),
+    });
+    expect(r).toEqual({ raw: 0, max: 0, success: true });
   });
 });
 

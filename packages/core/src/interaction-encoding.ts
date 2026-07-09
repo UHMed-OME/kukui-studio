@@ -45,11 +45,16 @@ export function encodeChoice(indices: readonly number[]): string {
  * SCORM 1.2 §3.4.7.5 matching form: `left.right,left.right`. Unplaced
  * left items use an empty right (`left.`). Used by drag-and-drop,
  * matching-pairs, categorization, anatomy-labeling, concept-map, lab-panel.
+ *
+ * `.` and `,` are the wire format's structural separators, so ids that
+ * contain them are sanitized (replaced with `-`) to keep the pattern
+ * unambiguous — an id like "step.2" must not read as a pair boundary.
  */
 export function encodeMatching(
   pairs: readonly { left: string; right: string }[],
 ): string {
-  return pairs.map((p) => `${p.left}.${p.right}`).join(",");
+  const safe = (id: string) => id.replace(/[.,]/g, "-");
+  return pairs.map((p) => `${safe(p.left)}.${safe(p.right)}`).join(",");
 }
 
 /**

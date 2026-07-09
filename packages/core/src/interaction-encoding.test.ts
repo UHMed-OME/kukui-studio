@@ -76,6 +76,15 @@ describe("encodeMatching", () => {
   it("returns the empty string for an empty list", () => {
     expect(encodeMatching([])).toBe("");
   });
+
+  it("sanitizes separator characters inside ids so patterns stay unambiguous", () => {
+    expect(
+      encodeMatching([
+        { left: "step.2", right: "zone,b" },
+        { left: "plain", right: "ok" },
+      ]),
+    ).toBe("step-2.zone-b,plain.ok");
+  });
 });
 
 describe("encodeSequencing", () => {

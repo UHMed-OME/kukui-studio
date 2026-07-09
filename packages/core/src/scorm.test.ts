@@ -171,7 +171,7 @@ describe("PipwerksDriver suspend data", () => {
     expect(LZString.compressToUTF16(noisy).length).toBeGreaterThan(4096);
 
     driver.saveSuspendData(noisy);
-    expect(warn).toHaveBeenCalledWith(expect.stringContaining("skipping save"));
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining("cap"));
     expect(set.mock.calls.find((c) => c[0] === "cmi.suspend_data")).toBeUndefined();
     expect(save).not.toHaveBeenCalled();
     warn.mockRestore();

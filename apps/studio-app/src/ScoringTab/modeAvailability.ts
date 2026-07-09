@@ -51,6 +51,8 @@ const TABLE: Partial<Record<ActivityKind, ModeAvailability>> = {
   "lab-panel": AUTO_GRADED_TRIPLE,
   "ddx-tree": ALL_OR_NOTHING_DEFAULT,
   osce: AUTO_GRADED_TRIPLE,
+  "clinical-case": AUTO_GRADED_TRIPLE,
+  "course-presentation": AUTO_GRADED_TRIPLE,
   "branching-scenario": ALL_OR_NOTHING_DEFAULT,
   "image-comparison-slider": COMPLETION_ONLY,
   flashcards: COMPLETION_ONLY,

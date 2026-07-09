@@ -66,10 +66,11 @@ export function resolveScoring(
 export function scoreSelection(args: {
   selectedIndices: ReadonlySet<number>;
   correctIndices: ReadonlySet<number>;
-  totalAnswers: number;
+  /** @deprecated Unused — safe to omit; kept optional for older call sites. */
+  totalAnswers?: number;
   singlePoint?: boolean;
 }): { raw: number; max: number; success: boolean } {
-  const { selectedIndices, correctIndices, totalAnswers, singlePoint } = args;
+  const { selectedIndices, correctIndices, singlePoint } = args;
   const totalCorrect = correctIndices.size;
 
   if (singlePoint) {
@@ -85,15 +86,19 @@ export function scoreSelection(args: {
     else earned -= 1;
   }
   const clamped = Math.max(0, Math.min(totalCorrect, earned));
-  void totalAnswers;
+  // Zero-max convention (shared with `aggregate`): nothing scorable means
+  // there is nothing to fail — report success, i.e. completion semantics.
   return { raw: clamped, max: totalCorrect, success: clamped === totalCorrect };
 }
 
 export function aggregate(scores: readonly ScoreState[], passPercent = 50): ScoreState {
   const raw = scores.reduce((s, x) => s + x.raw, 0);
   const max = scores.reduce((s, x) => s + x.max, 0);
-  const pct = max === 0 ? 0 : (raw / max) * 100;
-  return { raw, max, success: pct >= passPercent };
+  // Zero-max convention (shared with `scoreSelection`): an activity with no
+  // scorable parts (e.g. a label-only interactive video) completes rather
+  // than fails — 0/0 against any pass threshold reads as "nothing to pass".
+  const success = max === 0 ? true : (raw / max) * 100 >= passPercent;
+  return { raw, max, success };
 }
 
 /** 0–100 percentage. Returns 0 when `max` is 0. */

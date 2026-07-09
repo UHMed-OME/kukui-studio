@@ -1,10 +1,47 @@
 import { describe, it, expect } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
-import { SafeSvg } from "./safe-html.js";
+import { SafeHtml, SafeSvg } from "./safe-html.js";
 
 function render(svg: string, title?: string): string {
   return renderToStaticMarkup(<SafeSvg svg={svg} title={title} />);
 }
+
+function renderHtml(html: string): string {
+  return renderToStaticMarkup(<SafeHtml html={html} />);
+}
+
+describe("SafeHtml", () => {
+  it("keeps relative and fragment URLs (regression: scheme-only pin stripped them)", () => {
+    expect(renderHtml('<a href="page.html">go</a>')).toContain('href="page.html"');
+    expect(renderHtml('<a href="#footnote">note</a>')).toContain('href="#footnote"');
+    expect(renderHtml('<img src="./pic.png" alt="x">')).toContain('src="./pic.png"');
+  });
+
+  it("keeps https/mailto/tel and strips other schemes", () => {
+    expect(renderHtml('<a href="https://example.edu/a">a</a>')).toContain(
+      'href="https://example.edu/a"',
+    );
+    expect(renderHtml('<a href="javascript:alert(1)">x</a>')).not.toContain("javascript:");
+    expect(renderHtml('<a href="ftp://host/f">x</a>')).not.toContain("ftp:");
+  });
+
+  it("strips script, event handlers, and style attributes", () => {
+    const out = renderHtml('<p onclick="x()" style="color:red"><script>alert(1)</script>hi</p>');
+    expect(out).not.toContain("onclick");
+    expect(out).not.toContain("<script");
+    expect(out).toContain("hi");
+  });
+
+  it("drops id attributes (duplicate-id / aria spoofing surface)", () => {
+    expect(renderHtml('<div id="root">x</div>')).not.toContain('id="root"');
+  });
+
+  it("force-appends noopener even when the author supplies rel", () => {
+    const out = renderHtml('<a href="https://example.edu" rel="">x</a>');
+    expect(out).toContain("noopener");
+    expect(out).toContain("noreferrer");
+  });
+});
 
 describe("SafeSvg", () => {
   it("keeps benign shapes, paths, text, and viewBox", () => {
@@ -53,5 +90,14 @@ describe("SafeSvg", () => {
     const out = render("<svg><rect/></svg>");
     expect(out).toContain('aria-hidden="true"');
     expect(out).not.toContain("role=\"img\"");
+  });
+
+  it("strips <style> (inline-SVG styles apply document-wide)", () => {
+    const out = render(
+      "<svg><style>* { display: none !important; }</style><rect/></svg>",
+    );
+    expect(out).not.toContain("<style");
+    expect(out).not.toContain("display: none");
+    expect(out).toContain("<rect");
   });
 });

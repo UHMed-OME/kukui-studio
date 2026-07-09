@@ -1,4 +1,11 @@
-import { Suspense, useEffect, useState, type CSSProperties } from "react";
+import {
+  Suspense,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+  type CSSProperties,
+} from "react";
 import { SchemaRegistry, type SchemaRegistryKey } from "@kukui/schemas";
 import { loadContent, ContentLoadError } from "./content.js";
 import { getScormDriver, webStorageKey, type DriverMode } from "./scorm.js";
@@ -91,19 +98,58 @@ export function ActivityHost({
     mode === "web" ? { mode, storageKey: webStorageKey(kind, configUrl) } : undefined,
   );
 
-  const handleSubmit = (score: ScoreState) => {
-    scorm.postScore(score.raw, score.max, score.success);
-    if (score.suspendData !== undefined) scorm.saveSuspendData(score.suspendData);
-    if (mode === "web") setCompletion(score);
-  };
+  // Stable callback identities: activities dep on these in effects (e.g.
+  // `useEffect(..., [state, onPersist])`), so a host re-render (web-mode
+  // setCompletion after submit) must not re-fire every activity's persist
+  // effect with a fresh function. `scorm` is a module singleton, so these
+  // never actually need to change.
+  const handleSubmit = useCallback(
+    (score: ScoreState) => {
+      scorm.postScore(score.raw, score.max, score.success);
+      if (score.suspendData !== undefined) scorm.saveSuspendData(score.suspendData);
+      if (mode === "web") setCompletion(score);
+    },
+    [scorm, mode],
+  );
 
-  const handlePersist = (suspendData: string) => {
-    scorm.saveSuspendData(suspendData);
-  };
+  const handlePersist = useCallback(
+    (suspendData: string) => {
+      scorm.saveSuspendData(suspendData);
+    },
+    [scorm],
+  );
 
-  const handleInteraction = (record: InteractionRecord) => {
-    scorm.recordInteraction(record);
-  };
+  const handleInteraction = useCallback(
+    (record: InteractionRecord) => {
+      scorm.recordInteraction(record);
+    },
+    [scorm],
+  );
+
+  // Read suspend data once per driver instead of once per render — under
+  // Pipwerks each read is an LMSGetValue round-trip to the LMS.
+  const initialSuspendData = useMemo(() => scorm.loadSuspendData(), [scorm]);
+
+  // SCORM 1.2 conformance: close the attempt with LMSFinish when the page
+  // goes away. Mirrors the idempotent pagehide/beforeunload teardown the
+  // bridge package already does for third-party engines; every write above
+  // is followed by a save(), so this is about closing the session cleanly,
+  // not about data loss.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    let finished = false;
+    const finish = () => {
+      if (finished) return;
+      finished = true;
+      scorm.finish();
+    };
+    window.addEventListener("pagehide", finish);
+    window.addEventListener("beforeunload", finish);
+    return () => {
+      window.removeEventListener("pagehide", finish);
+      window.removeEventListener("beforeunload", finish);
+    };
+  }, [scorm]);
 
   if (state.status === "loading") {
     return (
@@ -141,7 +187,7 @@ export function ActivityHost({
     onSubmit: handleSubmit,
     onPersist: handlePersist,
     onInteraction: handleInteraction,
-    suspendData: scorm.loadSuspendData(),
+    suspendData: initialSuspendData,
   };
 
   const isPlanned = (PLANNED_ACTIVITY_KINDS as readonly string[]).includes(kind);

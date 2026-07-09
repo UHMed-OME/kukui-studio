@@ -34,6 +34,12 @@ export function activitySamplesPlugin(): Plugin {
         const contentType =
           ext === "json" ? "application/json" :
           ext === "glb"  ? "model/gltf-binary" :
+          ext === "svg"  ? "image/svg+xml" :
+          ext === "png"  ? "image/png" :
+          ext === "jpg" || ext === "jpeg" ? "image/jpeg" :
+          ext === "webp" ? "image/webp" :
+          ext === "mp3"  ? "audio/mpeg" :
+          ext === "vtt"  ? "text/vtt" :
           "application/octet-stream";
         res.setHeader("Content-Type", contentType);
         res.end(readFileSync(fsPath));

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useRef, useState, type ReactNode } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
 import { Html } from "@react-three/drei";
 import * as THREE from "three";
@@ -173,5 +173,3 @@ export function useCameraSnapshot() {
 export const PIN_STYLES_NOTE =
   "Pin styling lives in the activity CSS files — they share .kukui-pin classes.";
 
-// Keep the import side-effect free at module load.
-void useEffect;

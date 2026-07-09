@@ -41,16 +41,22 @@ const ALLOWED_TAGS = [
   "span",
   "div",
 ];
-const ALLOWED_ATTRS = ["href", "target", "rel", "src", "alt", "title", "class", "id"];
+const ALLOWED_ATTRS = ["href", "target", "rel", "src", "alt", "title", "class"];
 
 const parserOptions: HTMLReactParserOptions = {
   replace: (node: DOMNode) => {
     if (node.type === "tag" && (node as { name: string }).name === "a") {
-      // Force noopener on links for safety.
+      // Force noopener on links for safety. Append rather than default so an
+      // author-supplied rel="" can't reopen the reverse-tabnabbing window.
       const tagNode = node as unknown as { attribs: Record<string, string> };
+      const rel = new Set(
+        (tagNode.attribs.rel ?? "").split(/\s+/).filter(Boolean),
+      );
+      rel.add("noopener");
+      rel.add("noreferrer");
       tagNode.attribs = {
         ...tagNode.attribs,
-        rel: tagNode.attribs.rel ?? "noopener noreferrer",
+        rel: [...rel].join(" "),
         target: tagNode.attribs.target ?? "_blank",
       };
     }
@@ -74,8 +80,11 @@ export function SafeHtml({ html, as, className }: SafeHtmlProps) {
     ALLOW_DATA_ATTR: false,
     // Pin the URI scheme allow-list to what Kukui actually uses, instead of
     // relying on DOMPurify's defaults. Blocks ftp, callto, xmpp, matrix,
-    // sms, cid, and any future schemes upstream decides to permit.
-    ALLOWED_URI_REGEXP: /^(?:(?:https?|mailto|tel):)/i,
+    // sms, cid, and any future schemes upstream decides to permit — while
+    // keeping the relative/fragment branch (`./pic.png`, `#footnote`,
+    // `page.html`) that scheme-only pinning would silently strip.
+    ALLOWED_URI_REGEXP:
+      /^(?:(?:https?|mailto|tel):|[^a-z]|[a-z+.-]+(?:[^a-z+.\-:]|$))/i,
   });
   return createElement(
     as ?? "div",
@@ -112,8 +121,11 @@ export function SafeSvg({ svg, className, title }: SafeSvgProps) {
   const clean = DOMPurify.sanitize(svg, {
     USE_PROFILES: { svg: true, svgFilters: true },
     // Belt-and-braces on top of the SVG profile: never allow these even if
-    // a future DOMPurify default loosens.
-    FORBID_TAGS: ["script", "foreignObject"],
+    // a future DOMPurify default loosens. `style` matters: a <style> inside
+    // inline SVG is NOT scoped to the SVG — it styles the whole document, so
+    // authored content could hide or deface the host page. Presentation
+    // attributes and inline style="" attributes still work.
+    FORBID_TAGS: ["script", "foreignObject", "style"],
     ADD_ATTR: ["viewBox", "preserveAspectRatio"],
   });
   return createElement("figure", {
