@@ -337,19 +337,23 @@ export default function Component({
     switch (e.key) {
       case "ArrowLeft":
         e.preventDefault();
-        e.shiftKey ? resizeShape(id, -NUDGE, 0) : moveShape(id, -NUDGE, 0);
+        if (e.shiftKey) resizeShape(id, -NUDGE, 0);
+        else moveShape(id, -NUDGE, 0);
         break;
       case "ArrowRight":
         e.preventDefault();
-        e.shiftKey ? resizeShape(id, NUDGE, 0) : moveShape(id, NUDGE, 0);
+        if (e.shiftKey) resizeShape(id, NUDGE, 0);
+        else moveShape(id, NUDGE, 0);
         break;
       case "ArrowUp":
         e.preventDefault();
-        e.shiftKey ? resizeShape(id, 0, -NUDGE) : moveShape(id, 0, -NUDGE);
+        if (e.shiftKey) resizeShape(id, 0, -NUDGE);
+        else moveShape(id, 0, -NUDGE);
         break;
       case "ArrowDown":
         e.preventDefault();
-        e.shiftKey ? resizeShape(id, 0, NUDGE) : moveShape(id, 0, NUDGE);
+        if (e.shiftKey) resizeShape(id, 0, NUDGE);
+        else moveShape(id, 0, NUDGE);
         break;
       case "Delete":
       case "Backspace":
