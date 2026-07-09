@@ -1,56 +1,69 @@
 {
+  "_comment": "Full-featured fixture exercising camera pinning, markers-off mode, scoring bands, and button label overrides. Uses the bundled Khronos Box placeholder (CC BY 4.0) because it is the only GLB that ships with the activity; authors swap model.src for real geometry (e.g. an anatomy model) in production.",
   "version": "1.0",
-  "title": "Anatomy of the Human Heart",
-  "prompt": "<p>Click the <strong>left ventricle</strong> &mdash; the chamber that pumps oxygenated blood to the body.</p>",
+  "title": "Identify the faces of the cube (no markers)",
+  "prompt": "<p>Markers are hidden in this activity. Use the <strong>named list below the viewport</strong> to pick the <em>top face</em> of the cube.</p>",
   "model": {
-    "src": "models/heart.glb",
-    "scale": 1.5
+    "src": "samples/hotspot-3d/box.glb",
+    "scale": 1.5,
+    "attribution": {
+      "author": "Khronos Group",
+      "sourceUrl": "https://github.com/KhronosGroup/glTF-Sample-Assets/tree/main/Models/Box",
+      "license": "CC BY 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/"
+    }
   },
   "camera": {
     "mode": "orbit",
     "initialDistance": 3.5,
     "minDistance": 1.5,
     "maxDistance": 7.0,
-    "target": { "x": 0, "y": 0.5, "z": 0 }
+    "target": { "x": 0, "y": 0, "z": 0 }
   },
   "hotspots": [
     {
-      "id": "left-ventricle",
-      "label": "Left ventricle",
-      "position": { "x": -0.3, "y": -0.4, "z": 0.0 },
-      "radius": 0.35,
+      "id": "top",
+      "label": "Top face",
+      "position": { "x": 0, "y": 0.5, "z": 0 },
+      "radius": 0.3,
       "correct": true,
-      "feedback": "Correct. The left ventricle has the thickest muscular wall because it pumps blood through the entire systemic circulation."
+      "feedback": "Correct. The top face of the cube sits at +Y in the model's local space."
     },
     {
-      "id": "right-ventricle",
-      "label": "Right ventricle",
-      "position": { "x": 0.3, "y": -0.4, "z": 0.0 },
-      "radius": 0.35,
+      "id": "bottom",
+      "label": "Bottom face",
+      "position": { "x": 0, "y": -0.5, "z": 0 },
+      "radius": 0.3,
       "correct": false,
-      "feedback": "That is the right ventricle. It pumps deoxygenated blood to the lungs at lower pressure."
+      "feedback": "That is the bottom face. The prompt asked for the top."
     },
     {
-      "id": "left-atrium",
-      "label": "Left atrium",
-      "position": { "x": -0.3, "y": 0.5, "z": -0.1 },
-      "radius": 0.25,
+      "id": "front",
+      "label": "Front face",
+      "position": { "x": 0, "y": 0, "z": 0.5 },
       "correct": false,
-      "feedback": "That is the left atrium. It receives oxygenated blood from the lungs."
+      "feedback": "That is the front face (+Z). The prompt asked for the top."
     },
     {
-      "id": "aorta",
-      "label": "Aorta",
-      "position": { "x": 0.0, "y": 1.0, "z": 0.0 },
-      "radius": 0.20,
+      "id": "right",
+      "label": "Right face",
+      "position": { "x": 0.5, "y": 0, "z": 0 },
       "correct": false,
-      "feedback": "That is the aorta &mdash; the artery that carries oxygenated blood from the left ventricle."
+      "feedback": "That is the right face (+X). The prompt asked for the top."
     }
   ],
   "behaviour": {
-    "enableRetry": true,
     "showHotspotMarkers": false,
     "allowOrbit": true
+  },
+  "scoring": {
+    "mode": "points",
+    "passPercentage": 100,
+    "enableRetry": true,
+    "bands": [
+      { "from": 0, "to": 99, "message": "Orbit the cube and try the list again." },
+      { "from": 100, "to": 100, "message": "Nailed it." }
+    ]
   },
   "ui": {
     "tryAgainButton": "Try again",

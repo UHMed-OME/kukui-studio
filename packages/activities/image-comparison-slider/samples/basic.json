@@ -3,12 +3,12 @@
   "title": "Wrist X-ray: healthy vs. distal radius fracture",
   "prompt": "<p>Slide the seam left and right to compare a healthy wrist with a wrist that has a distal radius fracture. Notice the cortical step-off and angulation on the fractured side.</p>",
   "before": {
-    "src": "https://placehold.co/800x600/1c1e20/fcf8f2?text=Healthy+wrist",
+    "src": "samples/image-comparison-slider/images/wrist-healthy.svg",
     "alt": "Anteroposterior radiograph of a healthy wrist with intact distal radius and ulna.",
     "caption": "Healthy"
   },
   "after": {
-    "src": "https://placehold.co/800x600/7b4324/fcf8f2?text=Fractured+wrist",
+    "src": "samples/image-comparison-slider/images/wrist-fractured.svg",
     "alt": "Anteroposterior radiograph of a wrist showing a transverse distal radius fracture with dorsal angulation.",
     "caption": "Fractured"
   },

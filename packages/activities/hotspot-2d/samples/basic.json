@@ -1,10 +1,10 @@
 {
-  "_comment": "Demo fixture using a placehold.co background. Replace image.src with author-provided art for production.",
+  "_comment": "Demo fixture using a first-party placeholder SVG (samples/hotspot-2d/images/cell-diagram.svg). Replace image.src with author-provided art for production.",
   "version": "1.0",
   "title": "Identify the cell organelle",
   "prompt": "<p>Click the <em>nucleus</em> in the diagram below.</p>",
   "image": {
-    "src": "https://placehold.co/1024x640/eef0f6/4b5563?text=Cell+diagram+(placeholder)",
+    "src": "samples/hotspot-2d/images/cell-diagram.svg",
     "alt": "Placeholder for a labeled cell diagram"
   },
   "hotspots": [

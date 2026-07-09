@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" width="800" height="600" role="img" aria-label="Fractured wrist (placeholder art)">
+  <rect width="800" height="600" fill="#f2f4f7"/>
+  <rect x="12" y="12" width="776" height="576" rx="14" fill="#ffffff" stroke="#d1d7df" stroke-width="2"/>
+  <rect x="40" y="70" width="720" height="470" rx="10" fill="#0e1320"/>
+     <path d="M250 120 L300 250 q10 30 -20 40 L260 470" stroke="#15191d" stroke-width="10" fill="none" stroke-linecap="round"/>
+     <path d="M330 120 L338 470" stroke="#c9ced6" stroke-width="9" fill="none" stroke-linecap="round"/>
+     <g stroke="#c9ced6" stroke-width="6" fill="none" stroke-linecap="round">
+       <path d="M262 470 L250 540 M300 480 L300 545 M338 470 L352 540 M338 470 L388 520"/>
+     </g>
+     <path d="M300 250 L360 250" stroke="#c34132" stroke-width="5" stroke-linecap="round"/>
+       <path d="M300 250 q30 -30 60 20" stroke="#c34132" stroke-width="4" fill="none"/>
+       <text x="400" y="248" font-family="ui-sans-serif, system-ui, sans-serif" font-size="18" fill="#c34132" font-weight="700">fracture</text>
+  <text x="400" y="570" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="20" fill="#49515b">Fractured wrist (placeholder art)</text>
+  <text x="400" y="40" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="14" fill="#4a7a5f" font-weight="700" letter-spacing="1.5">KUKUI PLACEHOLDER</text>
+</svg>

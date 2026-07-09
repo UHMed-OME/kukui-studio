@@ -1,8 +1,9 @@
 {
+  "_comment": "Uses the bundled placeholder model (box.glb). A later assets pass may restore a real loʻi kalo scene plus the richer image/audio overlay media this sample originally referenced.",
   "version": "1.0",
   "title": "Walking Tour of a Loʻi Kalo",
   "scene": {
-    "src": "scenes/loi-kalo.glb",
+    "src": "samples/virtual-tour/box.glb",
     "spawn": {
       "position": { "x": 0, "y": 1.6, "z": -3 }
     }
@@ -19,20 +20,7 @@
       "content": [
         {
           "type": "text",
-          "html": "<h2>Kalo</h2><p>The kalo plant is the foundation of Hawaiian agriculture and central to Hawaiian cosmology &mdash; in the Kumulipo, kalo is the elder sibling of humanity.</p>"
-        },
-        {
-          "type": "image",
-          "src": "images/kalo-leaf.png",
-          "alt": "A heart-shaped kalo leaf in a flooded paddy",
-          "caption": "A mature kalo leaf in a flooded loʻi."
-        },
-        {
-          "type": "audio",
-          "src": "audio/kalo-pronunciation.mp3",
-          "autoplay": false,
-          "loop": false,
-          "caption": "Pronunciation of 'kalo'"
+          "html": "<h2>Kalo</h2><p>The kalo plant is the foundation of Hawaiian agriculture and central to Hawaiian cosmology &mdash; in the Kumulipo, kalo is the elder sibling of humanity.</p><p><em>Kalo</em> is pronounced KAH-loh.</p>"
         }
       ]
     },
@@ -57,11 +45,6 @@
         {
           "type": "text",
           "html": "<h2>Huli</h2><p>The huli is the top of a harvested kalo corm, replanted to start the next generation. Each loʻi cycles through harvest and replanting on a roughly 9-12 month rhythm.</p>"
-        },
-        {
-          "type": "image",
-          "src": "images/huli.png",
-          "alt": "A bundle of huli ready for replanting"
         }
       ]
     }

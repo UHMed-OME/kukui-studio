@@ -1,10 +1,10 @@
 {
-  "_comment": "Demo fixture using a placehold.co background. Replace image.src with author-provided art for production.",
+  "_comment": "Demo fixture using a first-party placeholder SVG (samples/image-annotation/images/chest-xray.svg). Replace image.src with author-provided art for production.",
   "version": "1.0",
   "title": "Mark the suspected lesion",
   "prompt": "<p>Use the <strong>circle</strong> tool to ring any suspected lesion you see, and the <strong>arrow</strong> tool to point to additional findings. When you're done, click Submit.</p>",
   "image": {
-    "src": "https://placehold.co/1024x768/1a1a1a/eaeaea?text=Chest+X-ray+(placeholder)",
+    "src": "samples/image-annotation/images/chest-xray.svg",
     "alt": "Placeholder for a frontal chest X-ray"
   },
   "tools": {

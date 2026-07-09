@@ -1,4 +1,5 @@
 {
+  "_comment": "Demo fixture. The video is Blender Foundation's 'Big Buck Bunny' (CC BY 3.0), hosted externally on Google's public sample bucket, so it needs network access and will not load under a strict LMS CSP or offline; swap video.src for author-hosted media in production. Attribution: see packages/activities/NOTICE.md.",
   "version": "1.0",
   "title": "Big Buck Bunny — checkpoints",
   "prompt": "<p>Watch the clip; questions will pop up at two timestamps.</p>",

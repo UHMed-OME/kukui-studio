@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 600" width="960" height="600" role="img" aria-label="Anatomy diagram (placeholder art)">
+  <rect width="960" height="600" fill="#f2f4f7"/>
+  <rect x="12" y="12" width="936" height="576" rx="14" fill="#ffffff" stroke="#d1d7df" stroke-width="2"/>
+  <rect x="380" y="90" width="200" height="300" rx="90" fill="#e6eeea" stroke="#4a7a5f" stroke-width="3"/>
+   <circle cx="480" cy="150" r="46" fill="#ffffff" stroke="#4a7a5f" stroke-width="3"/>
+   <path d="M420 260 q60 40 120 0" stroke="#4a7a5f" stroke-width="3" fill="none"/>
+   <line x1="300" y1="200" x2="380" y2="230" stroke="#49515b" stroke-width="2"/>
+   <line x1="660" y1="200" x2="580" y2="230" stroke="#49515b" stroke-width="2"/>
+   <circle cx="296" cy="200" r="6" fill="#4a7a5f"/><circle cx="664" cy="200" r="6" fill="#4a7a5f"/>
+  <text x="480" y="570" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="20" fill="#49515b">Anatomy diagram (placeholder art)</text>
+  <text x="480" y="40" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="14" fill="#4a7a5f" font-weight="700" letter-spacing="1.5">KUKUI PLACEHOLDER</text>
+</svg>

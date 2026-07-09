@@ -1,10 +1,10 @@
 {
-  "_comment": "Demo fixture using a placehold.co diagram. Replace image.src with author-provided art for production.",
+  "_comment": "Demo fixture using a first-party placeholder SVG (samples/anatomy-labeling/images/neuron-diagram.svg). Replace image.src with author-provided art for production.",
   "version": "1.0",
   "title": "Label the parts of a neuron",
   "prompt": "<p>Drag each name onto the matching numbered target on the neuron.</p>",
   "image": {
-    "src": "https://placehold.co/1024x480/eef0f6/4b5563?text=Neuron+diagram+(placeholder)",
+    "src": "samples/anatomy-labeling/images/neuron-diagram.svg",
     "alt": "Placeholder for a labeled neuron diagram"
   },
   "labels": [

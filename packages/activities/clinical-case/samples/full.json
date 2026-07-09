@@ -30,7 +30,7 @@
     "lead": "<p>Imaging and fascial pathways.</p>",
     "imagingFinding": "<p>Key imaging finding described here.</p>",
     "diagram": {
-      "src": "https://example.org/anatomy-diagram.png",
+      "src": "samples/clinical-case/images/anatomy-diagram.svg",
       "alt": "Schematic of air spread from the procedural origin through fascial spaces toward the mediastinum.",
       "caption": "Replace with a hosted diagram image — inline SVG is not supported."
     },

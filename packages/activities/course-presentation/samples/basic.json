@@ -9,7 +9,7 @@
       "title": "What is the cardiac cycle?",
       "background": {
         "kind": "image",
-        "src": "https://placehold.co/1280x720/eef0f6/1c1e20?text=Cardiac+Cycle+%E2%80%94+Overview",
+        "src": "samples/course-presentation/images/cardiac-overview.svg",
         "alt": "Title slide reading: Cardiac Cycle — Overview.",
         "naturalWidth": 1280,
         "naturalHeight": 720
@@ -30,7 +30,7 @@
       "title": "Heart sounds",
       "background": {
         "kind": "image",
-        "src": "https://placehold.co/1280x720/f2f0e8/1c1e20?text=Heart+Sounds+%E2%80%94+S1+%26+S2",
+        "src": "samples/course-presentation/images/heart-sounds.svg",
         "alt": "Slide illustrating the first and second heart sounds, S1 and S2.",
         "naturalWidth": 1280,
         "naturalHeight": 720
@@ -74,7 +74,7 @@
       "title": "Name the phase",
       "background": {
         "kind": "image",
-        "src": "https://placehold.co/1280x720/eef0f6/1c1e20?text=Phases+%E2%80%94+Systole+%26+Diastole",
+        "src": "samples/course-presentation/images/cycle-phases.svg",
         "alt": "Slide showing the contraction and relaxation phases of the cardiac cycle.",
         "naturalWidth": 1280,
         "naturalHeight": 720

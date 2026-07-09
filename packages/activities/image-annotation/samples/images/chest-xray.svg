@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 768" width="1024" height="768" role="img" aria-label="Chest X-ray (placeholder art)">
+  <rect width="1024" height="768" fill="#f2f4f7"/>
+  <rect x="12" y="12" width="1000" height="744" rx="14" fill="#ffffff" stroke="#d1d7df" stroke-width="2"/>
+  <rect x="40" y="70" width="944" height="628" rx="10" fill="#0e1320"/>
+   <line x1="512" y1="90" x2="512" y2="670" stroke="#c9ced6" stroke-width="10"/>
+   <g stroke="#aeb6c2" stroke-width="5" fill="none" opacity="0.85">
+     <path d="M512 150 q-190 10 -250 200 M512 200 q-210 20 -260 230 M512 250 q-220 30 -250 250"/>
+     <path d="M512 150 q190 10 250 200 M512 200 q210 20 260 230 M512 250 q220 30 250 250"/>
+   </g>
+   <path d="M470 320 q-70 130 20 250 q60 -30 60 -150" fill="#1b2436" stroke="#8f97a6" stroke-width="3"/>
+   <ellipse cx="330" cy="420" rx="120" ry="180" fill="none" stroke="#7f8798" stroke-width="3" opacity="0.6"/>
+   <ellipse cx="694" cy="420" rx="120" ry="180" fill="none" stroke="#7f8798" stroke-width="3" opacity="0.6"/>
+  <text x="512" y="730" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="20" fill="#49515b">Chest X-ray (placeholder art)</text>
+  <text x="512" y="46" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="14" fill="#4a7a5f" font-weight="700" letter-spacing="1.5">KUKUI PLACEHOLDER</text>
+</svg>

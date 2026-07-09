@@ -2,7 +2,7 @@
   "version": "1.0",
   "title": "Label the major rivers of South America",
   "background": {
-    "src": "images/south-america-rivers.png",
+    "src": "samples/drag-and-drop/images/south-america-rivers.svg",
     "alt": "Outline map of South America showing four unlabeled river systems"
   },
   "draggables": [

@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 640" width="1024" height="640" role="img" aria-label="Cell diagram (placeholder art)">
+  <rect width="1024" height="640" fill="#f2f4f7"/>
+  <rect x="12" y="12" width="1000" height="616" rx="14" fill="#ffffff" stroke="#d1d7df" stroke-width="2"/>
+  <ellipse cx="512" cy="320" rx="360" ry="230" fill="#e6eeea" stroke="#4a7a5f" stroke-width="3"/>
+   <circle cx="512" cy="320" r="90" fill="#ffffff" stroke="#4a7a5f" stroke-width="3"/>
+   <circle cx="512" cy="320" r="34" fill="#e6eeea" stroke="#4a7a5f" stroke-width="2"/>
+   <ellipse cx="330" cy="250" rx="70" ry="34" fill="#ffffff" stroke="#49515b" stroke-width="2" transform="rotate(-18 330 250)"/>
+   <ellipse cx="690" cy="410" rx="80" ry="30" fill="#ffffff" stroke="#49515b" stroke-width="2" transform="rotate(12 690 410)"/>
+   <circle cx="410" cy="430" r="26" fill="#ffffff" stroke="#49515b" stroke-width="2"/>
+   <circle cx="640" cy="230" r="20" fill="#ffffff" stroke="#49515b" stroke-width="2"/>
+  <text x="512" y="610" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="20" fill="#49515b">Cell diagram (placeholder art)</text>
+  <text x="512" y="40" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="14" fill="#4a7a5f" font-weight="700" letter-spacing="1.5">KUKUI PLACEHOLDER</text>
+</svg>

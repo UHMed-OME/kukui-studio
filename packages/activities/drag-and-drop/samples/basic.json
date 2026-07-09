@@ -1,9 +1,9 @@
 {
-  "_comment": "Demo fixture. Background image hot-linked to a public placeholder for dev. Replace with author-provided art for production.",
+  "_comment": "Demo fixture using a first-party placeholder SVG (samples/drag-and-drop/images/plant-cell-diagram.svg). Replace with author-provided art for production.",
   "version": "1.0",
   "title": "Label the parts of a plant cell",
   "background": {
-    "src": "https://placehold.co/1024x640/e8f5e9/2e6e41?text=Plant+cell+diagram+(placeholder)",
+    "src": "samples/drag-and-drop/images/plant-cell-diagram.svg",
     "alt": "Placeholder: a plant-cell cross-section diagram would go here"
   },
   "draggables": [
