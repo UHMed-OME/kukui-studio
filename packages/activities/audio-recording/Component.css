@@ -164,7 +164,7 @@
 
 .kukui-ar__primary {
   background: var(--color-primary, #7b4324);
-  color: #ffffff;
+  color: var(--color-on-primary, #ffffff);
   border: none;
 }
 

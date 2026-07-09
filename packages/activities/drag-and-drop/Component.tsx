@@ -107,6 +107,10 @@ export function Component({
 
   const onCheck = useCallback(() => {
     if (state.stage !== "answering") return;
+    // Nothing to score with no labels: never submit a phantom 0/0. The
+    // schema requires at least one draggable, but the engine may run an
+    // unvalidated config, so guard the submit path here too.
+    if (config.draggables.length === 0) return;
     const total = config.draggables.length;
     const correct = Object.entries(state.placement).filter(([id, zid]) =>
       isCorrect(id, zid, config),

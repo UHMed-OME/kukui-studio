@@ -1,4 +1,4 @@
-import { useEffect, useId, useMemo, useState } from "react";
+import { useEffect, useId, useMemo, useRef, useState } from "react";
 import {
   MultipleChoiceConfigSchema,
   type MultipleChoiceConfig,
@@ -34,6 +34,9 @@ type State = {
   current: number;
   /** "slideId:overlayId" -> ScoreState, recorded as each checkpoint is answered. */
   scores: Record<string, ScoreState>;
+  /** "slideId:overlayId" -> the embedded activity's own suspend string, so a
+   *  resumed deck can rehydrate each checkpoint's answered state. */
+  children: Record<string, string>;
   /** Deck lifecycle. */
   stage: Stage;
 };
@@ -47,7 +50,7 @@ type ValidatedActivity =
 const scoreKey = (slideId: string, overlayId: string) => `${slideId}:${overlayId}`;
 
 function initialState(): State {
-  return { current: 0, scores: {}, stage: "viewing" };
+  return { current: 0, scores: {}, children: {}, stage: "viewing" };
 }
 
 /* -- Local icons (info / question) ------------------------------------------ */
@@ -139,6 +142,8 @@ export default function Component({
   );
   /** Which overlay's detail panel is open on the current slide (null = none). */
   const [openOverlayId, setOpenOverlayId] = useState<string | null>(null);
+  /** Marker buttons by overlay id — focus returns here when a panel closes. */
+  const markerRefs = useRef(new Map<string, HTMLButtonElement>());
 
   // Reset local state when `config` changes externally (Studio Preview edit,
   // draft load). Reference equality on the prop — engine loads JSON once.
@@ -176,12 +181,26 @@ export default function Component({
 
   const goTo = (index: number) => {
     if (index < 0 || index >= total) return;
+    // Forward jumps honor the same required-checkpoint gate as Next / Finish
+    // (the dot strip must not bypass it). Backward jumps are always allowed.
+    if (index > state.current && blockingRequired > 0) return;
     setState((s) => ({ ...s, current: index }));
     setOpenOverlayId(null);
   };
 
   const recordScore = (key: string, score: ScoreState) => {
-    setState((s) => ({ ...s, scores: { ...s.scores, [key]: score } }));
+    // Once the deck is submitted the aggregate has been reported to the LMS;
+    // re-answering a reopened checkpoint must not silently diverge from it.
+    setState((s) =>
+      s.stage === "submitted" ? s : { ...s, scores: { ...s.scores, [key]: score } },
+    );
+  };
+
+  const recordChildSuspend = (key: string, data: string) => {
+    setState((s) => {
+      if (s.children[key] === data) return s; // identical write — keep state stable
+      return { ...s, children: { ...s.children, [key]: data } };
+    });
   };
 
   // Aggregate the checkpoint scores into the SCORM payload. With no scorable
@@ -282,6 +301,10 @@ export default function Component({
                 return (
                   <button
                     key={o.id}
+                    ref={(el) => {
+                      if (el) markerRefs.current.set(o.id, el);
+                      else markerRefs.current.delete(o.id);
+                    }}
                     type="button"
                     className={[
                       "kukui-cp__marker",
@@ -321,8 +344,10 @@ export default function Component({
           {slide.notes && <SafeHtml className="kukui-cp__notes" html={slide.notes} />}
 
           {/* Detail panel for the open overlay — reserved region, below the
-              slide so opening it never reflows the slide image itself. */}
-          <div id={detailId} className="kukui-cp__detail" aria-live="polite">
+              slide so opening it never reflows the slide image itself. The
+              live region is scoped to the info text only; embedded activities
+              manage their own announcements and must not sit inside one. */}
+          <div id={detailId} className="kukui-cp__detail">
             {openOverlay && openOverlay.kind === "info" && (
               <div className="kukui-cp__info-detail">
                 <div className="kukui-cp__detail-head">
@@ -330,29 +355,43 @@ export default function Component({
                   <button
                     type="button"
                     className="kukui-cp__detail-close"
-                    onClick={() => setOpenOverlayId(null)}
+                    onClick={() => {
+                      setOpenOverlayId(null);
+                      // Return focus to the owning marker so keyboard users
+                      // don't get dropped to the document body.
+                      markerRefs.current.get(openOverlay.id)?.focus();
+                    }}
                   >
                     Close
                   </button>
                 </div>
-                {openOverlay.html && <SafeHtml className="kukui-cp__info-body" html={openOverlay.html} />}
+                <div aria-live="polite">
+                  {openOverlay.html && (
+                    <SafeHtml className="kukui-cp__info-body" html={openOverlay.html} />
+                  )}
+                </div>
               </div>
             )}
             {openOverlay && openOverlay.kind === "checkpoint" && (() => {
-              const v = validated[scoreKey(slide.id, openOverlay.id)];
+              const key = scoreKey(slide.id, openOverlay.id);
+              const v = validated[key];
               if (!v) return null;
               return (
                 <div className="kukui-cp__embed">
                   {v.kind === "multipleChoice" ? (
                     <MultipleChoice
                       config={v.config}
-                      onSubmit={(s) => recordScore(scoreKey(slide.id, openOverlay.id), s)}
+                      onSubmit={(s) => recordScore(key, s)}
+                      onPersist={(d) => recordChildSuspend(key, d)}
+                      suspendData={state.children[key]}
                       headingLevel={embeddedLevel}
                     />
                   ) : (
                     <FillInTheBlanks
                       config={v.config}
-                      onSubmit={(s) => recordScore(scoreKey(slide.id, openOverlay.id), s)}
+                      onSubmit={(s) => recordScore(key, s)}
+                      onPersist={(d) => recordChildSuspend(key, d)}
+                      suspendData={state.children[key]}
                       headingLevel={embeddedLevel}
                     />
                   )}
@@ -369,6 +408,9 @@ export default function Component({
               const answered = s.overlays.some(
                 (o) => o.kind === "checkpoint" && state.scores[scoreKey(s.id, o.id)],
               );
+              // Forward dots honor the required-checkpoint gate, same as
+              // Next / Finish (the strip must not be a gating bypass).
+              const gated = blockingRequired > 0 && i > state.current;
               return (
                 <li key={s.id} className="kukui-cp__dot-item">
                   <button
@@ -381,7 +423,8 @@ export default function Component({
                       .filter(Boolean)
                       .join(" ")}
                     aria-current={isCurrent ? "true" : undefined}
-                    aria-label={`Go to slide ${i + 1} of ${total}${s.title ? `: ${s.title}` : ""}${answered ? ", answered" : ""}`}
+                    aria-label={`Go to slide ${i + 1} of ${total}${s.title ? `: ${s.title}` : ""}${answered ? ", answered" : ""}${gated ? ", blocked until required checkpoints are answered" : ""}`}
+                    disabled={gated}
                     onClick={() => goTo(i)}
                   >
                     <span className="kukui-cp__dot-mark" aria-hidden="true">
@@ -467,15 +510,30 @@ function parseSuspend(
     const scores: Record<string, ScoreState> = {};
     if (parsed.scores && typeof parsed.scores === "object") {
       for (const [key, sc] of Object.entries(parsed.scores)) {
-        if (known.has(key) && sc && typeof sc === "object" && typeof sc.raw === "number") {
+        if (
+          known.has(key) &&
+          sc &&
+          typeof sc === "object" &&
+          typeof sc.raw === "number" &&
+          typeof sc.max === "number" &&
+          typeof sc.success === "boolean"
+        ) {
           scores[key] = sc as ScoreState;
         }
+      }
+    }
+
+    const children: Record<string, string> = {};
+    if (parsed.children && typeof parsed.children === "object") {
+      for (const [key, data] of Object.entries(parsed.children)) {
+        if (known.has(key) && typeof data === "string") children[key] = data;
       }
     }
 
     return {
       current,
       scores,
+      children,
       stage: parsed.stage === "submitted" ? "submitted" : "viewing",
     };
   } catch {

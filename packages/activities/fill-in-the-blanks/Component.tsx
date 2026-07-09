@@ -1,7 +1,7 @@
 import { useEffect, useId, useMemo, useState } from "react";
 import { parseClozeText, type FillInTheBlanksConfig } from "@kukui/schemas";
 import type { ActivityProps } from "@kukui/core/types";
-import { resolveScoring } from "@kukui/core/scoring";
+import { bandMessage, percentage, resolveScoring } from "@kukui/core/scoring";
 import { ActivityHeader } from "@kukui/core";
 import "./Component.css";
 
@@ -57,7 +57,12 @@ function isBlankCorrect(
   for (const a of accepts) {
     const rhs = caseSensitive ? a : a.toLocaleLowerCase();
     if (lhs === rhs) return true;
-    if (acceptSpellingErrors && levenshtein(lhs, rhs, 1) <= 1) return true;
+    // Spelling tolerance only applies to answers of 3+ characters: for
+    // 1-2 character answers ("O2", "Na") a one-edit tolerance would accept
+    // almost anything, so those require an exact match.
+    if (acceptSpellingErrors && rhs.length >= 3 && levenshtein(lhs, rhs, 1) <= 1) {
+      return true;
+    }
   }
   return false;
 }
@@ -134,26 +139,30 @@ export function Component({
 
   const allFilled = state.values.every((v) => v.trim().length > 0);
 
+  const correctCount = correctness.filter(Boolean).length;
+  const allCorrect = correctCount === blanks.length;
+  const max = singlePoint ? 1 : blanks.length;
+  const raw = singlePoint ? (allCorrect ? 1 : 0) : correctCount;
+
   const submit = () => {
     if (state.stage !== "answering") return;
     if (!allFilled) return;
-    const correctCount = correctness.filter(Boolean).length;
-    const max = singlePoint ? 1 : blanks.length;
-    const allCorrect = correctCount === blanks.length;
-    const raw = singlePoint ? (allCorrect ? 1 : 0) : correctCount;
-    const success = allCorrect;
     const nextState: State = { ...state, stage: "submitted", attempts: state.attempts + 1 };
     setState(nextState);
-    onSubmit({ raw, max, success, suspendData: JSON.stringify(nextState) });
+    onSubmit({ raw, max, success: allCorrect, suspendData: JSON.stringify(nextState) });
   };
 
-  const tryAgain = () => setState(initialState);
+  const tryAgain = () => {
+    setState(initialState);
+    setSolutionsRevealed(false);
+  };
 
   const [solutionsRevealed, setSolutionsRevealed] = useState(false);
   const showSolutions = state.stage === "submitted" && solutionsRevealed;
 
   const submitted = state.stage === "submitted";
-  const correctCount = correctness.filter(Boolean).length;
+  const pct = submitted ? percentage({ raw, max }) : 0;
+  const banner = submitted ? bandMessage(scoring.bands, pct) : null;
 
   let blankCounter = 0;
 
@@ -166,7 +175,10 @@ export function Component({
           headingLevel={headingLevel}
           variant={config.appearance?.header ?? "full"}
         />
-        <div className="kukui-fib__text" aria-live="polite">
+        {/* No aria-live here: announcing the whole passage on every
+            keystroke is chatter. The role=status feedback row below is
+            the announcement channel for submit-time results. */}
+        <div className="kukui-fib__text">
           {segments.map((seg, i) => {
             if (seg.kind === "text") {
               return (
@@ -258,6 +270,10 @@ export function Component({
             </button>
           ) : (
             <>
+              <output className="kukui-fib__score">
+                {raw} / {max}
+                {banner ? <span className="kukui-fib__band"> · {banner}</span> : null}
+              </output>
               {enableRetry ? (
                 <button type="button" className="kukui-fib__secondary" onClick={tryAgain}>
                   {tryAgainLabel}

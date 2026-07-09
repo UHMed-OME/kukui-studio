@@ -18,7 +18,7 @@
   width: 100%;
   max-width: 960px;
   background: var(--color-surface, #ffffff);
-  border: 1px solid var(--color-border, #dad2c6);
+  border: 1px solid var(--color-border, #d1d7df);
   border-radius: var(--radius-card, 12px);
   box-shadow: var(--shadow-card);
   padding: var(--spacing-3xl, 28px);
@@ -58,7 +58,7 @@
   position: relative;
   width: 100%;
   aspect-ratio: 16 / 10;
-  background-color: var(--color-tip-bg, #f2f0e8);
+  background-color: var(--color-tip-bg, #e9edf3);
   background-size: cover;
   background-position: center;
   border: 2px solid var(--color-border);
@@ -73,10 +73,11 @@
   background-size: 10% 10%;
 }
 
-/* Zones are <button> elements — reset the native button look. */
+/* Zones are div role="button" elements (they nest placed chip buttons,
+ * which a real <button> can't) — reset toward a neutral surface. */
 .kukui-dnd__zone {
   position: absolute;
-  border: 2px solid var(--color-border-hover, #bbae9a);
+  border: 2px solid var(--color-border-hover, #adb6c0);
   border-radius: var(--radius-md, 8px);
   display: flex;
   flex-wrap: wrap;
@@ -111,8 +112,8 @@
 }
 
 @keyframes kukui-dnd-pulse {
-  0%, 100% { box-shadow: 0 0 0 0 rgb(123 67 36 / 0.35); }
-  50% { box-shadow: 0 0 0 4px rgb(123 67 36 / 0.05); }
+  0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-primary) 35%, transparent); }
+  50% { box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-primary) 5%, transparent); }
 }
 
 .kukui-dnd__zone-label {
@@ -140,7 +141,7 @@
   gap: var(--spacing-sm, 8px);
   min-height: 200px;
   padding: var(--spacing-md, 12px);
-  background: var(--color-tip-bg, #f2f0e8);
+  background: var(--color-tip-bg, #e9edf3);
   /* 1 px — whisper-quiet container outline (non-interactive surface). */
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md, 8px);
@@ -178,7 +179,7 @@
   min-height: 44px;
   padding: 8px 14px;
   background: var(--color-surface, #ffffff);
-  border: 2px solid var(--color-primary, #7b4324);
+  border: 2px solid var(--color-primary, #4a7a5f);
   border-radius: var(--radius-md, 8px);
   font-size: var(--font-size-answer, 15px);
   color: var(--color-text-primary);
@@ -213,7 +214,7 @@
 
 .kukui-dnd__chip.is-selected {
   background: var(--color-primary-soft);
-  box-shadow: 0 0 0 3px rgb(123 67 36 / 0.25);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary) 25%, transparent);
 }
 
 .kukui-dnd__chip-label {
@@ -291,7 +292,7 @@
 
 .kukui-dnd__primary {
   background: var(--color-primary);
-  color: #ffffff;
+  color: var(--color-on-primary, #ffffff);
   border: none;
 }
 
@@ -329,7 +330,7 @@
   gap: var(--spacing-sm, 8px);
   align-items: baseline;
   padding: var(--spacing-xs, 4px) 0;
-  border-bottom: 1px solid var(--color-border, #dad2c6);
+  border-bottom: 1px solid var(--color-border, #d1d7df);
 }
 
 .kukui-dnd__summary-icon {
@@ -367,7 +368,19 @@
 /* Showing-solution state: each placed chip plays a brief settling
  * animation so the author's "Show solution" button feels intentional
  * rather than the chips just blinking into their slots. Falls back
- * to a focus pulse when motion is reduced. */
+ * to a focus pulse when motion is reduced.
+ *
+ * There is no JS driving this: the effect is entirely reducer + CSS.
+ * When the learner clicks "Show solution", the Component:
+ *   1. Computes solutionAssignment(config) — first-correct-zone per
+ *      chip that fits within capacity (see state.ts).
+ *   2. Dispatches { type: "show-solution", assignment }.
+ *   3. The reducer sets stage = "showing-solution" and writes the new
+ *      placement; the board re-renders with the chips in place.
+ *   4. DnDActivity adds the .kukui-dnd--showing-solution modifier, and
+ *      each placed chip plays the 600 ms settle below. Under
+ *      prefers-reduced-motion the animation degrades to a focus pulse
+ *      with no movement. */
 .kukui-dnd--showing-solution .kukui-dnd__chip.is-placed {
   animation: kukui-dnd-settle 600ms ease-out;
 }

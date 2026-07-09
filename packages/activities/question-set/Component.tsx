@@ -25,9 +25,42 @@ type State = {
   stage: Stage;
   /** Score per question index, keyed by validated-questions order. */
   scores: Record<number, ScoreState>;
+  /**
+   * Latest suspend string per question index, fed from each child's
+   * onPersist / onSubmit. Passed back down as the child's suspendData so
+   * per-question answers survive Previous / Next navigation (children
+   * remount on navigation), and included in the set's own persisted
+   * payload so they also survive an LMS resume.
+   */
+  childSuspend: Record<number, string>;
   current: number;
   attempts: number;
 };
+
+/**
+ * Weighted-percent aggregation over the answered questions. Single source
+ * of truth for submitSet and the post-submit header badge.
+ */
+function aggregateScores(
+  validated: readonly ValidatedQuestion[],
+  scores: Record<number, ScoreState>,
+  passPct: number,
+): ScoreState {
+  const totalWeight = validated.reduce((acc, q) => acc + q.weight, 0);
+  let weightedRaw = 0;
+  let weightedMax = 0;
+  for (const q of validated) {
+    const sc = scores[q.index];
+    if (!sc || sc.max === 0) continue;
+    weightedRaw += (sc.raw / sc.max) * q.weight;
+    weightedMax += q.weight;
+  }
+  return {
+    raw: weightedRaw,
+    max: weightedMax || totalWeight,
+    success: weightedMax > 0 ? (weightedRaw / weightedMax) * 100 >= passPct : false,
+  };
+}
 
 /** Tiny seeded PRNG (mulberry32) — stable shuffle across remounts. */
 function rng(seed: number): () => number {
@@ -99,7 +132,13 @@ export default function Component({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [validated, config.behaviour?.randomQuestions]);
 
-  const initial: State = { stage: "answering", scores: {}, current: 0, attempts: 0 };
+  const initial: State = {
+    stage: "answering",
+    scores: {},
+    childSuspend: {},
+    current: 0,
+    attempts: 0,
+  };
   const [state, setState] = useState<State>(
     () => parseSuspend(suspendData, validated.length) ?? initial,
   );
@@ -114,6 +153,7 @@ export default function Component({
       parseSuspend(suspendData, validated.length) ?? {
         stage: "answering",
         scores: {},
+        childSuspend: {},
         current: 0,
         attempts: 0,
       },
@@ -137,25 +177,37 @@ export default function Component({
     setState((s) => ({ ...s, current: Math.min(total - 1, s.current + 1) }));
 
   const recordScore = (questionIndex: number, score: ScoreState) => {
-    setState((s) => ({ ...s, scores: { ...s.scores, [questionIndex]: score } }));
+    setState((s) => {
+      // Once the set is submitted, a child re-answer must not mutate the
+      // recorded scores (the aggregate has already been reported).
+      if (s.stage !== "answering") return s;
+      return {
+        ...s,
+        scores: {
+          ...s.scores,
+          [questionIndex]: { raw: score.raw, max: score.max, success: score.success },
+        },
+        // The submit payload carries the child's post-submit suspend string;
+        // keep it so navigating away and back restores the submitted view.
+        childSuspend:
+          typeof score.suspendData === "string"
+            ? { ...s.childSuspend, [questionIndex]: score.suspendData }
+            : s.childSuspend,
+      };
+    });
+  };
+
+  const recordChildSuspend = (questionIndex: number, data: string) => {
+    setState((s) =>
+      s.childSuspend[questionIndex] === data
+        ? s
+        : { ...s, childSuspend: { ...s.childSuspend, [questionIndex]: data } },
+    );
   };
 
   const submitSet = () => {
     if (state.stage !== "answering") return;
-    const totalWeight = validated.reduce((acc, q) => acc + q.weight, 0);
-    let weightedRaw = 0;
-    let weightedMax = 0;
-    for (const q of validated) {
-      const sc = state.scores[q.index];
-      if (!sc || sc.max === 0) continue;
-      weightedRaw += (sc.raw / sc.max) * q.weight;
-      weightedMax += q.weight;
-    }
-    const aggregated: ScoreState = {
-      raw: weightedRaw,
-      max: weightedMax || totalWeight,
-      success: weightedMax > 0 ? (weightedRaw / weightedMax) * 100 >= passPct : false,
-    };
+    const aggregated = aggregateScores(validated, state.scores, passPct);
     const next: State = { ...state, stage: "submitted", attempts: state.attempts + 1 };
     setState(next);
     onSubmit({
@@ -186,24 +238,17 @@ export default function Component({
   const tryAgainLabel = ui.tryAgainButton ?? "Try again";
 
   const allAnswered = answeredCount === total;
+  // One level below the set's own heading, so the document outline nests
+  // correctly whether the set is top-level (h1 → h2) or embedded (h2 → h3).
+  const ResultsHeading = `h${Math.min(headingLevel + 1, 6)}` as "h2" | "h3" | "h4";
   const showProgressBar = config.behaviour?.showProgressBar ?? true;
   const showResults = config.behaviour?.showResults ?? false;
   const submitted = state.stage === "submitted";
   const current = ordered[state.current];
 
-  // Aggregated pass/fail for the header badge once submitted. Mirrors the
-  // weighted-percent logic in submitSet so the badge reflects the same result.
-  const setSuccess = (() => {
-    let weightedRaw = 0;
-    let weightedMax = 0;
-    for (const q of validated) {
-      const sc = state.scores[q.index];
-      if (!sc || sc.max === 0) continue;
-      weightedRaw += (sc.raw / sc.max) * q.weight;
-      weightedMax += q.weight;
-    }
-    return weightedMax > 0 ? (weightedRaw / weightedMax) * 100 >= passPct : false;
-  })();
+  // Aggregated pass/fail for the header badge once submitted — same
+  // weighted-percent helper submitSet reports, so they can't drift.
+  const setSuccess = aggregateScores(validated, state.scores, passPct).success;
 
   const headerBadge = submitted ? (
     <StatusBadge
@@ -247,12 +292,16 @@ export default function Component({
               <MultipleChoice
                 config={current.config}
                 onSubmit={(s) => recordScore(current.index, s)}
+                onPersist={(s) => recordChildSuspend(current.index, s)}
+                suspendData={state.childSuspend[current.index]}
                 headingLevel={2}
               />
             ) : (
               <FillInTheBlanks
                 config={current.config}
                 onSubmit={(s) => recordScore(current.index, s)}
+                onPersist={(s) => recordChildSuspend(current.index, s)}
+                suspendData={state.childSuspend[current.index]}
                 headingLevel={2}
               />
             )}
@@ -313,7 +362,9 @@ export default function Component({
             className="kukui-qs__results"
             aria-label="Per-question results"
           >
-            <h2 className="kukui-qs__results-title">Per-question results</h2>
+            <ResultsHeading className="kukui-qs__results-title">
+              Per-question results
+            </ResultsHeading>
             <ul className="kukui-qs__results-list">
               {ordered.map((q, displayIdx) => {
                 const sc = state.scores[q.index];
@@ -350,9 +401,36 @@ function parseSuspend(s: string | undefined, questionCount: number): State | nul
   try {
     const parsed = JSON.parse(s) as Partial<State>;
     if (parsed && typeof parsed.current === "number") {
+      // Validate every scores entry — stale or hand-edited suspend data
+      // must not smuggle malformed shapes into the aggregation math.
+      const scores: Record<number, ScoreState> = {};
+      if (parsed.scores && typeof parsed.scores === "object") {
+        for (const [k, v] of Object.entries(parsed.scores)) {
+          const idx = Number(k);
+          if (!Number.isInteger(idx) || idx < 0 || idx >= questionCount) continue;
+          const sc = v as Partial<ScoreState> | null;
+          if (
+            sc &&
+            typeof sc.raw === "number" &&
+            typeof sc.max === "number" &&
+            typeof sc.success === "boolean"
+          ) {
+            scores[idx] = { raw: sc.raw, max: sc.max, success: sc.success };
+          }
+        }
+      }
+      const childSuspend: Record<number, string> = {};
+      if (parsed.childSuspend && typeof parsed.childSuspend === "object") {
+        for (const [k, v] of Object.entries(parsed.childSuspend)) {
+          const idx = Number(k);
+          if (!Number.isInteger(idx) || idx < 0 || idx >= questionCount) continue;
+          if (typeof v === "string") childSuspend[idx] = v;
+        }
+      }
       return {
         stage: parsed.stage === "submitted" ? "submitted" : "answering",
-        scores: typeof parsed.scores === "object" && parsed.scores ? parsed.scores : {},
+        scores,
+        childSuspend,
         // Clamp to the valid question range — stale or hand-edited
         // suspend data must never point past the last question.
         current: Math.min(Math.max(0, Math.trunc(parsed.current)), Math.max(0, questionCount - 1)),

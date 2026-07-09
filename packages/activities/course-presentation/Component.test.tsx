@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import type { CoursePresentationConfig } from "./schema.js";
 import Component from "./Component.js";
@@ -173,5 +173,58 @@ describe("course-presentation Component", () => {
     expect(
       screen.getByRole("button", { name: /go to slide 2 of 3.*answered/i }),
     ).toBeInTheDocument();
+  });
+
+  it("dot navigation cannot bypass a required, unanswered checkpoint", async () => {
+    const user = userEvent.setup();
+    render(<Component config={cfg} onSubmit={vi.fn()} />);
+    await user.click(screen.getByRole("button", { name: /next/i })); // → check slide
+
+    // Forward dot is gated (disabled + labelled as blocked); backward dot is not.
+    const forwardDot = screen.getByRole("button", { name: /go to slide 3 of 3.*blocked/i });
+    expect(forwardDot).toBeDisabled();
+    expect(screen.getByRole("button", { name: /go to slide 1 of 3/i })).toBeEnabled();
+
+    // Answer the required checkpoint; the forward dot unlocks.
+    await user.click(screen.getByRole("button", { name: /question.*required/i }));
+    await user.click(screen.getByRole("button", { name: /sunlight/i }));
+    await user.click(screen.getByRole("button", { name: /^check$/i }));
+    expect(screen.getByRole("button", { name: /go to slide 3 of 3/i })).toBeEnabled();
+  });
+
+  it("re-answering a checkpoint after Finish does not change the recorded score", async () => {
+    const user = userEvent.setup();
+    const onSubmit = vi.fn();
+    const onPersist = vi.fn();
+    render(<Component config={cfg} onSubmit={onSubmit} onPersist={onPersist} />);
+
+    // Answer WRONG, then finish the deck.
+    await user.click(screen.getByRole("button", { name: /next/i })); // → check
+    await user.click(screen.getByRole("button", { name: /question.*required/i }));
+    await user.click(screen.getByRole("button", { name: /moonlight/i }));
+    await user.click(screen.getByRole("button", { name: /^check$/i }));
+    await user.click(screen.getByRole("button", { name: /next/i })); // → wrap
+    await user.click(screen.getByRole("button", { name: /finish/i }));
+    expect(onSubmit.mock.calls[0]?.[0]).toMatchObject({ raw: 0, max: 1, success: false });
+
+    // Go back, retry the embedded checkpoint, and answer correctly this time.
+    await user.click(screen.getByRole("button", { name: /prev/i })); // → check
+    await user.click(screen.getByRole("button", { name: /question.*required/i }));
+    // Two "Try again" buttons exist post-submit (deck-level + embedded MC);
+    // take the one inside the embedded checkpoint.
+    const embed = document.querySelector(".kukui-cp__embed") as HTMLElement;
+    await user.click(within(embed).getByRole("button", { name: /try again/i }));
+    await user.click(screen.getByRole("button", { name: /sunlight/i }));
+    await user.click(screen.getByRole("button", { name: /^check$/i }));
+
+    // The deck already reported to the LMS: the recorded score must not move.
+    const last = onPersist.mock.calls.at(-1)?.[0] as string;
+    const persisted = JSON.parse(last) as {
+      scores: Record<string, { raw: number }>;
+      stage: string;
+    };
+    expect(persisted.stage).toBe("submitted");
+    expect(persisted.scores["check:c1"]?.raw).toBe(0);
+    expect(onSubmit).toHaveBeenCalledTimes(1);
   });
 });

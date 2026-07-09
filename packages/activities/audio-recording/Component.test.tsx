@@ -224,4 +224,129 @@ describe("AudioRecording", () => {
     expect(parsed.audioDataUrl.startsWith("data:")).toBe(true);
     expect(typeof parsed.durationSeconds).toBe("number");
   });
+
+  it("the persist hint skips the submitted stage so it never clobbers the submit payload", async () => {
+    installRecorderStubs();
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+    const onSubmit = vi.fn();
+    const onPersist = vi.fn();
+    render(
+      <Component config={cfgBasic} onSubmit={onSubmit} onPersist={onPersist} />,
+    );
+
+    await user.click(screen.getByRole("button", { name: /record/i }));
+    await waitFor(() => {
+      expect(screen.getByRole("button", { name: /^stop$/i })).toBeInTheDocument();
+    });
+    await act(async () => {
+      vi.advanceTimersByTime(1100);
+    });
+    await user.click(screen.getByRole("button", { name: /^stop$/i }));
+    await user.click(await screen.findByRole("button", { name: /^submit$/i }));
+    await waitFor(() => {
+      expect(onSubmit).toHaveBeenCalledTimes(1);
+    });
+
+    // Regression: the stage-hint persist effect must NOT fire for the
+    // "submitted" stage — a bare {stage} write after submit would replace
+    // the audio payload submit() handed to onSubmit.
+    const persisted = onPersist.mock.calls.map((c) => c[0] as string);
+    expect(persisted.some((p) => p.includes('"submitted"'))).toBe(false);
+
+    // And the payload submit() wrote restores the recording on resume.
+    const { suspendData } = onSubmit.mock.calls[0]![0] as { suspendData: string };
+    const { unmount } = render(
+      <Component config={cfgBasic} onSubmit={vi.fn()} suspendData={suspendData} />,
+    );
+    expect(screen.getAllByLabelText(/playback/i).length).toBeGreaterThan(0);
+    unmount();
+  });
+
+  it("auto-stops the recording at maxDurationSeconds", async () => {
+    installRecorderStubs();
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+    render(<Component config={cfgBasic} onSubmit={vi.fn()} />);
+
+    await user.click(screen.getByRole("button", { name: /record/i }));
+    await waitFor(() => {
+      expect(screen.getByRole("button", { name: /^stop$/i })).toBeInTheDocument();
+    });
+
+    // cfgBasic caps at 5s; run the timer past it without pressing Stop.
+    await act(async () => {
+      vi.advanceTimersByTime(5500);
+    });
+
+    // Recorder auto-stopped into review: Stop is gone, Submit is offered.
+    expect(screen.queryByRole("button", { name: /^stop$/i })).toBeNull();
+    expect(screen.getByRole("button", { name: /^submit$/i })).toBeInTheDocument();
+  });
+
+  it("hides the Re-record button when behaviour.allowReRecord is false", async () => {
+    installRecorderStubs();
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+    const cfg: AudioRecordingConfig = {
+      ...cfgBasic,
+      behaviour: { allowReRecord: false },
+    };
+    render(<Component config={cfg} onSubmit={vi.fn()} />);
+
+    await user.click(screen.getByRole("button", { name: /record/i }));
+    await waitFor(() => {
+      expect(screen.getByRole("button", { name: /^stop$/i })).toBeInTheDocument();
+    });
+    await user.click(screen.getByRole("button", { name: /^stop$/i }));
+
+    expect(screen.getByRole("button", { name: /^submit$/i })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /^re-record$/i })).toBeNull();
+  });
+
+  it("post-submit re-record is gated by scoring.enableRetry", async () => {
+    installRecorderStubs();
+    const noRetry: AudioRecordingConfig = {
+      ...cfgBasic,
+      scoring: { mode: "completion", enableRetry: false },
+    };
+    const suspendData = JSON.stringify({
+      stage: "submitted",
+      audioDataUrl: "data:audio/webm;base64,eA==",
+      durationSeconds: 3,
+    });
+    const { unmount } = render(
+      <Component config={noRetry} onSubmit={vi.fn()} suspendData={suspendData} />,
+    );
+    expect(screen.queryByRole("button", { name: /^re-record$/i })).toBeNull();
+    unmount();
+
+    const withRetry: AudioRecordingConfig = {
+      ...cfgBasic,
+      scoring: { mode: "completion", enableRetry: true },
+    };
+    render(
+      <Component config={withRetry} onSubmit={vi.fn()} suspendData={suspendData} />,
+    );
+    expect(
+      screen.getByRole("button", { name: /^re-record$/i }),
+    ).toBeInTheDocument();
+  });
+
+  it("explains a disabled Submit with a visible minimum-duration message", async () => {
+    installRecorderStubs();
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+    const cfg: AudioRecordingConfig = {
+      ...cfgBasic,
+      minDurationSeconds: 3,
+    };
+    render(<Component config={cfg} onSubmit={vi.fn()} />);
+
+    await user.click(screen.getByRole("button", { name: /record/i }));
+    await waitFor(() => {
+      expect(screen.getByRole("button", { name: /^stop$/i })).toBeInTheDocument();
+    });
+    // Stop almost immediately — under the 3s minimum.
+    await user.click(screen.getByRole("button", { name: /^stop$/i }));
+
+    expect(screen.getByRole("button", { name: /^submit$/i })).toBeDisabled();
+    expect(screen.getByText(/record at least 0:03/i)).toBeInTheDocument();
+  });
 });

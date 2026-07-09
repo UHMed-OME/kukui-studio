@@ -86,7 +86,10 @@ export function Zone({
       ref={setNodeRef}
       id={domId}
       role="button"
-      tabIndex={locked ? -1 : 0}
+      // Only tap mode wires Space/Enter to a placement. In drag mode the
+      // zone is a mouse/keyboard-drag drop target with no activation, so
+      // keep it out of the Tab order rather than offering a dead stop.
+      tabIndex={locked || mode !== "tap" ? -1 : 0}
       aria-disabled={locked || undefined}
       className={className}
       style={style}

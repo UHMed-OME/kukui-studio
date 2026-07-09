@@ -82,6 +82,10 @@ const uiSchema = {
         units: f("Units"),
         reference: f("Reference range"),
         flag: f("Flag", "high / low / normal — colour-codes the row."),
+        isAbnormal: f(
+          "Abnormal (answer key)",
+          "Mark on if the learner should flag this row as abnormal. This is the answer key the row selections are scored against.",
+        ),
       },
     },
   },

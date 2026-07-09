@@ -22,6 +22,9 @@ const starter = {
     ],
   },
   behaviour: { enableRetry: true },
+  // AppearanceSchema has a .default(), which makes the field required in the
+  // derived JSON Schema — seed it so Studio's form validates on first load.
+  appearance: { theme: "auto" },
 };
 
 export default starter;

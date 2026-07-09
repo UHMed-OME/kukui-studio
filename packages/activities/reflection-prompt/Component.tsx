@@ -30,6 +30,11 @@ function countWords(text: string): number {
   return trimmed.split(/\s+/).filter(Boolean).length;
 }
 
+/**
+ * Parses suspend data. Accepts both the current full-state shape
+ * `{ stage, text }` and the legacy submit payload `{ text }` (no stage),
+ * which is treated as still-answering.
+ */
 function parseSuspend(s: string | undefined): State | null {
   if (!s) return null;
   try {
@@ -116,7 +121,7 @@ function Component({
       raw: 1,
       max: 1,
       success: true,
-      suspendData: JSON.stringify({ text: next.text }),
+      suspendData: JSON.stringify(next),
     });
   };
 
@@ -141,19 +146,23 @@ function Component({
           value={state.text}
           onChange={(e) => handleChange(e.target.value)}
           placeholder={placeholder}
+          // readOnly (not disabled) after submit: a disabled textarea leaves
+          // the tab order and screen-reader browse mode; readOnly keeps the
+          // submitted text reachable and reviewable.
           readOnly={submitted}
-          disabled={submitted}
           maxLength={maxChars}
           aria-describedby={wordCountId}
           aria-label="Your reflection"
         />
 
-        <div
-          id={wordCountId}
-          className="kukui-rp__wordcount"
-          role="status"
-          aria-live="polite"
-        >
+        {/*
+          Not a live region: this updates on every keystroke, and announcing
+          each change would spam screen readers. It stays visible and is
+          linked from the textarea via aria-describedby, so its current value
+          is read when the field gains focus. Threshold crossings are
+          announced by the separate polite region below.
+        */}
+        <div id={wordCountId} className="kukui-rp__wordcount">
           <span className="kukui-rp__wordcount-current">
             {wordCount} {wordCount === 1 ? "word" : "words"}
           </span>
@@ -177,6 +186,18 @@ function Component({
               {atCharLimit ? " (limit reached)" : ""}
             </span>
           ) : null}
+        </div>
+
+        {/*
+          Polite announcement for the one meaningful counter event: crossing
+          the minimum-word threshold. Content only changes on the crossing
+          itself (empty otherwise), so screen readers hear it exactly once
+          per crossing instead of on every keystroke.
+        */}
+        <div className="kukui-rp__sr-only" role="status" aria-live="polite">
+          {minWords > 0 && meetsMin && !submitted
+            ? `Minimum of ${minWords} words reached`
+            : ""}
         </div>
 
         <div

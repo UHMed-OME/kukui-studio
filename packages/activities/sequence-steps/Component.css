@@ -15,7 +15,7 @@
   width: 100%;
   max-width: 720px;
   background: var(--color-surface, #ffffff);
-  border: 1px solid var(--color-border, #dad2c6);
+  border: 1px solid var(--color-border, #d1d7df);
   border-radius: var(--radius-card, 12px);
   padding: var(--spacing-3xl, 28px);
   box-shadow: var(--shadow-card);
@@ -45,7 +45,7 @@
   align-items: stretch;
   gap: var(--spacing-sm, 8px);
   background: var(--color-surface, #ffffff);
-  border: 2px solid var(--color-border, #dad2c6);
+  border: 2px solid var(--color-border, #d1d7df);
   border-radius: var(--radius-md, 8px);
   padding: var(--spacing-sm, 8px);
   transition:
@@ -61,7 +61,7 @@
  * cursor while the original placeholder reserves its slot in the list. */
 .kukui-seq__item--ghost {
   background: var(--color-surface, #ffffff);
-  border: 1px solid var(--color-border, #dad2c6);
+  border: 1px solid var(--color-border, #d1d7df);
   border-radius: var(--radius-md, 8px);
   box-shadow: 0 8px 18px rgb(0 0 0 / 0.22);
   transform: rotate(-0.6deg);
@@ -91,7 +91,7 @@
   font-weight: 700;
   font-size: var(--font-size-prompt, 16px);
   color: var(--color-text-primary);
-  background: var(--color-tip-bg, #f2f0e8);
+  background: var(--color-tip-bg, #e9edf3);
   border-radius: var(--radius-sm, 6px);
 }
 
@@ -119,11 +119,11 @@
 }
 
 .kukui-seq__handle:hover:not(:disabled) {
-  border-color: var(--color-border-hover, #bbae9a);
+  border-color: var(--color-border-hover, #adb6c0);
 }
 
 .kukui-seq__handle:focus-visible {
-  outline: 2px solid var(--color-primary, #7b4324);
+  outline: 2px solid var(--color-primary, #4a7a5f);
   outline-offset: 2px;
 }
 
@@ -170,7 +170,7 @@
   min-height: 44px;
   padding: 0;
   background: var(--color-surface, #ffffff);
-  border: 2px solid var(--color-border, #dad2c6);
+  border: 2px solid var(--color-border, #d1d7df);
   border-radius: var(--radius-sm, 6px);
   color: var(--color-text-primary);
   font-size: 16px;
@@ -179,11 +179,11 @@
 }
 
 .kukui-seq__nudge-btn:hover:not(:disabled) {
-  border-color: var(--color-border-hover, #bbae9a);
+  border-color: var(--color-border-hover, #adb6c0);
 }
 
 .kukui-seq__nudge-btn:focus-visible {
-  outline: 2px solid var(--color-primary, #7b4324);
+  outline: 2px solid var(--color-primary, #4a7a5f);
   outline-offset: 2px;
 }
 
@@ -200,7 +200,7 @@
   margin-top: var(--spacing-lg, 16px);
   padding: 0 var(--spacing-xs, 4px);
   font-size: var(--font-size-meta, 13px);
-  color: var(--color-text-secondary, #606069);
+  color: var(--color-text-secondary, #49515b);
   opacity: 0;
   transition: opacity 200ms ease;
 }
@@ -228,13 +228,13 @@
 }
 
 .kukui-seq__primary {
-  background: var(--color-primary, #7b4324);
-  color: #ffffff;
+  background: var(--color-primary, #4a7a5f);
+  color: var(--color-on-primary, #ffffff);
   border: none;
 }
 
 .kukui-seq__primary:hover:not(:disabled) {
-  background: var(--color-primary-hover, #9b5830);
+  background: var(--color-primary-hover, #3f6b52);
 }
 
 .kukui-seq__primary:disabled {
@@ -244,12 +244,23 @@
 
 .kukui-seq__secondary {
   background: transparent;
-  color: var(--color-primary, #7b4324);
-  border: 2px solid var(--color-primary, #7b4324);
+  color: var(--color-primary, #4a7a5f);
+  border: 2px solid var(--color-primary, #4a7a5f);
 }
 
 .kukui-seq__secondary:hover:not(:disabled) {
   background: var(--color-primary-soft);
+}
+
+.kukui-seq__score {
+  font-size: var(--font-size-prompt, 16px);
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+.kukui-seq__band {
+  font-weight: 400;
+  color: var(--color-text-secondary);
 }
 
 @media (prefers-reduced-motion: reduce) {

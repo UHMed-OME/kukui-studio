@@ -127,15 +127,20 @@ export function reducer(
 
 /**
  * Was this chip correctly placed? Used for scoring + summary rendering.
+ *
+ * A chip with an empty `correctZones` list is a distractor: its correct
+ * home is the tray, so it scores as correct only when left unplaced
+ * (zoneId === null) and wrong wherever it is dropped.
  */
 export function isCorrect(
   chipId: ChipId,
   zoneId: ZoneId | null,
   config: DragAndDropConfig,
 ): boolean {
-  if (!zoneId) return false;
   const chip = config.draggables.find((d) => d.id === chipId);
   if (!chip) return false;
+  if (chip.correctZones.length === 0) return zoneId === null;
+  if (!zoneId) return false;
   return chip.correctZones.includes(zoneId);
 }
 
@@ -172,7 +177,10 @@ export function solutionAssignment(
 /**
  * Parse persisted suspendData. Robust to schema drift: only
  * returns a state with placements for chips that still exist
- * in the config. Returns null on any parse failure so callers
+ * in the config, and only honors a zone reference that still
+ * exists. A placement pointing at a deleted zone is nulled out
+ * (the chip returns to the tray) so it never becomes an invisible,
+ * unrecoverable orphan. Returns null on any parse failure so callers
  * fall back to `initial(config)`.
  */
 export function parseSuspend(
@@ -183,10 +191,11 @@ export function parseSuspend(
   try {
     const parsed = JSON.parse(s) as Partial<State>;
     if (!parsed || typeof parsed.attempts !== "number" || !parsed.placement) return null;
+    const validZoneIds = new Set(config.dropZones.map((z) => z.id));
     const placement: Placement = {};
     for (const d of config.draggables) {
       const v = (parsed.placement as Placement)[d.id];
-      placement[d.id] = typeof v === "string" || v === null ? v : null;
+      placement[d.id] = typeof v === "string" && validZoneIds.has(v) ? v : null;
     }
     const stage: Stage =
       parsed.stage === "submitted"

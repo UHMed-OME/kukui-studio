@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import type { Hotspot3DConfig } from "./schema.js";
-import Component from "./Component.js";
+import Component, { resolveModelSource } from "./Component.js";
 
 // JSDOM has no WebGL — these tests exercise the keyboard fallback list, which
 // is the WCAG-required equivalent path. The 3D Canvas is rendered as a "scene
@@ -88,5 +88,104 @@ describe("Hotspot3D — fallback list (select-then-confirm)", () => {
     expect(onPersist).toHaveBeenCalled();
     const last = onPersist.mock.calls.at(-1)?.[0] as string;
     expect(last).toMatch(/"selectedHotspotId":"iako"/);
+  });
+});
+
+describe("Hotspot3D — scoring block (post-migration configs)", () => {
+  it("renders Try Again when scoring.enableRetry is true and behaviour is absent", async () => {
+    // Regression: Studio's migrator strips behaviour.enableRetry into
+    // scoring.enableRetry. Reading config.behaviour directly hid the
+    // retry button for every re-saved activity.
+    const user = userEvent.setup();
+    const migrated: Hotspot3DConfig = {
+      ...cfg,
+      behaviour: undefined,
+      scoring: { mode: "points", enableRetry: true },
+    };
+    render(<Component config={migrated} onSubmit={vi.fn()} />);
+    await user.click(screen.getByRole("button", { name: /^ama/i }));
+    await user.click(screen.getByRole("button", { name: /^check$/i }));
+    expect(screen.getByRole("button", { name: /try again/i })).toBeInTheDocument();
+  });
+
+  it("hides Try Again when scoring.enableRetry is false", async () => {
+    const user = userEvent.setup();
+    const noRetry: Hotspot3DConfig = {
+      ...cfg,
+      behaviour: undefined,
+      scoring: { mode: "points", enableRetry: false },
+    };
+    render(<Component config={noRetry} onSubmit={vi.fn()} />);
+    await user.click(screen.getByRole("button", { name: /^ama/i }));
+    await user.click(screen.getByRole("button", { name: /^check$/i }));
+    expect(screen.queryByRole("button", { name: /try again/i })).not.toBeInTheDocument();
+    // The actions row still shows the score line (row never collapses).
+    expect(screen.getByText(/0 \/ 1/)).toBeInTheDocument();
+  });
+
+  it("shows an MC-style raw/max score line after submit", async () => {
+    const user = userEvent.setup();
+    render(<Component config={cfg} onSubmit={vi.fn()} />);
+    await user.click(screen.getByRole("button", { name: /^iako/i }));
+    await user.click(screen.getByRole("button", { name: /^check$/i }));
+    expect(screen.getByText(/1 \/ 1/)).toBeInTheDocument();
+  });
+});
+
+describe("Hotspot3D — model source precedence", () => {
+  const uid = "a1b2c3d4e5f67890abcdef1234567890";
+
+  it("prefers the bundled GLB (model.src) when both src and sketchfabUid are set", () => {
+    // SCORM export bundles the GLB at model.src while keeping the UID;
+    // choosing the iframe would break offline packages.
+    expect(
+      resolveModelSource({ src: "./assets/model.glb", sketchfabUid: uid }),
+    ).toEqual({ kind: "glb", src: "./assets/model.glb" });
+  });
+
+  it("uses the Sketchfab viewer when only sketchfabUid is set", () => {
+    expect(resolveModelSource({ sketchfabUid: uid })).toEqual({
+      kind: "sketchfab",
+      uid,
+    });
+  });
+
+  it("uses the GLB path when only src is set, and none when neither is", () => {
+    expect(resolveModelSource({ src: "models/a.glb" })).toEqual({
+      kind: "glb",
+      src: "models/a.glb",
+    });
+    expect(resolveModelSource({})).toEqual({ kind: "none" });
+  });
+});
+
+describe("Hotspot3D — suspend / resume", () => {
+  it("restores a submitted attempt from suspendData", () => {
+    const suspend = JSON.stringify({
+      stage: "submitted",
+      selectedHotspotId: "iako",
+      attempts: 1,
+    });
+    render(<Component config={cfg} onSubmit={vi.fn()} suspendData={suspend} />);
+    // Already submitted: no Check button, feedback + score visible.
+    expect(screen.queryByRole("button", { name: /^check$/i })).not.toBeInTheDocument();
+    expect(screen.getByText(/the cross-beam/i)).toBeInTheDocument();
+    expect(screen.getByText(/1 \/ 1/)).toBeInTheDocument();
+  });
+
+  it("drops a persisted selection whose hotspot no longer exists", () => {
+    const suspend = JSON.stringify({
+      stage: "answering",
+      selectedHotspotId: "deleted-hotspot",
+      attempts: 0,
+    });
+    render(<Component config={cfg} onSubmit={vi.fn()} suspendData={suspend} />);
+    // Selection was invalid, so Check stays disabled.
+    expect(screen.getByRole("button", { name: /^check$/i })).toBeDisabled();
+  });
+
+  it("ignores malformed suspendData", () => {
+    render(<Component config={cfg} onSubmit={vi.fn()} suspendData="{not json" />);
+    expect(screen.getByRole("button", { name: /^check$/i })).toBeDisabled();
   });
 });

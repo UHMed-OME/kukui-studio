@@ -20,7 +20,7 @@ import { CSS } from "@dnd-kit/utilities";
 import type { SequenceStepsConfig } from "@kukui/schemas";
 import type { ActivityProps } from "@kukui/core/types";
 import { ActivityHeader, SafeHtml } from "@kukui/core";
-import { resolveScoring } from "@kukui/core/scoring";
+import { bandMessage, percentage, resolveScoring } from "@kukui/core/scoring";
 import "./Component.css";
 
 type Stage = "answering" | "submitted";
@@ -32,26 +32,10 @@ type State = {
   attempts: number;
 };
 
-/**
- * Tiny seeded PRNG (mulberry32) — stable shuffle when we have a seed
- * (e.g. on resume from suspendData). Without a seed we use Math.random.
- */
-function rng(seed?: number): () => number {
-  if (seed === undefined) return Math.random;
-  let t = seed >>> 0;
-  return () => {
-    t = (t + 0x6d2b79f5) >>> 0;
-    let r = Math.imul(t ^ (t >>> 15), 1 | t);
-    r = (r + Math.imul(r ^ (r >>> 7), 61 | r)) ^ r;
-    return ((r ^ (r >>> 14)) >>> 0) / 4294967296;
-  };
-}
-
-function shuffle<T>(arr: readonly T[], seed?: number): T[] {
+function shuffle<T>(arr: readonly T[]): T[] {
   const out = arr.slice();
-  const rand = rng(seed);
   for (let i = out.length - 1; i > 0; i -= 1) {
-    const j = Math.floor(rand() * (i + 1));
+    const j = Math.floor(Math.random() * (i + 1));
     const tmp = out[i] as T;
     out[i] = out[j] as T;
     out[j] = tmp;
@@ -168,22 +152,33 @@ export function Component({
 
   const scoring = useMemo(() => resolveScoring(config, { mode: "points" }), [config]);
 
-  const submit = () => {
-    if (state.stage !== "answering") return;
+  const score = useMemo(() => {
     const total = correctOrder.length;
     const singlePoint = scoring.mode === "all-or-nothing";
-    const max = singlePoint ? 1 : total;
-    const raw = singlePoint ? (allCorrect ? 1 : 0) : correctCount;
+    return {
+      raw: singlePoint ? (allCorrect ? 1 : 0) : correctCount,
+      max: singlePoint ? 1 : total,
+      success: allCorrect,
+    };
+  }, [correctOrder.length, scoring.mode, allCorrect, correctCount]);
+
+  const pct = state.stage === "submitted" ? percentage(score) : 0;
+  const banner = state.stage === "submitted" ? bandMessage(scoring.bands, pct) : null;
+
+  const submit = () => {
+    if (state.stage !== "answering") return;
+    // Build the next state first, then hand the same payload to onSubmit
+    // (never call onSubmit inside a setState updater).
     const next: State = { ...state, stage: "submitted", attempts: state.attempts + 1 };
     setState(next);
-    onSubmit({ raw, max, success: allCorrect, suspendData: JSON.stringify(next) });
+    onSubmit({ ...score, suspendData: JSON.stringify(next) });
   };
 
   const tryAgain = () => {
     setState({
       stage: "answering",
       order: shuffleDistinct(correctOrder),
-      attempts: state.attempts,
+      attempts: 0,
     });
   };
 
@@ -265,11 +260,17 @@ export function Component({
 
         <div className="kukui-seq__actions">
           {submitted ? (
-            scoring.enableRetry ? (
-              <button type="button" className="kukui-seq__secondary" onClick={tryAgain}>
-                {tryAgainLabel}
-              </button>
-            ) : null
+            <>
+              <output className="kukui-seq__score">
+                {score.raw} / {score.max}
+                {banner ? <span className="kukui-seq__band"> · {banner}</span> : null}
+              </output>
+              {scoring.enableRetry ? (
+                <button type="button" className="kukui-seq__secondary" onClick={tryAgain}>
+                  {tryAgainLabel}
+                </button>
+              ) : null}
+            </>
           ) : (
             <button type="button" className="kukui-seq__primary" onClick={submit}>
               {checkLabel}
@@ -398,6 +399,9 @@ function parseSuspend(s: string | undefined, correctOrder: readonly string[]): S
       parsed.order.every((x): x is string => typeof x === "string")
     ) {
       // Validate: must be a permutation of the current correct order's ids.
+      // The length check (together with set equality) also rejects payloads
+      // that repeat an id, which a bare set comparison would let through.
+      if (parsed.order.length !== correctOrder.length) return null;
       const expected = new Set(correctOrder);
       const got = new Set(parsed.order);
       if (expected.size !== got.size) return null;

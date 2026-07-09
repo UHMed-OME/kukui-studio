@@ -2,6 +2,7 @@ import { useEffect, useId, useMemo, useRef, useState } from "react";
 import type { DDxTreeConfig } from "./schema.js";
 import type { ActivityProps } from "@kukui/core/types";
 import { ActivityHeader, SafeHtml, htmlToText, StatusBadge, DotIcon, CheckIcon } from "@kukui/core";
+import { resolveScoring } from "@kukui/core/scoring";
 import "./Component.css";
 
 type State = {
@@ -14,7 +15,17 @@ type State = {
   accumulatedCase: string[];
   /** True once a terminal node was reached and onSubmit was fired. */
   terminalReached: boolean;
-  /** Id of the last choice clicked, used to render its inline feedback. */
+  /**
+   * Feedback text captured from the choice picked to reach the current node.
+   * Stored at pick time — the choice itself lives on the *previous* node, so
+   * looking it up after navigation would always miss.
+   */
+  lastFeedback: string | null;
+  /**
+   * Id of the last clicked choice *on the current node*. Only set when the
+   * click didn't navigate (broken nextNodeId), so the highlight and the
+   * broken-link message can point at the offending choice.
+   */
   lastChoiceId: string | null;
 };
 
@@ -27,19 +38,23 @@ export default function Component({
 }: ActivityProps<DDxTreeConfig>) {
   const headingId = useId();
   const caseHeaderId = useId();
+  // Section headings sit one level below the activity title so the outline
+  // stays correct when the activity is embedded (e.g. course-presentation).
+  const H2 = `h${Math.min(headingLevel + 1, 6)}` as "h2" | "h3" | "h4" | "h5" | "h6";
 
   const initialState = useMemo<State>(
     () => ({
       currentNodeId: config.startNodeId,
       accumulatedCase: [],
       terminalReached: false,
+      lastFeedback: null,
       lastChoiceId: null,
     }),
     [config.startNodeId],
   );
 
   const [state, setState] = useState<State>(
-    () => parseSuspend(suspendData) ?? initialState,
+    () => parseSuspend(suspendData, config) ?? initialState,
   );
 
   // Reset local state when `config` changes externally (Studio Preview edit,
@@ -48,7 +63,7 @@ export default function Component({
   // fires in Studio Preview. Replaces the now-removed JSON.stringify(value)
   // remount key.
   useEffect(() => {
-    setState(parseSuspend(suspendData) ?? initialState);
+    setState(parseSuspend(suspendData, config) ?? initialState);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [config]);
 
@@ -59,6 +74,10 @@ export default function Component({
   }, [config.nodes]);
 
   const currentNode = nodesById.get(state.currentNodeId);
+
+  // Single source of truth for retry / mode (Scoring tab writes
+  // config.scoring; resolveScoring also honors the legacy behaviour flag).
+  const resolved = useMemo(() => resolveScoring(config, { mode: "points" }), [config]);
 
   useEffect(() => {
     if (!onPersist) return;
@@ -84,7 +103,9 @@ export default function Component({
     onSubmit({
       raw: dx.score,
       max: 1,
-      success: dx.correct,
+      // Completion mode: reaching any terminal diagnosis completes the
+      // activity — success regardless of whether it was the correct one.
+      success: resolved.mode === "completion" ? true : dx.correct,
       suspendData: JSON.stringify(next),
     });
     // We intentionally depend only on currentNode + reached flag.
@@ -116,7 +137,7 @@ export default function Component({
     const nextNode = nodesById.get(choice.nextNodeId);
     if (!nextNode) {
       // Broken nextNodeId: stay put, surface error inline.
-      setState((s) => ({ ...s, lastChoiceId: choiceId }));
+      setState((s) => ({ ...s, lastChoiceId: choiceId, lastFeedback: null }));
       return;
     }
     setState((s) => ({
@@ -125,7 +146,11 @@ export default function Component({
         ? [...s.accumulatedCase, choice.addsToCase]
         : s.accumulatedCase,
       terminalReached: false,
-      lastChoiceId: choiceId,
+      // Capture the feedback text now — after navigation the picked choice
+      // belongs to the previous node and can't be looked up anymore.
+      lastFeedback: choice.feedback ?? null,
+      // The highlight only makes sense while we're still on the same node.
+      lastChoiceId: null,
     }));
   };
 
@@ -134,11 +159,10 @@ export default function Component({
     setState(initialState);
   };
 
-  const lastChoice =
-    state.lastChoiceId && currentNode.choices
-      ? (currentNode.choices.find((c) => c.id === state.lastChoiceId) ?? null)
-      : null;
-  const lastChoiceFeedback = lastChoice?.feedback ?? "";
+  // Feedback was captured at pick time (the picked choice lives on the
+  // previous node). lastChoiceId is only set when a broken nextNodeId kept us
+  // on the same node, so this lookup is against the right choice list.
+  const lastChoiceFeedback = state.lastFeedback ?? "";
   const brokenNext =
     state.lastChoiceId && currentNode.choices
       ? (() => {
@@ -176,9 +200,9 @@ export default function Component({
           className="kukui-ddx__case-header"
           aria-labelledby={caseHeaderId}
         >
-          <h2 id={caseHeaderId} className="kukui-ddx__case-header-title">
+          <H2 id={caseHeaderId} className="kukui-ddx__case-header-title">
             Case
-          </h2>
+          </H2>
           <SafeHtml className="kukui-ddx__case-header-body" html={config.caseHeader} />
         </section>
 
@@ -191,7 +215,7 @@ export default function Component({
           className="kukui-ddx__case-so-far"
           aria-label="Case so far"
         >
-          <h2 className="kukui-ddx__case-so-far-title">Case so far</h2>
+          <H2 className="kukui-ddx__case-so-far-title">Case so far</H2>
           {state.accumulatedCase.length === 0 ? (
             <p className="kukui-ddx__case-so-far-empty">
               No additional findings yet — make a choice below.
@@ -284,7 +308,7 @@ export default function Component({
                 html={dx.explanation}
               />
             ) : null}
-            {config.behaviour?.enableRetry ? (
+            {resolved.enableRetry ? (
               <button
                 type="button"
                 className="kukui-ddx__secondary"
@@ -295,12 +319,31 @@ export default function Component({
             ) : null}
           </section>
         ) : null}
+
+        {/* Mid-case restart: once the learner has left the start node they
+            can start over without finishing, when the author allows retry. */}
+        {!isTerminal &&
+        resolved.enableRetry &&
+        state.currentNodeId !== config.startNodeId ? (
+          <nav className="kukui-ddx__nav" aria-label="Case controls">
+            <button
+              type="button"
+              className="kukui-ddx__secondary"
+              onClick={restart}
+            >
+              {restartLabel}
+            </button>
+          </nav>
+        ) : null}
       </article>
     </div>
   );
 }
 
-function parseSuspend(s: string | undefined): State | null {
+function parseSuspend(
+  s: string | undefined,
+  config: DDxTreeConfig,
+): State | null {
   if (!s) return null;
   try {
     const parsed = JSON.parse(s) as Partial<State>;
@@ -309,12 +352,18 @@ function parseSuspend(s: string | undefined): State | null {
       typeof parsed.currentNodeId === "string" &&
       Array.isArray(parsed.accumulatedCase)
     ) {
+      // A stale draft (node deleted/renamed in Studio) must not strand the
+      // learner on an unrecoverable "can't continue" card — fall back to the
+      // initial state instead of trusting the saved node id.
+      if (!config.nodes.some((n) => n.id === parsed.currentNodeId)) return null;
       return {
         currentNodeId: parsed.currentNodeId,
         accumulatedCase: parsed.accumulatedCase.filter(
           (p): p is string => typeof p === "string",
         ),
         terminalReached: parsed.terminalReached === true,
+        lastFeedback:
+          typeof parsed.lastFeedback === "string" ? parsed.lastFeedback : null,
         lastChoiceId:
           typeof parsed.lastChoiceId === "string" ? parsed.lastChoiceId : null,
       };

@@ -23,6 +23,8 @@ type State = {
 
 type SectionId = "presentation" | "anatomy" | "diagnosis" | "quiz" | "activity";
 
+type HeadingTag = "h2" | "h3" | "h4" | "h5" | "h6";
+
 function buildSections(config: ClinicalCaseConfig): { id: SectionId; name: string }[] {
   const s: { id: SectionId; name: string }[] = [
     { id: "presentation", name: config.presentation.label ?? "Presentation" },
@@ -45,15 +47,6 @@ function initialState(): State {
   };
 }
 
-/** Short labels for the progress bar (badge text can be long / emoji-led). */
-const SHORT_LABEL: Record<SectionId, string> = {
-  presentation: "Presentation",
-  anatomy: "Anatomy",
-  diagnosis: "Diagnosis",
-  quiz: "Quiz",
-  activity: "Activity",
-};
-
 const TONE_VAR: Record<string, string> = {
   primary: "var(--color-primary)",
   success: "var(--color-success)",
@@ -70,14 +63,16 @@ export default function Component({
   suspendData,
   headingLevel = 1,
 }: ActivityProps<ClinicalCaseConfig>) {
-  const H2 = `h${Math.min(headingLevel + 1, 3)}` as "h2" | "h3";
+  // Section headings sit one level below the activity title, block (card)
+  // headings one below that, so the outline stays correct when nested.
+  const H2 = `h${Math.min(headingLevel + 1, 5)}` as HeadingTag;
+  const H3 = `h${Math.min(headingLevel + 2, 6)}` as HeadingTag;
   const headingId = useId();
 
   const sections = useMemo(() => buildSections(config), [config]);
-  const initial = useMemo<State>(() => initialState(), []);
 
   const [state, setState] = useState<State>(
-    () => parseSuspend(suspendData, config, sections.length) ?? initial,
+    () => parseSuspend(suspendData, config, sections.length) ?? initialState(),
   );
 
   // Reset local state when `config` changes externally (Studio Preview edit,
@@ -191,7 +186,9 @@ export default function Component({
                     aria-label={`Section ${i + 1} of ${sections.length}: ${sec.name}${isCurrent ? ", current" : done ? ", completed" : ""}`}
                     onClick={() => goTo(i)}
                   >
-                    {SHORT_LABEL[sec.id]}
+                    {/* Authored section name (CSS-truncated) so the visible
+                        label matches the accessible name (WCAG 2.5.3). */}
+                    <span className="kukui-ccase__progress-label-text">{sec.name}</span>
                   </button>
                 </li>
               );
@@ -212,19 +209,20 @@ export default function Component({
           aria-labelledby={`${headingId}-sec-${state.current}`}
         >
           {section.id === "presentation" && (
-            <PresentationView config={config} headingId={headingId} H2={H2} />
+            <PresentationView config={config} headingId={headingId} H2={H2} H3={H3} />
           )}
           {section.id === "anatomy" && (
-            <AnatomyView config={config} headingId={headingId} H2={H2} />
+            <AnatomyView config={config} headingId={headingId} H2={H2} H3={H3} />
           )}
           {section.id === "diagnosis" && (
-            <DiagnosisView config={config} headingId={headingId} H2={H2} />
+            <DiagnosisView config={config} headingId={headingId} H2={H2} H3={H3} />
           )}
           {section.id === "quiz" && (
             <QuizView
               config={config}
               headingId={headingId}
               H2={H2}
+              H3={H3}
               answers={state.answers}
               submitted={submitted}
               onAnswer={answer}
@@ -235,6 +233,7 @@ export default function Component({
               config={config}
               headingId={headingId}
               H2={H2}
+              H3={H3}
               selectedFormat={state.selectedFormat}
               onChoose={chooseFormat}
             />
@@ -308,7 +307,9 @@ export default function Component({
 type ViewProps = {
   config: ClinicalCaseConfig;
   headingId: string;
-  H2: "h2" | "h3";
+  H2: HeadingTag;
+  /** Block (card) heading tag, one level below the section heading. */
+  H3: HeadingTag;
 };
 
 const FLAG_ICON: Record<string, string> = { normal: "✓", watch: "▲", alert: "⚠" };
@@ -327,7 +328,7 @@ function SectionHeader({
   title,
   lead,
 }: {
-  H2: "h2" | "h3";
+  H2: HeadingTag;
   id: string;
   label?: string;
   title: string;
@@ -344,27 +345,35 @@ function SectionHeader({
   );
 }
 
-function Card({ title, children }: { title?: string; children: ReactNode }) {
+function Card({
+  title,
+  H3,
+  children,
+}: {
+  title?: string;
+  H3: HeadingTag;
+  children: ReactNode;
+}) {
   return (
     <div className="kukui-ccase__block">
-      {title && <h3 className="kukui-ccase__block-title">{title}</h3>}
+      {title && <H3 className="kukui-ccase__block-title">{title}</H3>}
       {children}
     </div>
   );
 }
 
-function PresentationView({ config, headingId, H2 }: ViewProps) {
+function PresentationView({ config, headingId, H2, H3 }: ViewProps) {
   const p = config.presentation;
   return (
     <>
       <SectionHeader H2={H2} id={`${headingId}-sec-0`} label={p.label} title={p.title} lead={p.lead} />
 
-      <Card title="Chief complaint">
+      <Card H3={H3} title="Chief complaint">
         <SafeHtml className="kukui-ccase__prose" html={p.chiefComplaint} />
       </Card>
 
       {p.vitals.length > 0 && (
-        <Card title="Vital signs">
+        <Card H3={H3} title="Vital signs">
           <ul className="kukui-ccase__vitals">
             {p.vitals.map((v, i) => (
               <li key={i} className={`kukui-ccase__vital is-${v.flag}`}>
@@ -383,7 +392,7 @@ function PresentationView({ config, headingId, H2 }: ViewProps) {
       )}
 
       {p.examFindings.length > 0 && (
-        <Card title="Examination findings">
+        <Card H3={H3} title="Examination findings">
           <ul className="kukui-ccase__findings">
             {p.examFindings.map((finding, i) => (
               <li key={i} className={`kukui-ccase__finding is-${finding.type}`}>
@@ -399,7 +408,7 @@ function PresentationView({ config, headingId, H2 }: ViewProps) {
       )}
 
       {p.labResults && p.labResults.length > 0 && (
-        <Card title="Lab results">
+        <Card H3={H3} title="Lab results">
           <ul className="kukui-ccase__labs">
             {p.labResults.map((lab, i) => (
               <li key={i}>
@@ -417,14 +426,14 @@ function PresentationView({ config, headingId, H2 }: ViewProps) {
   );
 }
 
-function AnatomyView({ config, headingId, H2 }: ViewProps) {
+function AnatomyView({ config, headingId, H2, H3 }: ViewProps) {
   const a = config.anatomy;
   return (
     <>
       <SectionHeader H2={H2} id={`${headingId}-sec-1`} label={a.label} title={a.title} lead={a.lead} />
 
       {a.imagingFinding && (
-        <Card title="Imaging finding">
+        <Card H3={H3} title="Imaging finding">
           <SafeHtml className="kukui-ccase__prose" html={a.imagingFinding} />
         </Card>
       )}
@@ -458,7 +467,7 @@ function AnatomyView({ config, headingId, H2 }: ViewProps) {
       )}
 
       {a.spaces && a.spaces.length > 0 && (
-        <Card title="Anatomical spaces">
+        <Card H3={H3} title="Anatomical spaces">
           {a.spaces.map((sp, i) => (
             <details key={i} className="kukui-ccase__space">
               <summary className="kukui-ccase__space-name">{sp.name}</summary>
@@ -469,7 +478,7 @@ function AnatomyView({ config, headingId, H2 }: ViewProps) {
       )}
 
       {a.notes && a.notes.length > 0 && (
-        <Card title="Anatomy notes">
+        <Card H3={H3} title="Anatomy notes">
           <ul className="kukui-ccase__notes">
             {a.notes.map((note, i) => (
               <li
@@ -490,7 +499,7 @@ function AnatomyView({ config, headingId, H2 }: ViewProps) {
 const VERDICT_ICON: Record<string, string> = { in: "✓", out: "✗" };
 const VERDICT_WORD: Record<string, string> = { in: "Ruled in", out: "Ruled out" };
 
-function DiagnosisView({ config, headingId, H2 }: ViewProps) {
+function DiagnosisView({ config, headingId, H2, H3 }: ViewProps) {
   const d = config.diagnosis;
   return (
     <>
@@ -498,13 +507,13 @@ function DiagnosisView({ config, headingId, H2 }: ViewProps) {
 
       {d.keyFinding && (
         <div className="kukui-ccase__keyfinding">
-          <h3 className="kukui-ccase__block-title">Key finding</h3>
+          <H3 className="kukui-ccase__block-title">Key finding</H3>
           <SafeHtml className="kukui-ccase__prose" html={d.keyFinding} />
         </div>
       )}
 
       {d.differential && d.differential.length > 0 && (
-        <Card title="Differential diagnosis">
+        <Card H3={H3} title="Differential diagnosis">
           <ul className="kukui-ccase__differential">
             {d.differential.map((item, i) => (
               <li key={i} className={`kukui-ccase__dx is-${item.verdict}`}>
@@ -520,7 +529,7 @@ function DiagnosisView({ config, headingId, H2 }: ViewProps) {
       )}
 
       {d.causes && d.causes.length > 0 && (
-        <Card title="Aetiology">
+        <Card H3={H3} title="Aetiology">
           <ul className="kukui-ccase__causes">
             {d.causes.map((cause, i) => (
               <li key={i} className="kukui-ccase__chip">
@@ -532,7 +541,7 @@ function DiagnosisView({ config, headingId, H2 }: ViewProps) {
       )}
 
       {d.management && d.management.length > 0 && (
-        <Card title="Management">
+        <Card H3={H3} title="Management">
           <ol className="kukui-ccase__management">
             {d.management.map((step, i) => (
               <li key={i} className={`kukui-ccase__step${step.urgent ? " is-urgent" : ""}`}>
@@ -545,7 +554,7 @@ function DiagnosisView({ config, headingId, H2 }: ViewProps) {
       )}
 
       {d.references && d.references.length > 0 && (
-        <Card title="References">
+        <Card H3={H3} title="References">
           <ol className="kukui-ccase__references">
             {d.references.map((ref, i) => (
               <li key={i}>
@@ -564,6 +573,7 @@ function QuizView({
   headingId,
   H2,
   answers,
+  // H3 unused here (quiz stems are <p>, not headings).
   submitted,
   onAnswer,
 }: ViewProps & {
@@ -646,6 +656,7 @@ function ActivityView({
   config,
   headingId,
   H2,
+  H3,
   selectedFormat,
   onChoose,
 }: ViewProps & {
@@ -665,7 +676,7 @@ function ActivityView({
       />
 
       {act.objectives && act.objectives.length > 0 && (
-        <Card title="Learning objectives">
+        <Card H3={H3} title="Learning objectives">
           <ul className="kukui-ccase__objectives">
             {act.objectives.map((obj, i) => (
               <li key={i} className="kukui-ccase__objective">
@@ -677,7 +688,7 @@ function ActivityView({
         </Card>
       )}
 
-      <Card title="Format options">
+      <Card H3={H3} title="Format options">
         <ul className="kukui-ccase__formats">
           {act.formats.map((fmt) => {
             const isSelected = selectedFormat === fmt.id;
@@ -741,11 +752,23 @@ function parseSuspend(
         ? parsed.furthest
         : current;
 
-    const knownQ = new Set(config.quiz.questions.map((q) => q.id));
+    // Option counts per question id, so stale suspend data can't smuggle an
+    // out-of-range answer index past the render (which would look "answered"
+    // but point at no option).
+    const optionCount = new Map(config.quiz.questions.map((q) => [q.id, q.options.length]));
     const answers: Record<string, number> = {};
     if (parsed.answers && typeof parsed.answers === "object") {
       for (const [qid, idx] of Object.entries(parsed.answers)) {
-        if (knownQ.has(qid) && typeof idx === "number") answers[qid] = idx;
+        const count = optionCount.get(qid);
+        if (
+          count !== undefined &&
+          typeof idx === "number" &&
+          Number.isInteger(idx) &&
+          idx >= 0 &&
+          idx < count
+        ) {
+          answers[qid] = idx;
+        }
       }
     }
 

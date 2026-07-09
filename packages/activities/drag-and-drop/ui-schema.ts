@@ -98,7 +98,7 @@ const uiSchema = {
       label: f("Text", "What the learner sees on the label."),
       correctZones: f(
         "Correct zone IDs",
-        "List of dropZone IDs where placing this label counts as correct.",
+        "List of dropZone IDs where placing this label counts as correct. Leave empty to make this label a distractor: its correct home is the tray, so the learner scores it right by leaving it unplaced and wrong wherever it is dropped.",
       ),
       feedback: f(
         "Feedback after submit",

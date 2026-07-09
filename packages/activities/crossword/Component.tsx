@@ -9,6 +9,7 @@ import {
 } from "react";
 import type { CrosswordConfig } from "./schema.js";
 import { ActivityHeader, SafeHtml, type ActivityProps } from "@kukui/core";
+import { bandMessage, resolveScoring } from "@kukui/core/scoring";
 import {
   answerGrid,
   generateLayout,
@@ -25,16 +26,22 @@ type CellStatus = "neutral" | "correct" | "incorrect" | "revealed";
 type State = {
   /** Random seed used to build the current layout. */
   seed: number;
+  /**
+   * Fingerprint of the entry list the layout was built from. A resumed
+   * session whose config no longer matches this fingerprint would map the
+   * saved letters onto a different grid, so mismatches reset progress.
+   */
+  fp: string;
   /** Per-cell user input, keyed `"row,col"`. */
   letters: Record<string, string>;
-  /** Per-cell status — only "revealed" persists across reshuffle. */
+  /** Per-cell status: "revealed" cells sit outside the grade entirely. */
   statuses: Record<string, CellStatus>;
   /** True once the learner submitted; no further edits accepted. */
   submitted: boolean;
 };
 
-function emptyState(seed: number): State {
-  return { seed, letters: {}, statuses: {}, submitted: false };
+function emptyState(seed: number, fp: string): State {
+  return { seed, fp, letters: {}, statuses: {}, submitted: false };
 }
 
 const keyOf = (r: number, c: number) => `${r},${c}`;
@@ -86,8 +93,19 @@ export default function Component({
   const reshuffleLabel = ui.reshuffleButton ?? "New layout";
   const submitLabel = ui.submitButton ?? "Submit";
 
+  const fingerprint = useMemo(() => fingerprintOf(config.entries), [config.entries]);
+
   const [state, setState] = useState<State>(
-    () => parseSuspend(suspendData) ?? emptyState(makeSeed()),
+    () => parseSuspend(suspendData, fingerprint) ?? emptyState(makeSeed(), fingerprint),
+  );
+
+  // Effective scoring view (retry / pass threshold / bands / mode /
+  // solutions). The default pass threshold is 100 so legacy configs keep
+  // the original "success means a full clear" semantics; an authored
+  // scoring.passPercentage still wins.
+  const scoring = useMemo(
+    () => resolveScoring(config, { mode: "points", passPercentage: 100 }),
+    [config],
   );
 
   // Rebuild layout whenever the seed or the config entry list changes.
@@ -101,7 +119,8 @@ export default function Component({
 
   // Reset progress if the author edits the config — same pattern as Flashcards.
   useEffect(() => {
-    setState(parseSuspend(suspendData) ?? emptyState(makeSeed()));
+    setState(parseSuspend(suspendData, fingerprint) ?? emptyState(makeSeed(), fingerprint));
+    setSolutionsRevealed(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [config]);
 
@@ -120,16 +139,15 @@ export default function Component({
     el?.select();
   }, []);
 
-  // Auto-select the first clue on first render so the learner can start
-  // typing without hunting for the entry point.
+  // Auto-select the first clue so the highlighted word gives the learner an
+  // entry point. Selection only — never steal keyboard focus on mount; focus
+  // moves only on explicit user intent (clicking a cell or a clue).
   useEffect(() => {
     if (selected) return;
     const first = layout.placements[0];
     if (!first) return;
     setSelected({ row: first.row, col: first.col });
     setDirection(first.direction);
-    // Focus is best-effort; tests sometimes mount without DOM focus support.
-    queueMicrotask(() => focusCell(first.row, first.col));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [layout]);
 
@@ -154,25 +172,25 @@ export default function Component({
     [activePlacement],
   );
 
-  /** Step the caret along the active direction by ±1, skipping inactive cells. */
+  /**
+   * Step the caret along the active word by ±1. Movement is clamped to the
+   * cells of the active placement — the caret never skips over a blank gap
+   * into an unrelated word that merely shares the row/column.
+   */
   const step = useCallback(
     (delta: 1 | -1) => {
-      if (!selected) return;
-      const dr = direction === "down" ? delta : 0;
-      const dc = direction === "across" ? delta : 0;
-      let r = selected.row + dr;
-      let c = selected.col + dc;
-      while (r >= 0 && c >= 0 && r < layout.rows && c < layout.cols) {
-        if (cellIndex.active.has(keyOf(r, c))) {
-          setSelected({ row: r, col: c });
-          focusCell(r, c);
-          return;
-        }
-        r += dr;
-        c += dc;
-      }
+      if (!selected || !activePlacement) return;
+      const p = activePlacement;
+      const idx =
+        p.direction === "across" ? selected.col - p.col : selected.row - p.row;
+      const next = idx + delta;
+      if (next < 0 || next >= p.term.length) return;
+      const r = p.direction === "across" ? p.row : p.row + next;
+      const c = p.direction === "across" ? p.col + next : p.col;
+      setSelected({ row: r, col: c });
+      focusCell(r, c);
     },
-    [selected, direction, layout.rows, layout.cols, cellIndex.active, focusCell],
+    [selected, activePlacement, focusCell],
   );
 
   const setLetter = useCallback(
@@ -243,6 +261,16 @@ export default function Component({
         break;
       }
       default:
+        // Handle plain letter keys here rather than relying on onChange:
+        // typing a letter over an identical letter (a crossing cell filled by
+        // the other word, or a revealed cell) produces no value change, so no
+        // change event would fire and the caret would stall. onChange remains
+        // as the fallback for input methods that don't go through keydown.
+        if (/^[a-zA-Z]$/.test(e.key) && !e.ctrlKey && !e.metaKey && !e.altKey) {
+          e.preventDefault();
+          setLetter(r, c, e.key);
+          step(1);
+        }
         break;
     }
   };
@@ -259,9 +287,23 @@ export default function Component({
     return hasDown ? "down" : hasAcross ? "across" : "down";
   };
 
+  // Was the clicked cell already the selected one *before* this press? The
+  // input's focus handler runs between pointerdown and click and updates
+  // `selected`, so testing `selected` inside the click handler would see the
+  // cell as "already selected" on a first click of a crossing cell and
+  // wrongly flip the direction. Record the truth at pointerdown instead.
+  const wasSelectedAtPointerDown = useRef(false);
+
+  const handleCellPointerDown = (r: number, c: number) => {
+    wasSelectedAtPointerDown.current =
+      selected !== null && selected.row === r && selected.col === c;
+  };
+
   const handleCellClick = (r: number, c: number) => {
     const k = keyOf(r, c);
     if (!cellIndex.active.has(k)) return;
+    const wasSelected = wasSelectedAtPointerDown.current;
+    wasSelectedAtPointerDown.current = false;
     // A cell can belong to an across word, a down word, or both. Keep
     // `direction` in sync with what's actually answerable here: otherwise a
     // cell with only an across word, clicked while direction is still "down",
@@ -269,9 +311,10 @@ export default function Component({
     // instead of running along the across answer the learner sees highlighted.
     const hasAcross = cellIndex.across.has(k);
     const hasDown = cellIndex.down.has(k);
-    if (selected && selected.row === r && selected.col === c) {
-      // Re-clicking the same cell toggles orientation, but only when the cell
-      // genuinely has both — never flip into an orientation with no word.
+    if (wasSelected) {
+      // Re-clicking the already-selected cell toggles orientation, but only
+      // when the cell genuinely has both — never flip into an orientation
+      // with no word.
       if (hasAcross && hasDown) {
         setDirection((d) => (d === "across" ? "down" : "across"));
       }
@@ -348,8 +391,8 @@ export default function Component({
 
   const reshuffle = () => {
     if (state.submitted) return;
-    // Carry already-correct + revealed entries forward when their cell
-    // contains the same letter in the new layout (rare but possible).
+    // A fresh layout means fresh coordinates — letters and statuses can't
+    // survive the move, so the learner restarts on the new board.
     setState((s) => ({
       ...s,
       seed: makeSeed(),
@@ -359,35 +402,31 @@ export default function Component({
     setSelected(null);
   };
 
-  const allCorrect = useMemo(() => {
-    if (totalActiveCells === 0) return false;
-    for (const k of cellIndex.active) {
-      const [rs, cs] = k.split(",");
-      const r = Number(rs);
-      const c = Number(cs);
-      const expected = solution[r]?.[c];
-      if (!expected) return false;
-      if (state.letters[k] !== expected) return false;
-    }
-    return true;
-  }, [cellIndex.active, solution, state.letters, totalActiveCells]);
-
   const filledCount = useMemo(() => {
     let n = 0;
     for (const k of cellIndex.active) if (state.letters[k]) n += 1;
     return n;
   }, [cellIndex.active, state.letters]);
 
-  const correctCount = useMemo(() => {
-    let n = 0;
+  // Counts derived from the visible per-cell statuses. Statuses only exist
+  // after the learner presses Check / Reveal / Submit, so surfacing these
+  // never leaks correctness the grid isn't already showing.
+  const statusCounts = useMemo(() => {
+    let correct = 0;
+    let incorrect = 0;
+    let revealed = 0;
     for (const k of cellIndex.active) {
-      const [rs, cs] = k.split(",");
-      const r = Number(rs);
-      const c = Number(cs);
-      if (state.letters[k] && state.letters[k] === solution[r]?.[c]) n += 1;
+      const s = state.statuses[k];
+      if (s === "correct") correct += 1;
+      else if (s === "incorrect") incorrect += 1;
+      else if (s === "revealed") revealed += 1;
     }
-    return n;
-  }, [cellIndex.active, solution, state.letters]);
+    return { correct, incorrect, revealed };
+  }, [cellIndex.active, state.statuses]);
+
+  // Revealed cells sit outside the grade: excluded from both the numerator
+  // and the denominator (see handleSubmit).
+  const gradedMax = totalActiveCells - statusCounts.revealed;
 
   const handleSubmit = () => {
     if (state.submitted) return;
@@ -403,8 +442,8 @@ export default function Component({
       const given = state.letters[k];
       if (!expected) continue;
       if (given === expected) {
-        // Revealed cells don't count for credit, but they're still "correct"
-        // visually so the learner can see the final answer.
+        // Revealed cells don't count for credit, but they're still shown
+        // filled so the learner can see the final answer.
         if (nextStatuses[k] !== "revealed") {
           nextStatuses[k] = "correct";
           raw += 1;
@@ -421,15 +460,36 @@ export default function Component({
     // reports raw < max and `success: false`. Convention: revealed cells
     // are "outside the grade" rather than "automatically wrong."
     const max = totalActiveCells - revealedCount;
+    let result: { raw: number; max: number; success: boolean };
+    if (scoring.mode === "completion") {
+      result = { raw: 1, max: 1, success: true };
+    } else if (scoring.mode === "all-or-nothing") {
+      const complete = raw === max;
+      result = { raw: complete ? 1 : 0, max: 1, success: complete };
+    } else {
+      // Zero max (every cell revealed) means nothing scorable is left to
+      // fail — completion semantics, success true.
+      const success = max === 0 ? true : (raw / max) * 100 >= scoring.passPercentage;
+      result = { raw, max, success };
+    }
     const nextState: State = { ...state, statuses: nextStatuses, submitted: true };
     setState(nextState);
     onSubmit({
-      raw,
-      max,
-      success: raw === max && max > 0,
+      ...result,
       suspendData: JSON.stringify(nextState),
     });
   };
+
+  const tryAgain = () => {
+    setState((s) => emptyState(s.seed, s.fp));
+    setSelected(null);
+    setSolutionsRevealed(false);
+  };
+
+  // Solution reveal after submit is a render-mode toggle, not a state
+  // mutation — the graded statuses (and the persisted suspend payload)
+  // stay exactly as submitted.
+  const [solutionsRevealed, setSolutionsRevealed] = useState(false);
 
   const acrossClues = layout.placements
     .filter((p) => p.direction === "across")
@@ -444,6 +504,11 @@ export default function Component({
   );
 
   const activeEntry = activePlacement ? cluesById[activePlacement.id] : null;
+  const anyHints = useMemo(() => config.entries.some((e) => e.hint), [config.entries]);
+
+  const pct = gradedMax === 0 ? 100 : Math.round((statusCounts.correct / gradedMax) * 100);
+  const banner = state.submitted ? bandMessage(scoring.bands, pct) : null;
+  const showScoreLine = state.submitted && scoring.mode !== "completion";
 
   return (
     <div className="kukui-cw">
@@ -458,16 +523,21 @@ export default function Component({
 
         <div className="kukui-cw__progress" role="status" aria-live="polite" id={gridLiveId}>
           {state.submitted ? (
-            allCorrect ? (
-              <span>Solved — {correctCount} of {totalActiveCells} cells correct. Submitted.</span>
-            ) : (
-              <span>
-                Submitted — {correctCount} of {totalActiveCells} cells correct.
-              </span>
-            )
-          ) : (
             <span>
-              {filledCount} of {totalActiveCells} cells filled · {correctCount} correct so far
+              Submitted. {statusCounts.correct} of {gradedMax} scored cells correct
+              {statusCounts.revealed > 0 ? `, ${statusCounts.revealed} revealed` : ""}.
+            </span>
+          ) : (
+            /* Pre-submit this region reports fill progress only. Correctness
+             * counts appear only once the learner has asked for them via
+             * Check or Reveal (mirroring the visible cell marks) — announcing
+             * a live correct count while typing would leak the answers. */
+            <span>
+              {filledCount} of {totalActiveCells} cells filled
+              {statusCounts.correct + statusCounts.incorrect > 0
+                ? ` · checked: ${statusCounts.correct} correct, ${statusCounts.incorrect} incorrect`
+                : ""}
+              {statusCounts.revealed > 0 ? ` · ${statusCounts.revealed} revealed` : ""}
             </span>
           )}
         </div>
@@ -492,14 +562,38 @@ export default function Component({
                   if (!isActive) {
                     return <div key={k} className="kukui-cw__cell is-blank" aria-hidden="true" />;
                   }
-                  const status = cellStatus(r, c);
-                  const value = state.letters[k] ?? "";
+                  const baseStatus = cellStatus(r, c);
+                  // "Show solution" is display-only: unearned cells render as
+                  // revealed with the answer letter, without touching state.
+                  const showAsSolution =
+                    solutionsRevealed && state.submitted && baseStatus !== "correct";
+                  const status: CellStatus = showAsSolution ? "revealed" : baseStatus;
+                  const value = showAsSolution
+                    ? (solution[r]?.[c] ?? "")
+                    : (state.letters[k] ?? "");
                   const isSelected = selected?.row === r && selected?.col === c;
                   const highlighted = isHighlighted(r, c);
                   // Find a number if this is a starting cell.
                   const startsHere = layout.placements.find(
                     (p) => p.row === r && p.col === c,
                   );
+                  // Clue context for AT users: every word passing through this
+                  // cell, e.g. "3 Across: Largest artery in the body."
+                  const acrossHere = cellIndex.across.get(k);
+                  const downHere = cellIndex.down.get(k);
+                  const clueParts: string[] = [];
+                  const acrossEntry = acrossHere ? cluesById[acrossHere.id] : null;
+                  if (acrossHere && acrossEntry) {
+                    clueParts.push(`${acrossHere.number} Across: ${acrossEntry.definition}.`);
+                  }
+                  const downEntry = downHere ? cluesById[downHere.id] : null;
+                  if (downHere && downEntry) {
+                    clueParts.push(`${downHere.number} Down: ${downEntry.definition}.`);
+                  }
+                  if (status === "correct") clueParts.push("Correct.");
+                  else if (status === "incorrect") clueParts.push("Incorrect.");
+                  else if (status === "revealed") clueParts.push("Revealed.");
+                  const descId = `${gridLiveId}-cell-${r}-${c}`;
                   return (
                     <label
                       key={k}
@@ -513,6 +607,7 @@ export default function Component({
                       ]
                         .filter(Boolean)
                         .join(" ")}
+                      onPointerDown={() => handleCellPointerDown(r, c)}
                       onClick={() => handleCellClick(r, c)}
                     >
                       {startsHere ? (
@@ -520,15 +615,8 @@ export default function Component({
                           {startsHere.number}
                         </span>
                       ) : null}
-                      <span className="sr-only">
-                        Row {r + 1}, column {c + 1}
-                        {status === "correct"
-                          ? " — correct"
-                          : status === "incorrect"
-                            ? " — incorrect"
-                            : status === "revealed"
-                              ? " — revealed"
-                              : ""}
+                      <span className="sr-only" id={descId}>
+                        {clueParts.join(" ")}
                       </span>
                       <input
                         ref={(el) => {
@@ -544,6 +632,7 @@ export default function Component({
                         value={value}
                         readOnly={state.submitted}
                         aria-label={`Row ${r + 1}, column ${c + 1}`}
+                        aria-describedby={descId}
                         onChange={(e) => handleInputChange(r, c, e.target.value)}
                         onKeyDown={(e) => handleKeyDown(e, r, c)}
                         onFocus={() => {
@@ -613,21 +702,57 @@ export default function Component({
                   {reshuffleLabel}
                 </button>
               ) : null}
-              <button
-                type="button"
-                className="kukui-cw__btn kukui-cw__btn--primary"
-                onClick={handleSubmit}
-                disabled={state.submitted}
-              >
-                {submitLabel}
-              </button>
+              {state.submitted ? (
+                <>
+                  {scoring.enableSolutionsButton ? (
+                    <button
+                      type="button"
+                      className="kukui-cw__btn"
+                      onClick={() => setSolutionsRevealed((v) => !v)}
+                      aria-pressed={solutionsRevealed}
+                    >
+                      {solutionsRevealed ? "Hide solution" : "Show solution"}
+                    </button>
+                  ) : null}
+                  {scoring.enableRetry ? (
+                    <button
+                      type="button"
+                      className="kukui-cw__btn kukui-cw__btn--primary"
+                      onClick={tryAgain}
+                    >
+                      Try again
+                    </button>
+                  ) : null}
+                </>
+              ) : (
+                <button
+                  type="button"
+                  className="kukui-cw__btn kukui-cw__btn--primary"
+                  onClick={handleSubmit}
+                >
+                  {submitLabel}
+                </button>
+              )}
             </div>
+            {showScoreLine ? (
+              <output className="kukui-cw__score">
+                {statusCounts.correct} / {gradedMax}
+                {banner ? <span className="kukui-cw__band"> · {banner}</span> : null}
+              </output>
+            ) : null}
           </div>
 
           <div className="kukui-cw__clues">
-            {activeEntry && showHints && activeEntry.hint ? (
+            {/* The hint slot renders (with reserved min-height) whenever any
+              * entry carries a hint, so a hint appearing or disappearing never
+              * reflows the clue lists below it. */}
+            {showHints && anyHints ? (
               <p className="kukui-cw__hint">
-                <span className="kukui-cw__hint-label">Hint:</span> {activeEntry.hint}
+                {activeEntry?.hint ? (
+                  <>
+                    <span className="kukui-cw__hint-label">Hint:</span> {activeEntry.hint}
+                  </>
+                ) : null}
               </p>
             ) : null}
             <ClueList
@@ -710,6 +835,21 @@ function makeSeed(): number {
   return Math.floor(Math.random() * 0x7fffffff);
 }
 
+/**
+ * Stable fingerprint of the entry list (ids + uppercased terms) — the two
+ * inputs the layout generator actually consumes. Stored in suspendData; a
+ * mismatch on resume means the saved letters belong to a different grid,
+ * so the session resets instead of scattering letters onto the wrong cells.
+ */
+function fingerprintOf(entries: readonly { id: string; term: string }[]): string {
+  const src = entries.map((e) => `${e.id}:${e.term.toUpperCase()}`).join("|");
+  let h = 5381;
+  for (let i = 0; i < src.length; i += 1) {
+    h = ((h << 5) + h + src.charCodeAt(i)) | 0;
+  }
+  return (h >>> 0).toString(36);
+}
+
 function omit<T extends Record<string, unknown>>(obj: T, k: string): T {
   if (!(k in obj)) return obj;
   const copy = { ...obj };
@@ -717,14 +857,19 @@ function omit<T extends Record<string, unknown>>(obj: T, k: string): T {
   return copy;
 }
 
-function parseSuspend(s: string | undefined): State | null {
+function parseSuspend(s: string | undefined, expectedFp: string): State | null {
   if (!s) return null;
   try {
     const parsed = JSON.parse(s) as Partial<State>;
     if (!parsed || typeof parsed !== "object") return null;
     if (typeof parsed.seed !== "number") return null;
+    // Layout fingerprint mismatch (author edited the word list since this
+    // session was saved, or a legacy payload without one): the letters were
+    // typed against a different grid, so start fresh.
+    if (parsed.fp !== expectedFp) return null;
     return {
       seed: parsed.seed,
+      fp: expectedFp,
       letters:
         parsed.letters && typeof parsed.letters === "object"
           ? Object.fromEntries(

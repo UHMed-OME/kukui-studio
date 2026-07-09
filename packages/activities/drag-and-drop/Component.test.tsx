@@ -176,6 +176,83 @@ describe("DragAndDrop — resume from suspend data", () => {
     const zone = screen.getByRole("button", { name: /nucleus zone/i });
     expect(within(zone).queryByText("Nucleus")).not.toBeNull();
   });
+
+  it("drops a placement that points at a deleted zone (chip returns to the tray)", () => {
+    // z-gone is not in the config. The persisted placement must not
+    // survive as an invisible orphan — the chip belongs back in the tray.
+    const suspend = JSON.stringify({
+      stage: "answering",
+      placement: { "d-nucleus": "z-gone", "d-chloroplast": null },
+      selectedChipId: null,
+      attempts: 0,
+    });
+    render(<Component config={tapCfg} onSubmit={vi.fn()} suspendData={suspend} />);
+    const zone = screen.getByRole("button", { name: /nucleus zone/i });
+    expect(within(zone).queryByText("Nucleus")).toBeNull();
+    // Chip is a selectable tray button again.
+    expect(screen.getByRole("button", { name: /^nucleus$/i })).toBeInTheDocument();
+  });
+});
+
+describe("DragAndDrop — background image accessibility", () => {
+  it("exposes the board as a group (not an ARIA img that would hide zones)", () => {
+    // tapCfg carries a background image. role="img" makes the subtree
+    // presentational, stripping every zone/chip from the a11y tree.
+    render(<Component config={tapCfg} onSubmit={vi.fn()} />);
+    expect(screen.queryByRole("img")).toBeNull();
+    const board = screen.getByRole("group", { name: /drop board/i });
+    expect(board).toBeInTheDocument();
+    // The image's alt text is still exposed, via aria-describedby.
+    expect(board).toHaveAccessibleDescription(/plant cell/i);
+    // Zones remain queryable by name.
+    expect(screen.getByRole("button", { name: /nucleus zone/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /chloroplast zone/i })).toBeInTheDocument();
+  });
+});
+
+describe("DragAndDrop — distractor chips (empty correctZones)", () => {
+  const distractorCfg: DragAndDropConfig = {
+    ...tapCfg,
+    draggables: [
+      { id: "d-nucleus", label: "Nucleus", correctZones: ["z-nucleus"] },
+      { id: "d-decoy", label: "Decoy", correctZones: [] },
+    ],
+  };
+
+  it("does not gate Check, and scores as correct when left in the tray", async () => {
+    const user = userEvent.setup();
+    const onSubmit = vi.fn();
+    render(<Component config={distractorCfg} onSubmit={onSubmit} />);
+    const check = screen.getByRole("button", { name: /check/i });
+    expect(check).toBeDisabled();
+    // Place only the real chip; the decoy stays in the tray.
+    await user.click(screen.getByRole("button", { name: /^nucleus$/i }));
+    await user.click(screen.getByRole("button", { name: /nucleus zone/i }));
+    expect(screen.getByRole("button", { name: /^decoy$/i })).toBeInTheDocument();
+    expect(check).toBeEnabled();
+    await user.click(check);
+    // Both count: nucleus placed right, decoy correctly left unplaced.
+    expect(onSubmit.mock.calls[0]?.[0]).toMatchObject({ raw: 2, max: 2, success: true });
+  });
+});
+
+describe("DragAndDrop — zone keyboard semantics by mode", () => {
+  it("keeps zones out of the Tab order in drag mode (Space/Enter are inert there)", () => {
+    // cfg has no interaction override → desktop width mounts DragLayer.
+    render(<Component config={cfg} onSubmit={vi.fn()} />);
+    expect(screen.getByRole("button", { name: /nucleus zone/i })).toHaveAttribute(
+      "tabindex",
+      "-1",
+    );
+  });
+
+  it("keeps zones focusable in tap mode", () => {
+    render(<Component config={tapCfg} onSubmit={vi.fn()} />);
+    expect(screen.getByRole("button", { name: /nucleus zone/i })).toHaveAttribute(
+      "tabindex",
+      "0",
+    );
+  });
 });
 
 describe("DragAndDrop — Show solution", () => {

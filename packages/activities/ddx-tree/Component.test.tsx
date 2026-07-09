@@ -201,4 +201,87 @@ describe("ddx-tree Component", () => {
       screen.getByText(/ECG: ST elevation in leads II, III, aVF/i),
     ).toBeInTheDocument();
   });
+
+  it("shows the picked choice's feedback after navigating to the next node", async () => {
+    const user = userEvent.setup();
+    render(<Component config={cfg} onSubmit={vi.fn()} />);
+    await user.click(screen.getByRole("button", { name: /12-lead ecg/i }));
+    // We are on n-ecg now; the feedback authored on the picked (previous
+    // node's) choice must be visible.
+    expect(
+      screen.getByText(/good — ecg is first-line for acute chest pain/i),
+    ).toBeInTheDocument();
+    // Picking the other branch replaces it (no stale feedback).
+    await user.click(screen.getByRole("button", { name: /^inferior mi$/i }));
+    expect(
+      screen.queryByText(/good — ecg is first-line/i),
+    ).not.toBeInTheDocument();
+  });
+
+  it("falls back to the initial state when suspendData points at a deleted node", () => {
+    const stale = JSON.stringify({
+      currentNodeId: "n-deleted",
+      accumulatedCase: ["Old finding."],
+      terminalReached: false,
+      lastChoiceId: null,
+    });
+    render(<Component config={cfg} onSubmit={vi.fn()} suspendData={stale} />);
+    // No unrecoverable "can't continue" card — the case restarts cleanly.
+    expect(
+      screen.queryByText(/can.t continue/i),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.getByText(/what investigation do you order first/i),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(/no additional findings yet/i),
+    ).toBeInTheDocument();
+  });
+
+  it("completion mode reports success even for an incorrect terminal diagnosis", async () => {
+    const user = userEvent.setup();
+    const onSubmit = vi.fn();
+    const completion: DDxTreeConfig = {
+      ...cfg,
+      scoring: { mode: "completion" },
+    };
+    render(<Component config={completion} onSubmit={onSubmit} />);
+    await user.click(screen.getByRole("button", { name: /12-lead ecg/i }));
+    await user.click(
+      screen.getByRole("button", { name: /pulmonary embolism/i }),
+    );
+    expect(onSubmit).toHaveBeenCalledTimes(1);
+    expect(onSubmit.mock.calls[0]?.[0]).toMatchObject({
+      raw: 0,
+      max: 1,
+      success: true,
+    });
+  });
+
+  it("offers a mid-case Restart once off the start node, gated on resolved retry", async () => {
+    const user = userEvent.setup();
+    const { unmount } = render(<Component config={cfg} onSubmit={vi.fn()} />);
+    // On the start node: no mid-case restart.
+    expect(
+      screen.queryByRole("button", { name: /start over/i }),
+    ).not.toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: /12-lead ecg/i }));
+    // Off the start node: restart is offered and works.
+    await user.click(screen.getByRole("button", { name: /start over/i }));
+    expect(
+      screen.getByText(/what investigation do you order first/i),
+    ).toBeInTheDocument();
+    unmount();
+
+    // With retry disabled via the scoring block, no mid-case restart appears.
+    const noRetry: DDxTreeConfig = {
+      ...cfg,
+      scoring: { mode: "points", enableRetry: false },
+    };
+    render(<Component config={noRetry} onSubmit={vi.fn()} />);
+    await user.click(screen.getByRole("button", { name: /12-lead ecg/i }));
+    expect(
+      screen.queryByRole("button", { name: /start over/i }),
+    ).not.toBeInTheDocument();
+  });
 });

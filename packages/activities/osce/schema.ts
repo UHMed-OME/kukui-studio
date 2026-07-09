@@ -9,12 +9,6 @@ const Action = z
     /** Plain text label for the action (e.g. "Auscultate the chest"). */
     text: z.string().min(1),
     correct: z.boolean(),
-    /**
-     * Optional weight for this action when scoring. Defaults to 1.
-     * Reserved for future use; v1 treats weight as a multiplier on the
-     * per-action point but we always score 1 point per correct selection.
-     */
-    weight: z.number().min(0).optional(),
     /** Inline feedback shown next to the action after submit. */
     feedback: z.string().optional(),
   })
@@ -66,8 +60,10 @@ export const OSCEConfigSchema = z
         { message: "phase ids must be unique" },
       ),
     /**
-     * Optional list of phase ids in the expected visit order. When present,
-     * each correct position earns 1 point (separate from per-action scoring).
+     * Optional list of phase ids in the expected visit order. When present
+     * AND `behaviour.allowSkipPhase` is true, each correct position earns
+     * 1 point (separate from per-action scoring). With linear navigation the
+     * visit order is forced, so no order points are awarded.
      */
     expectedOrder: z.array(z.string().min(1)).optional(),
     behaviour: z

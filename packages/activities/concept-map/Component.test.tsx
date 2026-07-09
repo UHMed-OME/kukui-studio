@@ -309,6 +309,130 @@ describe("ConceptMap", () => {
     expect(last).toMatch(/"ribosome"/);
   });
 
+  it("resumes submitted from suspendData (stage + attempts round-trip)", () => {
+    const suspend = JSON.stringify({
+      stage: "submitted",
+      attempts: 2,
+      nodes: [
+        { id: "nucleus", label: "Nucleus", position: { x: 0.2, y: 0.3 } },
+        { id: "ribosome", label: "Ribosome", position: { x: 0.5, y: 0.5 } },
+      ],
+      edges: [],
+    });
+    const onPersist = vi.fn();
+    render(
+      <Component
+        config={baseCfg}
+        onSubmit={vi.fn()}
+        onPersist={onPersist}
+        suspendData={suspend}
+      />,
+    );
+    // Submitted learner resumes submitted: no Submit button, Try again shown.
+    expect(screen.queryByRole("button", { name: /^submit$/i })).toBeNull();
+    expect(screen.getByRole("button", { name: /try again/i })).toBeInTheDocument();
+    // Nodes restored but locked.
+    expect(screen.getByRole("button", { name: /node ribosome/i })).toBeDisabled();
+    // Persisted payload round-trips stage + attempts.
+    const persisted = JSON.parse(onPersist.mock.calls.at(-1)?.[0] as string);
+    expect(persisted.stage).toBe("submitted");
+    expect(persisted.attempts).toBe(2);
+  });
+
+  it("palette chip: pointerdown + plain click places the node and clears pending placement", () => {
+    render(<Component config={baseCfg} onSubmit={vi.fn()} />);
+    const chip = screen.getByRole("button", { name: /add concept ribosome to canvas/i });
+    const canvas = document.querySelector(".kukui-cm__canvas") as HTMLElement;
+
+    // Press starts a pending placement…
+    firePointer(chip, "pointerDown", { clientX: 600, clientY: 100, pointerId: 1 });
+    expect(canvas.classList.contains("is-placing")).toBe(true);
+
+    // …and releasing on the chip itself (a plain click) places at centre and
+    // clears the pending state instead of leaving the canvas stuck in
+    // "is-placing" mode.
+    fireEvent.click(chip, { clientX: 600, clientY: 100 });
+    expect(screen.getByRole("button", { name: /node ribosome/i })).toBeInTheDocument();
+    expect(canvas.classList.contains("is-placing")).toBe(false);
+  });
+
+  it("palette chip: press then release over the canvas places the node at the pointerup coords", () => {
+    const onPersist = vi.fn();
+    render(<Component config={baseCfg} onSubmit={vi.fn()} onPersist={onPersist} />);
+    const chip = screen.getByRole("button", { name: /add concept ribosome to canvas/i });
+    const canvas = document.querySelector(".kukui-cm__canvas") as HTMLElement;
+
+    firePointer(chip, "pointerDown", { clientX: 600, clientY: 100, pointerId: 1 });
+    // Release over the canvas at (250, 100) on a 500x400 rect -> (0.5, 0.25).
+    firePointer(canvas, "pointerUp", { clientX: 250, clientY: 100, pointerId: 1 });
+
+    expect(screen.getByRole("button", { name: /node ribosome/i })).toBeInTheDocument();
+    expect(canvas.classList.contains("is-placing")).toBe(false);
+    const persisted = JSON.parse(onPersist.mock.calls.at(-1)?.[0] as string);
+    const placed = persisted.nodes.find((n: { id: string }) => n.id === "ribosome");
+    expect(placed.position.x).toBeCloseTo(0.5, 2);
+    expect(placed.position.y).toBeCloseTo(0.25, 2);
+  });
+
+  it("edge handles are real buttons: Enter selects, Delete removes", async () => {
+    const user = userEvent.setup();
+    render(<Component config={baseCfg} onSubmit={vi.fn()} />);
+    // Draw nucleus -> mitochondrion.
+    await user.click(screen.getByRole("button", { name: /draw an edge/i }));
+    await user.click(screen.getByRole("button", { name: /node nucleus/i }));
+    await user.click(screen.getByRole("button", { name: /node mitochondrion/i }));
+
+    const handle = screen.getByRole("button", {
+      name: /edge from nucleus to mitochondrion/i,
+    });
+    const deleteTool = screen.getByRole("button", { name: /delete the selected/i });
+    expect(deleteTool).toBeDisabled();
+
+    // Native <button>: Enter activates it, selecting the edge.
+    handle.focus();
+    await user.keyboard("{Enter}");
+    expect(deleteTool).toBeEnabled();
+
+    // Delete on the focused handle removes the edge.
+    await user.keyboard("{Delete}");
+    expect(
+      screen.queryByRole("button", { name: /edge from nucleus to mitochondrion/i }),
+    ).toBeNull();
+  });
+
+  it("free-text modal traps focus, adds on Enter, and returns focus to the trigger", async () => {
+    const user = userEvent.setup();
+    render(<Component config={baseCfg} onSubmit={vi.fn()} />);
+    const addNodeBtn = screen.getByRole("button", { name: /add a node/i });
+    addNodeBtn.focus();
+    await user.click(addNodeBtn);
+
+    // Input autofocuses.
+    const input = screen.getByLabelText(/node label/i);
+    expect(input).toHaveFocus();
+
+    // Tab cycles inside the dialog: input -> Cancel -> (Add node disabled while
+    // empty) -> back to input. Shift+Tab from the input wraps to the end.
+    await user.tab();
+    expect(screen.getByRole("button", { name: /cancel/i })).toHaveFocus();
+    await user.tab();
+    expect(input).toHaveFocus();
+    await user.tab({ shift: true });
+    expect(screen.getByRole("button", { name: /cancel/i })).toHaveFocus();
+
+    // Escape closes and returns focus to the trigger.
+    await user.keyboard("{Escape}");
+    expect(screen.queryByRole("dialog")).toBeNull();
+    expect(addNodeBtn).toHaveFocus();
+
+    // Re-open, type a label, Enter adds the node and restores focus again.
+    await user.click(addNodeBtn);
+    await user.keyboard("Golgi apparatus{Enter}");
+    expect(screen.queryByRole("dialog")).toBeNull();
+    expect(screen.getByRole("button", { name: /node golgi apparatus/i })).toBeInTheDocument();
+    expect(addNodeBtn).toHaveFocus();
+  });
+
   it("after submit, Try again resets the canvas to seed state when enableRetry is on", async () => {
     const user = userEvent.setup();
     render(<Component config={baseCfg} onSubmit={vi.fn()} />);

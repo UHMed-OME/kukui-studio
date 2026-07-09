@@ -1,3 +1,4 @@
+import { StrictMode } from "react";
 import { describe, expect, it, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
@@ -207,5 +208,64 @@ describe("Flashcards", () => {
     expect(
       screen.getByRole("heading", { level: 2, name: /chemistry symbols/i }),
     ).toBeInTheDocument();
+  });
+
+  it("ignores invalid suspendData and starts a fresh deck", () => {
+    render(<Component config={cfg} onSubmit={vi.fn()} suspendData="not json {" />);
+    const card = getCard();
+    expect(card.getAttribute("aria-label")).toMatch(/card 1 of 3/i);
+    const front = document.querySelector(".kukui-fc__face--front .kukui-fc__face-body");
+    expect(front?.textContent).toMatch(/^H/);
+  });
+
+  it("appends config cards missing from the persisted queue (config drift)", () => {
+    // Suspend written before c3 existed: deck looked complete at the time.
+    const suspend = JSON.stringify({
+      queue: [],
+      statuses: { c1: "knew", c2: "knew" },
+      retries: { c1: 0, c2: 0 },
+      flipped: false,
+      seed: 42,
+      completed: true,
+    });
+    render(<Component config={cfg} onSubmit={vi.fn()} suspendData={suspend} />);
+    // The new card must be queued and the stale completed flag discarded.
+    const front = document.querySelector(".kukui-fc__face--front .kukui-fc__face-body");
+    expect(front?.textContent).toMatch(/^Na/);
+    expect(screen.queryByRole("button", { name: /practice again/i })).not.toBeInTheDocument();
+  });
+
+  it("submits exactly once under StrictMode (no double-fire from the answer path)", async () => {
+    const user = userEvent.setup();
+    const onSubmit = vi.fn();
+    render(
+      <StrictMode>
+        <Component config={cfgSingle} onSubmit={onSubmit} />
+      </StrictMode>,
+    );
+    await user.click(getCard());
+    await user.click(screen.getByRole("button", { name: /^Got it/i }));
+    expect(onSubmit).toHaveBeenCalledTimes(1);
+  });
+
+  it("hides Practice again when scoring.enableRetry is false", async () => {
+    const user = userEvent.setup();
+    const noRetry: FlashcardsConfig = {
+      ...cfgSingle,
+      scoring: { mode: "completion", enableRetry: false },
+    };
+    render(<Component config={noRetry} onSubmit={vi.fn()} />);
+    await user.click(getCard());
+    await user.click(screen.getByRole("button", { name: /^Got it/i }));
+    expect(screen.getByText(/run-through complete/i)).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /practice again/i })).not.toBeInTheDocument();
+  });
+
+  it("moves focus to the next card after answering", async () => {
+    const user = userEvent.setup();
+    render(<Component config={cfg} onSubmit={vi.fn()} />);
+    await user.click(getCard());
+    await user.click(screen.getByRole("button", { name: /^Got it/i }));
+    expect(document.activeElement).toBe(getCard());
   });
 });

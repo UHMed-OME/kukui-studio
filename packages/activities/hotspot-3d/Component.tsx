@@ -5,6 +5,7 @@ import * as THREE from "three";
 import type { Hotspot3DConfig } from "./schema.js";
 import type { ActivityProps } from "@kukui/core/types";
 import { ActivityHeader, SafeHtml } from "@kukui/core";
+import { bandMessage, percentage, resolveScoring } from "@kukui/core/scoring";
 import { HotspotPin } from "@kukui/core/components/_shared/HotspotPin";
 import {
   GLBErrorBoundary,
@@ -85,6 +86,47 @@ type State = {
 };
 
 /**
+ * Which render path the model config resolves to. Exported for tests:
+ * JSDOM can't reach the 3D branches (no WebGL), so the precedence
+ * decision is a pure function verified directly.
+ *
+ * `src` wins over `sketchfabUid` when both are set: SCORM export
+ * bundles the downloaded GLB at `model.src` (sketchfabMode "import"),
+ * and the Sketchfab iframe path needs live network access to
+ * sketchfab.com, which offline LMS packages don't have. Branching on
+ * the UID first would break every exported package that still carries
+ * the UID alongside the bundled file.
+ */
+export function resolveModelSource(
+  model: Hotspot3DConfig["model"],
+): { kind: "glb"; src: string } | { kind: "sketchfab"; uid: string } | { kind: "none" } {
+  if (model.src) return { kind: "glb", src: model.src };
+  if (model.sketchfabUid) return { kind: "sketchfab", uid: model.sketchfabUid };
+  return { kind: "none" };
+}
+
+/**
+ * Module-level lazily-computed WebGL support probe. Creating a canvas
+ * and requesting a context on every render leaked a WebGL context per
+ * render (browsers cap live contexts at ~16 and drop the oldest when
+ * the cap is hit, including the one the activity is using).
+ * Probe once, cache the answer for the life of the page.
+ */
+let webglSupport: boolean | null = null;
+function hasWebGLSupport(): boolean {
+  if (webglSupport === null) {
+    webglSupport =
+      typeof window !== "undefined" &&
+      typeof window.WebGLRenderingContext !== "undefined" &&
+      (() => {
+        const c = document.createElement("canvas");
+        return !!(c.getContext("webgl2") || c.getContext("webgl"));
+      })();
+  }
+  return webglSupport;
+}
+
+/**
  * 3D Hotspot Identification.
  *
  * The Canvas-based 3D scene renders only when WebGL is available; in JSDOM
@@ -101,7 +143,12 @@ export default function Component({
 }: ActivityProps<Hotspot3DConfig>) {
   const headingId = useId();
   const [state, setState] = useState<State>(
-    () => parseSuspend(suspendData) ?? { stage: "answering", selectedHotspotId: null, attempts: 0 },
+    () =>
+      parseSuspend(suspendData, config) ?? {
+        stage: "answering",
+        selectedHotspotId: null,
+        attempts: 0,
+      },
   );
 
   // Reset local state when `config` changes externally (Studio Preview edit,
@@ -111,7 +158,11 @@ export default function Component({
   // remount key.
   useEffect(() => {
     setState(
-      parseSuspend(suspendData) ?? { stage: "answering", selectedHotspotId: null, attempts: 0 },
+      parseSuspend(suspendData, config) ?? {
+        stage: "answering",
+        selectedHotspotId: null,
+        attempts: 0,
+      },
     );
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [config]);
@@ -160,6 +211,13 @@ export default function Component({
   const tryAgain = () =>
     setState({ stage: "answering", selectedHotspotId: null, attempts: state.attempts });
 
+  // Retry / show-solution / bands come from the resolved scoring view:
+  // Studio's migrator strips behaviour.enableRetry into scoring.enableRetry,
+  // so reading config.behaviour directly is a dead path for re-saved
+  // content. resolveScoring still honors legacy behaviour blocks in old
+  // fixtures.
+  const scoring = useMemo(() => resolveScoring(config, { mode: "points" }), [config]);
+
   const ui = config.ui ?? {};
   const tryAgainLabel = ui.tryAgainButton ?? "Try again";
   const checkLabel = "Check";
@@ -167,6 +225,9 @@ export default function Component({
   const selectedHotspot = state.selectedHotspotId
     ? config.hotspots.find((h) => h.id === state.selectedHotspotId)
     : null;
+
+  const rawScore = submitted && selectedHotspot?.correct ? 1 : 0;
+  const banner = submitted ? bandMessage(scoring.bands, percentage({ raw: rawScore, max: 1 })) : null;
 
   return (
     <div className="kukui-h3d">
@@ -242,6 +303,8 @@ export default function Component({
           ) : null}
         </div>
 
+        {/* Post-submit the row never empties: the score line always renders,
+            so turning retry off doesn't collapse the row (layout-stable). */}
         <div className="kukui-h3d__actions">
           {!submitted ? (
             <button
@@ -252,12 +315,19 @@ export default function Component({
             >
               {checkLabel}
             </button>
-          ) : null}
-          {submitted && config.behaviour?.enableRetry ? (
-            <button type="button" className="kukui-h3d__secondary" onClick={tryAgain}>
-              {tryAgainLabel}
-            </button>
-          ) : null}
+          ) : (
+            <>
+              <output className="kukui-h3d__score">
+                {rawScore} / 1
+                {banner ? <span className="kukui-h3d__band"> · {banner}</span> : null}
+              </output>
+              {scoring.enableRetry ? (
+                <button type="button" className="kukui-h3d__secondary" onClick={tryAgain}>
+                  {tryAgainLabel}
+                </button>
+              ) : null}
+            </>
+          )}
         </div>
 
         {config.model.attribution ? (
@@ -333,20 +403,23 @@ function Hotspot3DScene({
   // the hook count (Rules of Hooks).
   //
   // The model is the only meaningful occluder. Pins raycast against it
-  // each frame to decide whether to render the "behind" style.
-  const modelRef = useRef<THREE.Object3D | null>(null);
+  // each frame to decide whether to render the "behind" style. Held in
+  // state (not a ref): passing `ref.current` into the pins' `occluders`
+  // prop captured `null` on the first render and nothing re-rendered
+  // when the GLB finished loading, so occlusion stayed inert until an
+  // unrelated re-render. State makes the load trigger the re-render.
+  const [modelObj, setModelObj] = useState<THREE.Object3D | null>(null);
+
+  // Bumping this remounts the <Canvas>, resetting camera + orbit
+  // controls to their initial framing. Cheap: the GLB stays in drei's
+  // loader cache, so a remount re-frames without re-downloading.
+  const [viewNonce, setViewNonce] = useState(0);
 
   // Probe both webgl and webgl2 — Safari with strict privacy settings
   // can return null for "webgl" but still have webgl2 available, and
   // probing only the legacy context falls into the text fallback for a
   // non-trivial Safari audience that otherwise renders fine.
-  const hasWebGL =
-    typeof window !== "undefined" &&
-    typeof window.WebGLRenderingContext !== "undefined" &&
-    (() => {
-      const c = document.createElement("canvas");
-      return !!(c.getContext("webgl2") || c.getContext("webgl"));
-    })();
+  const hasWebGL = hasWebGLSupport();
 
   const aspect = config.behaviour?.aspectRatio ?? "16/10";
   const aspectCssMap: Record<string, string> = {
@@ -370,11 +443,14 @@ function Hotspot3DScene({
     );
   }
 
-  // Sketchfab embed path: when the author chose a Sketchfab UID, we
-  // embed Sketchfab's viewer iframe instead of loading a GLB. The
-  // hotspot overlay (numbered HTML pins) is rendered on top by
-  // SketchfabViewer using projected screen coordinates.
-  if (config.model.sketchfabUid) {
+  // Sketchfab embed path: when the author chose a Sketchfab UID and no
+  // bundled GLB exists, we embed Sketchfab's viewer iframe. The hotspot
+  // overlay (numbered HTML pins) is rendered on top by SketchfabViewer
+  // using projected screen coordinates. `model.src` takes precedence
+  // (see resolveModelSource): SCORM export bundles the GLB at src and
+  // the iframe would 404 offline.
+  const modelSource = resolveModelSource(config.model);
+  if (modelSource.kind === "sketchfab") {
     const sfHotspots: SketchfabHotspot[] = config.hotspots.map((h, i) => {
       const isSelected = selectedHotspotId === h.id;
       const kind = submitted
@@ -399,7 +475,7 @@ function Hotspot3DScene({
     return (
       <div className="kukui-h3d__canvas-wrap" style={viewportStyle}>
         <SketchfabViewer
-          uid={config.model.sketchfabUid}
+          uid={modelSource.uid}
           hotspots={sfHotspots}
           onPickHotspot={(id) => {
             if (!disabled) onPick(id);
@@ -420,17 +496,32 @@ function Hotspot3DScene({
       : DEFAULT_PRESET;
   const rig = LIGHT_RIGS[lightingPreset];
 
-  // Camera: honor the author's pinned view if present; otherwise
-  // FrameToModel below auto-fits to the model's bounding box on first
-  // frame. Placeholder position keeps R3F happy until the fit lands.
-  const hasPinnedView = Boolean(cameraCfg.initialPosition);
-  const initialPos: [number, number, number] = cameraCfg.initialPosition
-    ? [
-        cameraCfg.initialPosition.x,
-        cameraCfg.initialPosition.y,
-        cameraCfg.initialPosition.z,
-      ]
-    : [0, 0, 1];
+  // Camera: honor the author's pinned view if present. A full
+  // `initialPosition` snapshot wins; otherwise `initialDistance` places
+  // the camera that far from the target along a pleasant three-quarter
+  // viewing direction. With neither, FrameToModel below auto-fits to
+  // the model's bounding box on first frame (placeholder position keeps
+  // R3F happy until the fit lands).
+  const hasPinnedView = Boolean(cameraCfg.initialPosition) || Boolean(cameraCfg.initialDistance);
+  const target = new THREE.Vector3(
+    cameraCfg.target?.x ?? 0,
+    cameraCfg.target?.y ?? 0,
+    cameraCfg.target?.z ?? 0,
+  );
+  let initialPos: [number, number, number] = [0, 0, 1];
+  if (cameraCfg.initialPosition) {
+    initialPos = [
+      cameraCfg.initialPosition.x,
+      cameraCfg.initialPosition.y,
+      cameraCfg.initialPosition.z,
+    ];
+  } else if (cameraCfg.initialDistance) {
+    const p = new THREE.Vector3(0.4, 0.25, 1)
+      .normalize()
+      .multiplyScalar(cameraCfg.initialDistance)
+      .add(target);
+    initialPos = [p.x, p.y, p.z];
+  }
 
   return (
     <div className="kukui-h3d__canvas-wrap" style={viewportStyle}>
@@ -446,6 +537,7 @@ function Hotspot3DScene({
         }
       >
         <Canvas
+          key={viewNonce}
           camera={{ position: initialPos, fov: 45, near: 0.001, far: 1000 }}
           gl={{ toneMapping: THREE.ACESFilmicToneMapping, outputColorSpace: THREE.SRGBColorSpace }}
         >
@@ -471,8 +563,8 @@ function Hotspot3DScene({
             castShadow={false}
           />
           <Suspense fallback={null}>
-            {config.model.src ? (
-              <Model src={config.model.src} scale={modelScale} sceneRef={modelRef} />
+            {modelSource.kind === "glb" ? (
+              <Model src={modelSource.src} scale={modelScale} onScene={setModelObj} />
             ) : null}
           </Suspense>
           {/* Pins live inside a scaled group so positions are interpreted
@@ -501,7 +593,7 @@ function Hotspot3DScene({
                     kind={kind}
                     disabled={disabled}
                     onClick={() => onPick(h.id)}
-                    occluders={[modelRef.current]}
+                    occluders={[modelObj]}
                     ariaLabel={`Hotspot ${i + 1}: ${h.label ?? h.id}`}
                   />
                 );
@@ -521,9 +613,22 @@ function Hotspot3DScene({
               makeDefault
             />
           ) : null}
-          {!hasPinnedView ? <FrameToModel modelRef={modelRef} /> : null}
+          {!hasPinnedView ? <FrameToModel model={modelObj} /> : null}
         </Canvas>
         <GLBLoadingOverlay />
+        {/* Reset view: remounts the Canvas (key above), restoring the
+            initial camera framing. Sits over the fixed-dark 3D canvas,
+            not a themed surface, so the raw dark scrim + white text
+            here are the sanctioned canvas-overlay exception. */}
+        {allowOrbit ? (
+          <button
+            type="button"
+            className="kukui-h3d__reset-view"
+            onClick={() => setViewNonce((n) => n + 1)}
+          >
+            {config.ui?.resetViewButton ?? "Reset view"}
+          </button>
+        ) : null}
       </GLBErrorBoundary>
     </div>
   );
@@ -535,11 +640,7 @@ function Hotspot3DScene({
  * controls at its center. Subsequent frames noop so the learner can
  * orbit freely after the initial fit.
  */
-function FrameToModel({
-  modelRef,
-}: {
-  modelRef: React.MutableRefObject<THREE.Object3D | null>;
-}) {
+function FrameToModel({ model }: { model: THREE.Object3D | null }) {
   const { camera, controls } = useThree() as {
     camera: THREE.PerspectiveCamera;
     controls: { target: THREE.Vector3; update?: () => void } | null;
@@ -547,7 +648,6 @@ function FrameToModel({
   const framedRef = useRef(false);
   useFrame(() => {
     if (framedRef.current) return;
-    const model = modelRef.current;
     if (!model) return;
     model.updateWorldMatrix(true, true);
     const box = new THREE.Box3().setFromObject(model);
@@ -578,31 +678,40 @@ function FrameToModel({
 function Model({
   src,
   scale,
-  sceneRef,
+  onScene,
 }: {
   src: string;
   scale: number;
-  sceneRef?: React.MutableRefObject<THREE.Object3D | null>;
+  /** Reports the loaded scene up so the host can re-render (pins need
+   * a real occluder object, not a stale ref snapshot). */
+  onScene?: (scene: THREE.Object3D | null) => void;
 }) {
   const { scene } = useCompressedGLTF(src);
   useEffect(() => {
-    if (sceneRef) sceneRef.current = scene;
+    onScene?.(scene);
     return () => {
-      if (sceneRef) sceneRef.current = null;
+      onScene?.(null);
     };
-  }, [scene, sceneRef]);
+  }, [scene, onScene]);
   return <primitive object={scene} scale={scale} />;
 }
 
-function parseSuspend(s: string | undefined): State | null {
+function parseSuspend(s: string | undefined, config: Hotspot3DConfig): State | null {
   if (!s) return null;
   try {
     const parsed = JSON.parse(s) as Partial<State>;
     if (parsed && typeof parsed.attempts === "number") {
+      // Validate the persisted id against the live config: a hotspot
+      // removed by a re-published activity must not resurrect as a
+      // phantom selection.
+      const selectedHotspotId =
+        typeof parsed.selectedHotspotId === "string" &&
+        config.hotspots.some((h) => h.id === parsed.selectedHotspotId)
+          ? parsed.selectedHotspotId
+          : null;
       return {
         stage: parsed.stage === "submitted" ? "submitted" : "answering",
-        selectedHotspotId:
-          typeof parsed.selectedHotspotId === "string" ? parsed.selectedHotspotId : null,
+        selectedHotspotId,
         attempts: parsed.attempts,
       };
     }

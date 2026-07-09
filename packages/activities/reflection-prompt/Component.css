@@ -14,19 +14,12 @@
   width: 100%;
   max-width: 720px;
   background: var(--color-surface, #ffffff);
-  border: 1px solid var(--color-border, #dad2c6);
+  border: 1px solid var(--color-border, #d1d7df);
   border-radius: var(--radius-card, 12px);
   padding: var(--spacing-3xl, 28px);
   --kukui-card-pad: var(--spacing-3xl, 28px);
   box-shadow: var(--shadow-card);
   overflow: hidden;
-}
-
-.kukui-rp__prompt {
-  margin: 0 0 var(--spacing-lg, 16px);
-  font-size: var(--font-size-prompt, 16px);
-  line-height: 1.5;
-  color: var(--color-text-primary, #1c1e20);
 }
 
 .kukui-rp__sr-only {
@@ -47,12 +40,12 @@
   min-height: 200px;
   padding: var(--spacing-md, 12px);
   background: var(--color-surface, #ffffff);
-  border: 2px solid var(--color-border, #dad2c6);
+  border: 2px solid var(--color-border, #d1d7df);
   border-radius: var(--radius-md, 8px);
   font-family: inherit;
   font-size: var(--font-size-prompt, 16px);
   line-height: 1.5;
-  color: var(--color-text-primary, #1c1e20);
+  color: var(--color-text-primary, #15191d);
   resize: vertical;
   box-sizing: border-box;
   transition:
@@ -60,34 +53,35 @@
     border-color 150ms ease;
 }
 
-.kukui-rp__textarea:hover:not(:disabled) {
-  border-color: var(--color-border-hover, #bbae9a);
+.kukui-rp__textarea:hover:not([readonly]) {
+  border-color: var(--color-border-hover, #adb6c0);
 }
 
 .kukui-rp__textarea:focus-visible {
-  outline: 2px solid var(--color-primary, #7b4324);
+  outline: 2px solid var(--color-primary, #4a7a5f);
   outline-offset: 2px;
 }
 
-.kukui-rp__textarea:disabled,
+/* Post-submit: readOnly (never disabled) so the text stays in the tab order
+   and screen-reader browse mode. */
 .kukui-rp__textarea[readonly] {
-  background: var(--color-tip-bg, #f2f0e8);
-  color: var(--color-text-primary, #1c1e20);
+  background: var(--color-tip-bg, #e9edf3);
+  color: var(--color-text-primary, #15191d);
   cursor: not-allowed;
 }
 
 .kukui-rp__wordcount {
   margin-top: var(--spacing-sm, 8px);
   font-size: var(--font-size-meta, 13px);
-  color: var(--color-text-secondary, #606069);
+  color: var(--color-text-secondary, #49515b);
 }
 
 .kukui-rp__wordcount-min {
-  color: var(--color-text-secondary, #606069);
+  color: var(--color-text-secondary, #49515b);
 }
 
 .kukui-rp__charcount {
-  color: var(--color-text-secondary, #606069);
+  color: var(--color-text-secondary, #49515b);
 }
 
 .kukui-rp__charcount.is-limit {
@@ -131,8 +125,8 @@
 .kukui-rp__primary {
   min-height: 44px;
   padding: 10px 20px;
-  background: var(--color-primary, #7b4324);
-  color: #ffffff;
+  background: var(--color-primary, #4a7a5f);
+  color: var(--color-on-primary, #ffffff);
   border: none;
   border-radius: var(--radius-md, 8px);
   font-size: var(--font-size-answer, 15px);
@@ -141,11 +135,11 @@
 }
 
 .kukui-rp__primary:hover:not(:disabled) {
-  background: var(--color-primary-hover, #9b5830);
+  background: var(--color-primary-hover, #3f6b52);
 }
 
 .kukui-rp__primary:focus-visible {
-  outline: 2px solid var(--color-primary, #7b4324);
+  outline: 2px solid var(--color-primary, #4a7a5f);
   outline-offset: 2px;
 }
 

@@ -1,5 +1,6 @@
-import { useCallback, useEffect, useId, useRef, useState } from "react";
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
 import type { AudioRecordingConfig } from "./schema.js";
+import { resolveScoring } from "@kukui/core/scoring";
 import {
   ActivityHeader,
   SafeHtml,
@@ -50,9 +51,11 @@ function isRecordingSupported(): boolean {
 
 /**
  * Restore state from persisted suspend data so reload picks up where the
- * learner left off. Submit writes a full payload with `audioDataUrl` (see
- * `submit` below); the in-progress hint persisted on every stage change is
- * just `{ stage }`. Both shapes resolve to a reasonable resume state.
+ * learner left off. Submit writes a full payload with `audioDataUrl` when it
+ * fits the suspend budget, or `{ submitted, durationSeconds, audioOmitted }`
+ * when it doesn't (see `submit` below); the in-progress hint persisted on
+ * pre-submit stage changes is just `{ stage }`. All shapes resolve to a
+ * reasonable resume state.
  */
 function parseSuspend(
   s: string | undefined,
@@ -62,6 +65,7 @@ function parseSuspend(
   try {
     const parsed = JSON.parse(s) as {
       stage?: unknown;
+      submitted?: unknown;
       audioDataUrl?: unknown;
       durationSeconds?: unknown;
     };
@@ -86,10 +90,13 @@ function parseSuspend(
       };
     }
 
-    // Stage-only shape: the only resumable stage is "submitted" (the
-    // learner already finished). Other stages refer to ephemeral browser
-    // resources (MediaStream, blob URL) that don't survive a reload.
-    if (parsed.stage === "submitted") {
+    // Submitted-without-audio shapes: submit() writes `submitted: true`
+    // (with `audioOmitted` when the clip exceeded the suspend budget), and
+    // legacy resume hints wrote `stage: "submitted"`. The only resumable
+    // stage is "submitted" (the learner already finished); other stages
+    // refer to ephemeral browser resources (MediaStream, blob URL) that
+    // don't survive a reload.
+    if (parsed.submitted === true || parsed.stage === "submitted") {
       return {
         stage: "submitted",
         blobUrl: null,
@@ -136,6 +143,15 @@ export default function Component({
   const maxSeconds = config.maxDurationSeconds ?? DEFAULT_MAX_SECONDS;
   const minSeconds = config.minDurationSeconds ?? DEFAULT_MIN_SECONDS;
   const allowReRecord = config.behaviour?.allowReRecord ?? true;
+  // Single source of truth for retry gating (Studio's Scoring tab offers
+  // completion-only for this activity, so only `enableRetry` matters here).
+  // Pass only the scoring slice: this activity's `behaviour` carries no
+  // legacy scoring fields, so handing resolveScoring the whole config would
+  // trip a TS weak-type mismatch for no benefit.
+  const scoring = useMemo(
+    () => resolveScoring({ scoring: config.scoring }, { mode: "completion" }),
+    [config],
+  );
 
   const recordLabel = config.ui?.recordButton ?? "Record";
   const stopLabel = config.ui?.stopButton ?? "Stop";
@@ -185,6 +201,10 @@ export default function Component({
   // Mirror the live blob URL so unmount cleanup revokes the current take,
   // not the `null` captured at first render.
   const blobUrlRef = useRef<string | null>(null);
+  // Unmounting mid-recording calls recorder.stop(), whose `onstop` fires
+  // after cleanup. This flag lets `onstop` skip setState and skip minting an
+  // object URL nobody would ever revoke.
+  const unmountedRef = useRef(false);
 
   const stopMediaTracks = useCallback(() => {
     if (streamRef.current) {
@@ -209,6 +229,7 @@ export default function Component({
   // Cleanup on unmount: stop tracks, clear timer, revoke blob URL.
   useEffect(() => {
     return () => {
+      unmountedRef.current = true;
       stopMediaTracks();
       clearTimer();
       if (recorderRef.current && recorderRef.current.state !== "inactive") {
@@ -226,11 +247,15 @@ export default function Component({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Persist resume hint — for v0 we just persist the reached stage. Suspend
-  // data with the actual blob is written on Submit (it's huge; persisting
-  // every chunk would balloon SCORM suspend_data).
+  // Persist a lightweight resume hint: just the reached stage. Suspend data
+  // with the actual audio is written on Submit (it's huge; persisting every
+  // chunk would balloon SCORM suspend_data). Skip the "submitted" stage:
+  // submit() already wrote the richer record (with `audioDataUrl` /
+  // `durationSeconds`) via onSubmit, and overwriting it with a bare
+  // `{stage}` would lose the recording on resume.
   useEffect(() => {
     if (!onPersist) return;
+    if (state.stage === "submitted") return;
     onPersist(JSON.stringify({ stage: state.stage }));
   }, [state.stage, onPersist]);
 
@@ -261,6 +286,15 @@ export default function Component({
       };
 
       recorder.onstop = () => {
+        stopMediaTracks();
+        // Unmount cleanup called recorder.stop(): don't setState on an
+        // unmounted component and don't mint an object URL nothing would
+        // ever revoke.
+        if (unmountedRef.current) {
+          chunksRef.current = [];
+          blobRef.current = null;
+          return;
+        }
         const elapsedMs = Date.now() - startedAtRef.current;
         const elapsedSeconds = Math.max(0, Math.round(elapsedMs / 1000));
         // Use a generic audio mime — the recorder's actual mimeType varies
@@ -270,7 +304,6 @@ export default function Component({
         const blob = new Blob(chunksRef.current, { type: mimeType });
         blobRef.current = blob;
         chunksRef.current = [];
-        stopMediaTracks();
         const blobUrl =
           typeof URL.createObjectURL === "function"
             ? URL.createObjectURL(blob)
@@ -292,7 +325,8 @@ export default function Component({
         errorMessage: "",
       }));
 
-      // Tick once a second to refresh the timer and auto-stop at maxSeconds.
+      // Tick every 250 ms so the timer display and the maxSeconds auto-stop
+      // land within a quarter second of the true elapsed time.
       timerRef.current = setInterval(() => {
         const elapsed = Math.floor(
           (Date.now() - startedAtRef.current) / 1000,
@@ -392,18 +426,6 @@ export default function Component({
     }
   }, [state.stage, state.durationSeconds, minSeconds, onSubmit]);
 
-  // Keyboard: Space toggles record/stop while focused on the Record button.
-  // (Native button activation already triggers click on Space, but we want
-  // Stop to also trigger when the same focus is recycled.)
-  const onRecordKeyDown = useCallback(
-    (ev: React.KeyboardEvent<HTMLButtonElement>) => {
-      if (ev.key !== " " && ev.key !== "Spacebar") return;
-      // Let the browser fire the click — but we explicitly route both
-      // states through the same key. Default click handlers handle it.
-    },
-    [],
-  );
-
   // Auto-focus the Record button when entering idle (mount + after re-record),
   // but don't grab focus on the very first paint to avoid hijacking the page.
   const isInitialRef = useRef(true);
@@ -493,7 +515,13 @@ export default function Component({
             <span>Requesting microphone…</span>
           ) : isReviewing ? (
             <>
-              <span>Recording captured.</span>
+              {/* When Submit is disabled, say why — the row is pre-allocated
+                  (min-height) so swapping the message doesn't reflow. */}
+              <span>
+                {meetsMin
+                  ? "Recording captured."
+                  : `Record at least ${formatTime(Math.ceil(minSeconds))} to submit.`}
+              </span>
               <span className="kukui-ar__timer">
                 {formatTime(state.durationSeconds)}
               </span>
@@ -558,7 +586,20 @@ export default function Component({
                 {submitLabel}
               </button>
             </>
-          ) : isSubmitted ? null : !recordingSupported ? (
+          ) : isSubmitted ? (
+            // Post-submit re-record is gated by the Scoring tab's retry
+            // setting, not behaviour.allowReRecord (which only governs
+            // takes before submission).
+            scoring.enableRetry && recordingSupported ? (
+              <button
+                type="button"
+                className="kukui-ar__secondary"
+                onClick={reRecord}
+              >
+                {reRecordLabel}
+              </button>
+            ) : null
+          ) : !recordingSupported ? (
             <p className="kukui-ar__unsupported" role="alert">
               Audio recording isn't available in this browser. Open this
               activity in a recent version of Chrome, Edge, Firefox, or Safari
@@ -571,7 +612,6 @@ export default function Component({
               className="kukui-ar__primary"
               ref={recordButtonRef}
               onClick={startRecording}
-              onKeyDown={onRecordKeyDown}
               disabled={state.stage === "requesting-mic"}
               aria-label={recordLabel}
             >

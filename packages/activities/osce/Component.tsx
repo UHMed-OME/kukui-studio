@@ -48,6 +48,9 @@ export default function Component({
 }: ActivityProps<OSCEConfig>) {
   const headingId = useId();
   const liveId = useId();
+  // Section headings sit one level below the activity title so the outline
+  // stays correct when the activity is embedded (e.g. course-presentation).
+  const H2 = `h${Math.min(headingLevel + 1, 6)}` as "h2" | "h3" | "h4" | "h5" | "h6";
 
   const initial = useMemo<State>(() => buildInitialState(config), [config]);
 
@@ -81,6 +84,10 @@ export default function Component({
   const submitLabel = ui.submitButton ?? "Submit OSCE";
   const tryAgainLabel = ui.tryAgainButton ?? "Try again";
 
+  // Single source of truth for retry / mode / pass threshold (Scoring tab
+  // writes config.scoring; resolveScoring also honors legacy behaviour flags).
+  const resolved = useMemo(() => resolveScoring(config, { mode: "points" }), [config]);
+
   const scoring = useMemo(() => computeScoring(config, state), [config, state]);
 
   if (!phase) return null;
@@ -88,10 +95,16 @@ export default function Component({
   const goToPhase = (index: number) => {
     if (submitted) return;
     if (index < 0 || index >= total) return;
-    if (!allowSkip && index !== state.current + 1 && index !== state.current - 1) {
-      // Linear-only: ignore arbitrary jumps when skipping isn't allowed.
-      // (Stepper buttons are also disabled for those targets — this is a
-      // safety net.)
+    const targetVisited = state.visitOrder.includes(config.phases[index]?.id ?? "");
+    if (
+      !allowSkip &&
+      index !== state.current + 1 &&
+      index !== state.current - 1 &&
+      !targetVisited
+    ) {
+      // Linear-only: adjacent steps plus any already-visited phase (the
+      // stepper enables those buttons, so navigation must accept them).
+      // Unvisited jumps stay blocked as a safety net.
       return;
     }
     setState((s) => {
@@ -133,7 +146,13 @@ export default function Component({
     });
   };
 
-  const tryAgain = () => setState(buildInitialState(config));
+  const tryAgain = () =>
+    setState((s) => ({
+      ...buildInitialState(config),
+      // Keep the running attempt count across retries (it's persisted to
+      // suspendData) — buildInitialState would otherwise reset it to 0.
+      attempts: s.attempts,
+    }));
 
   const selectedHere = state.selectedByPhase[phase.id] ?? [];
   const phaseScore = scoring.byPhase[phase.id];
@@ -207,12 +226,12 @@ export default function Component({
           className="kukui-osce__phase"
           aria-labelledby={`${headingId}-phase-${state.current}`}
         >
-          <h2
+          <H2
             id={`${headingId}-phase-${state.current}`}
             className="kukui-osce__phase-title"
           >
             {phase.name}
-          </h2>
+          </H2>
           {phase.description ? (
             <SafeHtml className="kukui-osce__phase-desc" html={phase.description} />
           ) : null}
@@ -322,7 +341,7 @@ export default function Component({
               {submitLabel}
             </button>
           ) : null}
-          {submitted && config.behaviour?.enableRetry ? (
+          {submitted && resolved.enableRetry ? (
             <button
               type="button"
               className="kukui-osce__secondary"
@@ -335,7 +354,7 @@ export default function Component({
 
         {submitted ? (
           <section className="kukui-osce__review" aria-label="Per-phase summary">
-            <h2 className="kukui-osce__review-title">Per-phase summary</h2>
+            <H2 className="kukui-osce__review-title">Per-phase summary</H2>
             <ul className="kukui-osce__review-list">
               {config.phases.map((p) => {
                 const score = scoring.byPhase[p.id];
@@ -349,7 +368,7 @@ export default function Component({
                   </li>
                 );
               })}
-              {config.expectedOrder ? (
+              {scoring.order.max > 0 ? (
                 <li className="kukui-osce__review-item">
                   <span className="kukui-osce__review-name">Phase order</span>
                   <span className="kukui-osce__review-score">
@@ -405,10 +424,14 @@ function computeScoring(config: OSCEConfig, state: State): Scoring {
     phaseScores.push(ss);
   }
 
-  // Order bonus: +1 weight per phase whose visit-order index matches expectedOrder.
+  // Order bonus: +1 point per phase whose visit-order index matches
+  // expectedOrder. Only meaningful when the learner can actually choose an
+  // order — with linear navigation (allowSkipPhase off) the visit order is
+  // forced, so the points would be free and are skipped entirely.
+  const allowSkip = config.behaviour?.allowSkipPhase ?? false;
   let orderRaw = 0;
   let orderMax = 0;
-  if (config.expectedOrder && config.expectedOrder.length > 0) {
+  if (allowSkip && config.expectedOrder && config.expectedOrder.length > 0) {
     orderMax = config.expectedOrder.length;
     for (let i = 0; i < config.expectedOrder.length; i += 1) {
       if (state.visitOrder[i] === config.expectedOrder[i]) {
@@ -425,8 +448,12 @@ function computeScoring(config: OSCEConfig, state: State): Scoring {
   // Honor the authored pass threshold (config.scoring.passPercentage) instead
   // of aggregate's hard-coded 50% default. Falls back to 50 when no scoring
   // block is present, preserving prior behaviour for legacy fixtures.
-  const passPercentage = resolveScoring(config, { mode: "points" }).passPercentage;
-  const total = aggregate([...phaseScores, order], passPercentage);
+  const resolved = resolveScoring(config, { mode: "points" });
+  const aggregated = aggregate([...phaseScores, order], resolved.passPercentage);
+  // Completion mode: finishing the encounter is the goal — report success
+  // regardless of the raw score (the score is still reported for the record).
+  const total: ScoreState =
+    resolved.mode === "completion" ? { ...aggregated, success: true } : aggregated;
 
   return { byPhase, order, total };
 }

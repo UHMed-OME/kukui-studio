@@ -41,7 +41,11 @@ type ValidatedInteraction =
   | (Base & { kind: "invalid"; reason: string });
 
 const TRIGGER_WINDOW = 0.5;
+/** Non-scored resolution (labels, skipped optionals). Zero-max means
+ *  completion semantics: it can never drag the aggregate into failure. */
 const SENTINEL: ScoreState = { raw: 0, max: 0, success: true };
+/** Persist the resume position at most this often (seconds of playback). */
+const LAST_TIME_INTERVAL = 5;
 
 export default function Component({
   config,
@@ -54,6 +58,8 @@ export default function Component({
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const controllerRef = useRef<VideoController | null>(null);
   const stageRef = useRef<HTMLDivElement | null>(null);
+  const overlayRef = useRef<HTMLDivElement | null>(null);
+  const lastFocusRef = useRef<HTMLElement | null>(null);
 
   const validated = useMemo<ValidatedInteraction[]>(() => {
     const out: ValidatedInteraction[] = [];
@@ -87,12 +93,27 @@ export default function Component({
   );
   const [media, setMedia] = useState<MediaState>(INITIAL_MEDIA);
   const [activeId, setActiveId] = useState<string | null>(null);
-  const [captionsOn, setCaptionsOn] = useState(false);
+  const [captionsOn, setCaptionsOn] = useState<boolean>(() =>
+    (config.video.tracks ?? []).some((t) => !!t.default),
+  );
+
+  // Live playhead (whole seconds). Mirrors playback without a state write per
+  // tick; flushed into persisted state at the throttle points below.
+  const lastTimeRef = useRef(state.lastTime);
+  // Position restored from suspend data; seek here once the media is ready.
+  const resumeTargetRef = useRef(state.lastTime);
+  const resumeDoneRef = useRef(false);
 
   useEffect(() => {
-    setState(parseSuspend(suspendData) ?? { stage: "watching", resolvedInteractions: {}, lastTime: 0 });
+    const next =
+      parseSuspend(suspendData) ?? { stage: "watching", resolvedInteractions: {}, lastTime: 0 };
+    setState(next);
     setActiveId(null);
     setMedia(INITIAL_MEDIA);
+    setCaptionsOn((config.video.tracks ?? []).some((t) => !!t.default));
+    lastTimeRef.current = next.lastTime;
+    resumeTargetRef.current = next.lastTime;
+    resumeDoneRef.current = false;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [config]);
 
@@ -102,7 +123,6 @@ export default function Component({
 
   const videoType = config.video.type ?? "html5";
   const isYouTube = videoType === "youtube";
-  const isVimeo = videoType === "vimeo";
   const tracks = config.video.tracks ?? [];
   const rates = config.behaviour?.playbackRates ?? [0.75, 1, 1.25, 1.5, 2];
   const ui = config.ui ?? {};
@@ -141,6 +161,8 @@ export default function Component({
 
   const submitFrom = (snapshot: State) => {
     const scores = Object.values(snapshot.resolvedInteractions);
+    // Zero-max aggregates report success (completion semantics) per
+    // @kukui/core's aggregate(): an interaction-free watch-through completes.
     const aggregated = aggregate(scores, scoring.passPercentage);
     const next: State = { ...snapshot, stage: "submitted" };
     setState(next);
@@ -165,11 +187,13 @@ export default function Component({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [allRequiredResolved, state]);
 
-  /** Earliest unresolved required interaction in (after, atMost], or null. */
+  /** Earliest unresolved required *pausing* interaction in (after, atMost], or
+   *  null. Non-pausing required ones never clamp a scrub — the tick() catch-up
+   *  auto-resolves them once the playhead is past their window. */
   const blockingBetween = (after: number, atMost: number): ValidatedInteraction | null => {
     let best: ValidatedInteraction | null = null;
     for (const it of validated) {
-      if (!it.required) continue;
+      if (!it.required || !it.pauseOnReach) continue;
       if (state.resolvedInteractions[it.id]) continue;
       if (it.atSeconds > after + TRIGGER_WINDOW && it.atSeconds <= atMost) {
         if (!best || it.atSeconds < best.atSeconds) best = it;
@@ -178,10 +202,29 @@ export default function Component({
     return best;
   };
 
-  const tick = (t: number) => {
-    if (Math.floor(t) !== state.lastTime) {
-      setState((s) => (Math.floor(t) === s.lastTime ? s : { ...s, lastTime: Math.floor(t) }));
+  /** Flush the live playhead into persisted state (pause / interaction / throttle). */
+  const flushLastTime = () => {
+    setState((s) =>
+      s.lastTime === lastTimeRef.current ? s : { ...s, lastTime: lastTimeRef.current },
+    );
+  };
+
+  /** Open the interaction overlay, remembering where focus was so it can be
+   *  restored when the overlay closes. */
+  const openInteraction = (id: string) => {
+    if (typeof document !== "undefined" && document.activeElement instanceof HTMLElement) {
+      lastFocusRef.current = document.activeElement;
     }
+    setActiveId(id);
+    flushLastTime();
+  };
+
+  const tick = (t: number) => {
+    lastTimeRef.current = Math.floor(t);
+    // Throttled resume-position persistence: at most one write per
+    // LAST_TIME_INTERVAL seconds of playback, plus flushes on pause and on
+    // interaction open, so onPersist isn't hit every second.
+    if (Math.abs(lastTimeRef.current - state.lastTime) >= LAST_TIME_INTERVAL) flushLastTime();
     if (activeId !== null) return;
     if (state.stage !== "watching") return;
     const c = ctl();
@@ -190,20 +233,25 @@ export default function Component({
       if (Math.abs(t - it.atSeconds) < TRIGGER_WINDOW && t >= it.atSeconds - TRIGGER_WINDOW) {
         if (it.pauseOnReach) {
           c?.pause();
-          setActiveId(it.id);
-        } else {
-          recordResolved(it.id, SENTINEL); // non-pausing: auto-resolve so it never gates
+          openInteraction(it.id);
+          return;
         }
-        return;
+        recordResolved(it.id, SENTINEL); // non-pausing: auto-resolve so it never gates
+        continue;
       }
-      if (it.required && it.pauseOnReach && t > it.atSeconds + TRIGGER_WINDOW) {
-        // Skipped past a required checkpoint (scrub, or a backend whose native
-        // scrubber we can't lock). Rewind just inside the window, pause, and
-        // show the overlay now — the player is paused so it won't re-enter on
-        // its own.
+      if (it.required && t > it.atSeconds + TRIGGER_WINDOW) {
+        // Skipped past a required checkpoint (scrub, a high playback rate
+        // whose frames jump the trigger window, or a backend whose native
+        // scrubber we can't lock).
+        if (!it.pauseOnReach) {
+          recordResolved(it.id, SENTINEL); // catch up without interrupting playback
+          continue;
+        }
+        // Rewind just inside the window, pause, and show the overlay now; the
+        // player is paused so it won't re-enter on its own.
         c?.seek(Math.max(0, it.atSeconds - TRIGGER_WINDOW / 2));
         c?.pause();
-        setActiveId(it.id);
+        openInteraction(it.id);
         return;
       }
     }
@@ -230,7 +278,11 @@ export default function Component({
   };
 
   const recordResolved = (id: string, score: ScoreState) => {
-    setState((s) => ({ ...s, resolvedInteractions: { ...s.resolvedInteractions, [id]: score } }));
+    setState((s) => ({
+      ...s,
+      lastTime: lastTimeRef.current,
+      resolvedInteractions: { ...s.resolvedInteractions, [id]: score },
+    }));
   };
 
   const resume = () => {
@@ -246,20 +298,30 @@ export default function Component({
 
   const handleEnded = () => {
     if (state.stage !== "watching") return;
-    const unresolved = validated.find(
-      (v) => v.required && v.pauseOnReach && !state.resolvedInteractions[v.id],
-    );
+    // Catch up required non-pausing interactions that playback never landed
+    // on (a high rate can jump their trigger window entirely).
+    const resolved = { ...state.resolvedInteractions };
+    for (const it of validated) {
+      if (it.required && !it.pauseOnReach && !resolved[it.id]) resolved[it.id] = SENTINEL;
+    }
+    const unresolved = validated.find((v) => v.required && v.pauseOnReach && !resolved[v.id]);
     const c = ctl();
     if (unresolved && c) {
+      setState((s) => ({
+        ...s,
+        resolvedInteractions: { ...resolved, ...s.resolvedInteractions },
+      }));
       c.seek(Math.max(0, unresolved.atSeconds - 0.5));
       c.play();
       return;
     }
-    submitFrom(state);
+    submitFrom({ ...state, resolvedInteractions: resolved });
   };
 
   const tryAgain = () => {
     setActiveId(null);
+    lastTimeRef.current = 0;
+    resumeTargetRef.current = 0;
     setState({ stage: "watching", resolvedInteractions: {}, lastTime: 0 });
     ctl()?.seek(0);
   };
@@ -277,8 +339,21 @@ export default function Component({
   const onFullscreen = () => {
     const el = stageRef.current;
     if (!el) return;
-    if (document.fullscreenElement) document.exitFullscreen?.();
-    else el.requestFullscreen?.();
+    if (document.fullscreenElement) {
+      document.exitFullscreen?.();
+      return;
+    }
+    // requestFullscreen can reject (embed permissions, user-agent policy).
+    // Swallow the rejection and stay inline; the custom control bar lives
+    // inside the stage either way.
+    try {
+      const request = el.requestFullscreen?.();
+      if (request && typeof request.catch === "function") {
+        request.catch(() => {});
+      }
+    } catch {
+      /* stay non-fullscreen */
+    }
   };
 
   const syncFromVideo = () => {
@@ -296,6 +371,62 @@ export default function Component({
     }));
   };
 
+  // Resume playback position: once the media reports ready, seek to the
+  // position restored from suspend data (a fresh session starts at 0).
+  useEffect(() => {
+    if (resumeDoneRef.current || !media.ready) return;
+    resumeDoneRef.current = true;
+    if (state.stage !== "watching") return;
+    const target = resumeTargetRef.current;
+    if (target <= 0) return;
+    // Don't resume at (or past) the very end; leave a beat of playback.
+    ctl()?.seek(Math.min(target, Math.max(0, media.duration - 1)));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [media.ready]);
+
+  // Focus management for the interaction overlay (role="dialog"): move focus
+  // in on open, keep Tab cycling inside, restore focus on close.
+  useEffect(() => {
+    if (activeId === null) return;
+    const overlay = overlayRef.current;
+    if (!overlay) return;
+    const focusables = () =>
+      Array.from(
+        overlay.querySelectorAll<HTMLElement>(
+          'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
+        ),
+      );
+    (focusables()[0] ?? overlay).focus();
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== "Tab") return;
+      const els = focusables();
+      if (els.length === 0) {
+        e.preventDefault();
+        overlay.focus();
+        return;
+      }
+      const first = els[0]!;
+      const last = els[els.length - 1]!;
+      const current = document.activeElement;
+      if (e.shiftKey) {
+        if (current === first || !overlay.contains(current)) {
+          e.preventDefault();
+          last.focus();
+        }
+      } else if (current === last || !overlay.contains(current)) {
+        e.preventDefault();
+        first.focus();
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      // Defer the restore so React commits the close first (controls are
+      // re-enabled by then and can receive focus again).
+      queueMicrotask(() => lastFocusRef.current?.focus?.());
+    };
+  }, [activeId]);
+
   const active = activeId ? validated.find((v) => v.id === activeId) ?? null : null;
 
   const markers: SeekMarker[] = validated.map((it) => ({
@@ -307,15 +438,16 @@ export default function Component({
   }));
 
   const answeredCount = Object.keys(state.resolvedInteractions).length;
-  const scorable = validated.filter((v) => v.kind === "multipleChoice" || v.kind === "fillInTheBlanks");
   const correctScore = aggregate(Object.values(state.resolvedInteractions), scoring.passPercentage);
   const headerBadge =
     state.stage === "submitted" ? (
-      scorable.length > 0 ? (
+      correctScore.max > 0 ? (
         <StatusBadge tone={correctScore.success ? "success" : "warning"} icon={correctScore.success ? <TrophyIcon /> : <CheckIcon />}>
           {correctScore.success ? "Passed" : "Review"}
         </StatusBadge>
       ) : (
+        // Zero-max = completion: nothing scorable, so the badge matches the
+        // success:true submit rather than implying a failed score.
         <StatusBadge tone="success" icon={<CheckIcon />}>Complete</StatusBadge>
       )
     ) : (
@@ -334,103 +466,105 @@ export default function Component({
           prompt={config.prompt ? <SafeHtml className="kukui-iv__prompt" html={config.prompt} /> : undefined}
         />
 
+        {/* The stage wraps the frame AND the control bar so both survive
+            fullscreen (only stageRef is promoted to the fullscreen element). */}
         <div className="kukui-iv__stage" ref={stageRef}>
-          {isYouTube ? (
-            <YouTubeStage
-              src={config.video.src}
-              className="kukui-iv__video"
-              onController={(c) => {
-                controllerRef.current = c;
-              }}
-              onState={setMedia}
-              onTick={tick}
-              onEnded={handleEnded}
-            />
-          ) : isVimeo ? (
-            <div role="note" className="kukui-iv__placeholder">
-              Vimeo embeds aren&rsquo;t supported yet — use a hosted MP4 (type
-              &ldquo;html5&rdquo;) or a YouTube URL.
-            </div>
-          ) : (
-            <video
-              ref={videoRef}
-              className="kukui-iv__video"
-              src={config.video.src}
-              poster={config.video.poster}
-              preload="metadata"
-              playsInline
-              onLoadedMetadata={syncFromVideo}
-              onTimeUpdate={() => {
-                syncFromVideo();
-                if (videoRef.current) tick(videoRef.current.currentTime);
-              }}
-              onPlay={syncFromVideo}
-              onPause={syncFromVideo}
-              onVolumeChange={syncFromVideo}
-              onRateChange={syncFromVideo}
-              onEnded={handleEnded}
-              data-testid="kukui-iv-video"
-            >
-              {tracks.map((t, i) => (
-                <track key={i} src={t.src} kind="subtitles" srcLang={t.srclang} label={t.label} default={t.default} />
-              ))}
-            </video>
-          )}
-
-          {active ? (
-            <>
-              {/* Full-stage scrim: traps pointer events so the player underneath
-                  (notably the YouTube IFrame) can't be scrubbed mid-question. */}
-              <div className="kukui-iv__scrim" aria-hidden="true" />
-              <div
-                className="kukui-iv__overlay"
-                role="dialog"
-                aria-modal="true"
-                aria-label={active.title ?? `Interaction at ${formatTime(active.atSeconds)}`}
+          <div className="kukui-iv__frame">
+            {isYouTube ? (
+              <YouTubeStage
+                src={config.video.src}
+                className="kukui-iv__video"
+                onController={(c) => {
+                  controllerRef.current = c;
+                }}
+                onState={setMedia}
+                onTick={tick}
+                onEnded={handleEnded}
+              />
+            ) : (
+              <video
+                ref={videoRef}
+                className="kukui-iv__video"
+                src={config.video.src}
+                poster={config.video.poster}
+                preload="metadata"
+                playsInline
+                onLoadedMetadata={syncFromVideo}
+                onTimeUpdate={() => {
+                  syncFromVideo();
+                  if (videoRef.current) tick(videoRef.current.currentTime);
+                }}
+                onPlay={syncFromVideo}
+                onPause={() => {
+                  syncFromVideo();
+                  flushLastTime();
+                }}
+                onVolumeChange={syncFromVideo}
+                onRateChange={syncFromVideo}
+                onEnded={handleEnded}
+                data-testid="kukui-iv-video"
               >
-                <div className="kukui-iv__overlay-body">
-                  {active.kind === "multipleChoice" ? (
-                    <MultipleChoice config={active.config} onSubmit={(s) => recordResolved(active.id, s)} headingLevel={2} />
-                  ) : active.kind === "fillInTheBlanks" ? (
-                    <FillInTheBlanks config={active.config} onSubmit={(s) => recordResolved(active.id, s)} headingLevel={2} />
-                  ) : active.kind === "label" ? (
-                    <div className="kukui-iv__label">
-                      {active.title ? <h2 className="kukui-iv__label-title">{active.title}</h2> : null}
-                      <SafeHtml className="kukui-iv__prose" html={active.html} />
-                    </div>
-                  ) : (
-                    <div className="kukui-iv__invalid" role="note">
-                      <strong>This interaction is misconfigured.</strong> {active.reason}
-                    </div>
-                  )}
-                  <div className="kukui-iv__overlay-actions">
-                    {!active.required && !state.resolvedInteractions[active.id] ? (
-                      <button type="button" className="kukui-iv__secondary" onClick={skip}>
-                        Skip
-                      </button>
-                    ) : null}
-                    {active.kind === "label" || active.kind === "invalid" ? (
-                      <button type="button" className="kukui-iv__primary" onClick={skip}>
-                        Continue
-                      </button>
+                {tracks.map((t, i) => (
+                  <track key={i} src={t.src} kind="subtitles" srcLang={t.srclang} label={t.label} default={t.default} />
+                ))}
+              </video>
+            )}
+
+            {active ? (
+              <>
+                {/* Full-stage scrim: traps pointer events so the player underneath
+                    (notably the YouTube IFrame) can't be scrubbed mid-question. */}
+                <div className="kukui-iv__scrim" aria-hidden="true" />
+                <div
+                  ref={overlayRef}
+                  className="kukui-iv__overlay"
+                  role="dialog"
+                  aria-modal="true"
+                  aria-label={active.title ?? `Interaction at ${formatTime(active.atSeconds)}`}
+                  tabIndex={-1}
+                >
+                  <div className="kukui-iv__overlay-body">
+                    {active.kind === "multipleChoice" ? (
+                      <MultipleChoice config={active.config} onSubmit={(s) => recordResolved(active.id, s)} headingLevel={2} />
+                    ) : active.kind === "fillInTheBlanks" ? (
+                      <FillInTheBlanks config={active.config} onSubmit={(s) => recordResolved(active.id, s)} headingLevel={2} />
+                    ) : active.kind === "label" ? (
+                      <div className="kukui-iv__label">
+                        {active.title ? <h2 className="kukui-iv__label-title">{active.title}</h2> : null}
+                        <SafeHtml className="kukui-iv__prose" html={active.html} />
+                      </div>
                     ) : (
-                      <button
-                        type="button"
-                        className="kukui-iv__primary"
-                        onClick={resume}
-                        disabled={!state.resolvedInteractions[active.id]}
-                      >
-                        {resumeLabel}
-                      </button>
+                      <div className="kukui-iv__invalid" role="note">
+                        <strong>This interaction is misconfigured.</strong> {active.reason}
+                      </div>
                     )}
+                    <div className="kukui-iv__overlay-actions">
+                      {!active.required && !state.resolvedInteractions[active.id] ? (
+                        <button type="button" className="kukui-iv__secondary" onClick={skip}>
+                          Skip
+                        </button>
+                      ) : null}
+                      {active.kind === "label" || active.kind === "invalid" ? (
+                        <button type="button" className="kukui-iv__primary" onClick={skip}>
+                          Continue
+                        </button>
+                      ) : (
+                        <button
+                          type="button"
+                          className="kukui-iv__primary"
+                          onClick={resume}
+                          disabled={!state.resolvedInteractions[active.id]}
+                        >
+                          {resumeLabel}
+                        </button>
+                      )}
+                    </div>
                   </div>
                 </div>
-              </div>
-            </>
-          ) : null}
-        </div>
+              </>
+            ) : null}
+          </div>
 
-        {!isVimeo ? (
           <VideoControls
             media={media}
             markers={markers}
@@ -446,7 +580,7 @@ export default function Component({
             onFullscreen={onFullscreen}
             disabled={active !== null}
           />
-        ) : null}
+        </div>
 
         {validated.length > 0 ? (
           <ol className="kukui-iv__list" aria-label="Interactions">

@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { describe, expect, it, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
@@ -95,6 +97,112 @@ describe("reflection-prompt Component", () => {
     expect(onPersist).toHaveBeenCalled();
     const last = onPersist.mock.calls.at(-1)?.[0] as string;
     expect(last).toMatch(/"text":"ab"/);
+  });
+
+  it("word counter is not a live region and is linked via aria-describedby", async () => {
+    const user = userEvent.setup();
+    render(<Component config={cfgMinWords} onSubmit={vi.fn()} />);
+
+    const counter = screen.getByText(/^0 words$/).parentElement as HTMLElement;
+    expect(counter).not.toHaveAttribute("aria-live");
+    expect(counter).not.toHaveAttribute("role");
+
+    const textarea = screen.getByRole("textbox");
+    expect(textarea.getAttribute("aria-describedby")).toBe(counter.id);
+
+    // The threshold crossing is announced once via a separate polite region.
+    await user.type(textarea, "one two three four");
+    expect(
+      screen.queryByText(/minimum of 5 words reached/i),
+    ).not.toBeInTheDocument();
+    await user.type(textarea, " five");
+    const announcement = screen.getByText(/minimum of 5 words reached/i);
+    expect(announcement).toHaveAttribute("aria-live", "polite");
+  });
+
+  it("resumes in submitted state from the suspendData emitted by submit", async () => {
+    const user = userEvent.setup();
+    const onSubmit = vi.fn();
+    const first = render(<Component config={cfgBasic} onSubmit={onSubmit} />);
+    await user.type(screen.getByRole("textbox"), "My reflection.");
+    await user.click(screen.getByRole("button", { name: /submit/i }));
+
+    const emitted = onSubmit.mock.calls[0]?.[0].suspendData as string;
+    expect(JSON.parse(emitted)).toEqual({
+      stage: "submitted",
+      text: "My reflection.",
+    });
+    first.unmount();
+
+    render(
+      <Component config={cfgBasic} onSubmit={vi.fn()} suspendData={emitted} />,
+    );
+    const textarea = screen.getByRole("textbox") as HTMLTextAreaElement;
+    expect(textarea.value).toBe("My reflection.");
+    expect(textarea).toHaveAttribute("readonly");
+    expect(screen.getByText(/reflection submitted/i)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /submit/i })).toBeDisabled();
+  });
+
+  it("resumes legacy { text }-only suspendData in the writing stage", () => {
+    render(
+      <Component
+        config={cfgBasic}
+        onSubmit={vi.fn()}
+        suspendData={JSON.stringify({ text: "Draft in progress" })}
+      />,
+    );
+    const textarea = screen.getByRole("textbox") as HTMLTextAreaElement;
+    expect(textarea.value).toBe("Draft in progress");
+    expect(textarea).not.toHaveAttribute("readonly");
+    expect(screen.queryByText(/reflection submitted/i)).not.toBeInTheDocument();
+  });
+
+  it("after submit the textarea is readOnly but NOT disabled (stays reachable)", async () => {
+    const user = userEvent.setup();
+    render(<Component config={cfgBasic} onSubmit={vi.fn()} />);
+    const textarea = screen.getByRole("textbox") as HTMLTextAreaElement;
+    await user.type(textarea, "Done.");
+    await user.click(screen.getByRole("button", { name: /submit/i }));
+
+    expect(textarea).toHaveAttribute("readonly");
+    expect(textarea).not.toBeDisabled();
+    // Still focusable / in the tab order.
+    textarea.focus();
+    expect(textarea).toHaveFocus();
+  });
+
+  it("stylesheet has no dead prompt rule and uses canonical token fallbacks", () => {
+    // jsdom rewrites import.meta.url to a non-file scheme, so resolve from
+    // the vitest root (repo root) instead.
+    const css = readFileSync(
+      join(
+        process.cwd(),
+        "packages",
+        "activities",
+        "reflection-prompt",
+        "Component.css",
+      ),
+      "utf8",
+    );
+    // Finding 4: dead rule removed.
+    expect(css).not.toMatch(/kukui-rp__prompt/);
+    // Finding 5: no stale brown-era fallback hexes remain.
+    for (const stale of [
+      "#dad2c6",
+      "#bbae9a",
+      "#7b4324",
+      "#9b5830",
+      "#606069",
+      "#1c1e20",
+      "#f2f0e8",
+    ]) {
+      expect(css).not.toContain(stale);
+    }
+    // Text on the primary fill goes through the on-primary token.
+    expect(css).toContain("color: var(--color-on-primary, #ffffff)");
+    expect(css).not.toMatch(/color:\s*#ffffff\s*;/);
+    expect(css).not.toMatch(/color:\s*white\s*;/);
   });
 
   it("submitting twice is a no-op", async () => {

@@ -52,37 +52,54 @@ const AUTHOR = f(
   "Your name. Shown in the small credit line at the bottom of the activity.",
 );
 
-// After the Scoring tab landed, retry lives there. Kept as `HIDDEN` so the
-// legacy schema field doesn't render in the Editor form — it's owned by
-// the Scoring tab now.
-const BEHAVIOUR_RETRY = HIDDEN;
-
 const uiSchema = {
   ...COMMON,
-  "ui:order": ["title", "prompt", "sample", "minSeconds", "maxSeconds", "behaviour", "ui", "*"],
+  "ui:order": [
+    "title",
+    "prompt",
+    "referenceAudio",
+    "minDurationSeconds",
+    "maxDurationSeconds",
+    "behaviour",
+    "ui",
+    "*",
+  ],
   title: TITLE,
   author: AUTHOR,
   prompt: f("Prompt", "What the learner records.", {
     "ui:widget": "html",
     "ui:options": { rows: 3 },
   }),
-  sample: {
-    "ui:title": "Reference sample (optional)",
-    src: f("Audio URL", "Optional sample for the learner to compare against."),
-    caption: f("Caption"),
+  referenceAudio: {
+    "ui:title": "Reference audio (optional)",
+    src: f(
+      "Audio URL",
+      "Optional model pronunciation the learner can play before recording.",
+    ),
+    caption: f("Caption", "Optional. Shown under the reference audio player."),
   },
-  minSeconds: f("Minimum seconds", "Optional. Submit disabled until met."),
-  maxSeconds: f(
+  minDurationSeconds: f(
+    "Minimum seconds",
+    "Optional. Submit stays disabled until the recording is at least this long.",
+  ),
+  maxDurationSeconds: f(
     "Maximum seconds",
     "Optional. Recording auto-stops at this length. Note: SCORM 1.2 can only persist short clips (~5 seconds) across resume — longer recordings still submit and grade as completed, but won't replay if the learner returns to the activity.",
   ),
   behaviour: {
     "ui:title": "Activity behaviour",
-    enableRetry: BEHAVIOUR_RETRY,
+    allowReRecord: f(
+      "Allow re-record",
+      "Let the learner discard a take and record again before submitting.",
+    ),
   },
   ui: {
     "ui:title": "Button label overrides",
-    submitButtonLabel: f("'Submit' button text"),
+    recordButton: f("'Record' button text"),
+    stopButton: f("'Stop' button text"),
+    playbackButton: f("Playback label", "Accessible label on the playback player."),
+    reRecordButton: f("'Re-record' button text"),
+    submitButton: f("'Submit' button text"),
   },
 } as const;
 

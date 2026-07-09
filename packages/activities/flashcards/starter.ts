@@ -8,6 +8,9 @@ const starter = {
     { id: "c2", front: "Front 2", back: "Back 2" },
   ],
   behaviour: { shuffle: true },
+  // appearance has a schema .default(): seed it so the Studio form's
+  // AJV-required check passes on a fresh draft.
+  appearance: { theme: "auto" },
 };
 
 export default starter;

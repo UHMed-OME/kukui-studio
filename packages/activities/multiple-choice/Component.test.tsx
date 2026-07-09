@@ -1,8 +1,19 @@
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { describe, expect, it, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import type { MultipleChoiceConfig } from "@kukui/schemas";
 import Component from "./Component.js";
+import uiSchema from "./ui-schema.js";
+
+// jsdom rewrites import.meta.url to a non-file scheme, and Vitest's CSS
+// handling intercepts `?raw` imports, so resolve from the vitest root
+// (repo root) instead — same approach as reflection-prompt.
+const css = readFileSync(
+  join(process.cwd(), "packages", "activities", "multiple-choice", "Component.css"),
+  "utf8",
+);
 
 const cfgSingle: MultipleChoiceConfig = {
   version: "1.0",
@@ -138,6 +149,138 @@ describe("Component", () => {
     render(<Component config={cfg} onSubmit={vi.fn()} />);
     await user.click(screen.getByRole("button", { name: /alpha/i }));
     await user.click(screen.getByRole("button", { name: /^check$/i }));
-    expect(screen.getByText(/greek letter a is the first/i)).toBeInTheDocument();
+    const tip = screen.getByText(/greek letter a is the first/i);
+    expect(tip).toBeInTheDocument();
+    expect(tip.className).toContain("is-visible");
+  });
+
+  it("makes the tip visible pre-submit once the answer is selected (not tooltip-only)", async () => {
+    const user = userEvent.setup();
+    const cfg: MultipleChoiceConfig = {
+      version: "1.0",
+      title: "With tip",
+      question: "<p>Pick the right one.</p>",
+      answers: [
+        { text: "Alpha", correct: true, tip: "Greek letter A is the first." },
+        { text: "Beta", correct: false },
+      ],
+    };
+    render(<Component config={cfg} onSubmit={vi.fn()} />);
+    // Tip row is always mounted (layout-stable) but dimmed to invisible
+    // until its answer is selected.
+    const tip = screen.getByText(/greek letter a is the first/i);
+    expect(tip.className).not.toContain("is-visible");
+    await user.click(screen.getByRole("button", { name: /alpha/i }));
+    expect(tip.className).toContain("is-visible");
+    // Deselecting hides it again.
+    await user.click(screen.getByRole("button", { name: /alpha/i }));
+    expect(tip.className).not.toContain("is-visible");
+  });
+
+  it("suspendData passed to onSubmit carries the incremented attempts (no stale spread)", async () => {
+    const user = userEvent.setup();
+    const onSubmit = vi.fn();
+    render(<Component config={cfgSingle} onSubmit={onSubmit} />);
+    await user.click(screen.getByRole("button", { name: /carbon dioxide/i }));
+    await user.click(screen.getByRole("button", { name: /^check$/i }));
+    const payload = onSubmit.mock.calls[0]?.[0] as { suspendData: string };
+    const suspended = JSON.parse(payload.suspendData) as {
+      stage: string;
+      attempts: number;
+      selected: number[];
+    };
+    expect(suspended.stage).toBe("submitted");
+    expect(suspended.attempts).toBe(1);
+    expect(suspended.selected).toEqual([1]);
+  });
+
+  it("solution reveal is opt-in: only after pressing the Show solution button", async () => {
+    const user = userEvent.setup();
+    render(<Component config={cfgSingle} onSubmit={vi.fn()} />);
+    // Answer wrongly so the correct answer stays unselected.
+    await user.click(screen.getByRole("button", { name: /oxygen/i }));
+    await user.click(screen.getByRole("button", { name: /^check$/i }));
+    // Not auto-revealed at submit.
+    expect(
+      screen.queryByRole("button", { name: /carbon dioxide, correct, not selected/i }),
+    ).not.toBeInTheDocument();
+    // No fake "active" hint text either.
+    expect(screen.queryByText(/active — correct answers shown above/i)).not.toBeInTheDocument();
+    // A real button, labeled with solutionLabel.
+    const showBtn = screen.getByRole("button", { name: /^show solution$/i });
+    await user.click(showBtn);
+    expect(
+      screen.getByRole("button", { name: /carbon dioxide, correct, not selected/i }),
+    ).toBeInTheDocument();
+    // Button disappears once revealed.
+    expect(screen.queryByRole("button", { name: /^show solution$/i })).not.toBeInTheDocument();
+    // Try again resets the reveal.
+    await user.click(screen.getByRole("button", { name: /try again/i }));
+    await user.click(screen.getByRole("button", { name: /oxygen/i }));
+    await user.click(screen.getByRole("button", { name: /^check$/i }));
+    expect(
+      screen.queryByRole("button", { name: /carbon dioxide, correct, not selected/i }),
+    ).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /^show solution$/i })).toBeInTheDocument();
+  });
+
+  it("no Show solution button when enableSolutionsButton is false", async () => {
+    const user = userEvent.setup();
+    const cfg: MultipleChoiceConfig = {
+      ...cfgSingle,
+      behaviour: { enableRetry: true, enableSolutionsButton: false },
+    };
+    render(<Component config={cfg} onSubmit={vi.fn()} />);
+    await user.click(screen.getByRole("button", { name: /oxygen/i }));
+    await user.click(screen.getByRole("button", { name: /^check$/i }));
+    expect(screen.queryByRole("button", { name: /^show solution$/i })).not.toBeInTheDocument();
+  });
+
+  it("shuffled display order is stable across re-renders of the same config", async () => {
+    const cfg: MultipleChoiceConfig = {
+      ...cfgSingle,
+      behaviour: { ...cfgSingle.behaviour, randomAnswers: true },
+    };
+    const { rerender } = render(<Component config={cfg} onSubmit={vi.fn()} />);
+    const order = () =>
+      screen
+        .getAllByRole("button")
+        .filter((b) => b.hasAttribute("aria-pressed"))
+        .map((b) => b.textContent);
+    const first = order();
+    // Re-render with the SAME config object: the displayOrder memo is keyed
+    // on config identity, so the shuffle must not regenerate.
+    rerender(<Component config={cfg} onSubmit={vi.fn()} />);
+    expect(order()).toEqual(first);
+  });
+});
+
+describe("Component.css tokens", () => {
+  it("uses the on-primary token for text on primary fills", () => {
+    expect(css).toContain("var(--color-on-primary, #ffffff)");
+    expect(css).not.toMatch(/color:\s*#ffffff\s*;/);
+  });
+
+  it("has no stale fallback hexes", () => {
+    for (const stale of ["#7b4324", "#9b5830", "#dad2c6", "#606069", "#bbae9a"]) {
+      expect(css).not.toContain(stale);
+    }
+    expect(css).toContain("var(--color-primary, #4a7a5f)");
+    expect(css).toContain("var(--color-primary-hover, #3f6b52)");
+    expect(css).toContain("var(--color-border, #d1d7df)");
+    expect(css).toContain("var(--color-text-secondary, #49515b)");
+    expect(css).toContain("var(--color-border-hover, #adb6c0)");
+  });
+});
+
+describe("ui-schema", () => {
+  it("inlines the APPEARANCE fragment with the curated Color scheme label", () => {
+    const appearance = (uiSchema as Record<string, unknown>).appearance as {
+      "ui:title": string;
+      theme: { "ui:title": string; "ui:help": string };
+    };
+    expect(appearance["ui:title"]).toBe("Appearance");
+    expect(appearance.theme["ui:title"]).toBe("Color scheme");
+    expect(appearance.theme["ui:help"]).toMatch(/auto.*lets the os decide/i);
   });
 });

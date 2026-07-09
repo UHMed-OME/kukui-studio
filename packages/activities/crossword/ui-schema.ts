@@ -65,7 +65,7 @@ const uiSchema = {
   prompt: f(
     "Prompt",
     "Optional. Shown above the puzzle — frame the topic or give solving instructions.",
-    { "ui:widget": "textarea", "ui:options": { rows: 2 } },
+    { "ui:widget": "html", "ui:options": { rows: 2 } },
   ),
   entries: {
     "ui:title": "Terms & definitions",

@@ -32,6 +32,7 @@ export default function Component({
   // remount key.
   useEffect(() => {
     setState(parseSuspend(suspendData) ?? initialState);
+    setSolutionsRevealed(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [config]);
 
@@ -89,20 +90,34 @@ export default function Component({
 
   const submit = () => {
     if (state.selected.length === 0) return;
-    setState((s) => ({ ...s, stage: "submitted", attempts: s.attempts + 1 }));
+    // Build the post-submit state first so the suspend payload sent to
+    // onSubmit carries the incremented attempts (not the stale pre-setState
+    // value).
+    const next: State = { ...state, stage: "submitted", attempts: state.attempts + 1 };
+    setState(next);
     onSubmit({
       ...score,
-      suspendData: JSON.stringify({ ...state, stage: "submitted" }),
+      suspendData: JSON.stringify(next),
     });
   };
 
-  const tryAgain = () => setState(initialState);
+  const tryAgain = () => {
+    setState(initialState);
+    setSolutionsRevealed(false);
+  };
 
   const ui = config.ui ?? {};
   const checkLabel = ui.checkAnswerButton ?? "Check";
   const tryAgainLabel = ui.tryAgainButton ?? "Try again";
+  const solutionLabel = ui.showSolutionButton ?? "Show solution";
+
+  // Missed-correct tokens are only revealed after an explicit opt-in — never
+  // automatically on submit, or a learner could submit garbage, read the
+  // answers, and retry to 100%.
+  const [solutionsRevealed, setSolutionsRevealed] = useState(false);
 
   const submitted = state.stage === "submitted";
+  const showSolutions = submitted && solutionsRevealed;
   const pct = submitted ? percentage(score) : 0;
   const banner = submitted ? bandMessage(scoring.bands, pct) : null;
 
@@ -126,7 +141,7 @@ export default function Component({
             const correct = t.correct;
             const wrong = submitted && selected && !correct;
             const right = submitted && selected && correct;
-            const reveal = submitted && !selected && correct;
+            const reveal = showSolutions && !selected && correct;
             const stateLabel = right
               ? "highlighted, correct"
               : wrong
@@ -176,8 +191,10 @@ export default function Component({
               ) : (
                 <span className="kukui-ht__feedback-text is-error">
                   Review the highlighted tokens — green outlines mark correct
-                  selections, red outlines mark incorrect ones, and dashed
-                  outlines reveal correct tokens you missed.
+                  selections and red outlines mark incorrect ones.
+                  {showSolutions
+                    ? " Dashed outlines reveal correct tokens you missed."
+                    : ""}
                 </span>
               )}
             </p>
@@ -203,6 +220,15 @@ export default function Component({
               {scoring.enableRetry ? (
                 <button type="button" className="kukui-ht__secondary" onClick={tryAgain}>
                   {tryAgainLabel}
+                </button>
+              ) : null}
+              {scoring.enableSolutionsButton && !solutionsRevealed ? (
+                <button
+                  type="button"
+                  className="kukui-ht__secondary"
+                  onClick={() => setSolutionsRevealed(true)}
+                >
+                  {solutionLabel}
                 </button>
               ) : null}
             </>

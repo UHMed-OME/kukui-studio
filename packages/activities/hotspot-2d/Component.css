@@ -8,7 +8,7 @@
   width: 100%;
   max-width: 880px;
   background: var(--color-surface, #ffffff);
-  border: 1px solid var(--color-border, #dad2c6);
+  border: 1px solid var(--color-border, #d1d7df);
   border-radius: var(--radius-card, 12px);
   padding: var(--spacing-3xl, 28px);
   --kukui-card-pad: var(--spacing-3xl, 28px);
@@ -40,8 +40,8 @@
 
 .kukui-h2d__hotspot {
   position: absolute;
-  background: rgb(123 67 36 / 0.08);
-  border: 1.5px solid var(--color-primary);
+  background: color-mix(in srgb, var(--color-primary, #4a7a5f) 8%, transparent);
+  border: 2px solid var(--color-primary, #4a7a5f);
   border-radius: 6px;
   cursor: pointer;
   transition:
@@ -54,14 +54,25 @@
   padding: 4px 6px;
 }
 
+/* Invisible hit-target expansion: whatever rectangle the author drew,
+ * the clickable area is at least 44 x 44 px (WCAG 2.5.5). The inset
+ * goes negative only when the button is smaller than 44 px on that
+ * axis (percentages resolve per-axis), so generous rects are
+ * unaffected and the visual size never changes. */
+.kukui-h2d__hotspot::after {
+  content: "";
+  position: absolute;
+  inset: min(0px, calc((100% - 44px) / 2));
+}
+
 .kukui-h2d__hotspot:hover:not(:disabled) {
-  background: rgb(123 67 36 / 0.16);
+  background: color-mix(in srgb, var(--color-primary, #4a7a5f) 16%, transparent);
 }
 
 .kukui-h2d__hotspot.is-selected {
   border-style: solid;
-  background: rgb(123 67 36 / 0.18);
-  box-shadow: 0 0 0 2px var(--color-primary);
+  background: color-mix(in srgb, var(--color-primary, #4a7a5f) 18%, transparent);
+  box-shadow: 0 0 0 2px var(--color-primary, #4a7a5f);
 }
 
 .kukui-h2d__hotspot.is-correct {
@@ -83,9 +94,12 @@
 }
 
 .kukui-h2d__hotspot-label {
-  font-size: 11px;
+  font-size: var(--font-size-micro, 12px);
   font-weight: 700;
-  color: var(--color-primary);
+  color: var(--color-primary, #4a7a5f);
+  /* Sits over the author's image (canvas-overlay context), so a raw
+   * white scrim is intentional: the backdrop is the artwork, not a
+   * themed surface. */
   background: rgb(255 255 255 / 0.85);
   padding: 1px 6px;
   border-radius: 3px;
@@ -153,37 +167,45 @@
   border-style: solid;
 }
 
+/* Constant min-height: the space is reserved whether or not feedback is
+ * visible, so the reveal is opacity-only and nothing below reflows. */
 .kukui-h2d__feedback {
-  min-height: 0;
+  min-height: 28px;
   margin-top: var(--spacing-lg, 16px);
   font-size: var(--font-size-meta, 13px);
-  color: var(--color-text-secondary);
+  color: var(--color-text-secondary, #49515b);
   opacity: 0;
-  transition:
-    opacity 200ms ease,
-    min-height 200ms ease;
+  transition: opacity 200ms ease;
 }
 
 .kukui-h2d__feedback.is-visible {
   opacity: 1;
-  min-height: 28px;
 }
 
+/* min-height reserves the row's footprint post-submit so turning retry
+ * off doesn't collapse the row. */
 .kukui-h2d__actions {
   margin-top: var(--spacing-xl, 20px);
   display: flex;
+  flex-wrap: wrap;
+  align-items: center;
   gap: var(--spacing-md, 12px);
+  min-height: 44px;
 }
 
 .kukui-h2d__primary {
   min-height: 44px;
   padding: 10px 20px;
-  background: var(--color-primary);
-  color: #ffffff;
+  background: var(--color-primary, #4a7a5f);
+  color: var(--color-on-primary, #ffffff);
   border: none;
   border-radius: var(--radius-md, 8px);
   font-size: var(--font-size-answer, 15px);
   font-weight: 700;
+}
+
+.kukui-h2d__primary:hover:not(:disabled) {
+  background: var(--color-primary-hover, #3f6b52);
 }
 
 .kukui-h2d__primary:disabled {
@@ -195,8 +217,8 @@
   min-height: 44px;
   padding: 10px 20px;
   background: transparent;
-  color: var(--color-primary);
-  border: 2px solid var(--color-primary);
+  color: var(--color-primary, #4a7a5f);
+  border: 2px solid var(--color-primary, #4a7a5f);
   border-radius: var(--radius-md, 8px);
   font-size: var(--font-size-answer, 15px);
   font-weight: 700;
@@ -211,11 +233,11 @@
   gap: 6px;
   min-height: 240px;
   padding: var(--spacing-2xl, 24px);
-  border: 2px dashed var(--color-border, #dad2c6);
+  border: 2px dashed var(--color-border, #d1d7df);
   border-radius: var(--radius-md, 8px);
   background: var(--color-tip-bg, #f2f0e8);
   text-align: center;
-  color: var(--color-text-secondary, #606069);
+  color: var(--color-text-secondary, #49515b);
 }
 
 .kukui-h2d__empty strong {

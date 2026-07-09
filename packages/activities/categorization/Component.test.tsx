@@ -123,4 +123,62 @@ describe("Categorization — keyboard fallback path", () => {
     // Wrong oak should show the correction text.
     expect(screen.getByText(/Correct: Plantae/)).toBeInTheDocument();
   });
+
+  it("shows a raw/max score line after submit", async () => {
+    const user = userEvent.setup();
+    render(<Component config={cfg} onSubmit={vi.fn()} />);
+    const selects = screen.getAllByRole("combobox");
+    await user.selectOptions(selects[0]!, "c-plantae");
+    await user.selectOptions(selects[1]!, "c-animalia");
+    await user.selectOptions(selects[2]!, "c-fungi");
+    await user.click(screen.getByRole("button", { name: /check/i }));
+    expect(screen.getByText(/3 \/ 3/)).toBeInTheDocument();
+  });
+
+  it("renders the author credit line when config.author is set", () => {
+    render(
+      <Component config={{ ...cfg, author: "Dr. Aytac" }} onSubmit={vi.fn()} />,
+    );
+    expect(screen.getByText(/By Dr\. Aytac/)).toBeInTheDocument();
+  });
+
+  it("restores placements and stage from suspendData", () => {
+    const suspend = JSON.stringify({
+      stage: "submitted",
+      placement: { "i-oak": "c-plantae", "i-shark": "c-animalia", "i-mushroom": "c-fungi" },
+    });
+    render(<Component config={cfg} onSubmit={vi.fn()} suspendData={suspend} />);
+    // Submitted view: no Check button, Try again offered instead.
+    expect(screen.queryByRole("button", { name: /check/i })).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /try again/i })).toBeInTheDocument();
+    const selects = screen.getAllByRole("combobox");
+    expect(selects[0]).toHaveValue("c-plantae");
+    expect(selects[1]).toHaveValue("c-animalia");
+    expect(selects[2]).toHaveValue("c-fungi");
+  });
+
+  it("ignores invalid suspendData (garbage JSON and unknown category ids)", () => {
+    const { unmount } = render(
+      <Component config={cfg} onSubmit={vi.fn()} suspendData="not json {" />,
+    );
+    expect(screen.getByRole("button", { name: /check/i })).toBeDisabled();
+    unmount();
+
+    // Placement pointing at a category that no longer exists falls back to tray.
+    const drift = JSON.stringify({
+      stage: "answering",
+      placement: { "i-oak": "c-deleted", "i-shark": "c-animalia", "i-mushroom": null },
+    });
+    render(<Component config={cfg} onSubmit={vi.fn()} suspendData={drift} />);
+    const selects = screen.getAllByRole("combobox");
+    expect(selects[0]).toHaveValue(""); // back in tray
+    expect(selects[1]).toHaveValue("c-animalia");
+  });
+
+  it("honors the headingLevel prop", () => {
+    render(<Component config={cfg} onSubmit={vi.fn()} headingLevel={3} />);
+    expect(
+      screen.getByRole("heading", { level: 3, name: /sort the organisms/i }),
+    ).toBeInTheDocument();
+  });
 });

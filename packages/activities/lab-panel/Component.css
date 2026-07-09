@@ -15,7 +15,7 @@
   width: 100%;
   max-width: 720px;
   background: var(--color-surface, #ffffff);
-  border: 1px solid var(--color-border, #dad2c6);
+  border: 1px solid var(--color-border, #d1d7df);
   border-radius: var(--radius-card, 12px);
   padding: var(--spacing-3xl, 28px);
   box-shadow: var(--shadow-card);
@@ -39,7 +39,13 @@
   margin-bottom: var(--spacing-sm, 8px);
   text-align: left;
   font-size: var(--font-size-meta, 13px);
-  color: var(--color-text-secondary, #606069);
+  color: var(--color-text-secondary, #49515b);
+}
+
+/* Wide result tables scroll inside their own container — the activity card
+   must never scroll horizontally. */
+.kukui-lp__table-wrap {
+  overflow-x: auto;
 }
 
 .kukui-lp__table {
@@ -58,8 +64,8 @@
   padding: var(--spacing-xs, 4px) var(--spacing-md, 12px);
   font-size: var(--font-size-meta, 13px);
   font-weight: 700;
-  color: var(--color-text-secondary, #606069);
-  border-bottom: 2px solid var(--color-border, #dad2c6);
+  color: var(--color-text-secondary, #49515b);
+  border-bottom: 2px solid var(--color-border, #d1d7df);
 }
 
 .kukui-lp__row {
@@ -71,8 +77,8 @@
 .kukui-lp__cell {
   padding: 0;
   margin: 0;
-  border-top: 2px solid var(--color-border, #dad2c6);
-  border-bottom: 2px solid var(--color-border, #dad2c6);
+  border-top: 2px solid var(--color-border, #d1d7df);
+  border-bottom: 2px solid var(--color-border, #d1d7df);
   background: inherit;
   font-size: var(--font-size-answer, 15px);
   color: var(--color-text-primary, #1c1e20);
@@ -81,18 +87,18 @@
 }
 
 .kukui-lp__cell--analyte {
-  border-left: 2px solid var(--color-border, #dad2c6);
+  border-left: 2px solid var(--color-border, #d1d7df);
   border-top-left-radius: var(--radius-md, 8px);
   border-bottom-left-radius: var(--radius-md, 8px);
   text-align: left;
 }
 
 .kukui-lp__cell--reference {
-  border-right: 2px solid var(--color-border, #dad2c6);
+  border-right: 2px solid var(--color-border, #d1d7df);
   border-top-right-radius: var(--radius-md, 8px);
   border-bottom-right-radius: var(--radius-md, 8px);
   padding-right: var(--spacing-md, 12px);
-  color: var(--color-text-secondary, #606069);
+  color: var(--color-text-secondary, #49515b);
   font-size: var(--font-size-meta, 13px);
 }
 
@@ -102,7 +108,7 @@
 }
 
 .kukui-lp__cell--units {
-  color: var(--color-text-secondary, #606069);
+  color: var(--color-text-secondary, #49515b);
   font-size: var(--font-size-meta, 13px);
 }
 
@@ -126,7 +132,7 @@
 }
 
 .kukui-lp__cell-btn:focus-visible {
-  outline: 2px solid var(--color-primary, #7b4324);
+  outline: 2px solid var(--color-primary, #4a7a5f);
   outline-offset: 2px;
   border-radius: var(--radius-sm, 6px);
 }
@@ -168,17 +174,17 @@
 
 /* Row state — change cell border colors only; widths constant 2 px. */
 .kukui-lp__row.is-selected .kukui-lp__cell {
-  border-top-color: var(--color-primary, #7b4324);
-  border-bottom-color: var(--color-primary, #7b4324);
+  border-top-color: var(--color-primary, #4a7a5f);
+  border-bottom-color: var(--color-primary, #4a7a5f);
   background: var(--color-primary-soft);
 }
 
 .kukui-lp__row.is-selected .kukui-lp__cell--analyte {
-  border-left-color: var(--color-primary, #7b4324);
+  border-left-color: var(--color-primary, #4a7a5f);
 }
 
 .kukui-lp__row.is-selected .kukui-lp__cell--reference {
-  border-right-color: var(--color-primary, #7b4324);
+  border-right-color: var(--color-primary, #4a7a5f);
 }
 
 .kukui-lp__row.is-correct .kukui-lp__cell {
@@ -210,16 +216,16 @@
 }
 
 .kukui-lp__row:hover:not(.is-selected) .kukui-lp__cell {
-  border-top-color: var(--color-border-hover, #bbae9a);
-  border-bottom-color: var(--color-border-hover, #bbae9a);
+  border-top-color: var(--color-border-hover, #adb6c0);
+  border-bottom-color: var(--color-border-hover, #adb6c0);
 }
 
 .kukui-lp__row:hover:not(.is-selected) .kukui-lp__cell--analyte {
-  border-left-color: var(--color-border-hover, #bbae9a);
+  border-left-color: var(--color-border-hover, #adb6c0);
 }
 
 .kukui-lp__row:hover:not(.is-selected) .kukui-lp__cell--reference {
-  border-right-color: var(--color-border-hover, #bbae9a);
+  border-right-color: var(--color-border-hover, #adb6c0);
 }
 
 /* Interpretation MC — mirrors the multiple-choice pattern. */
@@ -268,7 +274,7 @@
   min-height: 48px;
   padding: var(--spacing-md, 12px) var(--spacing-lg, 16px);
   background: var(--color-surface, #ffffff);
-  border: 2px solid var(--color-border, #dad2c6);
+  border: 2px solid var(--color-border, #d1d7df);
   border-radius: var(--radius-md, 8px);
   text-align: left;
   font-size: var(--font-size-answer, 15px);
@@ -280,11 +286,11 @@
 }
 
 .kukui-lp__choice:hover:not(:disabled):not(.is-selected) {
-  border-color: var(--color-border-hover, #bbae9a);
+  border-color: var(--color-border-hover, #adb6c0);
 }
 
 .kukui-lp__choice:focus-visible {
-  outline: 2px solid var(--color-primary, #7b4324);
+  outline: 2px solid var(--color-primary, #4a7a5f);
   outline-offset: 2px;
 }
 
@@ -293,7 +299,7 @@
 }
 
 .kukui-lp__choice.is-selected {
-  border-color: var(--color-primary, #7b4324);
+  border-color: var(--color-primary, #4a7a5f);
   background: var(--color-primary-soft);
 }
 
@@ -326,23 +332,19 @@
   color: inherit;
 }
 
-/* Pattern A inline feedback — reserved space, opacity-only fade. */
+/* Pattern A inline feedback: space reserved from first render (constant
+   min-height + padding), opacity-only fade so neighbours never reflow. */
 .kukui-lp__feedback {
-  min-height: 0;
+  min-height: 28px;
   opacity: 0;
   font-size: var(--font-size-meta, 13px);
-  color: var(--color-text-secondary, #606069);
-  padding: 0 var(--spacing-lg, 16px);
-  transition:
-    opacity 200ms ease,
-    min-height 200ms ease;
+  color: var(--color-text-secondary, #49515b);
+  padding: var(--spacing-xs, 4px) var(--spacing-lg, 16px) var(--spacing-sm, 8px);
+  transition: opacity 200ms ease;
 }
 
 .kukui-lp__feedback.is-visible {
   opacity: 1;
-  min-height: 28px;
-  padding-top: var(--spacing-xs, 4px);
-  padding-bottom: var(--spacing-sm, 8px);
 }
 
 .kukui-lp__actions {
@@ -356,8 +358,8 @@
 .kukui-lp__primary {
   min-height: 44px;
   padding: 10px 20px;
-  background: var(--color-primary, #7b4324);
-  color: #ffffff;
+  background: var(--color-primary, #4a7a5f);
+  color: var(--color-on-primary, #ffffff);
   border: none;
   border-radius: var(--radius-md, 8px);
   font-size: var(--font-size-answer, 15px);
@@ -366,7 +368,7 @@
 }
 
 .kukui-lp__primary:hover:not(:disabled) {
-  background: var(--color-primary-hover, #9b5830);
+  background: var(--color-primary-hover, #3f6b52);
 }
 
 .kukui-lp__primary:disabled {
@@ -378,8 +380,8 @@
   min-height: 44px;
   padding: 10px 20px;
   background: transparent;
-  color: var(--color-primary, #7b4324);
-  border: 2px solid var(--color-primary, #7b4324);
+  color: var(--color-primary, #4a7a5f);
+  border: 2px solid var(--color-primary, #4a7a5f);
   border-radius: var(--radius-md, 8px);
   font-size: var(--font-size-answer, 15px);
   font-weight: 700;
@@ -394,7 +396,7 @@
 
 .kukui-lp__band {
   font-weight: 400;
-  color: var(--color-text-secondary, #606069);
+  color: var(--color-text-secondary, #49515b);
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -30,10 +30,13 @@ export default function Component({
   headingLevel = 1,
 }: ActivityProps<LabPanelConfig>) {
   const [state, setState] = useState<State>(
-    () => parseSuspend(suspendData) ?? initialState,
+    () => parseSuspend(suspendData, config) ?? initialState,
   );
   const headingId = useId();
   const interpretationLegendId = useId();
+  // Panel heading sits one level below the activity title so the outline
+  // stays correct when the activity is embedded (e.g. course-presentation).
+  const H2 = `h${Math.min(headingLevel + 1, 6)}` as "h2" | "h3" | "h4" | "h5" | "h6";
 
   // Reset local state when `config` changes externally (Studio Preview edit,
   // AI Accept, draft load, etc.). Reference equality on the `config` prop —
@@ -41,7 +44,7 @@ export default function Component({
   // fires in Studio Preview. Replaces the now-removed JSON.stringify(value)
   // remount key.
   useEffect(() => {
-    setState(parseSuspend(suspendData) ?? initialState);
+    setState(parseSuspend(suspendData, config) ?? initialState);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [config]);
 
@@ -119,12 +122,16 @@ export default function Component({
     }
     const raw = rowScore.raw + (interpretationCorrect ? 1 : 0);
     const max = rowScore.max + 1;
-    return { raw, max, success: raw === max };
+    // Completion mode: submitting the panel is the goal — success regardless
+    // of the raw score (still reported for the record).
+    const success = scoring.mode === "completion" ? true : raw === max;
+    return { raw, max, success };
   }, [
     selectedRowIdxs,
     abnormalIndices,
     config.panel.values.length,
     isSinglePoint,
+    scoring.mode,
     state.selectedChoiceId,
     correctChoiceId,
   ]);
@@ -165,7 +172,8 @@ export default function Component({
           className="kukui-lp__panel"
           aria-label={`${config.panel.name} — click rows you consider abnormal`}
         >
-          <h2 className="kukui-lp__panel-name">{config.panel.name}</h2>
+          <H2 className="kukui-lp__panel-name">{config.panel.name}</H2>
+          <div className="kukui-lp__table-wrap">
           <table className="kukui-lp__table">
             <caption className="kukui-lp__caption">
               Click each result row that is abnormal. Selected rows are
@@ -268,6 +276,7 @@ export default function Component({
               })}
             </tbody>
           </table>
+          </div>
         </section>
 
         <fieldset className="kukui-lp__interpretation">
@@ -281,8 +290,11 @@ export default function Component({
             className="kukui-lp__question"
             html={config.interpretation.question}
           />
+          {/* Drop the radiogroup ARIA role — implementing it correctly requires
+              roving tabindex + arrow-key navigation, which we don't yet do.
+              A plain group with aria-pressed buttons gives accurate semantics. */}
           <ul
-            role="radiogroup"
+            role="group"
             aria-labelledby={interpretationLegendId}
             className="kukui-lp__choices"
           >
@@ -291,7 +303,10 @@ export default function Component({
               const isCorrect = c.correct;
               const right = submitted && selected && isCorrect;
               const wrong = submitted && selected && !isCorrect;
-              const reveal = submitted && !selected && isCorrect;
+              // Revealing the un-picked correct answer is an authored choice
+              // (Scoring tab), not a default.
+              const reveal =
+                submitted && scoring.enableSolutionsButton && !selected && isCorrect;
               const stateLabel = right
                 ? "correct"
                 : wrong
@@ -305,8 +320,7 @@ export default function Component({
                 <li key={c.id} className="kukui-lp__choice-row">
                   <button
                     type="button"
-                    role="radio"
-                    aria-checked={selected}
+                    aria-pressed={selected}
                     aria-label={`${htmlToText(c.text)}, ${stateLabel}`}
                     disabled={submitted}
                     className={[
@@ -384,7 +398,10 @@ export default function Component({
   );
 }
 
-function parseSuspend(s: string | undefined): State | null {
+function parseSuspend(
+  s: string | undefined,
+  config: LabPanelConfig,
+): State | null {
   if (!s) return null;
   try {
     const parsed = JSON.parse(s) as Partial<State>;
@@ -393,13 +410,20 @@ function parseSuspend(s: string | undefined): State | null {
       Array.isArray(parsed.selectedRowIds) &&
       typeof parsed.attempts === "number"
     ) {
+      // Validate ids against the current config so a stale draft (edited
+      // panel, renamed rows) can't smuggle selections that point at nothing.
+      const knownRowIds = new Set(config.panel.values.map((v) => v.id));
+      const knownChoiceIds = new Set(
+        config.interpretation.choices.map((c) => c.id),
+      );
       return {
         stage: parsed.stage === "submitted" ? "submitted" : "answering",
         selectedRowIds: parsed.selectedRowIds.filter(
-          (x): x is string => typeof x === "string",
+          (x): x is string => typeof x === "string" && knownRowIds.has(x),
         ),
         selectedChoiceId:
-          typeof parsed.selectedChoiceId === "string"
+          typeof parsed.selectedChoiceId === "string" &&
+          knownChoiceIds.has(parsed.selectedChoiceId)
             ? parsed.selectedChoiceId
             : null,
         attempts: parsed.attempts,

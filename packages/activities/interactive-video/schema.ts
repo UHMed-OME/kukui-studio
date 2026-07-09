@@ -19,7 +19,7 @@ const Track = z
 const Video = z
   .object({
     src: SAFE_MEDIA_URL,
-    type: z.enum(["html5", "youtube", "vimeo"]).optional(),
+    type: z.enum(["html5", "youtube"]).optional(),
     poster: SAFE_MEDIA_URL.optional(),
     /** Optional caption tracks (html5). */
     tracks: z.array(Track).optional(),

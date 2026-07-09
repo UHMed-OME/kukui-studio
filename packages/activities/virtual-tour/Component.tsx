@@ -5,6 +5,7 @@ import * as THREE from "three";
 import { HotspotPin } from "@kukui/core/components/_shared/HotspotPin";
 import type { VirtualTourConfig } from "./schema.js";
 import type { ActivityProps } from "@kukui/core/types";
+import { resolveScoring } from "@kukui/core/scoring";
 import { ActivityHeader, SafeHtml } from "@kukui/core";
 import "./Component.css";
 
@@ -15,6 +16,48 @@ type State = {
   visited: string[];
   openOverlayId: string | null;
 };
+
+// Cached module-wide: each probe creates a real WebGL context, and browsers
+// cap live contexts per page (~8-16) — probing on every render leaks them
+// until older contexts get evicted. Support can't change within a session,
+// so one probe is enough.
+let webglProbeResult: boolean | null = null;
+function hasWebGL(): boolean {
+  if (webglProbeResult === null) {
+    // Probe both webgl and webgl2 — Safari with strict privacy settings
+    // can return null for "webgl" but still have webgl2 available.
+    webglProbeResult =
+      typeof window !== "undefined" &&
+      typeof window.WebGLRenderingContext !== "undefined" &&
+      (() => {
+        const c = document.createElement("canvas");
+        return !!(c.getContext("webgl2") || c.getContext("webgl"));
+      })();
+  }
+  return webglProbeResult;
+}
+
+/**
+ * Whether a window-level keydown may steer the 3D camera. Exported for tests.
+ *
+ * Never steal keys from text entry (input / textarea / select /
+ * contenteditable), and only steer while focus is inside the canvas wrapper —
+ * arrow keys anywhere else keep their native meaning (scrolling, moving
+ * through the fallback list, etc.).
+ */
+export function shouldSteerCamera(
+  target: EventTarget | null,
+  wrap: HTMLElement | null,
+): boolean {
+  if (target instanceof HTMLElement) {
+    const tag = target.tagName;
+    if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT" || target.isContentEditable) {
+      return false;
+    }
+  }
+  if (!wrap || typeof document === "undefined") return false;
+  return wrap.contains(document.activeElement);
+}
 
 /**
  * Virtual Environment Tour.
@@ -32,10 +75,15 @@ export default function Component({
   headingLevel = 1,
 }: ActivityProps<VirtualTourConfig>) {
   const headingId = useId();
+  const overlayTitleId = useId();
   const overlayCloseRef = useRef<HTMLButtonElement | null>(null);
   const [state, setState] = useState<State>(
     () => parseSuspend(suspendData) ?? { stage: "exploring", visited: [], openOverlayId: null },
   );
+  // True only when the currently open overlay was opened by a click in this
+  // session. A resume-restored overlay stays false, so restored audio never
+  // autoplays without a fresh user gesture.
+  const [openedByGesture, setOpenedByGesture] = useState(false);
 
   // Reset local state when `config` changes externally (Studio Preview edit,
   // AI Accept, draft load, etc.). Reference equality on the `config` prop —
@@ -46,6 +94,7 @@ export default function Component({
     setState(
       parseSuspend(suspendData) ?? { stage: "exploring", visited: [], openOverlayId: null },
     );
+    setOpenedByGesture(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [config]);
 
@@ -56,6 +105,8 @@ export default function Component({
 
   const ui = config.ui ?? {};
   const completionMode = config.completion?.mode ?? "manual";
+  // Retry gating comes from the Scoring tab (falls back to behaviour.enableRetry).
+  const scoring = useMemo(() => resolveScoring(config, { mode: "points" }), [config]);
   const requiredIds = useMemo(
     () => new Set(config.completion?.requiredOverlayIds ?? config.overlays.map((o) => o.id)),
     [config.completion?.requiredOverlayIds, config.overlays],
@@ -71,6 +122,7 @@ export default function Component({
     if (typeof document !== "undefined" && document.activeElement instanceof HTMLElement) {
       lastFocusRef.current = document.activeElement;
     }
+    setOpenedByGesture(true);
     setState((s) => {
       const visited = s.visited.includes(overlayId) ? s.visited : [...s.visited, overlayId];
       return { ...s, visited, openOverlayId: overlayId };
@@ -118,7 +170,16 @@ export default function Component({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state.visited, completionMode, requiredIds]);
 
+  const tryAgain = () => {
+    // Keep the visited set: retry lets the learner pick up the tour and
+    // visit the points they missed rather than starting from zero.
+    setOpenedByGesture(false);
+    setState((s) => ({ ...s, stage: "exploring", openOverlayId: null }));
+  };
+
   const submitted = state.stage === "submitted";
+  const visitedRequiredCount = state.visited.filter((id) => requiredIds.has(id)).length;
+  const tourComplete = visitedRequiredCount === requiredIds.size && requiredIds.size > 0;
   const openOverlay =
     state.openOverlayId !== null
       ? config.overlays.find((o) => o.id === state.openOverlayId) ?? null
@@ -172,9 +233,9 @@ export default function Component({
         </fieldset>
 
         {openOverlay ? (
-          <div className="kukui-vt__overlay" role="dialog" aria-labelledby="vt-overlay-title">
+          <div className="kukui-vt__overlay" role="dialog" aria-labelledby={overlayTitleId}>
             <header className="kukui-vt__overlay-header">
-              <h2 id="vt-overlay-title" className="kukui-vt__overlay-title">
+              <h2 id={overlayTitleId} className="kukui-vt__overlay-title">
                 {openOverlay.title ?? openOverlay.id}
               </h2>
               <button
@@ -202,10 +263,17 @@ export default function Component({
                     </figure>
                   );
                 }
-                // audio
+                // audio — autoplay only when this overlay was opened by a
+                // click this session; a resume-restored overlay must not
+                // start audio without a fresh user gesture.
                 return (
                   <figure key={i}>
-                    <audio src={c.src} controls autoPlay={c.autoplay} loop={c.loop} />
+                    <audio
+                      src={c.src}
+                      controls
+                      autoPlay={!!c.autoplay && openedByGesture}
+                      loop={c.loop}
+                    />
                     {c.caption ? (
                       <figcaption className="kukui-vt__overlay-caption">{c.caption}</figcaption>
                     ) : null}
@@ -220,7 +288,7 @@ export default function Component({
           className="kukui-vt__progress"
           aria-live="polite"
         >
-          Visited {state.visited.filter((id) => requiredIds.has(id)).length} of {requiredIds.size}.
+          Visited {visitedRequiredCount} of {requiredIds.size}.
         </p>
 
         <div className="kukui-vt__actions">
@@ -230,7 +298,20 @@ export default function Component({
             </button>
           ) : null}
           {submitted ? (
-            <p className="kukui-vt__done">Tour complete.</p>
+            tourComplete ? (
+              <p className="kukui-vt__done">Tour complete.</p>
+            ) : (
+              <>
+                <p className="kukui-vt__partial">
+                  Submitted with {visitedRequiredCount} of {requiredIds.size} points visited.
+                </p>
+                {scoring.enableRetry ? (
+                  <button type="button" className="kukui-vt__secondary" onClick={tryAgain}>
+                    Try again
+                  </button>
+                ) : null}
+              </>
+            )
           ) : null}
         </div>
       </article>
@@ -251,24 +332,17 @@ function VirtualTourScene({
   visited: Set<string>;
   onVisit: (id: string) => void;
 }) {
-  // The model is the occluder for each pin's per-frame raycast — pins
-  // show `.is-behind` styling when their anchor is round a corner /
-  // behind a wall, so the learner can still see where unvisited points
-  // are without losing depth information. Hooks must stay above the
+  // The loaded model is the occluder for each pin's per-frame raycast — pins
+  // show `.is-behind` styling when their anchor is round a corner / behind a
+  // wall, so the learner can still see where unvisited points are without
+  // losing depth information. Held in state (not a ref) so the pins re-render
+  // with the occluder once the GLTF resolves — a ref's `.current` would still
+  // be null in the array captured at first render. Hooks must stay above the
   // no-WebGL early return so the hook count is render-stable.
-  const sceneRef = useRef<THREE.Object3D | null>(null);
+  const [sceneObj, setSceneObj] = useState<THREE.Object3D | null>(null);
+  const wrapRef = useRef<HTMLDivElement | null>(null);
 
-  // Probe both webgl and webgl2 — Safari with strict privacy settings
-  // can return null for "webgl" but still have webgl2 available.
-  const hasWebGL =
-    typeof window !== "undefined" &&
-    typeof window.WebGLRenderingContext !== "undefined" &&
-    (() => {
-      const c = document.createElement("canvas");
-      return !!(c.getContext("webgl2") || c.getContext("webgl"));
-    })();
-
-  if (!hasWebGL) {
+  if (!hasWebGL()) {
     return (
       <div className="kukui-vt__no-webgl" role="img" aria-label="3D scene placeholder">
         3D scene unavailable in this environment. Use the points-of-interest list below.
@@ -280,18 +354,32 @@ function VirtualTourScene({
   const movementSpeed = config.movement?.speed ?? 3;
 
   return (
-    <div className="kukui-vt__canvas-wrap">
+    // Focusable (tabIndex) so keyboard steering has an explicit scope: the
+    // camera only moves while focus is inside this wrapper. Clicking the
+    // scene focuses it, so mouse users get keyboard movement for free.
+    <div
+      className="kukui-vt__canvas-wrap"
+      ref={wrapRef}
+      tabIndex={0}
+      onPointerDown={() => wrapRef.current?.focus()}
+      aria-label="3D tour scene. Use WASD or arrow keys to move while the scene has focus."
+    >
       <p className="kukui-vt__hint" role="note">
-        Click and drag to look around · WASD or arrow keys to move · Click a marker to visit it
+        Click and drag to look around · Click or Tab into the scene, then WASD or arrow keys
+        to move · Click a marker to visit it
       </p>
       <Canvas camera={{ position: [spawn.x, spawn.y, spawn.z], fov: 60 }}>
         <ambientLight intensity={0.6} />
         <directionalLight position={[5, 8, 4]} intensity={0.9} />
         <directionalLight position={[-4, 3, -3]} intensity={0.4} />
         <Suspense fallback={null}>
-          <TourModel src={config.scene.src} sceneRef={sceneRef} />
+          <TourModel src={config.scene.src} onScene={setSceneObj} />
         </Suspense>
-        <FirstPersonRig speed={movementSpeed} enabled={!disabled && !overlayOpen} />
+        <FirstPersonRig
+          speed={movementSpeed}
+          enabled={!disabled && !overlayOpen}
+          wrapRef={wrapRef}
+        />
         <DragLookControls />
         {config.overlays.map((o, i) => (
           <HotspotPin
@@ -302,7 +390,7 @@ function VirtualTourScene({
             kind={visited.has(o.id) ? "reveal" : "default"}
             disabled={disabled}
             onClick={() => onVisit(o.id)}
-            occluders={[sceneRef.current]}
+            occluders={sceneObj ? [sceneObj] : []}
             ariaLabel={`Overlay ${i + 1}: ${o.title ?? o.id}`}
           />
         ))}
@@ -313,12 +401,21 @@ function VirtualTourScene({
 
 /**
  * First-person camera rig: WASD / arrow keys translate the camera in the
- * direction it's facing. PointerLockControls handles the look-around. The
- * key listener is attached to `window` so it fires regardless of where focus
- * sits — keyboard users still need PointerLock to be active to see the
- * camera move with the look direction.
+ * direction it's facing; DragLookControls handles the look-around. The key
+ * listener is attached to `window` (the canvas itself never gets keyboard
+ * focus), but it's gated by `shouldSteerCamera`: it never intercepts typing,
+ * and it only steers while focus is inside the canvas wrapper — arrow keys
+ * elsewhere keep scrolling the page and driving the fallback list.
  */
-function FirstPersonRig({ speed, enabled }: { speed: number; enabled: boolean }) {
+function FirstPersonRig({
+  speed,
+  enabled,
+  wrapRef,
+}: {
+  speed: number;
+  enabled: boolean;
+  wrapRef: React.RefObject<HTMLElement | null>;
+}) {
   const { camera } = useThree();
   const keys = useRef<Record<string, boolean>>({});
 
@@ -347,10 +444,10 @@ function FirstPersonRig({ speed, enabled }: { speed: number; enabled: boolean })
     };
     const down = (e: KeyboardEvent) => {
       const dir = map[e.key];
-      if (dir) {
-        keys.current[dir] = true;
-        e.preventDefault();
-      }
+      if (!dir) return;
+      if (!shouldSteerCamera(e.target, wrapRef.current)) return;
+      keys.current[dir] = true;
+      e.preventDefault();
     };
     const up = (e: KeyboardEvent) => {
       const dir = map[e.key];
@@ -362,7 +459,7 @@ function FirstPersonRig({ speed, enabled }: { speed: number; enabled: boolean })
       window.removeEventListener("keydown", down);
       window.removeEventListener("keyup", up);
     };
-  }, [enabled]);
+  }, [enabled, wrapRef]);
 
   const forwardVec = useMemo(() => new THREE.Vector3(), []);
   const rightVec = useMemo(() => new THREE.Vector3(), []);
@@ -408,14 +505,16 @@ function DragLookControls() {
   const eulerRef = useRef<THREE.Euler>(
     new THREE.Euler(0, 0, 0, "YXZ"),
   );
-  const [initialized, setInitialized] = useState(false);
+  // Ref, not state: nothing renders off this flag, so flipping it shouldn't
+  // schedule a second render pass.
+  const initializedRef = useRef(false);
 
   useEffect(() => {
-    if (initialized) return;
+    if (initializedRef.current) return;
     eulerRef.current.setFromQuaternion(camera.quaternion);
     eulerRef.current.order = "YXZ";
-    setInitialized(true);
-  }, [camera, initialized]);
+    initializedRef.current = true;
+  }, [camera]);
 
   useEffect(() => {
     const el = gl.domElement;
@@ -478,18 +577,19 @@ function DragLookControls() {
 
 function TourModel({
   src,
-  sceneRef,
+  onScene,
 }: {
   src: string;
-  sceneRef?: React.MutableRefObject<THREE.Object3D | null>;
+  /** Reports the loaded scene (and null on unmount) for occlusion raycasts. */
+  onScene?: (scene: THREE.Object3D | null) => void;
 }) {
   const { scene } = useGLTF(src);
   useEffect(() => {
-    if (sceneRef) sceneRef.current = scene;
+    onScene?.(scene);
     return () => {
-      if (sceneRef) sceneRef.current = null;
+      onScene?.(null);
     };
-  }, [scene, sceneRef]);
+  }, [scene, onScene]);
   return <primitive object={scene} />;
 }
 

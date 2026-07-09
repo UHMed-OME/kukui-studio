@@ -1,4 +1,5 @@
 import { useId, useMemo, type CSSProperties, type ReactNode } from "react";
+import { useDroppable } from "@dnd-kit/core";
 import type { DragAndDropConfig } from "@kukui/schemas";
 import { resolveScoring } from "@kukui/core/scoring";
 import { ActivityHeader, SafeHtml } from "@kukui/core";
@@ -57,6 +58,7 @@ export function DnDActivity({
 }: DnDActivityProps) {
   const layoutId = useId();
   const promptId = useId();
+  const bgAltId = useId();
   const trayDomId = `${layoutId}-tray`;
 
   const draggablesById = useMemo(
@@ -76,7 +78,22 @@ export function DnDActivity({
   const trayItems = config.draggables.filter((d) => state.placement[d.id] === null);
 
   const submitted = state.stage !== "answering";
-  const allPlaced = Object.values(state.placement).every((z) => z !== null);
+  // Register the tray as a droppable so a mouse user can drag a chip
+  // back out of a zone (drops on the tray map to zoneId null). In tap
+  // mode there is no DndContext, so this hook degrades to a no-op.
+  const { setNodeRef: setTrayRef } = useDroppable({
+    id: "tray",
+    disabled: submitted || mode !== "drag",
+  });
+  // Distractor chips (empty correctZones) belong in the tray, so they
+  // must not gate the Check button — only chips with a real correct
+  // zone need to be placed before Check enables. An activity with no
+  // draggables at all has nothing to check.
+  const allPlaced =
+    config.draggables.length > 0 &&
+    config.draggables
+      .filter((d) => d.correctZones.length > 0)
+      .every((d) => state.placement[d.id] != null);
   const totalCorrect = useMemo(
     () => Object.entries(state.placement).filter(([id, zid]) => isCorrect(id, zid, config)).length,
     [state.placement, config],
@@ -140,9 +157,20 @@ export function DnDActivity({
               .filter(Boolean)
               .join(" ")}
             style={boardStyle}
-            role={config.background?.src ? "img" : "group"}
-            aria-label={config.background?.alt ?? ""}
+            role="group"
+            aria-label="Drop board"
+            aria-describedby={config.background?.src ? bgAltId : undefined}
           >
+            {config.background?.src ? (
+              // Expose the background image's alt text without an ARIA
+              // `img` role: role="img" makes its subtree presentational,
+              // which would strip every zone and placed chip from the
+              // accessibility tree. A visually-hidden description keeps
+              // the board a plain group whose children stay queryable.
+              <span id={bgAltId} className="kukui-dnd__sr-only">
+                {config.background.alt}
+              </span>
+            ) : null}
             {config.dropZones.map((zone) => {
               const occupants = zoneOccupants.get(zone.id) ?? [];
               const style: CSSProperties = {
@@ -189,6 +217,7 @@ export function DnDActivity({
             })}
           </div>
           <div
+            ref={setTrayRef}
             id={trayDomId}
             className="kukui-dnd__tray"
             aria-label="Tray of unplaced labels"

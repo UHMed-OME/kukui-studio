@@ -8,14 +8,16 @@
 
 .kukui-cw {
   --kukui-cw-cell: 44px;
-  --kukui-cw-cell-border: var(--color-border, #dad2c6);
+  --kukui-cw-cell-border: var(--color-border, #d1d7df);
   --kukui-cw-cell-bg: var(--color-surface, #ffffff);
   --kukui-cw-cell-blank: color-mix(in srgb, var(--color-text-primary, #1c1e20) 14%, transparent);
   --kukui-cw-cell-highlight: color-mix(in srgb, var(--color-tip-bg, #f2f0e8) 70%, transparent);
   --kukui-cw-cell-selected: color-mix(in srgb, var(--color-accent, #b69b5d) 30%, transparent);
   --kukui-cw-correct: color-mix(in srgb, var(--color-success, #2e6e41) 22%, var(--color-surface, #ffffff));
   --kukui-cw-incorrect: color-mix(in srgb, var(--color-error, #c34132) 22%, var(--color-surface, #ffffff));
-  --kukui-cw-revealed: color-mix(in srgb, var(--color-revealed, #7a5cad) 22%, var(--color-surface, #ffffff));
+  /* Revealed cells ride the info ramp — there is no dedicated "revealed"
+     token, and info reads as "the system told you this" in every scheme. */
+  --kukui-cw-revealed: color-mix(in srgb, var(--color-info, #1f6f78) 22%, var(--color-surface, #ffffff));
   display: flex;
   justify-content: center;
   padding: var(--spacing-2xl, 24px);
@@ -30,7 +32,7 @@
   width: 100%;
   max-width: 1080px;
   background: var(--color-surface, #ffffff);
-  border: 1px solid var(--color-border, #dad2c6);
+  border: 1px solid var(--color-border, #d1d7df);
   border-radius: var(--radius-card, 12px);
   box-shadow: var(--shadow-card);
   padding: var(--spacing-3xl, 28px);
@@ -49,8 +51,8 @@
   min-height: 38px;
   margin-bottom: var(--spacing-lg, 16px);
   padding: var(--spacing-sm, 8px) var(--spacing-lg, 16px);
-  background: color-mix(in srgb, var(--color-tip-bg, #f2f0e8) 82%, #ffffff);
-  border: 1px solid var(--color-border, #dad2c6);
+  background: color-mix(in srgb, var(--color-tip-bg, #f2f0e8) 82%, var(--color-surface, #ffffff));
+  border: 1px solid var(--color-border, #d1d7df);
   border-radius: var(--radius-sm, 6px);
   font-size: var(--font-size-caption, 14px);
   color: var(--color-text-primary, #1c1e20);
@@ -86,6 +88,10 @@
   flex-direction: column;
   gap: var(--spacing-md, 12px);
   align-items: center;
+  /* Wide puzzles scroll horizontally inside the wrapper instead of being
+     clipped by the card (WCAG 1.4.10 reflow). */
+  max-width: 100%;
+  overflow-x: auto;
 }
 
 .kukui-cw__grid {
@@ -139,9 +145,9 @@
   position: absolute;
   top: 2px;
   left: 3px;
-  font-size: 10px;
+  font-size: var(--font-size-micro, 12px);
   line-height: 1;
-  color: var(--color-text-secondary, #606069);
+  color: var(--color-text-secondary, #49515b);
   font-weight: 600;
   pointer-events: none;
 }
@@ -150,7 +156,7 @@
   position: absolute;
   bottom: 2px;
   right: 3px;
-  font-size: 11px;
+  font-size: var(--font-size-micro, 12px);
   line-height: 1;
   color: var(--color-text-primary, #1c1e20);
   pointer-events: none;
@@ -198,15 +204,15 @@
   min-height: 44px;
   padding: 0 var(--spacing-lg, 16px);
   background: var(--color-surface, #ffffff);
-  border: 1px solid var(--color-border, #dad2c6);
+  border: 1px solid var(--color-border, #d1d7df);
   border-radius: var(--radius-sm, 6px);
-  font-size: var(--font-size-body, 15px);
+  font-size: var(--font-size-answer, 15px);
   color: var(--color-text-primary, #1c1e20);
   cursor: pointer;
 }
 
 .kukui-cw__btn:hover:not(:disabled) {
-  background: color-mix(in srgb, var(--color-tip-bg, #f2f0e8) 60%, #ffffff);
+  background: color-mix(in srgb, var(--color-tip-bg, #f2f0e8) 60%, var(--color-surface, #ffffff));
 }
 
 .kukui-cw__btn:disabled {
@@ -215,28 +221,31 @@
 }
 
 .kukui-cw__btn--primary {
-  background: var(--color-primary, #7b4324);
-  border-color: var(--color-primary, #7b4324);
-  color: #ffffff;
+  background: var(--color-primary, #4a7a5f);
+  border-color: var(--color-primary, #4a7a5f);
+  color: var(--color-on-primary, #ffffff);
   font-weight: 600;
 }
 
 .kukui-cw__btn--primary:hover:not(:disabled) {
-  background: var(--color-primary-hover, #9b5830);
+  background: var(--color-primary-hover, #3f6b52);
 }
 
 .kukui-cw__clues {
   display: flex;
   flex-direction: column;
   gap: var(--spacing-md, 12px);
-  font-size: var(--font-size-body, 15px);
+  font-size: var(--font-size-answer, 15px);
   color: var(--color-text-primary, #1c1e20);
 }
 
+/* Always rendered (when any entry has a hint) with a reserved min-height so
+ * hint text appearing or vanishing never reflows the clue lists below. */
 .kukui-cw__hint {
+  min-height: 44px;
   margin: 0 0 var(--spacing-sm, 8px);
   padding: var(--spacing-sm, 8px) var(--spacing-md, 12px);
-  background: color-mix(in srgb, var(--color-tip-bg, #f2f0e8) 60%, #ffffff);
+  background: color-mix(in srgb, var(--color-tip-bg, #f2f0e8) 60%, var(--color-surface, #ffffff));
   border-left: 3px solid var(--color-accent, #b69b5d);
   border-radius: var(--radius-sm, 6px);
   font-size: var(--font-size-caption, 14px);
@@ -248,11 +257,11 @@
 
 .kukui-cw__cluelist-heading {
   margin: 0 0 var(--spacing-xs, 4px);
-  font-size: var(--font-size-body, 15px);
+  font-size: var(--font-size-answer, 15px);
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: var(--color-text-secondary, #606069);
+  color: var(--color-text-secondary, #49515b);
 }
 
 .kukui-cw__cluelist-items {
@@ -304,8 +313,19 @@
 }
 
 .kukui-cw__clue-len {
-  color: var(--color-text-secondary, #606069);
+  color: var(--color-text-secondary, #49515b);
   font-variant-numeric: tabular-nums;
+}
+
+.kukui-cw__score {
+  font-size: var(--font-size-prompt, 16px);
+  font-weight: 700;
+  color: var(--color-text-primary, #1c1e20);
+}
+
+.kukui-cw__band {
+  font-weight: 400;
+  color: var(--color-text-secondary, #49515b);
 }
 
 .kukui-cw__warning {

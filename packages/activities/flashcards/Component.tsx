@@ -1,4 +1,4 @@
-import { useEffect, useId, useMemo, useState } from "react";
+import { useEffect, useId, useMemo, useRef, useState } from "react";
 import type { FlashcardsConfig } from "./schema.js";
 import type { ActivityProps } from "@kukui/core/types";
 import {
@@ -10,6 +10,7 @@ import {
   CheckIcon,
   TrophyIcon,
 } from "@kukui/core";
+import { resolveScoring } from "@kukui/core/scoring";
 import "./Component.css";
 
 type CardStatus = "knew" | "didnt" | "unanswered";
@@ -78,7 +79,6 @@ function Component({
   headingLevel = 1,
 }: ActivityProps<FlashcardsConfig>) {
   const headingId = useId();
-  const cardLiveId = useId();
   const progressLiveId = useId();
 
   const cardsById = useMemo(
@@ -137,54 +137,66 @@ function Component({
       : seenIds.size + 1
     : totalCount;
 
-  const ui = config.ui ?? {};
-  const gotItLabel = ui.gotItButton ?? "Got it";
-  const reviewAgainLabel = ui.reviewAgainButton ?? "Review again";
-  const nextLabel = ui.nextButton ?? "Next card";
+  const gotItLabel = config.ui?.gotItButton ?? "Got it";
+  const reviewAgainLabel = config.ui?.reviewAgainButton ?? "Review again";
+  const nextLabel = config.ui?.nextButton ?? "Reveal answer";
 
   const flip = () => {
     if (state.completed || !currentId) return;
     setState((s) => ({ ...s, flipped: !s.flipped }));
   };
 
+  /** The flip container — focus lands back here when the next card mounts. */
+  const cardRef = useRef<HTMLDivElement | null>(null);
+  const focusNextCardRef = useRef(false);
+  useEffect(() => {
+    if (!focusNextCardRef.current) return;
+    focusNextCardRef.current = false;
+    cardRef.current?.focus();
+  }, [state.queue]);
+
   /** Common bookkeeping for a self-rated answer ("knew" or "didnt"). */
   const answer = (status: "knew" | "didnt") => {
     if (state.completed || !currentId) return;
-    setState((prev) => {
-      const id = currentId;
-      const nextStatuses: Record<string, CardStatus> = { ...prev.statuses, [id]: status };
-      const nextRetries = { ...prev.retries };
-      const tail = prev.queue.slice(1);
-      // Re-queue "didnt" cards unless they've hit the retry cap.
-      const retryCount = nextRetries[id] ?? 0;
-      const shouldRequeue = status === "didnt" && retryCount < MAX_RETRIES;
-      if (shouldRequeue) nextRetries[id] = retryCount + 1;
-      const nextQueue = shouldRequeue ? [...tail, id] : tail;
-      const completed = nextQueue.length === 0;
+    // Compute the next state first, then set it and report. Never call
+    // onSubmit inside a setState updater: StrictMode double-invokes updaters,
+    // which would double-fire the LMS submit.
+    const id = currentId;
+    const nextStatuses: Record<string, CardStatus> = { ...state.statuses, [id]: status };
+    const nextRetries = { ...state.retries };
+    const tail = state.queue.slice(1);
+    // Re-queue "didnt" cards unless they've hit the retry cap.
+    const retryCount = nextRetries[id] ?? 0;
+    const shouldRequeue = status === "didnt" && retryCount < MAX_RETRIES;
+    if (shouldRequeue) nextRetries[id] = retryCount + 1;
+    const nextQueue = shouldRequeue ? [...tail, id] : tail;
+    const completed = nextQueue.length === 0;
 
-      const nextState: State = {
-        ...prev,
-        statuses: nextStatuses,
-        retries: nextRetries,
-        queue: nextQueue,
-        flipped: false,
-        completed,
-      };
+    const nextState: State = {
+      ...state,
+      statuses: nextStatuses,
+      retries: nextRetries,
+      queue: nextQueue,
+      flipped: false,
+      completed,
+    };
 
-      if (completed) {
-        // Flashcards are completion-only — self-rating is honor-system, so
-        // working through the deck once is what the gradebook records. The
-        // knew/didn't tally is shown to the learner but not used for scoring.
-        onSubmit({
-          raw: 1,
-          max: 1,
-          success: true,
-          suspendData: JSON.stringify(nextState),
-        });
-      }
+    // Keyboard users answered from a button that is about to unmount; put
+    // focus on the next card's flip surface once it renders.
+    focusNextCardRef.current = !completed;
+    setState(nextState);
 
-      return nextState;
-    });
+    if (completed) {
+      // Flashcards are completion-only — self-rating is honor-system, so
+      // working through the deck once is what the gradebook records. The
+      // knew/didn't tally is shown to the learner but not used for scoring.
+      onSubmit({
+        raw: 1,
+        max: 1,
+        success: true,
+        suspendData: JSON.stringify(nextState),
+      });
+    }
   };
 
   // Reduced-motion: detected at render so we can skip the flip animation
@@ -220,6 +232,13 @@ function Component({
     <StatusBadge tone="neutral" icon={<DotIcon />}>
       In progress
     </StatusBadge>
+  );
+
+  // Only the scoring slice is relevant here: flashcards' behaviour block has
+  // none of the legacy scoring fields resolveScoring knows how to read.
+  const scoring = useMemo(
+    () => resolveScoring({ scoring: config.scoring }, { mode: "completion" }),
+    [config.scoring],
   );
 
   const practiceAgain = () => {
@@ -269,8 +288,15 @@ function Component({
           )}
         </div>
 
+        {/* Screen-reader announcement of the revealed back. The flip is a CSS
+            transform, which assistive tech does not announce on its own. */}
+        <div className="kukui-fc__sr-live" aria-live="polite">
+          {!submitted && state.flipped && currentCard ? htmlToText(currentCard.back) : ""}
+        </div>
+
         {!submitted && currentCard ? (
           <div
+            ref={cardRef}
             className={[
               "kukui-fc__card",
               state.flipped ? "is-flipped" : "",
@@ -301,7 +327,6 @@ function Component({
             <div
               className="kukui-fc__face kukui-fc__face--back"
               aria-hidden={!state.flipped}
-              id={cardLiveId}
             >
               <span className="kukui-fc__face-label">Back</span>
               <SafeHtml className="kukui-fc__face-body" html={currentCard.back} />
@@ -339,7 +364,7 @@ function Component({
               </>
             ) : (
               <button type="button" className="kukui-fc__primary" onClick={flip}>
-                {nextLabel === "Next card" ? "Reveal answer" : nextLabel}
+                {nextLabel}
               </button>
             )}
           </div>
@@ -351,16 +376,20 @@ function Component({
               Run-through complete — you knew {knewCount} of {totalCount} (
               {knewPct}%). Submitted for credit.
             </p>
-            <p className="kukui-fc__summary-sub">
-              Practice as many times as you like — your grade stays at 100%.
-            </p>
-            <button
-              type="button"
-              className="kukui-fc__primary"
-              onClick={practiceAgain}
-            >
-              Practice again
-            </button>
+            {scoring.enableRetry ? (
+              <>
+                <p className="kukui-fc__summary-sub">
+                  Practice as many times as you like — your grade stays at 100%.
+                </p>
+                <button
+                  type="button"
+                  className="kukui-fc__primary"
+                  onClick={practiceAgain}
+                >
+                  Practice again
+                </button>
+              </>
+            ) : null}
           </div>
         ) : null}
       </article>
@@ -393,6 +422,15 @@ function parseSuspend(s: string | undefined, config: FlashcardsConfig): State | 
         raw === "knew" || raw === "didnt" ? raw : "unanswered";
       const r = (parsed.retries as Record<string, unknown> | undefined)?.[card.id];
       retries[card.id] = typeof r === "number" && r >= 0 ? r : 0;
+    }
+    // Config drift: cards added to the config after this suspend was written
+    // are neither queued nor answered. Append them so the learner still sees
+    // every card (and a stale `completed` flag cannot skip them).
+    const queued = new Set(queue);
+    for (const card of config.cards) {
+      if (!queued.has(card.id) && statuses[card.id] === "unanswered") {
+        queue.push(card.id);
+      }
     }
     return {
       queue,

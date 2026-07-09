@@ -105,6 +105,7 @@ const uiSchema = {
   },
   ui: {
     "ui:title": "Button label overrides",
+    checkAnswerButton: f("'Check' button text"),
     tryAgainButton: f("'Try Again' button text"),
   },
 } as const;

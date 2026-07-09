@@ -42,6 +42,17 @@ export const QuestionSetConfigSchema = z
     scoring: ScoringSchema.optional(),
     appearance: AppearanceSchema.default({ theme: "auto" }),
   })
-  .strict();
+  .strict()
+  // Weights are individually allowed to be 0 (an unscored practice item),
+  // but a set where EVERY weight is 0 has no denominator to aggregate over.
+  // Custom refinements are ignored by z.toJSONSchema, so Studio surfaces
+  // this via the Zod extraErrors merge, not AJV.
+  .refine(
+    (cfg) => cfg.questions.reduce((acc, q) => acc + (q.weight ?? 1), 0) > 0,
+    {
+      message: "total question weight must be greater than 0",
+      path: ["questions"],
+    },
+  );
 
 export type QuestionSetConfig = z.infer<typeof QuestionSetConfigSchema>;

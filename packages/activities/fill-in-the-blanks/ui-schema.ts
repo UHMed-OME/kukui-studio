@@ -41,7 +41,7 @@ const uiSchema = {
   author: AUTHOR,
   text: f(
     "Question text with blanks",
-    "Wrap each blank in asterisks, like *answer*. Use / or | for alternate accepted answers, e.g. *Honolulu/O'ahu*.",
+    "Wrap each blank in asterisks, like *answer*. Use | for alternate accepted answers, e.g. *Honolulu|Honoruru*. Slashes are literal, so answers like *mg/dL* work. Write \\* for a literal asterisk.",
     { "ui:widget": "textarea", "ui:options": { rows: 6 } },
   ),
   behaviour: {

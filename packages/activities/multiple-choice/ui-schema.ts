@@ -4,9 +4,9 @@
  * cannot be auto-derived from Zod alone because RJSF needs designer
  * decisions about layout and copy.
  *
- * Extracted from apps/studio-app/src/uiSchemas.ts. The original COMMON
- * fragment (appearance pin, etc.) stays in the consumer; this object
- * is what Studio's aggregator (Task 14) will merge with COMMON.
+ * Extracted from apps/studio-app/src/uiSchemas.ts. The COMMON / APPEARANCE /
+ * HIDDEN / f() identifiers from that file are inlined here as local
+ * constants so this module is standalone.
  */
 
 const HIDDEN = { "ui:widget": "hidden" } as const;
@@ -19,6 +19,28 @@ function f(title: string, help?: string, extra: Record<string, unknown> = {}) {
     ...extra,
   };
 }
+
+/**
+ * Shared uiSchema for the `appearance` block (theme pin). Mirrors the
+ * COMMON.APPEARANCE fragment from apps/studio-app/src/uiSchemas.ts so the
+ * "Appearance" section renders identically here.
+ */
+const APPEARANCE = {
+  "ui:title": "Appearance",
+  "ui:help":
+    'Pin a color scheme for this activity. "Auto" follows the learner\'s OS preference.',
+  theme: f(
+    "Color scheme",
+    'How the activity looks on the learner\'s screen. "Auto" lets the OS decide (light/dark); pick a specific scheme to override regardless of the learner\'s preference.',
+  ),
+} as const;
+
+const COMMON = {
+  version: HIDDEN,
+  _comment: HIDDEN,
+  $schema: HIDDEN,
+  appearance: APPEARANCE,
+} as const;
 
 const TITLE = f("Activity title", "Shown at the top of the activity and as the SCORM activity name.");
 
@@ -36,6 +58,7 @@ const BEHAVIOUR_SHOW_SOLUTION = HIDDEN;
 const BEHAVIOUR_SINGLEPOINT = HIDDEN;
 
 const uiSchema = {
+  ...COMMON,
   "ui:order": ["title", "question", "answers", "behaviour", "ui", "overallFeedback", "*"],
   title: TITLE,
   author: AUTHOR,

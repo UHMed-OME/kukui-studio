@@ -89,7 +89,10 @@ const uiSchema = {
   },
   expected: {
     "ui:title": "Expected (ground-truth) map",
-    nodes: f("Required node labels", "Optional. Labels the learner must include."),
+    nodes: f(
+      "Required nodes",
+      "Optional. Each entry matches a placed node by its id (starter/palette concepts) or by its label, ignoring case and surrounding spaces (learner-typed free-text nodes).",
+    ),
     edges: {
       "ui:title": "Required edges",
     },
@@ -104,7 +107,7 @@ const uiSchema = {
   },
   ui: {
     "ui:title": "Button label overrides",
-    submitButton: f("'Submit' button text"),
+    submitButtonLabel: f("'Submit' button text"),
   },
 } as const;
 

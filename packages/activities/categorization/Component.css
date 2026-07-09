@@ -15,7 +15,7 @@
   width: 100%;
   max-width: 960px;
   background: var(--color-surface, #ffffff);
-  border: 1px solid var(--color-border, #dad2c6);
+  border: 1px solid var(--color-border, #d1d7df);
   border-radius: var(--radius-card, 12px);
   padding: var(--spacing-3xl, 28px);
   box-shadow: var(--shadow-card);
@@ -29,7 +29,7 @@
   gap: var(--spacing-sm, 8px);
   min-height: 64px;
   padding: var(--spacing-md, 12px);
-  background: var(--color-tip-bg, #f2f0e8);
+  background: var(--color-tip-bg, #e9edf3);
   border: 1px solid color-mix(in oklab, var(--color-border) 50%, transparent);
   border-radius: var(--radius-md, 8px);
   transition: background-color 150ms ease;
@@ -56,8 +56,8 @@
   display: flex;
   flex-direction: column;
   min-height: 160px;
-  background: var(--color-tip-bg, #f2f0e8);
-  border: 1px solid color-mix(in oklab, var(--color-border-hover, #bbae9a) 50%, transparent);
+  background: var(--color-tip-bg, #e9edf3);
+  border: 1px solid color-mix(in oklab, var(--color-border-hover, #adb6c0) 50%, transparent);
   border-radius: var(--radius-md, 8px);
   transition: background-color 150ms ease;
 }
@@ -93,7 +93,7 @@
   min-height: 44px;
   padding: 8px 14px;
   background: var(--color-surface, #ffffff);
-  border: 2px solid var(--color-primary, #7b4324);
+  border: 2px solid var(--color-primary, #4a7a5f);
   border-radius: var(--radius-md, 8px);
   font-size: var(--font-size-answer, 15px);
   color: var(--color-text-primary);
@@ -146,32 +146,40 @@
   color: var(--color-error);
 }
 
+/* Correction line under a placed chip. Always rendered (empty pre-submit) so
+   revealing corrections on submit is opacity-only and never reflows the bin. */
 .kukui-cat__chip-correction {
+  min-height: 18px;
   font-size: var(--font-size-meta, 13px);
   color: var(--color-error);
   font-weight: 700;
+  opacity: 0;
+  transition: opacity 200ms ease;
 }
 
+.kukui-cat__chip-correction.is-visible {
+  opacity: 1;
+}
+
+/* Pattern A feedback — constant min-height reservation; opacity 0/1 fade. */
 .kukui-cat__feedback {
-  min-height: 0;
+  min-height: 28px;
   margin-top: var(--spacing-lg, 16px);
   font-size: var(--font-size-meta, 13px);
   color: var(--color-text-secondary);
   opacity: 0;
-  transition:
-    opacity 200ms ease,
-    min-height 200ms ease;
+  transition: opacity 200ms ease;
 }
 
 .kukui-cat__feedback.is-visible {
   opacity: 1;
-  min-height: 28px;
 }
 
 .kukui-cat__actions {
   margin-top: var(--spacing-xl, 20px);
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
   gap: var(--spacing-md, 12px);
 }
 
@@ -186,7 +194,7 @@
 
 .kukui-cat__primary {
   background: var(--color-primary);
-  color: #ffffff;
+  color: var(--color-on-primary, #ffffff);
   border: none;
 }
 
@@ -205,12 +213,29 @@
   border: 2px solid var(--color-primary);
 }
 
+.kukui-cat__score {
+  font-size: var(--font-size-prompt, 16px);
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+.kukui-cat__band {
+  font-weight: 400;
+  color: var(--color-text-secondary);
+}
+
+.kukui-cat__credit {
+  margin: var(--spacing-lg, 16px) 0 0;
+  font-size: var(--font-size-meta, 13px);
+  color: var(--color-text-secondary, #49515b);
+}
+
 .kukui-cat__fallback {
   margin-top: var(--spacing-xl, 20px);
   padding: var(--spacing-md, 12px) var(--spacing-lg, 16px);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md, 8px);
-  background: var(--color-tip-bg, #f2f0e8);
+  background: var(--color-tip-bg, #e9edf3);
 }
 
 .kukui-cat__fallback-legend {
@@ -250,6 +275,7 @@
 
 @media (prefers-reduced-motion: reduce) {
   .kukui-cat__feedback,
+  .kukui-cat__chip-correction,
   .kukui-cat__tray,
   .kukui-cat__bin {
     transition: none;

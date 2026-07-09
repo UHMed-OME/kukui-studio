@@ -191,6 +191,86 @@ describe("BranchingScenario", () => {
     expect(onSubmit).toHaveBeenCalledTimes(1);
   });
 
+  it("shows the picked choice's feedback on the NEW node (captured at pick time)", async () => {
+    const user = userEvent.setup();
+    render(<Component config={cfg} onSubmit={vi.fn()} />);
+    await user.click(screen.getByRole("button", { name: /take vitals/i }));
+    // We navigated (the picked choice unmounted), yet its feedback renders.
+    expect(screen.getByText(/bp is 150\/95/i)).toBeInTheDocument();
+    expect(
+      screen.getByText(/vitals first establishes a baseline/i),
+    ).toBeInTheDocument();
+  });
+
+  it("does not mis-attribute feedback when the new node reuses the same choice id", async () => {
+    const user = userEvent.setup();
+    const reused: BranchingScenarioConfig = {
+      version: "1.0",
+      title: "Reused ids",
+      startNodeId: "n1",
+      nodes: [
+        {
+          id: "n1",
+          prompt: "<p>First.</p>",
+          choices: [
+            { id: "c", text: "Go on", nextNodeId: "n2", feedback: "First-node feedback." },
+          ],
+        },
+        {
+          id: "n2",
+          prompt: "<p>Second.</p>",
+          choices: [
+            { id: "c", text: "Finish", nextNodeId: "end", feedback: "Second-node feedback." },
+          ],
+        },
+        { id: "end", prompt: "<p>Done.</p>", choices: null },
+      ],
+    };
+    render(<Component config={reused} onSubmit={vi.fn()} />);
+    await user.click(screen.getByRole("button", { name: /go on/i }));
+    // Feedback belongs to the choice picked on n1, not n2's same-id choice.
+    expect(screen.getByText(/first-node feedback/i)).toBeInTheDocument();
+    expect(screen.queryByText(/second-node feedback/i)).not.toBeInTheDocument();
+    // And n2's choice is not styled as the active pick.
+    const finish = screen.getByRole("button", { name: /finish/i });
+    expect(finish.className).not.toMatch(/is-active/);
+  });
+
+  it("completion scoring mode reports success at any terminal, even a failing outcome", async () => {
+    const user = userEvent.setup();
+    const onSubmit = vi.fn();
+    const completion: BranchingScenarioConfig = {
+      ...cfg,
+      scoring: { mode: "completion" },
+    };
+    render(<Component config={completion} onSubmit={onSubmit} />);
+    await user.click(screen.getByRole("button", { name: /discharge them/i }));
+    expect(onSubmit).toHaveBeenCalledWith(
+      expect.objectContaining({ raw: 1, max: 1, success: true }),
+    );
+  });
+
+  it("moves focus to the new node's prompt after navigating", async () => {
+    const user = userEvent.setup();
+    const { container } = render(<Component config={cfg} onSubmit={vi.fn()} />);
+    await user.click(screen.getByRole("button", { name: /take vitals/i }));
+    const prompt = container.querySelector(".kukui-bs__prompt");
+    expect(prompt).not.toBeNull();
+    expect(prompt).toHaveFocus();
+  });
+
+  it("falls back to the start node when suspendData references a deleted node", () => {
+    const suspendData = JSON.stringify({
+      currentNodeId: "no-such-node",
+      path: ["start"],
+      terminalReached: false,
+    });
+    render(<Component config={cfg} onSubmit={vi.fn()} suspendData={suspendData} />);
+    // No unrecoverable missing-node screen: we are back at the start.
+    expect(screen.getByText(/chest pain/i)).toBeInTheDocument();
+    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+  });
+
   it("resumes from suspendData when provided", () => {
     const suspendData = JSON.stringify({
       currentNodeId: "good",

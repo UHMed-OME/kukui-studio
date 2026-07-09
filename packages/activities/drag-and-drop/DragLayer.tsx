@@ -33,6 +33,11 @@ export function DragLayer(props: DragLayerProps) {
     const chipId = String(e.active.id);
     if (!e.over) return;
     const overId = String(e.over.id);
+    if (overId === "tray") {
+      // Dropped back on the tray: lift the chip out of its zone.
+      onPlace(chipId, null);
+      return;
+    }
     if (overId.startsWith("zone:")) {
       onPlace(chipId, overId.slice("zone:".length));
     }

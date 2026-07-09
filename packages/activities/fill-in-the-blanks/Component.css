@@ -13,7 +13,7 @@
   width: 100%;
   max-width: 720px;
   background: var(--color-surface, #ffffff);
-  border: 1px solid var(--color-border, #dad2c6);
+  border: 1px solid var(--color-border, #d1d7df);
   border-radius: var(--radius-card, 12px);
   box-shadow: var(--shadow-card);
   padding: var(--spacing-3xl, 28px);
@@ -57,7 +57,7 @@
   min-height: 44px;
   padding: 4px 10px;
   background: var(--color-surface, #ffffff);
-  border: 2px solid var(--color-border, #dad2c6);
+  border: 2px solid var(--color-border, #d1d7df);
   border-radius: var(--radius-md, 8px);
   font-size: var(--font-size-answer, 15px);
   color: var(--color-text-primary);
@@ -67,11 +67,11 @@
 }
 
 .kukui-fib__input:hover:not(:disabled) {
-  border-color: var(--color-border-hover, #bbae9a);
+  border-color: var(--color-border-hover, #adb6c0);
 }
 
 .kukui-fib__input:focus-visible {
-  outline: 2px solid var(--color-primary, #7b4324);
+  outline: 2px solid var(--color-primary, #4a7a5f);
   outline-offset: 2px;
 }
 
@@ -111,7 +111,7 @@
   min-height: 28px;
   margin-top: var(--spacing-lg, 16px);
   font-size: var(--font-size-meta, 13px);
-  color: var(--color-text-secondary, #606069);
+  color: var(--color-text-secondary, #49515b);
   opacity: 0;
   transition: opacity 200ms ease;
 }
@@ -131,8 +131,8 @@
 .kukui-fib__primary {
   min-height: 44px;
   padding: 10px 20px;
-  background: var(--color-primary, #7b4324);
-  color: #ffffff;
+  background: var(--color-primary, #4a7a5f);
+  color: var(--color-on-primary, #ffffff);
   border: none;
   border-radius: var(--radius-md, 8px);
   font-size: var(--font-size-answer, 15px);
@@ -140,7 +140,7 @@
 }
 
 .kukui-fib__primary:hover:not(:disabled) {
-  background: var(--color-primary-hover, #9b5830);
+  background: var(--color-primary-hover, #3f6b52);
 }
 
 .kukui-fib__primary:disabled {
@@ -148,12 +148,23 @@
   cursor: not-allowed;
 }
 
+.kukui-fib__score {
+  font-size: var(--font-size-prompt, 16px);
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+.kukui-fib__band {
+  font-weight: 400;
+  color: var(--color-text-secondary, #49515b);
+}
+
 .kukui-fib__secondary {
   min-height: 44px;
   padding: 10px 20px;
   background: transparent;
-  color: var(--color-primary, #7b4324);
-  border: 2px solid var(--color-primary, #7b4324);
+  color: var(--color-primary, #4a7a5f);
+  border: 2px solid var(--color-primary, #4a7a5f);
   border-radius: var(--radius-md, 8px);
   font-size: var(--font-size-answer, 15px);
   font-weight: 700;

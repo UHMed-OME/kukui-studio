@@ -15,7 +15,7 @@
   width: 100%;
   max-width: 880px;
   background: var(--color-surface, #ffffff);
-  border: 1px solid var(--color-border, #dad2c6);
+  border: 1px solid var(--color-border, #d1d7df);
   border-radius: var(--radius-card, 12px);
   padding: var(--spacing-3xl, 28px);
   box-shadow: var(--shadow-card);
@@ -23,18 +23,11 @@
   --kukui-card-pad: var(--spacing-3xl, 28px);
 }
 
-.kukui-mp__prompt {
-  margin-bottom: var(--spacing-md, 12px);
-  font-size: var(--font-size-prompt, 16px);
-  line-height: 1.5;
-  color: var(--color-text-primary, #1c1e20);
-}
-
 .kukui-mp__instructions {
   margin: 0 0 var(--spacing-lg, 16px);
   min-height: 20px; /* layout-stable: reserve space whether text changes or not */
   font-size: var(--font-size-meta, 13px);
-  color: var(--color-text-secondary, #606069);
+  color: var(--color-text-secondary, #49515b);
 }
 
 .kukui-mp__columns {
@@ -72,7 +65,7 @@
   min-height: 48px;
   padding: var(--spacing-md, 12px) var(--spacing-lg, 16px);
   background: var(--color-surface, #ffffff);
-  border: 2px solid var(--color-border, #dad2c6);
+  border: 2px solid var(--color-border, #d1d7df);
   border-radius: var(--radius-md, 8px);
   text-align: left;
   font-size: var(--font-size-answer, 15px);
@@ -84,7 +77,7 @@
 }
 
 .kukui-mp__item:hover:not(:disabled):not(.is-selected):not(.is-correct):not(.is-incorrect) {
-  border-color: var(--color-border-hover, #bbae9a);
+  border-color: var(--color-border-hover, #adb6c0);
 }
 
 .kukui-mp__item:disabled {
@@ -92,18 +85,18 @@
 }
 
 .kukui-mp__item.is-selected {
-  border-color: var(--color-primary, #7b4324);
+  border-color: var(--color-primary, #4a7a5f);
   background: var(--color-primary-soft);
 }
 
 .kukui-mp__item.is-paired {
-  border-color: var(--color-primary, #7b4324);
+  border-color: var(--color-primary, #4a7a5f);
 }
 
 /* Right-column items get a subtle "pick me" cue while a left-row is selected. */
 .kukui-mp__item--right.is-target:not(.is-paired) {
-  border-color: var(--color-border-hover, #bbae9a);
-  background: var(--color-tip-bg, #f2f0e8);
+  border-color: var(--color-border-hover, #adb6c0);
+  background: var(--color-tip-bg, #e9edf3);
 }
 
 .kukui-mp__item.is-correct {
@@ -125,8 +118,8 @@
   height: 24px;
   padding: 0 6px;
   border-radius: var(--radius-pill, 4px);
-  background: var(--color-tip-bg, #f2f0e8);
-  border: 2px solid var(--color-border, #dad2c6);
+  background: var(--color-tip-bg, #e9edf3);
+  border: 2px solid var(--color-border, #d1d7df);
   font-size: var(--font-size-meta, 13px);
   font-weight: 700;
   color: var(--color-text-primary);
@@ -136,8 +129,8 @@
 
 .kukui-mp__item.is-selected .kukui-mp__badge,
 .kukui-mp__item.is-paired .kukui-mp__badge {
-  border-color: var(--color-primary, #7b4324);
-  color: var(--color-primary, #7b4324);
+  border-color: var(--color-primary, #4a7a5f);
+  color: var(--color-primary, #4a7a5f);
 }
 
 .kukui-mp__item.is-correct .kukui-mp__badge {
@@ -170,26 +163,42 @@
   color: var(--color-error, #c34132);
 }
 
+/* Constant-height slot under each left item. Holds the Clear button while
+   answering and the correct-match reveal after submit — reserved either way
+   so pairing / submitting never reflows the column (layout-stable). */
+.kukui-mp__aux {
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+}
+
 .kukui-mp__clear {
   align-self: flex-start;
-  min-height: 28px;
+  min-height: 44px; /* WCAG 2.5.5 tap target */
+  min-width: 44px;
   padding: 2px 8px;
   background: transparent;
   border: none;
   font-size: var(--font-size-meta, 13px);
-  color: var(--color-text-secondary, #606069);
+  color: var(--color-text-secondary, #49515b);
   text-decoration: underline;
   cursor: pointer;
 }
 
 .kukui-mp__clear:hover {
-  color: var(--color-primary, #7b4324);
+  color: var(--color-primary, #4a7a5f);
 }
 
 .kukui-mp__reveal {
   margin: 0;
   font-size: var(--font-size-meta, 13px);
-  color: var(--color-text-secondary, #606069);
+  color: var(--color-text-secondary, #49515b);
+  opacity: 0;
+  transition: opacity 200ms ease;
+}
+
+.kukui-mp__reveal.is-visible {
+  opacity: 1;
 }
 
 .kukui-mp__fallback {
@@ -197,7 +206,7 @@
   padding: var(--spacing-md, 12px) var(--spacing-lg, 16px);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md, 8px);
-  background: var(--color-tip-bg, #f2f0e8);
+  background: var(--color-tip-bg, #e9edf3);
 }
 
 .kukui-mp__fallback-legend {
@@ -229,7 +238,7 @@
 .kukui-mp__fallback-select {
   min-height: 44px;
   padding: 4px 10px;
-  border: 2px solid var(--color-border, #dad2c6);
+  border: 2px solid var(--color-border, #d1d7df);
   border-radius: var(--radius-md, 8px);
   background: var(--color-surface, #ffffff);
   font-size: var(--font-size-answer, 15px);
@@ -253,13 +262,13 @@
 }
 
 .kukui-mp__primary {
-  background: var(--color-primary, #7b4324);
-  color: #ffffff;
+  background: var(--color-primary, #4a7a5f);
+  color: var(--color-on-primary, #ffffff);
   border: none;
 }
 
 .kukui-mp__primary:hover:not(:disabled) {
-  background: var(--color-primary-hover, #9b5830);
+  background: var(--color-primary-hover, #3f6b52);
 }
 
 .kukui-mp__primary:disabled {
@@ -269,8 +278,8 @@
 
 .kukui-mp__secondary {
   background: transparent;
-  color: var(--color-primary, #7b4324);
-  border: 2px solid var(--color-primary, #7b4324);
+  color: var(--color-primary, #4a7a5f);
+  border: 2px solid var(--color-primary, #4a7a5f);
 }
 
 .kukui-mp__score {
@@ -279,8 +288,20 @@
   color: var(--color-text-primary);
 }
 
+.kukui-mp__band {
+  font-weight: 400;
+  color: var(--color-text-secondary);
+}
+
+.kukui-mp__credit {
+  margin: var(--spacing-lg, 16px) 0 0;
+  font-size: var(--font-size-meta, 13px);
+  color: var(--color-text-secondary, #49515b);
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .kukui-mp__item {
+  .kukui-mp__item,
+  .kukui-mp__reveal {
     transition: none;
   }
 }

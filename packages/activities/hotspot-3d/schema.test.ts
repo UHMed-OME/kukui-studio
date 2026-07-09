@@ -53,6 +53,28 @@ describe("Hotspot3DConfigSchema", () => {
     expect(result.success).toBe(true);
   });
 
+  it("rejects a config where no hotspot is marked correct", () => {
+    const result = Hotspot3DConfigSchema.safeParse({
+      ...baseValid,
+      hotspots: [
+        { id: "h1", position: { x: 0, y: 0, z: 0 }, radius: 0.1, correct: false },
+        { id: "h2", position: { x: 1, y: 0, z: 0 }, radius: 0.1, correct: false },
+      ],
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it("accepts hotspots without a radius (reserved field, unused today)", () => {
+    const result = Hotspot3DConfigSchema.safeParse({
+      ...baseValid,
+      hotspots: [
+        { id: "h1", position: { x: 0, y: 0, z: 0 }, correct: true },
+        { id: "h2", position: { x: 1, y: 0, z: 0 }, correct: false },
+      ],
+    });
+    expect(result.success).toBe(true);
+  });
+
   it("rejects fewer than 2 hotspots", () => {
     const result = Hotspot3DConfigSchema.safeParse({
       ...baseValid,

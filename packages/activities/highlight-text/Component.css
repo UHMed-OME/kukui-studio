@@ -17,7 +17,7 @@
   width: 100%;
   max-width: 720px;
   background: var(--color-surface, #ffffff);
-  border: 1px solid var(--color-border, #dad2c6);
+  border: 1px solid var(--color-border, #d1d7df);
   border-radius: var(--radius-card, 12px);
   padding: var(--spacing-3xl, 28px);
   overflow: hidden;
@@ -29,7 +29,7 @@
   margin: 0 0 var(--spacing-xl, 20px);
   font-size: var(--font-size-prompt, 16px);
   line-height: 2;
-  color: var(--color-text-primary, #1c1e20);
+  color: var(--color-text-primary);
 }
 
 .kukui-ht__slot {
@@ -53,10 +53,10 @@
   padding: var(--spacing-xs, 4px) var(--spacing-sm, 8px);
   margin: 2px 0;
   background: var(--color-surface, #ffffff);
-  border: 2px solid var(--color-border, #dad2c6);
+  border: 2px solid var(--color-border, #d1d7df);
   border-radius: var(--radius-md, 8px);
   font: inherit;
-  color: var(--color-text-primary, #1c1e20);
+  color: var(--color-text-primary);
   cursor: pointer;
   transition:
     background-color 150ms ease,
@@ -64,11 +64,11 @@
 }
 
 .kukui-ht__token:hover:not(:disabled):not(.is-selected) {
-  border-color: var(--color-border-hover, #bbae9a);
+  border-color: var(--color-border-hover, #adb6c0);
 }
 
 .kukui-ht__token:focus-visible {
-  outline: 2px solid var(--color-primary, #7b4324);
+  outline: 2px solid var(--color-primary, #4a7a5f);
   outline-offset: 2px;
 }
 
@@ -77,7 +77,7 @@
 }
 
 .kukui-ht__token.is-selected {
-  border-color: var(--color-primary, #7b4324);
+  border-color: var(--color-primary, #4a7a5f);
   background: var(--color-primary-soft);
 }
 
@@ -92,8 +92,11 @@
 }
 
 .kukui-ht__token.is-reveal {
+  /* Dashed border marks a missed-correct token revealed by the learner's
+     opt-in "Show solution" press. Width stays 2 px so nothing reflows;
+     the dash pattern is a non-color cue alongside the label text. */
   border-color: var(--color-success, #2e6e41);
-  border-style: solid;
+  border-style: dashed;
   background: transparent;
 }
 
@@ -128,8 +131,8 @@
   padding: var(--spacing-sm, 8px) var(--spacing-md, 12px);
   border-radius: var(--radius-lg, 10px);
   font-size: var(--font-size-meta, 13px);
-  color: var(--color-text-primary, #1c1e20);
-  border: 2px solid var(--color-border, #dad2c6);
+  color: var(--color-text-primary);
+  border: 2px solid var(--color-border, #d1d7df);
   width: 100%;
 }
 
@@ -139,7 +142,7 @@
 }
 
 .kukui-ht__feedback-text.is-error {
-  color: var(--color-text-primary, #1c1e20);
+  color: var(--color-text-primary);
 }
 
 .kukui-ht__actions {
@@ -153,8 +156,8 @@
 .kukui-ht__primary {
   min-height: 44px;
   padding: 10px 20px;
-  background: var(--color-primary, #7b4324);
-  color: #ffffff;
+  background: var(--color-primary, #4a7a5f);
+  color: var(--color-on-primary, #ffffff);
   border: none;
   border-radius: var(--radius-md, 8px);
   font-size: var(--font-size-answer, 15px);
@@ -163,7 +166,7 @@
 }
 
 .kukui-ht__primary:hover:not(:disabled) {
-  background: var(--color-primary-hover, #9b5830);
+  background: var(--color-primary-hover, #3f6b52);
 }
 
 .kukui-ht__primary:disabled {
@@ -175,8 +178,8 @@
   min-height: 44px;
   padding: 10px 20px;
   background: transparent;
-  color: var(--color-primary, #7b4324);
-  border: 2px solid var(--color-primary, #7b4324);
+  color: var(--color-primary, #4a7a5f);
+  border: 2px solid var(--color-primary, #4a7a5f);
   border-radius: var(--radius-md, 8px);
   font-size: var(--font-size-answer, 15px);
   font-weight: 700;

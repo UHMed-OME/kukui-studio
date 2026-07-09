@@ -171,32 +171,104 @@ describe("interactive-video Component", () => {
     stubVideoMethods(video);
     fireEvent.ended(video);
     expect(onSubmit).toHaveBeenCalledTimes(1);
-    // Aggregate over zero scores: raw 0 / max 0; aggregate() returns success when pct >= passPercent.
-    // With max === 0, pct = 0, which is < 50, so success is false.
-    expect(onSubmit.mock.calls[0]?.[0]).toMatchObject({ raw: 0, max: 0 });
+    // Zero scorable interactions = completion semantics: aggregate() reports
+    // success at max 0, so a plain watch-through completes rather than fails.
+    expect(onSubmit.mock.calls[0]?.[0]).toMatchObject({ raw: 0, max: 0, success: true });
+    // The header badge matches: Complete, not Review.
+    expect(screen.getByText(/complete/i)).toBeInTheDocument();
   });
 
-  it("persists state via onPersist on time updates and on interaction resolution", async () => {
+  it("throttles playhead persistence: no onPersist per timeupdate, flush on pause", () => {
+    const onPersist = vi.fn();
+    render(<Component config={cfg} onSubmit={vi.fn()} onPersist={onPersist} />);
+    const video = getVideo();
+    stubVideoMethods(video);
+
+    // Below the 5s throttle interval nothing is persisted per frame.
+    onPersist.mockClear();
+    tick(video, 2);
+    tick(video, 3.5);
+    expect(onPersist).not.toHaveBeenCalled();
+
+    // Pausing flushes the live playhead immediately.
+    fireEvent.pause(video);
+    expect(onPersist).toHaveBeenCalled();
+    expect(onPersist.mock.calls.at(-1)?.[0] as string).toMatch(/"lastTime":3/);
+  });
+
+  it("persists the playhead at the throttle interval during uninterrupted playback", () => {
+    const onPersist = vi.fn();
+    const noInteractions: InteractiveVideoConfig = { ...cfg, interactions: [] };
+    render(<Component config={noInteractions} onSubmit={vi.fn()} onPersist={onPersist} />);
+    const video = getVideo();
+    stubVideoMethods(video);
+
+    onPersist.mockClear();
+    tick(video, 2);
+    expect(onPersist).not.toHaveBeenCalled();
+    // 5s of playback since the last persisted position crosses the throttle.
+    tick(video, 6);
+    expect(onPersist).toHaveBeenCalled();
+    expect(onPersist.mock.calls.at(-1)?.[0] as string).toMatch(/"lastTime":6/);
+  });
+
+  it("persists on interaction open and on interaction resolution", async () => {
     const user = userEvent.setup();
     const onPersist = vi.fn();
     render(<Component config={cfg} onSubmit={vi.fn()} onPersist={onPersist} />);
     const video = getVideo();
     stubVideoMethods(video);
 
+    // Hitting the interaction flushes the playhead alongside opening it.
     onPersist.mockClear();
-    tick(video, 3.5);
-    expect(onPersist).toHaveBeenCalled();
-    const afterTick = onPersist.mock.calls.at(-1)?.[0] as string;
-    expect(afterTick).toMatch(/"lastTime":3/);
-
-    // Trigger interaction and resolve it; expect resolvedInteractions to be persisted.
     tick(video, 5);
+    expect(onPersist).toHaveBeenCalled();
+    expect(onPersist.mock.calls.at(-1)?.[0] as string).toMatch(/"lastTime":5/);
+
+    // Resolving the embedded activity persists resolvedInteractions.
     await user.click(screen.getByRole("button", { name: /^a,/i }));
     await user.click(screen.getByRole("button", { name: /^check$/i }));
-
     const last = onPersist.mock.calls.at(-1)?.[0] as string;
     expect(last).toMatch(/"resolvedInteractions"/);
     expect(last).toMatch(/"q1"/);
+  });
+
+  it("seeks to the persisted lastTime once the media is ready", () => {
+    const suspend = JSON.stringify({
+      stage: "watching",
+      resolvedInteractions: {},
+      lastTime: 42,
+    });
+    render(<Component config={{ ...cfg, interactions: [] }} onSubmit={vi.fn()} suspendData={suspend} />);
+    const video = getVideo();
+    stubVideoMethods(video);
+    let _t = 0;
+    Object.defineProperty(video, "currentTime", {
+      configurable: true,
+      get: () => _t,
+      set: (v: number) => {
+        _t = v;
+      },
+    });
+    Object.defineProperty(video, "duration", { configurable: true, get: () => 100 });
+    fireEvent.loadedMetadata(video);
+    expect(_t).toBe(42);
+  });
+
+  it("initializes the captions toggle from a default:true track", () => {
+    const withTracks: InteractiveVideoConfig = {
+      ...cfg,
+      interactions: [],
+      video: {
+        ...cfg.video,
+        tracks: [
+          { src: "https://example.test/en.vtt", srclang: "en", label: "English", default: true },
+        ],
+      },
+    };
+    render(<Component config={withTracks} onSubmit={vi.fn()} />);
+    const cc = screen.getByRole("button", { name: /captions/i });
+    expect(cc).toHaveAttribute("aria-pressed", "true");
   });
 
   it("mounts a YouTube player container for youtube sources", () => {
@@ -211,14 +283,15 @@ describe("interactive-video Component", () => {
     expect(screen.getByTestId("kukui-iv-youtube")).toBeInTheDocument();
   });
 
-  it("still shows a placeholder for Vimeo (not implemented)", () => {
-    const vm: InteractiveVideoConfig = {
+  it("shows a visible fallback for a YouTube source with no parseable video id", () => {
+    const yt: InteractiveVideoConfig = {
       ...cfg,
-      video: { src: "https://vimeo.com/123", type: "vimeo" },
+      video: { src: "https://example.test/not-a-watch-url", type: "youtube" },
       interactions: [],
     };
-    render(<Component config={vm} onSubmit={vi.fn()} />);
-    expect(screen.getByText(/vimeo embeds aren.t supported yet/i)).toBeInTheDocument();
+    render(<Component config={yt} onSubmit={vi.fn()} />);
+    expect(screen.getByTestId("kukui-iv-youtube-fallback")).toBeInTheDocument();
+    expect(screen.getByText(/couldn.t load/i)).toBeInTheDocument();
   });
 
   it("seeking forward past an unresolved required interaction rewinds and pauses", () => {

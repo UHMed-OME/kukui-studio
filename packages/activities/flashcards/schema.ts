@@ -45,7 +45,8 @@ export const FlashcardsConfigSchema = z
       .object({
         gotItButton: z.string().optional(),
         reviewAgainButton: z.string().optional(),
-        nextButton: z.string().optional(),
+        /** Label on the pre-flip reveal button. */
+        nextButton: z.string().default("Reveal answer"),
       })
       .strict()
       .optional(),

@@ -12,6 +12,9 @@ const starter = {
     { id: "i2", text: "Item 2", correctCategory: "c2" },
   ],
   behaviour: { enableRetry: true },
+  // appearance has a schema .default(): seed it so the Studio form's
+  // AJV-required check passes on a fresh draft.
+  appearance: { theme: "auto" },
 };
 
 export default starter;

@@ -153,4 +153,62 @@ describe("MatchingPairs", () => {
     expect(within(rightCol).getByRole("button", { name: /ace inhibitor/i })).toBeInTheDocument();
     expect(within(rightCol).getByRole("button", { name: /biguanide/i })).toBeInTheDocument();
   });
+
+  it("restores connections and rightOrder from suspendData", () => {
+    const suspend = JSON.stringify({
+      stage: "answering",
+      connections: { p1: "p2", p2: null, p3: null },
+      rightOrder: ["p3", "p1", "p2"],
+      attempts: 0,
+    });
+    render(<Component config={cfg} onSubmit={vi.fn()} suspendData={suspend} />);
+    const selects = screen.getAllByRole("combobox");
+    expect(selects[0]).toHaveValue("p2");
+    expect(selects[1]).toHaveValue("");
+    // Right column renders in the persisted order.
+    const rightCol = screen.getByRole("list", { name: /right column items/i });
+    const rightButtons = within(rightCol).getAllByRole("button");
+    expect(rightButtons[0]).toHaveAccessibleName(/biguanide/i);
+    expect(rightButtons[1]).toHaveAccessibleName(/beta blocker/i);
+    expect(rightButtons[2]).toHaveAccessibleName(/ace inhibitor/i);
+  });
+
+  it("rejects a persisted rightOrder with duplicate ids (rebuilds from config)", () => {
+    const suspend = JSON.stringify({
+      stage: "answering",
+      connections: { p1: null, p2: null, p3: null },
+      // Same length as pairs, but "p1" twice and no "p3": not set-equal.
+      rightOrder: ["p1", "p1", "p2"],
+      attempts: 0,
+    });
+    render(<Component config={cfg} onSubmit={vi.fn()} suspendData={suspend} />);
+    const rightCol = screen.getByRole("list", { name: /right column items/i });
+    const rightButtons = within(rightCol).getAllByRole("button");
+    // Rebuilt config order: every pair rendered exactly once.
+    expect(rightButtons).toHaveLength(3);
+    expect(rightButtons[0]).toHaveAccessibleName(/beta blocker/i);
+    expect(rightButtons[1]).toHaveAccessibleName(/ace inhibitor/i);
+    expect(rightButtons[2]).toHaveAccessibleName(/biguanide/i);
+  });
+
+  it("honors the headingLevel prop", () => {
+    render(<Component config={cfg} onSubmit={vi.fn()} headingLevel={2} />);
+    expect(
+      screen.getByRole("heading", { level: 2, name: /match drugs to their classes/i }),
+    ).toBeInTheDocument();
+  });
+
+  it("shows a raw/max score line and the author credit after submit", async () => {
+    const user = userEvent.setup();
+    render(
+      <Component config={{ ...cfg, author: "Dr. Aytac" }} onSubmit={vi.fn()} />,
+    );
+    expect(screen.getByText(/By Dr\. Aytac/)).toBeInTheDocument();
+    const selects = screen.getAllByRole("combobox");
+    await user.selectOptions(selects[0]!, "p1");
+    await user.selectOptions(selects[1]!, "p2");
+    await user.selectOptions(selects[2]!, "p3");
+    await user.click(screen.getByRole("button", { name: /^check$/i }));
+    expect(screen.getByText(/3 \/ 3/)).toBeInTheDocument();
+  });
 });

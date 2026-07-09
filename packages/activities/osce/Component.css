@@ -14,7 +14,7 @@
   width: 100%;
   max-width: 720px;
   background: var(--color-surface, #ffffff);
-  border: 1px solid var(--color-border, #dad2c6);
+  border: 1px solid var(--color-border, #d1d7df);
   border-radius: var(--radius-card, 12px);
   padding: var(--spacing-3xl, 28px);
   box-shadow: var(--shadow-card);
@@ -32,7 +32,7 @@
   font-size: var(--font-size-prompt, 16px);
   line-height: 1.5;
   color: var(--color-text-primary, #1c1e20);
-  background: var(--color-tip-bg, #f2f0e8);
+  background: var(--color-tip-bg, #e9edf3);
   padding: var(--spacing-lg, 16px);
   border-radius: var(--radius-lg, 10px);
 }
@@ -63,7 +63,7 @@
   min-height: 44px;
   padding: var(--spacing-sm, 8px) var(--spacing-md, 12px);
   background: var(--color-surface, #ffffff);
-  border: 2px solid var(--color-border, #dad2c6);
+  border: 2px solid var(--color-border, #d1d7df);
   border-radius: var(--radius-md, 8px);
   color: var(--color-text-primary, #1c1e20);
   font-size: var(--font-size-answer, 15px);
@@ -75,11 +75,11 @@
 }
 
 .kukui-osce__stepper-btn:hover:not(:disabled) {
-  border-color: var(--color-border-hover, #bbae9a);
+  border-color: var(--color-border-hover, #adb6c0);
 }
 
 .kukui-osce__stepper-btn:focus-visible {
-  outline: 2px solid var(--color-primary, #7b4324);
+  outline: 2px solid var(--color-primary, #4a7a5f);
   outline-offset: 2px;
 }
 
@@ -89,13 +89,13 @@
 }
 
 .kukui-osce__stepper-btn.is-current {
-  border-color: var(--color-primary, #7b4324);
+  border-color: var(--color-primary, #4a7a5f);
   background: var(--color-primary-soft);
   color: var(--color-text-primary, #1c1e20);
 }
 
 .kukui-osce__stepper-btn.is-visited {
-  border-color: var(--color-primary, #7b4324);
+  border-color: var(--color-primary, #4a7a5f);
 }
 
 .kukui-osce__stepper-index {
@@ -107,14 +107,14 @@
   padding: 0 var(--spacing-xs, 4px);
   font-size: var(--font-size-meta, 13px);
   font-weight: 700;
-  color: var(--color-text-secondary, #606069);
-  background: var(--color-tip-bg, #f2f0e8);
+  color: var(--color-text-secondary, #49515b);
+  background: var(--color-tip-bg, #e9edf3);
   border-radius: var(--radius-sm, 6px);
 }
 
 .kukui-osce__stepper-btn.is-current .kukui-osce__stepper-index {
-  color: #ffffff;
-  background: var(--color-primary, #7b4324);
+  color: var(--color-on-primary, #ffffff);
+  background: var(--color-primary, #4a7a5f);
 }
 
 .kukui-osce__stepper-name {
@@ -167,7 +167,7 @@
   min-height: 48px;
   padding: var(--spacing-md, 12px) var(--spacing-lg, 16px);
   background: var(--color-surface, #ffffff);
-  border: 2px solid var(--color-border, #dad2c6);
+  border: 2px solid var(--color-border, #d1d7df);
   border-radius: var(--radius-md, 8px);
   text-align: left;
   font-size: var(--font-size-answer, 15px);
@@ -179,11 +179,11 @@
 }
 
 .kukui-osce__action:hover:not(:disabled):not(.is-selected) {
-  border-color: var(--color-border-hover, #bbae9a);
+  border-color: var(--color-border-hover, #adb6c0);
 }
 
 .kukui-osce__action:focus-visible {
-  outline: 2px solid var(--color-primary, #7b4324);
+  outline: 2px solid var(--color-primary, #4a7a5f);
   outline-offset: 2px;
 }
 
@@ -192,7 +192,7 @@
 }
 
 .kukui-osce__action.is-selected {
-  border-color: var(--color-primary, #7b4324);
+  border-color: var(--color-primary, #4a7a5f);
   background: var(--color-primary-soft);
 }
 
@@ -219,23 +219,20 @@
   font-size: 18px;
 }
 
-/* Pattern A inline-below feedback per action — constant min-height. */
+/* Pattern A inline-below feedback per action: space reserved from first
+   render (constant min-height + padding), opacity-only reveal so neighbours
+   never reflow. */
 .kukui-osce__action-feedback {
-  min-height: 0;
+  min-height: 28px;
   opacity: 0;
   font-size: var(--font-size-meta, 13px);
-  color: var(--color-text-secondary, #606069);
-  padding: 0 var(--spacing-lg, 16px);
-  transition:
-    opacity 200ms ease,
-    min-height 200ms ease;
+  color: var(--color-text-secondary, #49515b);
+  padding: var(--spacing-xs, 4px) var(--spacing-lg, 16px) var(--spacing-sm, 8px);
+  transition: opacity 200ms ease;
 }
 
 .kukui-osce__action-feedback.is-visible {
   opacity: 1;
-  min-height: 28px;
-  padding-top: var(--spacing-xs, 4px);
-  padding-bottom: var(--spacing-sm, 8px);
 }
 
 /* Phase summary ----------------------------------------------------------- */
@@ -243,15 +240,15 @@
 .kukui-osce__phase-summary {
   margin-top: var(--spacing-lg, 16px);
   padding: var(--spacing-md, 12px) var(--spacing-lg, 16px);
-  border: 2px solid var(--color-border, #dad2c6);
+  border: 2px solid var(--color-border, #d1d7df);
   border-radius: var(--radius-lg, 10px);
-  background: var(--color-tip-bg, #f2f0e8);
+  background: var(--color-tip-bg, #e9edf3);
   font-size: var(--font-size-prompt, 16px);
   color: var(--color-text-primary, #1c1e20);
 }
 
 .kukui-osce__phase-summary-label {
-  color: var(--color-text-secondary, #606069);
+  color: var(--color-text-secondary, #49515b);
 }
 
 /* Overall feedback line --------------------------------------------------- */
@@ -292,13 +289,13 @@
 }
 
 .kukui-osce__primary {
-  background: var(--color-primary, #7b4324);
-  color: #ffffff;
+  background: var(--color-primary, #4a7a5f);
+  color: var(--color-on-primary, #ffffff);
   border: none;
 }
 
 .kukui-osce__primary:hover:not(:disabled) {
-  background: var(--color-primary-hover, #9b5830);
+  background: var(--color-primary-hover, #3f6b52);
 }
 
 .kukui-osce__primary:disabled {
@@ -308,8 +305,8 @@
 
 .kukui-osce__secondary {
   background: transparent;
-  color: var(--color-primary, #7b4324);
-  border: 2px solid var(--color-primary, #7b4324);
+  color: var(--color-primary, #4a7a5f);
+  border: 2px solid var(--color-primary, #4a7a5f);
 }
 
 .kukui-osce__secondary:hover:not(:disabled) {
@@ -321,9 +318,9 @@
 .kukui-osce__review {
   margin-top: var(--spacing-xl, 20px);
   padding: var(--spacing-lg, 16px);
-  border: 2px solid var(--color-border, #dad2c6);
+  border: 2px solid var(--color-border, #d1d7df);
   border-radius: var(--radius-lg, 10px);
-  background: var(--color-bg, #fcf8f2);
+  background: var(--color-bg, #f2f4f7);
 }
 
 .kukui-osce__review-title {
@@ -348,7 +345,7 @@
   align-items: center;
   gap: var(--spacing-md, 12px);
   padding: var(--spacing-sm, 8px) var(--spacing-md, 12px);
-  border: 2px solid var(--color-border, #dad2c6);
+  border: 2px solid var(--color-border, #d1d7df);
   border-radius: var(--radius-md, 8px);
   background: var(--color-surface, #ffffff);
   font-size: var(--font-size-answer, 15px);

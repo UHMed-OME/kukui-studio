@@ -2,6 +2,7 @@ import { useEffect, useId, useMemo, useState } from "react";
 import type { Hotspot2DConfig } from "./schema.js";
 import type { ActivityProps } from "@kukui/core/types";
 import { ActivityHeader, SafeHtml } from "@kukui/core";
+import { resolveScoring } from "@kukui/core/scoring";
 import "./Component.css";
 
 type Stage = "answering" | "submitted";
@@ -29,7 +30,12 @@ export default function Component({
 }: ActivityProps<Hotspot2DConfig>) {
   const headingId = useId();
   const [state, setState] = useState<State>(
-    () => parseSuspend(suspendData) ?? { stage: "answering", selectedHotspotId: null, attempts: 0 },
+    () =>
+      parseSuspend(suspendData, config) ?? {
+        stage: "answering",
+        selectedHotspotId: null,
+        attempts: 0,
+      },
   );
 
   // Reset local state when `config` changes externally (Studio Preview edit,
@@ -39,7 +45,11 @@ export default function Component({
   // remount key.
   useEffect(() => {
     setState(
-      parseSuspend(suspendData) ?? { stage: "answering", selectedHotspotId: null, attempts: 0 },
+      parseSuspend(suspendData, config) ?? {
+        stage: "answering",
+        selectedHotspotId: null,
+        attempts: 0,
+      },
     );
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [config]);
@@ -79,7 +89,14 @@ export default function Component({
   const tryAgain = () =>
     setState({ stage: "answering", selectedHotspotId: null, attempts: state.attempts });
 
+  // Retry comes from the resolved scoring view: Studio's migrator strips
+  // behaviour.enableRetry into scoring.enableRetry, so reading
+  // config.behaviour directly is a dead path for re-saved content.
+  // resolveScoring still honors legacy behaviour blocks in old fixtures.
+  const scoring = useMemo(() => resolveScoring(config, { mode: "points" }), [config]);
+
   const tryAgainLabel = config.ui?.tryAgainButton ?? "Try again";
+  const checkLabel = config.ui?.checkAnswerButton ?? "Check";
   const selectedHotspot = state.selectedHotspotId
     ? config.hotspots.find((h) => h.id === state.selectedHotspotId)
     : null;
@@ -110,7 +127,7 @@ export default function Component({
             </div>
           )}
           {showMarkers && config.image
-            ? config.hotspots.map((h) => {
+            ? config.hotspots.map((h, i) => {
                 const isSelected = h.id === state.selectedHotspotId;
                 const isCorrect = submitted && isSelected && h.correct;
                 const isWrong = submitted && isSelected && !h.correct;
@@ -137,7 +154,9 @@ export default function Component({
                       height: `${h.rect.h * 100}%`,
                     }}
                     onClick={() => select(h.id)}
-                    aria-label={h.label ?? `Hotspot ${h.id}`}
+                    // Prefer the human label; unlabeled hotspots get their
+                    // 1-based position rather than the raw config id.
+                    aria-label={h.label ?? `Hotspot ${i + 1}`}
                   >
                     {h.label ? <span className="kukui-h2d__hotspot-label">{h.label}</span> : null}
                   </button>
@@ -151,7 +170,7 @@ export default function Component({
             Or pick by name (keyboard / screen-reader equivalent)
           </legend>
           <ul className="kukui-h2d__fallback-list">
-            {config.hotspots.map((h) => {
+            {config.hotspots.map((h, i) => {
               const isSelected = h.id === state.selectedHotspotId;
               const isCorrect = submitted && isSelected && h.correct;
               const isWrong = submitted && isSelected && !h.correct;
@@ -172,7 +191,7 @@ export default function Component({
                       .join(" ")}
                     onClick={() => select(h.id)}
                   >
-                    <span>{h.label ?? h.id}</span>
+                    <span>{h.label ?? `Hotspot ${i + 1}`}</span>
                     <span className="kukui-h2d__fb-icon" aria-hidden="true">
                       {isCorrect ? "✓" : isWrong ? "✗" : reveal ? "○" : ""}
                     </span>
@@ -209,10 +228,10 @@ export default function Component({
               disabled={state.selectedHotspotId === null}
               onClick={submit}
             >
-              Check
+              {checkLabel}
             </button>
           ) : null}
-          {submitted && config.behaviour?.enableRetry ? (
+          {submitted && scoring.enableRetry ? (
             <button type="button" className="kukui-h2d__secondary" onClick={tryAgain}>
               {tryAgainLabel}
             </button>
@@ -223,15 +242,22 @@ export default function Component({
   );
 }
 
-function parseSuspend(s: string | undefined): State | null {
+function parseSuspend(s: string | undefined, config: Hotspot2DConfig): State | null {
   if (!s) return null;
   try {
     const parsed = JSON.parse(s) as Partial<State>;
     if (parsed && typeof parsed.attempts === "number") {
+      // Validate the persisted id against the live config: a hotspot
+      // removed by a re-published activity must not resurrect as a
+      // phantom selection.
+      const selectedHotspotId =
+        typeof parsed.selectedHotspotId === "string" &&
+        config.hotspots.some((h) => h.id === parsed.selectedHotspotId)
+          ? parsed.selectedHotspotId
+          : null;
       return {
         stage: parsed.stage === "submitted" ? "submitted" : "answering",
-        selectedHotspotId:
-          typeof parsed.selectedHotspotId === "string" ? parsed.selectedHotspotId : null,
+        selectedHotspotId,
         attempts: parsed.attempts,
       };
     }

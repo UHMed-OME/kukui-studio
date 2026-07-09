@@ -52,6 +52,7 @@ export const Hotspot2DConfigSchema = z
       .optional(),
     ui: z
       .object({
+        checkAnswerButton: z.string().optional(),
         tryAgainButton: z.string().optional(),
       })
       .strict()
@@ -59,6 +60,10 @@ export const Hotspot2DConfigSchema = z
     scoring: ScoringSchema.optional(),
     appearance: AppearanceSchema.default({ theme: "auto" }),
   })
-  .strict();
+  .strict()
+  .refine((c) => c.hotspots.some((h) => h.correct), {
+    message: "At least one hotspot must be marked correct",
+    path: ["hotspots"],
+  });
 
 export type Hotspot2DConfig = z.infer<typeof Hotspot2DConfigSchema>;

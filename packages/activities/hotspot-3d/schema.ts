@@ -78,7 +78,12 @@ export const Hotspot3DConfigSchema = z
             id: z.string().min(1),
             label: z.string().optional(),
             position: Vector3,
-            radius: z.number().positive(),
+            /**
+             * Reserved for future proximity-based click detection.
+             * The current runtime ignores it: learners pick via the
+             * rendered pins or the fallback list, so authors may omit it.
+             */
+            radius: z.number().positive().optional(),
             correct: z.boolean(),
             feedback: z.string().optional(),
           })
@@ -122,6 +127,10 @@ export const Hotspot3DConfigSchema = z
     scoring: ScoringSchema.optional(),
     appearance: AppearanceSchema.default({ theme: "auto" }),
   })
-  .strict();
+  .strict()
+  .refine((c) => c.hotspots.some((h) => h.correct), {
+    message: "At least one hotspot must be marked correct",
+    path: ["hotspots"],
+  });
 
 export type Hotspot3DConfig = z.infer<typeof Hotspot3DConfigSchema>;

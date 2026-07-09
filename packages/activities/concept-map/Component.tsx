@@ -7,10 +7,12 @@ import {
   useState,
   type CSSProperties,
   type KeyboardEvent,
+  type MouseEvent,
   type PointerEvent,
 } from "react";
 import type { ConceptMapConfig } from "./schema.js";
 import type { ActivityProps } from "@kukui/core/types";
+import { bandMessage, percentage, resolveScoring } from "@kukui/core/scoring";
 import {
   ActivityHeader,
   SafeHtml,
@@ -40,7 +42,6 @@ type DragState =
       nodeId: string;
       offsetX: number;
       offsetY: number;
-      didMove: boolean;
     };
 
 const NODE_NUDGE = 0.02; // 2 % per arrow press
@@ -58,6 +59,11 @@ const NODE_NUDGE = 0.02; // 2 % per arrow press
  * Coordinates are normalized 0..1 against the canvas rect — survives a resize
  * without recomputing pixel offsets. State changes flow through `setState`,
  * which also fires `onPersist` for SCORM resume.
+ *
+ * Scoring routes through `resolveScoring(config)` (single source for retry /
+ * pass threshold / bands / mode), same as multiple-choice. Expected nodes are
+ * matched by id for palette/seed nodes, with a normalized-label fallback for
+ * learner-typed free-text nodes (their ids are generated at runtime).
  *
  * Deferred for the v1 of this activity:
  * - Edge label editing (we keep `label?` in the data shape so authors can
@@ -111,15 +117,27 @@ export default function Component({
     setEdgeFromId(null);
     setSelection(null);
     setDrag({ kind: "idle" });
+    setPendingPalette(null);
+    setFreeTextOpen(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [config]);
 
   useEffect(() => {
     if (!onPersist) return;
-    onPersist(JSON.stringify({ nodes: state.nodes, edges: state.edges }));
-  }, [state.nodes, state.edges, onPersist]);
+    onPersist(serializeState(state));
+  }, [state, onPersist]);
 
   const submitted = state.stage === "submitted";
+
+  // Effective scoring view — reads config.scoring (Scoring tab) with a legacy
+  // fallback to behaviour.enableRetry etc. Never read those knobs directly.
+  const scoring = useMemo(
+    // Default pass threshold is 100 so legacy configs (no scoring block)
+    // keep the original "success means every expected item present"
+    // semantics; an authored scoring.passPercentage still wins.
+    () => resolveScoring(config, { mode: "points", passPercentage: 100 }),
+    [config],
+  );
 
   // Header badge: completion-only — "Complete" once the map is submitted,
   // "In progress" while the learner is still building. Additive; leaves the
@@ -265,7 +283,6 @@ export default function Component({
       nodeId,
       offsetX: x - node.position.x,
       offsetY: y - node.position.y,
-      didMove: false,
     });
     setSelection({ kind: "node", id: nodeId });
     try {
@@ -281,11 +298,21 @@ export default function Component({
     const nx = clamp01(x - drag.offsetX);
     const ny = clamp01(y - drag.offsetY);
     setNodePosition(drag.nodeId, nx, ny);
-    if (!drag.didMove) setDrag({ ...drag, didMove: true });
   };
 
-  const onCanvasPointerUp = () => {
-    if (drag.kind === "move") setDrag({ kind: "idle" });
+  const onCanvasPointerUp = (e: PointerEvent<HTMLDivElement>) => {
+    if (drag.kind === "move") {
+      setDrag({ kind: "idle" });
+      return;
+    }
+    // Palette drop: pointer pressed on a palette chip, released over the
+    // canvas. No canvas *click* fires for that gesture (the click target is
+    // the common ancestor of pointerdown/pointerup targets, which is outside
+    // the canvas), so placement must happen here at the pointerup coords.
+    if (pendingPalette) {
+      placeFromPalette(pendingPalette, e.clientX, e.clientY);
+      setPendingPalette(null);
+    }
   };
 
   const onNodeKeyDown = (nodeId: string) => (e: KeyboardEvent<HTMLButtonElement>) => {
@@ -308,7 +335,7 @@ export default function Component({
     }
   };
 
-  const onEdgeKeyDown = (edgeId: string) => (e: KeyboardEvent<SVGElement>) => {
+  const onEdgeKeyDown = (edgeId: string) => (e: KeyboardEvent<HTMLButtonElement>) => {
     if (submitted) return;
     if (e.key === "Delete" || e.key === "Backspace") {
       e.preventDefault();
@@ -324,7 +351,8 @@ export default function Component({
       // (notably D2L Brightspace's sandboxed iframe) block native
       // prompts silently, returning null and giving the learner no
       // feedback that the action did nothing.
-      setFreeTextDraft("");
+      freeTextTriggerRef.current =
+        document.activeElement instanceof HTMLElement ? document.activeElement : null;
       setFreeTextOpen(true);
     } else {
       // No free text: nudge focus to the palette area.
@@ -332,16 +360,16 @@ export default function Component({
     }
   };
 
-  const submitFreeText = () => {
-    const label = freeTextDraft.trim();
-    if (label) addFreeTextNode(label);
+  const closeFreeText = () => {
     setFreeTextOpen(false);
-    setFreeTextDraft("");
+    // Return focus to whatever opened the modal (WCAG 2.4.3 focus order).
+    freeTextTriggerRef.current?.focus();
+    freeTextTriggerRef.current = null;
   };
 
-  const cancelFreeText = () => {
-    setFreeTextOpen(false);
-    setFreeTextDraft("");
+  const submitFreeText = (label: string) => {
+    addFreeTextNode(label);
+    closeFreeText();
   };
 
   const onToggleEdgeMode = () => {
@@ -365,18 +393,17 @@ export default function Component({
   };
 
   // Palette → canvas placement: drop a palette concept onto the canvas. We use
-  // pointer-down on the palette button to start a "pending placement"; once
-  // the user lifts pointer over the canvas, we place at that location.
+  // pointer-down on the palette button to start a "pending placement"; the
+  // concept is placed either where the pointer is released over the canvas
+  // (drag-drop gesture, handled in onCanvasPointerUp) or at canvas centre when
+  // the press completes as a plain click on the chip (keyboard / tap fallback,
+  // handled in onPaletteAddClick).
   const [pendingPalette, setPendingPalette] = useState<string | null>(null);
   const paletteListRef = useRef<HTMLDivElement>(null);
   // Inline "Add free-text node" modal — replaces window.prompt(), which
   // some SCORM hosts (Brightspace sandboxed iframes) block silently.
   const [freeTextOpen, setFreeTextOpen] = useState(false);
-  const [freeTextDraft, setFreeTextDraft] = useState("");
-  const freeTextInputRef = useRef<HTMLInputElement>(null);
-  useEffect(() => {
-    if (freeTextOpen) freeTextInputRef.current?.focus();
-  }, [freeTextOpen]);
+  const freeTextTriggerRef = useRef<HTMLElement | null>(null);
 
   const onPalettePointerDown = (paletteId: string) => () => {
     if (submitted) return;
@@ -384,7 +411,9 @@ export default function Component({
   };
 
   // While a palette item is "pending", the next canvas click places it.
-  const onCanvasClick = (e: PointerEvent<HTMLDivElement> | React.MouseEvent<HTMLDivElement>) => {
+  // (Fallback path — the common gestures are handled by onCanvasPointerUp
+  // and onPaletteAddClick; this catches pointer-event-less environments.)
+  const onCanvasClick = (e: MouseEvent<HTMLDivElement>) => {
     if (pendingPalette) {
       placeFromPalette(pendingPalette, e.clientX, e.clientY);
       setPendingPalette(null);
@@ -398,7 +427,10 @@ export default function Component({
   };
 
   const onPaletteAddClick = (paletteId: string) => () => {
-    // Keyboard fallback: place at canvas centre.
+    // Keyboard / plain-click fallback: place at canvas centre. Always clear
+    // the pending placement started by this press's pointerdown — otherwise
+    // the canvas stays stuck in "is-placing" mode after the node is placed.
+    setPendingPalette(null);
     if (submitted) return;
     const concept = config.availableConcepts?.find((c) => c.id === paletteId);
     if (!concept) return;
@@ -412,33 +444,38 @@ export default function Component({
     }));
   };
 
+  // Correct-item counts against the expected map (id or normalized-label
+  // match for nodes; undirected match for edges). `total === 0` means the
+  // author provided no answer key → completion-only.
+  const graded = useMemo(
+    () => gradeMap(state.nodes, state.edges, config),
+    [state.nodes, state.edges, config],
+  );
+  const hasExpected = graded.total > 0;
+
   const submit = () => {
     if (state.stage !== "answering") return;
-    const expectedNodes = config.expected?.nodes ?? [];
-    const expectedEdges = config.expected?.edges ?? [];
 
-    let raw = 0;
-    let max = 0;
-    let success = true;
-
-    if (expectedNodes.length > 0 || expectedEdges.length > 0) {
-      const presentNodeIds = new Set(state.nodes.map((n) => n.id));
-      const correctNodes = expectedNodes.filter((id) => presentNodeIds.has(id)).length;
-      const correctEdges = expectedEdges.filter((eExp) =>
-        state.edges.some(
-          (e) =>
-            (e.from === eExp.from && e.to === eExp.to) ||
-            (e.from === eExp.to && e.to === eExp.from),
-        ),
-      ).length;
-      raw = correctNodes + correctEdges;
-      max = expectedNodes.length + expectedEdges.length;
-      success = raw === max;
-    } else {
-      // Completion-only — any submission is success once at least one node exists.
-      raw = state.nodes.length > 0 ? 1 : 0;
+    let raw: number;
+    let max: number;
+    let success: boolean;
+    if (!hasExpected || scoring.mode === "completion") {
+      // Completion semantics — submitting a non-empty map is success. (The
+      // Submit button is disabled until at least one node exists.)
+      raw = 1;
       max = 1;
-      success = raw === 1;
+      success = true;
+    } else if (scoring.mode === "all-or-nothing") {
+      const complete = graded.correct === graded.total;
+      raw = complete ? 1 : 0;
+      max = 1;
+      success = complete;
+    } else {
+      raw = graded.correct;
+      max = graded.total;
+      // Unrounded comparison: percentage() rounds, which could nudge a
+      // just-below-threshold score over the line.
+      success = (raw / max) * 100 >= scoring.passPercentage;
     }
 
     const next: State = { ...state, stage: "submitted", attempts: state.attempts + 1 };
@@ -447,7 +484,7 @@ export default function Component({
       raw,
       max,
       success,
-      suspendData: JSON.stringify({ nodes: next.nodes, edges: next.edges }),
+      suspendData: serializeState(next),
     });
   };
 
@@ -460,6 +497,10 @@ export default function Component({
 
   const submitLabel = config.ui?.submitButtonLabel ?? "Submit";
 
+  const pct = hasExpected ? percentage({ raw: graded.correct, max: graded.total }) : 100;
+  const banner = submitted ? bandMessage(scoring.bands, pct) : null;
+  const showScoreLine = submitted && hasExpected && scoring.mode !== "completion";
+
   // Lookup helpers
   const nodeById = useMemo(() => {
     const m: Record<string, NodeShape> = {};
@@ -471,7 +512,7 @@ export default function Component({
     (c) => !state.nodes.some((n) => n.id === c.id),
   );
 
-  const expectedNodeIds = new Set(config.expected?.nodes ?? []);
+  const expectedNodeEntries = config.expected?.nodes ?? [];
   const expectedEdgeKeys = new Set(
     (config.expected?.edges ?? []).map((e) => undirectedKey(e.from, e.to)),
   );
@@ -555,7 +596,9 @@ export default function Component({
             aria-label="Concept map canvas"
             onPointerMove={onCanvasPointerMove}
             onPointerUp={onCanvasPointerUp}
-            onPointerCancel={onCanvasPointerUp}
+            onPointerCancel={() => {
+              if (drag.kind === "move") setDrag({ kind: "idle" });
+            }}
             onClick={onCanvasClick}
           >
             <svg className="kukui-cm__edges" aria-hidden="true">
@@ -599,7 +642,9 @@ export default function Component({
                 );
               })}
             </svg>
-            {/* Edges as a separate keyboard-focusable list (off-canvas, for AT) */}
+            {/* Edges as a separate keyboard-focusable list. Each item is
+              * visually hidden until focused, then reveals as a chip so the
+              * focus indicator is actually visible (WCAG 2.4.7). */}
             <ul className="kukui-cm__edge-list">
               {state.edges.map((e) => {
                 const a = nodeById[e.from];
@@ -608,23 +653,19 @@ export default function Component({
                 const isSelected = selection?.kind === "edge" && selection.id === e.id;
                 return (
                   <li key={e.id}>
-                    {/* This is keyboard-focusable so users can press Delete on a focused edge */}
-                    <span
-                      role="button"
-                      tabIndex={submitted ? -1 : 0}
+                    {/* Real <button> so Enter/Space select the edge; Delete removes it. */}
+                    <button
+                      type="button"
                       className={["kukui-cm__edge-handle", isSelected ? "is-selected" : ""]
                         .filter(Boolean)
                         .join(" ")}
                       aria-label={`Edge from ${a.label} to ${b.label}. Press Delete to remove.`}
                       onClick={() => onEdgeClick(e.id)}
-                      onKeyDown={(ev) =>
-                        onEdgeKeyDown(e.id)(
-                          ev as unknown as KeyboardEvent<SVGElement>,
-                        )
-                      }
+                      onKeyDown={onEdgeKeyDown(e.id)}
+                      disabled={submitted}
                     >
                       {a.label} → {b.label}
-                    </span>
+                    </button>
                   </li>
                 );
               })}
@@ -632,8 +673,10 @@ export default function Component({
             {state.nodes.map((n) => {
               const isSelected = selection?.kind === "node" && selection.id === n.id;
               const isEdgeStart = edgeFromId === n.id;
-              const correct = submitted && expectedNodeIds.has(n.id);
-              const incorrect = submitted && expectedNodeIds.size > 0 && !correct;
+              const correct =
+                submitted &&
+                expectedNodeEntries.some((exp) => matchesExpectedNode(exp, n));
+              const incorrect = submitted && expectedNodeEntries.length > 0 && !correct;
               const style: CSSProperties = {
                 left: `${n.position.x * 100}%`,
                 top: `${n.position.y * 100}%`,
@@ -655,8 +698,11 @@ export default function Component({
                   data-node-id={n.id}
                   onPointerDown={onNodePointerDown(n.id)}
                   onClick={(ev) => {
+                    // No click-after-drag suppression needed: pointerdown
+                    // already selected this node, and edge mode ignores
+                    // pointer drags — the trailing click after a drag is a
+                    // harmless re-selection.
                     ev.stopPropagation();
-                    if (drag.kind === "move" && drag.didMove) return;
                     onNodeClick(n.id);
                   }}
                   onKeyDown={onNodeKeyDown(n.id)}
@@ -708,16 +754,24 @@ export default function Component({
           role="status"
           aria-live="polite"
         >
-          {submitted ? feedbackMessage(state, config) : ""}
+          {submitted ? feedbackMessage(graded, hasExpected) : ""}
         </div>
 
         <div className="kukui-cm__actions">
           {submitted ? (
-            config.behaviour?.enableRetry ? (
-              <button type="button" className="kukui-cm__secondary" onClick={tryAgain}>
-                Try again
-              </button>
-            ) : null
+            <>
+              {showScoreLine ? (
+                <output className="kukui-cm__score">
+                  {graded.correct} / {graded.total}
+                  {banner ? <span className="kukui-cm__band"> — {banner}</span> : null}
+                </output>
+              ) : null}
+              {scoring.enableRetry ? (
+                <button type="button" className="kukui-cm__secondary" onClick={tryAgain}>
+                  Try again
+                </button>
+              ) : null}
+            </>
           ) : (
             <button
               type="button"
@@ -731,58 +785,106 @@ export default function Component({
         </div>
       </article>
       {freeTextOpen ? (
-        <div
-          className="kukui-cm__modal-backdrop"
-          role="dialog"
-          aria-modal="true"
-          aria-label="Add free-text node"
-          onClick={(e) => {
-            if (e.target === e.currentTarget) cancelFreeText();
-          }}
-        >
-          <div className="kukui-cm__modal">
-            <label className="kukui-cm__modal-label" htmlFor="kukui-cm-free-text">
-              Node label
-            </label>
-            <input
-              ref={freeTextInputRef}
-              id="kukui-cm-free-text"
-              type="text"
-              className="kukui-cm__modal-input"
-              value={freeTextDraft}
-              onChange={(e) => setFreeTextDraft(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  e.preventDefault();
-                  submitFreeText();
-                } else if (e.key === "Escape") {
-                  e.preventDefault();
-                  cancelFreeText();
-                }
-              }}
-              maxLength={120}
-              placeholder="e.g. Photosynthesis"
-            />
-            <div className="kukui-cm__modal-actions">
-              <button
-                type="button"
-                className="kukui-cm__secondary"
-                onClick={cancelFreeText}
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                className="kukui-cm__primary"
-                onClick={submitFreeText}
-                disabled={!freeTextDraft.trim()}
-              >
-                Add node
-              </button>
-            </div>
-          </div>
-        </div>
+        <FreeTextModal onAdd={submitFreeText} onCancel={closeFreeText} />
       ) : null}
+    </div>
+  );
+}
+
+/**
+ * Inline "Add free-text node" dialog. Owns its draft text, autofocuses the
+ * input on mount, traps Tab inside itself (simple first/last cycle), and
+ * closes on Escape. The parent restores focus to the trigger on close.
+ */
+function FreeTextModal({
+  onAdd,
+  onCancel,
+}: {
+  onAdd: (label: string) => void;
+  onCancel: () => void;
+}) {
+  const [draft, setDraft] = useState("");
+  const containerRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    inputRef.current?.focus();
+  }, []);
+
+  const onKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
+    if (e.key === "Escape") {
+      e.preventDefault();
+      onCancel();
+      return;
+    }
+    if (e.key !== "Tab") return;
+    // Simple focus trap: cycle Tab / Shift+Tab between the first and last
+    // focusable controls inside the dialog.
+    const focusables = Array.from(
+      containerRef.current?.querySelectorAll<HTMLElement>(
+        "input, button:not(:disabled)",
+      ) ?? [],
+    );
+    if (focusables.length === 0) return;
+    const first = focusables[0] as HTMLElement;
+    const last = focusables[focusables.length - 1] as HTMLElement;
+    const active = document.activeElement;
+    if (e.shiftKey) {
+      if (active === first || !containerRef.current?.contains(active)) {
+        e.preventDefault();
+        last.focus();
+      }
+    } else if (active === last || !containerRef.current?.contains(active)) {
+      e.preventDefault();
+      first.focus();
+    }
+  };
+
+  return (
+    <div
+      className="kukui-cm__modal-backdrop"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Add free-text node"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onCancel();
+      }}
+      onKeyDown={onKeyDown}
+    >
+      <div className="kukui-cm__modal" ref={containerRef}>
+        <label className="kukui-cm__modal-label" htmlFor="kukui-cm-free-text">
+          Node label
+        </label>
+        <input
+          ref={inputRef}
+          id="kukui-cm-free-text"
+          type="text"
+          className="kukui-cm__modal-input"
+          value={draft}
+          onChange={(e) => setDraft(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              if (draft.trim()) onAdd(draft);
+            }
+          }}
+          maxLength={120}
+          placeholder="e.g. Photosynthesis"
+        />
+        <div className="kukui-cm__modal-actions">
+          <button type="button" className="kukui-cm__secondary" onClick={onCancel}>
+            Cancel
+          </button>
+          <button
+            type="button"
+            className="kukui-cm__primary"
+            onClick={() => onAdd(draft)}
+            disabled={!draft.trim()}
+          >
+            Add node
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
@@ -797,30 +899,70 @@ function undirectedKey(a: string, b: string): string {
   return a < b ? `${a}|${b}` : `${b}|${a}`;
 }
 
-function feedbackMessage(state: State, config: ConceptMapConfig): string {
+function normalizeLabel(s: string): string {
+  return s.trim().toLowerCase();
+}
+
+/**
+ * Expected-node matching: palette/seed nodes match by id; learner-typed
+ * free-text nodes get generated runtime ids that can never equal the
+ * authored entry, so fall back to a normalized (trimmed, lowercased)
+ * label comparison.
+ */
+function matchesExpectedNode(expected: string, node: NodeShape): boolean {
+  return node.id === expected || normalizeLabel(node.label) === normalizeLabel(expected);
+}
+
+/** Count expected items (nodes + undirected edges) present on the canvas. */
+function gradeMap(
+  nodes: NodeShape[],
+  edges: EdgeShape[],
+  config: ConceptMapConfig,
+): { correct: number; total: number } {
   const expectedNodes = config.expected?.nodes ?? [];
   const expectedEdges = config.expected?.edges ?? [];
-  if (expectedNodes.length === 0 && expectedEdges.length === 0) {
-    return "Map submitted.";
-  }
-  const presentNodeIds = new Set(state.nodes.map((n) => n.id));
-  const correctNodes = expectedNodes.filter((id) => presentNodeIds.has(id)).length;
+  const correctNodes = expectedNodes.filter((exp) =>
+    nodes.some((n) => matchesExpectedNode(exp, n)),
+  ).length;
   const correctEdges = expectedEdges.filter((eExp) =>
-    state.edges.some(
+    edges.some(
       (e) =>
         (e.from === eExp.from && e.to === eExp.to) ||
         (e.from === eExp.to && e.to === eExp.from),
     ),
   ).length;
-  const total = expectedNodes.length + expectedEdges.length;
-  const correct = correctNodes + correctEdges;
-  return `${correct} of ${total} expected items captured.`;
+  return {
+    correct: correctNodes + correctEdges,
+    total: expectedNodes.length + expectedEdges.length,
+  };
+}
+
+function feedbackMessage(
+  graded: { correct: number; total: number },
+  hasExpected: boolean,
+): string {
+  if (!hasExpected) return "Map submitted.";
+  return `${graded.correct} of ${graded.total} expected items captured.`;
+}
+
+function serializeState(state: State): string {
+  return JSON.stringify({
+    stage: state.stage,
+    attempts: state.attempts,
+    nodes: state.nodes,
+    edges: state.edges,
+  });
 }
 
 function parseSuspend(s: string | undefined): State | null {
   if (!s) return null;
   try {
-    const parsed = JSON.parse(s) as { nodes?: NodeShape[]; edges?: EdgeShape[] };
+    const parsed = JSON.parse(s) as {
+      stage?: unknown;
+      attempts?: unknown;
+      nodes?: NodeShape[];
+      edges?: EdgeShape[];
+    };
     if (!Array.isArray(parsed.nodes) || !Array.isArray(parsed.edges)) return null;
     const validNodes: NodeShape[] = [];
     for (const n of parsed.nodes) {
@@ -858,11 +1000,16 @@ function parseSuspend(s: string | undefined): State | null {
         });
       }
     }
+    // Round-trip stage + attempts so a submitted learner resumes submitted
+    // (not silently re-opened for another attempt).
     return {
-      stage: "answering",
+      stage: parsed.stage === "submitted" ? "submitted" : "answering",
       nodes: validNodes,
       edges: validEdges,
-      attempts: 0,
+      attempts:
+        typeof parsed.attempts === "number" && Number.isFinite(parsed.attempts)
+          ? Math.max(0, Math.floor(parsed.attempts))
+          : 0,
     };
   } catch {
     return null;

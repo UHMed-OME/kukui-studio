@@ -57,6 +57,7 @@ export const ImageComparisonSliderConfigSchema = z
     ui: z
       .object({
         doneButton: z.string().optional(),
+        tryAgainButton: z.string().optional(),
       })
       .strict()
       .optional(),

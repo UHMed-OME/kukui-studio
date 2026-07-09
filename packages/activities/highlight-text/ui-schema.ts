@@ -53,10 +53,12 @@ const AUTHOR = f(
   "Your name. Shown in the small credit line at the bottom of the activity.",
 );
 
-// Retry / single-point live in the Scoring tab now; the legacy schema
-// fields are hidden in the Editor form (BEHAVIOUR_RETRY /
-// BEHAVIOUR_SINGLEPOINT in apps/studio-app/src/uiSchemas.ts).
+// Retry / show-solution / single-point live in the Scoring tab now; the
+// legacy schema fields are hidden in the Editor form (BEHAVIOUR_RETRY /
+// BEHAVIOUR_SHOW_SOLUTION / BEHAVIOUR_SINGLEPOINT in
+// apps/studio-app/src/uiSchemas.ts).
 const BEHAVIOUR_RETRY = HIDDEN;
+const BEHAVIOUR_SHOW_SOLUTION = HIDDEN;
 const BEHAVIOUR_SINGLEPOINT = HIDDEN;
 
 const uiSchema = {
@@ -85,11 +87,13 @@ const uiSchema = {
   behaviour: {
     "ui:title": "Activity behaviour",
     enableRetry: BEHAVIOUR_RETRY,
+    showSolutionsButton: BEHAVIOUR_SHOW_SOLUTION,
     singlePoint: BEHAVIOUR_SINGLEPOINT,
   },
   ui: {
     "ui:title": "Button label overrides",
     checkAnswerButton: f("'Check' button text"),
+    showSolutionButton: f("'Show Solution' button text"),
     tryAgainButton: f("'Try Again' button text"),
   },
   overallFeedback: HIDDEN,

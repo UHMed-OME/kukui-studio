@@ -64,8 +64,8 @@ const uiSchema = {
   }),
   video: {
     "ui:title": "Video source",
-    src: f("Video URL", "MP4, YouTube, or Vimeo URL."),
-    type: f("Source type", "html5 for direct MP4; otherwise youtube / vimeo."),
+    src: f("Video URL", "Direct MP4 URL or a YouTube URL."),
+    type: f("Source type", "html5 for a direct MP4; youtube for a YouTube URL."),
     poster: f("Poster image", "Optional. Shown before play."),
   },
   // Interactions are authored on the visual timeline (the Edit tab), not in
@@ -77,10 +77,17 @@ const uiSchema = {
     "ui:title": "Activity behaviour",
     enableRetry: BEHAVIOUR_RETRY,
     passPercentage: HIDDEN,
+    playbackRates: f(
+      "Playback speeds",
+      "Speed options offered in the player menu, e.g. 0.75, 1, 1.25, 1.5, 2.",
+    ),
   },
   ui: {
     "ui:title": "Button label overrides",
-    submitButtonLabel: f("'Submit' button text"),
+    resumeButtonLabel: f(
+      "'Resume' button text",
+      "Label on the button that continues playback after an interaction.",
+    ),
   },
 } as const;
 

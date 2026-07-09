@@ -87,7 +87,7 @@ const uiSchema = {
   },
   initialPosition: f(
     "Initial seam position (0..1)",
-    "Where the seam starts. 0 = before fills the canvas; 1 = after fills the canvas. Default 0.5.",
+    "Where the seam starts. 0 = after fills the canvas; 1 = before fills the canvas. Default 0.5 shows half of each.",
   ),
   behaviour: {
     "ui:title": "Activity behaviour",
@@ -96,6 +96,7 @@ const uiSchema = {
   ui: {
     "ui:title": "Button label overrides",
     doneButton: f("'Done' button text"),
+    tryAgainButton: f("'Try again' button text"),
   },
 } as const;
 

@@ -15,7 +15,7 @@
   width: 100%;
   max-width: 880px;
   background: var(--color-surface, #ffffff);
-  border: 1px solid var(--color-border, #dad2c6);
+  border: 1px solid var(--color-border, #d1d7df);
   border-radius: var(--radius-card, 12px);
   padding: var(--spacing-3xl, 28px);
   box-shadow: var(--shadow-card);
@@ -33,7 +33,7 @@
 .kukui-al__image-wrap {
   position: relative;
   width: 100%;
-  border: 2px solid var(--color-border, #dad2c6);
+  border: 2px solid var(--color-border, #d1d7df);
   border-radius: var(--radius-md, 8px);
   overflow: hidden;
   background: var(--color-tip-bg, #f2f0e8);
@@ -70,8 +70,8 @@
   height: 32px;
   border-radius: 50%;
   background: var(--color-surface, #ffffff);
-  border: 2px solid var(--color-primary, #7b4324);
-  color: var(--color-primary, #7b4324);
+  border: 2px solid var(--color-primary, #4a7a5f);
+  color: var(--color-primary, #4a7a5f);
   font-size: 14px;
   font-weight: 700;
   line-height: 1;
@@ -84,20 +84,20 @@
 }
 
 .kukui-al__target.is-occupied .kukui-al__target-number {
-  background: var(--color-primary, #7b4324);
-  color: #ffffff;
+  background: var(--color-primary, #4a7a5f);
+  color: var(--color-on-primary, #ffffff);
 }
 
 .kukui-al__target.is-correct .kukui-al__target-number {
   background: var(--color-success, #2e6e41);
   border-color: var(--color-success, #2e6e41);
-  color: #ffffff;
+  color: var(--color-on-primary, #ffffff);
 }
 
 .kukui-al__target.is-incorrect .kukui-al__target-number {
   background: var(--color-error, #c34132);
   border-color: var(--color-error, #c34132);
-  color: #ffffff;
+  color: var(--color-on-primary, #ffffff);
 }
 
 /* When a label is placed on a target, the label chip floats just above the
@@ -111,6 +111,28 @@
   white-space: nowrap;
 }
 
+/* Edge handling: the image wrap clips (overflow: hidden), so chips on
+ * targets near the top edge flip below the circle, and chips near the
+ * left/right edges clamp toward the image instead of centering. The
+ * `.is-chip-*` classes are set from the target's normalized position
+ * in the component. */
+.kukui-al__target.is-chip-below .kukui-al__chip.is-placed {
+  bottom: auto;
+  top: 100%;
+  margin: 4px 0 0;
+}
+
+.kukui-al__target.is-chip-left .kukui-al__chip.is-placed {
+  left: 0;
+  transform: none;
+}
+
+.kukui-al__target.is-chip-right .kukui-al__chip.is-placed {
+  left: auto;
+  right: 0;
+  transform: none;
+}
+
 .kukui-al__tray {
   margin-top: var(--spacing-lg, 16px);
   display: flex;
@@ -119,7 +141,7 @@
   min-height: 64px;
   padding: var(--spacing-md, 12px);
   background: var(--color-tip-bg, #f2f0e8);
-  border: 1.5px solid var(--color-border, #dad2c6);
+  border: 2px solid var(--color-border, #d1d7df);
   border-radius: var(--radius-md, 8px);
 }
 
@@ -137,7 +159,7 @@
   min-height: 44px;
   padding: 8px 14px;
   background: var(--color-surface, #ffffff);
-  border: 2px solid var(--color-primary, #7b4324);
+  border: 2px solid var(--color-primary, #4a7a5f);
   border-radius: var(--radius-md, 8px);
   font-size: var(--font-size-answer, 15px);
   color: var(--color-text-primary);
@@ -193,27 +215,41 @@
   color: var(--color-error, #c34132);
 }
 
+/* Constant min-height: the space is reserved whether or not feedback is
+ * visible, so the reveal is opacity-only and nothing below reflows. */
 .kukui-al__feedback {
-  min-height: 0;
+  min-height: 28px;
   margin-top: var(--spacing-lg, 16px);
   font-size: var(--font-size-meta, 13px);
-  color: var(--color-text-secondary);
+  color: var(--color-text-secondary, #49515b);
   opacity: 0;
-  transition:
-    opacity 200ms ease,
-    min-height 200ms ease;
+  transition: opacity 200ms ease;
 }
 
 .kukui-al__feedback.is-visible {
   opacity: 1;
-  min-height: 28px;
 }
 
+/* min-height reserves the row's footprint post-submit: the score line
+ * keeps the row populated even with retry off, so nothing reflows. */
 .kukui-al__actions {
   margin-top: var(--spacing-xl, 20px);
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
   gap: var(--spacing-md, 12px);
+  min-height: 44px;
+}
+
+.kukui-al__score {
+  font-size: var(--font-size-prompt, 16px);
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+.kukui-al__band {
+  font-weight: 400;
+  color: var(--color-text-secondary, #49515b);
 }
 
 .kukui-al__primary,
@@ -226,8 +262,8 @@
 }
 
 .kukui-al__primary {
-  background: var(--color-primary, #7b4324);
-  color: #ffffff;
+  background: var(--color-primary, #4a7a5f);
+  color: var(--color-on-primary, #ffffff);
   border: none;
 }
 
@@ -242,14 +278,14 @@
 
 .kukui-al__secondary {
   background: transparent;
-  color: var(--color-primary, #7b4324);
-  border: 2px solid var(--color-primary, #7b4324);
+  color: var(--color-primary, #4a7a5f);
+  border: 2px solid var(--color-primary, #4a7a5f);
 }
 
 .kukui-al__fallback {
   margin-top: var(--spacing-xl, 20px);
   padding: var(--spacing-md, 12px) var(--spacing-lg, 16px);
-  border: 1px solid var(--color-border, #dad2c6);
+  border: 1px solid var(--color-border, #d1d7df);
   border-radius: var(--radius-md, 8px);
   background: var(--color-tip-bg, #f2f0e8);
 }
@@ -283,7 +319,7 @@
 .kukui-al__fallback-select {
   min-height: 44px;
   padding: 4px 10px;
-  border: 2px solid var(--color-border, #dad2c6);
+  border: 2px solid var(--color-border, #d1d7df);
   border-radius: var(--radius-md, 8px);
   background: var(--color-surface, #ffffff);
   font-size: var(--font-size-answer, 15px);
@@ -321,11 +357,11 @@
   gap: 6px;
   min-height: 240px;
   padding: var(--spacing-2xl, 24px);
-  border: 2px dashed var(--color-border, #dad2c6);
+  border: 2px dashed var(--color-border, #d1d7df);
   border-radius: var(--radius-md, 8px);
   background: var(--color-tip-bg, #f2f0e8);
   text-align: center;
-  color: var(--color-text-secondary, #606069);
+  color: var(--color-text-secondary, #49515b);
 }
 
 .kukui-al__empty strong {

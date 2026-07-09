@@ -27,7 +27,7 @@
   width: 100%;
   max-width: 760px;
   background: var(--color-surface, #ffffff);
-  border: 1px solid var(--color-border, #dad2c6);
+  border: 1px solid var(--color-border, #d1d7df);
   border-radius: var(--radius-card, 12px);
   box-shadow: var(--shadow-card);
   overflow: hidden;
@@ -51,7 +51,7 @@
   margin: 0;
   padding: 0 var(--spacing-3xl, 28px) var(--spacing-xl, 20px);
   font-size: var(--font-size-meta, 13px);
-  color: var(--color-text-secondary, #606069);
+  color: var(--color-text-secondary, #49515b);
 }
 
 /* Slide -------------------------------------------------------------------- */
@@ -73,9 +73,9 @@
 .kukui-cp__stage {
   position: relative;
   width: 100%;
-  border: 1px solid var(--color-border, #dad2c6);
+  border: 1px solid var(--color-border, #d1d7df);
   border-radius: var(--radius-md, 8px);
-  background: var(--color-tip-bg, #f2f0e8);
+  background: var(--color-tip-bg, #e9edf3);
   overflow: hidden;
 }
 
@@ -94,7 +94,7 @@
   height: 100%;
   min-height: 120px;
   font-size: var(--font-size-meta, 13px);
-  color: var(--color-text-secondary, #606069);
+  color: var(--color-text-secondary, #49515b);
 }
 
 .kukui-cp__blank {
@@ -125,8 +125,8 @@
 }
 
 .kukui-cp__marker.is-checkpoint {
-  border-color: var(--color-primary, #7b4324);
-  color: var(--color-primary, #7b4324);
+  border-color: var(--color-primary, #4a7a5f);
+  color: var(--color-primary, #4a7a5f);
 }
 
 .kukui-cp__marker.is-required::after {
@@ -146,11 +146,11 @@
 }
 
 .kukui-cp__marker:hover {
-  background: var(--color-tip-bg, #f2f0e8);
+  background: var(--color-tip-bg, #e9edf3);
 }
 
 .kukui-cp__marker:focus-visible {
-  outline: 2px solid var(--color-primary, #7b4324);
+  outline: 2px solid var(--color-primary, #4a7a5f);
   outline-offset: 2px;
 }
 
@@ -207,10 +207,10 @@
 .kukui-cp__detail-close {
   min-height: 44px;
   padding: 6px 14px;
-  border: 2px solid var(--color-primary, #7b4324);
+  border: 2px solid var(--color-primary, #4a7a5f);
   border-radius: var(--radius-md, 8px);
   background: transparent;
-  color: var(--color-primary, #7b4324);
+  color: var(--color-primary, #4a7a5f);
   font-size: var(--font-size-meta, 13px);
   font-weight: 700;
   cursor: pointer;
@@ -230,9 +230,9 @@
 
 .kukui-cp__embed {
   padding: var(--spacing-md, 12px);
-  border: 1px solid var(--color-border, #dad2c6);
+  border: 1px solid var(--color-border, #d1d7df);
   border-radius: var(--radius-lg, 10px);
-  background: var(--color-tip-bg, #f2f0e8);
+  background: var(--color-tip-bg, #e9edf3);
 }
 
 /* Dots --------------------------------------------------------------------- */
@@ -258,21 +258,21 @@
   height: 44px;
   padding: 0;
   background: var(--color-surface, #ffffff);
-  border: 2px solid var(--color-border, #dad2c6);
+  border: 2px solid var(--color-border, #d1d7df);
   border-radius: var(--radius-pill, 999px);
   font-size: var(--font-size-meta, 13px);
   font-weight: 700;
-  color: var(--color-text-secondary, #606069);
+  color: var(--color-text-secondary, #49515b);
   cursor: pointer;
   transition: background-color 150ms ease, border-color 150ms ease, color 150ms ease;
 }
 
 .kukui-cp__dot:hover:not(.is-current) {
-  border-color: var(--color-border-hover, #bbae9a);
+  border-color: var(--color-border-hover, #adb6c0);
 }
 
 .kukui-cp__dot:focus-visible {
-  outline: 2px solid var(--color-primary, #7b4324);
+  outline: 2px solid var(--color-primary, #4a7a5f);
   outline-offset: 2px;
 }
 
@@ -283,8 +283,8 @@
 }
 
 .kukui-cp__dot.is-current {
-  border-color: var(--color-primary, #7b4324);
-  color: var(--color-primary, #7b4324);
+  border-color: var(--color-primary, #4a7a5f);
+  color: var(--color-primary, #4a7a5f);
   background: var(--color-primary-soft);
 }
 
@@ -299,7 +299,7 @@
   margin: var(--spacing-md, 12px) var(--spacing-3xl, 28px) 0;
   font-size: var(--font-size-meta, 13px);
   font-weight: 600;
-  color: var(--color-text-secondary, #606069);
+  color: var(--color-text-secondary, #49515b);
 }
 
 .kukui-cp__gate {
@@ -343,13 +343,13 @@
 }
 
 .kukui-cp__primary {
-  background: var(--color-primary, #7b4324);
-  color: #ffffff;
+  background: var(--color-primary, #4a7a5f);
+  color: var(--color-on-primary, #ffffff);
   border: none;
 }
 
 .kukui-cp__primary:hover:not(:disabled) {
-  background: var(--color-primary-hover, #9b5830);
+  background: var(--color-primary-hover, #3f6b52);
 }
 
 .kukui-cp__primary:disabled {
@@ -359,8 +359,8 @@
 
 .kukui-cp__secondary {
   background: transparent;
-  color: var(--color-primary, #7b4324);
-  border: 2px solid var(--color-primary, #7b4324);
+  color: var(--color-primary, #4a7a5f);
+  border: 2px solid var(--color-primary, #4a7a5f);
 }
 
 .kukui-cp__secondary:hover:not(:disabled) {

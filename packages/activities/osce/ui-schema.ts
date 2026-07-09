@@ -74,7 +74,7 @@ const uiSchema = {
   },
   expectedOrder: f(
     "Expected phase order",
-    "Optional. Phase ids in the order the learner should perform them.",
+    "Optional. Phase ids in the order the learner should perform them. Order points are only awarded when \"Allow free phase navigation\" is on — with linear navigation the order is forced, so none are given.",
   ),
   behaviour: {
     "ui:title": "Activity behaviour",
@@ -91,7 +91,9 @@ const uiSchema = {
   },
   ui: {
     "ui:title": "Button label overrides",
-    submitButtonLabel: f("'Submit' button text"),
+    nextPhaseButton: f("'Next phase' button text"),
+    submitButton: f("'Submit' button text"),
+    tryAgainButton: f("'Try again' button text"),
   },
 } as const;
 

@@ -14,7 +14,7 @@
   width: 100%;
   max-width: 720px;
   background: var(--color-surface, #ffffff);
-  border: 1px solid var(--color-border, #dad2c6);
+  border: 1px solid var(--color-border, #d1d7df);
   border-radius: var(--radius-card, 12px);
   box-shadow: var(--shadow-card);
   padding: var(--spacing-3xl, 28px);
@@ -26,8 +26,8 @@
 .kukui-ddx__case-header {
   margin-bottom: var(--spacing-lg, 16px);
   padding: var(--spacing-lg, 16px);
-  background: var(--color-tip-bg, #f2f0e8);
-  border: 2px solid var(--color-border, #dad2c6);
+  background: var(--color-tip-bg, #e9edf3);
+  border: 2px solid var(--color-border, #d1d7df);
   border-radius: var(--radius-lg, 10px);
 }
 
@@ -37,7 +37,7 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  color: var(--color-text-secondary, #606069);
+  color: var(--color-text-secondary, #49515b);
 }
 
 .kukui-ddx__case-header-body {
@@ -59,7 +59,7 @@
   margin-bottom: var(--spacing-xl, 20px);
   padding: var(--spacing-lg, 16px);
   background: var(--color-surface, #ffffff);
-  border: 2px solid var(--color-border, #dad2c6);
+  border: 2px solid var(--color-border, #d1d7df);
   border-radius: var(--radius-lg, 10px);
 }
 
@@ -69,14 +69,14 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  color: var(--color-text-secondary, #606069);
+  color: var(--color-text-secondary, #49515b);
 }
 
 .kukui-ddx__case-so-far-empty {
   margin: 0;
   font-size: var(--font-size-meta, 13px);
   font-style: italic;
-  color: var(--color-text-secondary, #606069);
+  color: var(--color-text-secondary, #49515b);
 }
 
 .kukui-ddx__case-so-far-list {
@@ -123,7 +123,7 @@
   min-height: 48px;
   padding: var(--spacing-md, 12px) var(--spacing-lg, 16px);
   background: var(--color-surface, #ffffff);
-  border: 2px solid var(--color-border, #dad2c6);
+  border: 2px solid var(--color-border, #d1d7df);
   border-radius: var(--radius-md, 8px);
   text-align: left;
   font-size: var(--font-size-answer, 15px);
@@ -135,11 +135,11 @@
 }
 
 .kukui-ddx__choice:hover:not(:disabled) {
-  border-color: var(--color-border-hover, #bbae9a);
+  border-color: var(--color-border-hover, #adb6c0);
 }
 
 .kukui-ddx__choice.is-active {
-  border-color: var(--color-primary, #7b4324);
+  border-color: var(--color-primary, #4a7a5f);
   background: var(--color-primary-soft);
 }
 
@@ -148,24 +148,28 @@
   white-space: normal;
 }
 
-/* Pattern A feedback row: constant min-height, opacity-only fade. */
+/* Pattern A feedback row: space reserved from first render (constant
+   min-height + padding), opacity-only fade so neighbours never reflow. */
 .kukui-ddx__feedback {
-  min-height: 0;
+  min-height: 28px;
   opacity: 0;
   margin-top: var(--spacing-sm, 8px);
   font-size: var(--font-size-meta, 13px);
-  color: var(--color-text-secondary, #606069);
-  padding: 0 var(--spacing-lg, 16px);
-  transition:
-    opacity 200ms ease,
-    min-height 200ms ease;
+  color: var(--color-text-secondary, #49515b);
+  padding: var(--spacing-xs, 4px) var(--spacing-lg, 16px) var(--spacing-sm, 8px);
+  transition: opacity 200ms ease;
 }
 
 .kukui-ddx__feedback.is-visible {
   opacity: 1;
-  min-height: 28px;
-  padding-top: var(--spacing-xs, 4px);
-  padding-bottom: var(--spacing-sm, 8px);
+}
+
+/* Mid-case controls row (Restart). */
+.kukui-ddx__nav {
+  margin-top: var(--spacing-lg, 16px);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md, 12px);
 }
 
 /* Terminal diagnosis panel — uses a Success/Error border + soft fill, paired
@@ -174,7 +178,7 @@
   margin-top: var(--spacing-xl, 20px);
   padding: var(--spacing-lg, 16px);
   border-radius: var(--radius-lg, 10px);
-  border: 2px solid var(--color-border, #dad2c6);
+  border: 2px solid var(--color-border, #d1d7df);
   background: var(--color-surface, #ffffff);
 }
 
@@ -244,8 +248,8 @@
   min-height: 44px;
   padding: 10px 20px;
   background: transparent;
-  color: var(--color-primary, #7b4324);
-  border: 2px solid var(--color-primary, #7b4324);
+  color: var(--color-primary, #4a7a5f);
+  border: 2px solid var(--color-primary, #4a7a5f);
   border-radius: var(--radius-md, 8px);
   font-size: var(--font-size-answer, 15px);
   font-weight: 700;

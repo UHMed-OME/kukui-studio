@@ -2,7 +2,7 @@ import { useEffect, useId, useMemo, useState } from "react";
 import type { MatchingPairsConfig } from "./schema.js";
 import type { ActivityProps } from "@kukui/core/types";
 import { ActivityHeader, SafeHtml } from "@kukui/core";
-import { resolveScoring } from "@kukui/core/scoring";
+import { bandMessage, percentage, resolveScoring } from "@kukui/core/scoring";
 import "./Component.css";
 
 type Stage = "answering" | "submitted";
@@ -166,17 +166,28 @@ function Component({
 
   const scoring = useMemo(() => resolveScoring(config, { mode: "points" }), [config]);
 
-  const submit = () => {
-    if (submitted || !allConnected) return;
+  const score = useMemo(() => {
     const total = config.pairs.length;
     const singlePoint = scoring.mode === "all-or-nothing";
     const allRight = correctCount === total;
-    const raw = singlePoint ? (allRight ? 1 : 0) : correctCount;
-    const max = singlePoint ? 1 : total;
+    return {
+      raw: singlePoint ? (allRight ? 1 : 0) : correctCount,
+      max: singlePoint ? 1 : total,
+      success: allRight,
+    };
+  }, [config.pairs.length, scoring.mode, correctCount]);
+
+  const pct = submitted ? percentage(score) : 0;
+  const banner = submitted ? bandMessage(scoring.bands, pct) : null;
+
+  const submit = () => {
+    if (submitted || !allConnected) return;
+    // Build the next state first, then hand the same payload to onSubmit
+    // (never call onSubmit inside a setState updater).
     const next: State = { ...state, stage: "submitted", attempts: state.attempts + 1 };
     setState(next);
     setSelectedLeft(null);
-    onSubmit({ raw, max, success: allRight, suspendData: JSON.stringify(next) });
+    onSubmit({ ...score, suspendData: JSON.stringify(next) });
   };
 
   const tryAgain = () => {
@@ -260,21 +271,35 @@ function Component({
                       {correct ? "✓" : wrong ? "✗" : ""}
                     </span>
                   </button>
-                  {!submitted && isPaired ? (
-                    <button
-                      type="button"
-                      className="kukui-mp__clear"
-                      onClick={() => onClearLeft(p.id)}
-                      aria-label={`Clear pairing for ${p.left.text}`}
-                    >
-                      Clear
-                    </button>
-                  ) : null}
-                  {wrong ? (
-                    <p className="kukui-mp__reveal" aria-live="polite">
-                      Correct match: <strong>{pairsById[p.id]?.right.text}</strong>
-                    </p>
-                  ) : null}
+                  {/* Constant-height slot: holds Clear while answering and the
+                      correct-match reveal after submit, so neither pairing nor
+                      submitting reflows the column. */}
+                  <div className="kukui-mp__aux">
+                    {!submitted && isPaired ? (
+                      <button
+                        type="button"
+                        className="kukui-mp__clear"
+                        onClick={() => onClearLeft(p.id)}
+                        aria-label={`Clear pairing for ${p.left.text}`}
+                      >
+                        Clear
+                      </button>
+                    ) : null}
+                    {submitted ? (
+                      <p
+                        className={["kukui-mp__reveal", wrong ? "is-visible" : ""]
+                          .filter(Boolean)
+                          .join(" ")}
+                        aria-live="polite"
+                      >
+                        {wrong ? (
+                          <>
+                            Correct match: <strong>{pairsById[p.id]?.right.text}</strong>
+                          </>
+                        ) : null}
+                      </p>
+                    ) : null}
+                  </div>
                 </li>
               );
             })}
@@ -340,7 +365,8 @@ function Component({
           {submitted ? (
             <>
               <output className="kukui-mp__score">
-                {correctCount} / {config.pairs.length}
+                {score.raw} / {score.max}
+                {banner ? <span className="kukui-mp__band"> · {banner}</span> : null}
               </output>
               {scoring.enableRetry ? (
                 <button type="button" className="kukui-mp__secondary" onClick={tryAgain}>
@@ -359,6 +385,8 @@ function Component({
             </button>
           )}
         </div>
+
+        {config.author && <p className="kukui-mp__credit">By {config.author}</p>}
       </article>
     </div>
   );
@@ -437,9 +465,12 @@ function parseSuspend(s: string | undefined, config: MatchingPairsConfig): State
           (id): id is string => typeof id === "string" && validIds.has(id),
         )
       : [];
-    // If the persisted right-order is missing items (config drift), rebuild.
+    // Accept the persisted right-order only if it is set-equal to the config
+    // pair ids: same length AND no duplicates (a duplicate would pass a bare
+    // length check while silently dropping another pair). Otherwise rebuild.
     const rightOrder =
-      rightOrderRaw.length === config.pairs.length
+      rightOrderRaw.length === config.pairs.length &&
+      new Set(rightOrderRaw).size === config.pairs.length
         ? rightOrderRaw
         : config.pairs.map((p) => p.id);
     return {

@@ -40,7 +40,8 @@
   overflow: hidden;
   cursor: pointer;
   user-select: none;
-  touch-action: none;
+  /* touch-action stays default here so the page can still scroll from a
+     touch that starts on the images; only the seam handle opts out. */
 }
 
 .kukui-ics__img {
@@ -71,7 +72,9 @@
   bottom: 0;
   width: 2px;
   background: var(--color-surface, #ffffff);
-  box-shadow: 0 0 0 1px rgba(28, 30, 32, 0.25);
+  /* Contrast halo over arbitrary imagery — mixed from the text token so it
+     tracks each scheme's idea of "dark" instead of hardcoding one. */
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--color-text-primary, #1c1e20) 25%, transparent);
   z-index: 3;
   transform: translateX(-1px);
   pointer-events: none;
@@ -97,6 +100,10 @@
   color: var(--color-primary, #7b4324);
   font-weight: 700;
   /* Tap target ≥ 44 × 44 — already 48 × 48. */
+  /* Dragging the handle is a horizontal gesture: opt out of native touch
+     scrolling here (and only here) so the drag wins on the handle while
+     the surrounding image still scrolls the page. */
+  touch-action: none;
 }
 
 .kukui-ics__seam:hover:not(:disabled) {
@@ -131,6 +138,9 @@
   bottom: var(--spacing-sm, 8px);
   z-index: 3;
   padding: 4px var(--spacing-sm, 8px);
+  /* Wash-paired literal white: the caption supplies its own fixed dark wash
+     over arbitrary imagery, so white text is correct in every scheme — this
+     is not a primary fill, on-primary doesn't apply. */
   background: rgba(28, 30, 32, 0.65);
   color: #ffffff;
   font-size: var(--font-size-meta, 13px);
@@ -191,20 +201,59 @@
   min-height: 44px;
   padding: 10px 20px;
   background: var(--color-primary, #7b4324);
-  color: #ffffff;
+  color: var(--color-on-primary, #ffffff);
   border: none;
   border-radius: var(--radius-md, 8px);
   font-size: var(--font-size-answer, 15px);
   font-weight: 700;
 }
 
-.kukui-ics__done:hover {
+.kukui-ics__done:hover:not(:disabled) {
   background: var(--color-primary-hover, #9b5830);
 }
 
 .kukui-ics__done:focus-visible {
   outline: 2px solid var(--color-primary, #7b4324);
   outline-offset: 2px;
+}
+
+.kukui-ics__done:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.kukui-ics__secondary {
+  min-height: 44px;
+  padding: 10px 20px;
+  background: transparent;
+  color: var(--color-primary, #7b4324);
+  border: 2px solid var(--color-primary, #7b4324);
+  border-radius: var(--radius-md, 8px);
+  font-size: var(--font-size-answer, 15px);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.kukui-ics__secondary:hover {
+  background: var(--color-tip-bg, #f2f0e8);
+}
+
+.kukui-ics__secondary:focus-visible {
+  outline: 2px solid var(--color-primary, #7b4324);
+  outline-offset: 2px;
+}
+
+/* Visually hidden, screen-reader-visible text (checkpoint position labels). */
+.kukui-ics__sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 .kukui-ics__done-msg {

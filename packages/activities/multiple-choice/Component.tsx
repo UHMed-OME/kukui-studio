@@ -61,6 +61,7 @@ export function Component({
   // remount key.
   useEffect(() => {
     setState(parseSuspend(suspendData) ?? initialState);
+    setSolutionsRevealed(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [config]);
 
@@ -72,6 +73,10 @@ export function Component({
 
   // Display order of answer indices into config.answers. Selection still
   // tracks the original indices so scoring is by stable identity.
+  // Keyed on `config` identity (not answers.length): the shuffle regenerates
+  // whenever the activity config changes, which is correct — the state-reset
+  // effect above also fires on config change, so order and selection reset
+  // together. Stable across re-renders of the same config object.
   const displayOrder = useMemo<number[]>(() => {
     if (!config.behaviour?.randomAnswers) {
       return config.answers.map((_, i) => i);
@@ -80,7 +85,7 @@ export function Component({
     const seed = Math.floor(Math.random() * 0xffffffff) >>> 0;
     return shuffleIndices(config.answers.length, seed);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [config.answers.length, config.behaviour?.randomAnswers]);
+  }, [config]);
 
   useEffect(() => {
     if (!onPersist) return;
@@ -106,16 +111,24 @@ export function Component({
     const score = scoreSelection({
       selectedIndices: new Set(state.selected),
       correctIndices,
-      totalAnswers: config.answers.length,
       singlePoint: isSinglePoint,
     });
-    setState((s) => ({ ...s, stage: "submitted", attempts: s.attempts + 1 }));
-    onSubmit({ ...score, suspendData: JSON.stringify({ ...state, stage: "submitted" }) });
+    // Build the next state first so the suspend payload carries the same
+    // attempts increment that setState applies (no stale spread).
+    const next: State = { ...state, stage: "submitted", attempts: state.attempts + 1 };
+    setState(next);
+    onSubmit({ ...score, suspendData: JSON.stringify(next) });
   };
 
-  const tryAgain = () => setState(initialState);
+  const tryAgain = () => {
+    setState(initialState);
+    setSolutionsRevealed(false);
+  };
 
-  const showSolutions = state.stage === "submitted" && scoring.enableSolutionsButton;
+  // Solution reveal is opt-in: the learner must press the "Show solution"
+  // button after submitting. Reset on tryAgain and on config change.
+  const [solutionsRevealed, setSolutionsRevealed] = useState(false);
+  const showSolutions = state.stage === "submitted" && solutionsRevealed;
 
   const ui = config.ui ?? {};
   const checkLabel = ui.checkAnswerButton ?? "Check";
@@ -127,10 +140,9 @@ export function Component({
       scoreSelection({
         selectedIndices: new Set(state.selected),
         correctIndices,
-        totalAnswers: config.answers.length,
         singlePoint: isSinglePoint,
       }),
-    [state.selected, correctIndices, config.answers.length, isSinglePoint],
+    [state.selected, correctIndices, isSinglePoint],
   );
 
   const pct = state.stage === "submitted" ? percentage(score) : 0;
@@ -158,7 +170,8 @@ export function Component({
             const correct = a.correct;
             const wrong = submitted && selected && !correct;
             const right = submitted && selected && correct;
-            const reveal = submitted && showSolutions && !selected && correct;
+            // Only after the learner presses "Show solution".
+            const reveal = showSolutions && !selected && correct;
             const stateLabel = right
               ? "correct"
               : wrong
@@ -196,12 +209,15 @@ export function Component({
                 {/* Tip row mounts whenever the answer has a tip — presence
                     depends on config only, never on state, so the reveal is
                     opacity-only and neighbours stay put (layout-stable). The
-                    tip text is already exposed pre-submit via `title`. */}
+                    tip becomes visible as soon as the answer is selected —
+                    both pre- and post-submit — so touch and keyboard users
+                    get it too (the `title` tooltip is a mouse-only bonus,
+                    never the sole channel). */}
                 {a.tip ? (
                   <div
                     className={[
                       "kukui-mc__tip",
-                      submitted && selected ? "is-visible" : "",
+                      selected ? "is-visible" : "",
                     ]
                       .filter(Boolean)
                       .join(" ")}
@@ -246,10 +262,14 @@ export function Component({
                   {tryAgainLabel}
                 </button>
               ) : null}
-              {showSolutions && state.attempts > 0 ? (
-                <span className="kukui-mc__hint">
-                  {solutionLabel} active — correct answers shown above.
-                </span>
+              {scoring.enableSolutionsButton && !solutionsRevealed ? (
+                <button
+                  type="button"
+                  className="kukui-mc__secondary"
+                  onClick={() => setSolutionsRevealed(true)}
+                >
+                  {solutionLabel}
+                </button>
               ) : null}
             </>
           )}

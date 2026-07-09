@@ -14,7 +14,7 @@ import {
 import type { CategorizationConfig } from "./schema.js";
 import type { ActivityProps } from "@kukui/core/types";
 import { ActivityHeader, SafeHtml } from "@kukui/core";
-import { resolveScoring } from "@kukui/core/scoring";
+import { bandMessage, percentage, resolveScoring } from "@kukui/core/scoring";
 import "./Component.css";
 
 type Stage = "answering" | "submitted";
@@ -25,7 +25,6 @@ type Placement = Record<string, string | null>;
 type State = {
   stage: Stage;
   placement: Placement;
-  attempts: number;
 };
 
 export default function Component({
@@ -36,13 +35,11 @@ export default function Component({
   headingLevel = 1,
 }: ActivityProps<CategorizationConfig>) {
   const headingId = useId();
-  const promptId = useId();
 
   const initial = useMemo<State>(
     () => ({
       stage: "answering",
       placement: Object.fromEntries(config.items.map((i) => [i.id, null])),
-      attempts: 0,
     }),
     [config.items],
   );
@@ -103,18 +100,33 @@ export default function Component({
 
   const scoring = useMemo(() => resolveScoring(config, { mode: "points" }), [config]);
 
+  const correctCount = useMemo(
+    () => Object.entries(state.placement).filter(([id, cid]) => isCorrect(id, cid)).length,
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [state.placement, config.items],
+  );
+
+  const score = useMemo(() => {
+    const total = config.items.length;
+    const singlePoint = scoring.mode === "all-or-nothing";
+    const allRight = correctCount === total;
+    return {
+      raw: singlePoint ? (allRight ? 1 : 0) : correctCount,
+      max: singlePoint ? 1 : total,
+      success: allRight,
+    };
+  }, [config.items.length, scoring.mode, correctCount]);
+
+  const pct = state.stage === "submitted" ? percentage(score) : 0;
+  const banner = state.stage === "submitted" ? bandMessage(scoring.bands, pct) : null;
+
   const submit = () => {
     if (state.stage !== "answering") return;
-    const total = config.items.length;
-    const correct = Object.entries(state.placement).filter(([id, cid]) => isCorrect(id, cid))
-      .length;
-    const singlePoint = scoring.mode === "all-or-nothing";
-    const max = singlePoint ? 1 : total;
-    const allRight = correct === total;
-    const raw = singlePoint ? (allRight ? 1 : 0) : correct;
-    const next: State = { ...state, stage: "submitted", attempts: state.attempts + 1 };
+    // Build the next state first, then hand the same payload to onSubmit
+    // (never call onSubmit inside a setState updater).
+    const next: State = { ...state, stage: "submitted" };
     setState(next);
-    onSubmit({ raw, max, success: allRight, suspendData: JSON.stringify(next) });
+    onSubmit({ ...score, suspendData: JSON.stringify(next) });
   };
 
   const tryAgain = () => setState(initial);
@@ -160,11 +172,7 @@ export default function Component({
 
   return (
     <div className="kukui-cat">
-      <article
-        className="kukui-cat__card"
-        aria-labelledby={headingId}
-        aria-describedby={promptId}
-      >
+      <article className="kukui-cat__card" aria-labelledby={headingId}>
         <ActivityHeader
           title={config.title}
           titleId={headingId}
@@ -251,11 +259,17 @@ export default function Component({
 
         <div className="kukui-cat__actions">
           {submitted ? (
-            scoring.enableRetry ? (
-              <button type="button" className="kukui-cat__secondary" onClick={tryAgain}>
-                {tryAgainLabel}
-              </button>
-            ) : null
+            <>
+              <output className="kukui-cat__score">
+                {score.raw} / {score.max}
+                {banner ? <span className="kukui-cat__band"> · {banner}</span> : null}
+              </output>
+              {scoring.enableRetry ? (
+                <button type="button" className="kukui-cat__secondary" onClick={tryAgain}>
+                  {tryAgainLabel}
+                </button>
+              ) : null}
+            </>
           ) : (
             <button
               type="button"
@@ -267,6 +281,8 @@ export default function Component({
             </button>
           )}
         </div>
+
+        {config.author && <p className="kukui-cat__credit">By {config.author}</p>}
       </article>
     </div>
   );
@@ -378,11 +394,18 @@ function PlacedItem({
           </span>
         ) : null}
       </button>
-      {submitted && !correct ? (
-        <span className="kukui-cat__chip-correction">
-          Correct: {correctCategoryLabel}
-        </span>
-      ) : null}
+      {/* Always mounted so the reveal is opacity-only; the reserved
+          min-height keeps the bin from reflowing on submit. */}
+      <span
+        className={[
+          "kukui-cat__chip-correction",
+          submitted && !correct ? "is-visible" : "",
+        ]
+          .filter(Boolean)
+          .join(" ")}
+      >
+        {submitted && !correct ? `Correct: ${correctCategoryLabel}` : ""}
+      </span>
     </span>
   );
 }
@@ -439,7 +462,7 @@ function parseSuspend(
   if (!s) return null;
   try {
     const parsed = JSON.parse(s) as Partial<State>;
-    if (parsed && parsed.placement && typeof parsed.attempts === "number") {
+    if (parsed && parsed.placement && typeof parsed.placement === "object") {
       const validCategoryIds = new Set(config.categories.map((c) => c.id));
       const placement: Placement = {};
       for (const it of config.items) {
@@ -453,7 +476,6 @@ function parseSuspend(
       return {
         stage: parsed.stage === "submitted" ? "submitted" : "answering",
         placement,
-        attempts: parsed.attempts,
       };
     }
   } catch {

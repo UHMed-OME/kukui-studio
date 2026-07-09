@@ -6,11 +6,13 @@ import {
   useRef,
   useState,
   type KeyboardEvent,
+  type MouseEvent as ReactMouseEvent,
   type PointerEvent as ReactPointerEvent,
   type CSSProperties,
 } from "react";
 import type { ImageComparisonSliderConfig } from "./schema.js";
 import type { ActivityProps } from "@kukui/core/types";
+import { resolveScoring } from "@kukui/core/scoring";
 import { ActivityHeader, SafeHtml } from "@kukui/core";
 import "./Component.css";
 
@@ -62,10 +64,15 @@ export default function Component({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [config]);
 
-  useEffect(() => {
-    if (!onPersist) return;
-    onPersist(JSON.stringify(state));
-  }, [state, onPersist]);
+  // Persist explicitly at interaction boundaries (pointer release, key
+  // release, stage click, Done, Try again), not via a state effect, which
+  // would fire onPersist once per pointermove during a drag.
+  const persist = useCallback(
+    (s: State) => {
+      if (onPersist) onPersist(JSON.stringify(s));
+    },
+    [onPersist],
+  );
 
   const setPosition = useCallback((next: number) => {
     setState((s) => ({ ...s, position: clamp01(next) }));
@@ -99,13 +106,14 @@ export default function Component({
     if (e.currentTarget.hasPointerCapture(e.pointerId)) {
       e.currentTarget.releasePointerCapture(e.pointerId);
     }
-    if (config.behaviour?.autoSnap) {
-      setPosition(0.5);
-    }
+    const settled = config.behaviour?.autoSnap ? 0.5 : state.position;
+    const next: State = { ...state, position: settled };
+    setState(next);
+    persist(next);
   };
 
   // ---- Click anywhere on the wrapper jumps the seam ----
-  const onWrapperClick = (e: ReactPointerEvent<HTMLDivElement>) => {
+  const onWrapperClick = (e: ReactMouseEvent<HTMLDivElement>) => {
     if (state.done) return;
     // Avoid double-handling when the click bubbled from the seam handle itself.
     if (
@@ -114,8 +122,12 @@ export default function Component({
     ) {
       return;
     }
-    const next = positionFromClientX(e.clientX);
-    if (next !== null) setPosition(next);
+    const pos = positionFromClientX(e.clientX);
+    if (pos !== null) {
+      const next: State = { ...state, position: pos };
+      setState(next);
+      persist(next);
+    }
   };
 
   // ---- Keyboard on the seam ----
@@ -149,15 +161,39 @@ export default function Component({
     if (handled) e.preventDefault();
   };
 
-  const submit = () => {
+  // keyup fires once per press (keydown auto-repeats while held), so this
+  // saves the settled position without per-repeat persist spam.
+  const onSeamKeyUp = () => {
     if (state.done) return;
+    persist(state);
+  };
+
+  // Scoring slice only: this activity's `behaviour` (autoSnap) has no legacy
+  // scoring fields, so passing the whole config trips a TS weak-type mismatch.
+  const scoring = useMemo(
+    () => resolveScoring({ scoring: config.scoring }, { mode: "completion" }),
+    [config],
+  );
+
+  const hasImages = Boolean(config.before && config.after);
+
+  const submit = () => {
+    if (state.done || !hasImages) return;
     const next: State = { ...state, done: true };
     setState(next);
+    persist(next);
     onSubmit({ raw: 1, max: 1, success: true, suspendData: JSON.stringify(next) });
+  };
+
+  const tryAgain = () => {
+    const next: State = { position: initialPosition, done: false };
+    setState(next);
+    persist(next);
   };
 
   const ui = config.ui ?? {};
   const doneLabel = ui.doneButton ?? "Done";
+  const tryAgainLabel = ui.tryAgainButton ?? "Try again";
 
   const pct = Math.round(state.position * 100);
   // Reveal "before" on the LEFT side: clip the after-image to the right of the seam.
@@ -182,7 +218,7 @@ export default function Component({
           prompt={config.prompt ? <SafeHtml html={config.prompt} /> : undefined}
         />
 
-        {config.before && config.after ? (
+        {hasImages && config.before && config.after ? (
           <div
             ref={wrapperRef}
             className="kukui-ics__stage"
@@ -227,6 +263,7 @@ export default function Component({
               onPointerUp={releaseDrag}
               onPointerCancel={releaseDrag}
               onKeyDown={onSeamKeyDown}
+              onKeyUp={onSeamKeyUp}
             >
               <span className="kukui-ics__seam-grip" aria-hidden="true">
                 <span className="kukui-ics__seam-arrow">‹</span>
@@ -252,7 +289,8 @@ export default function Component({
           <ul className="kukui-ics__prompts" aria-label="Checkpoint questions">
             {config.prompts.map((p, i) => (
               <li key={i} className="kukui-ics__prompt-item">
-                <span className="kukui-ics__prompt-pos" aria-hidden="true">
+                <span className="kukui-ics__prompt-pos">
+                  <span className="kukui-ics__sr-only">Seam position </span>
                   {Math.round(p.position * 100)}%
                 </span>
                 <span className="kukui-ics__prompt-text">{p.question}</span>
@@ -263,11 +301,23 @@ export default function Component({
 
         <div className="kukui-ics__actions">
           {state.done ? (
-            <span className="kukui-ics__done-msg" role="status">
-              Marked complete.
-            </span>
+            <>
+              <span className="kukui-ics__done-msg" role="status">
+                Marked complete.
+              </span>
+              {scoring.enableRetry ? (
+                <button type="button" className="kukui-ics__secondary" onClick={tryAgain}>
+                  {tryAgainLabel}
+                </button>
+              ) : null}
+            </>
           ) : (
-            <button type="button" className="kukui-ics__done" onClick={submit}>
+            <button
+              type="button"
+              className="kukui-ics__done"
+              onClick={submit}
+              disabled={!hasImages}
+            >
               {doneLabel}
             </button>
           )}

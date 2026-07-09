@@ -98,9 +98,11 @@ describe("LabPanel", () => {
     expect(
       screen.getByText(/best interpretation/i),
     ).toBeInTheDocument();
-    // Three radio choices are exposed.
-    const radios = screen.getAllByRole("radio");
-    expect(radios).toHaveLength(cfg.interpretation.choices.length);
+    // Three interpretation choices are exposed as toggle buttons
+    // (aria-pressed), matching the multiple-choice pattern.
+    const choices = screen.getAllByRole("button", { name: /not selected$/i });
+    expect(choices).toHaveLength(cfg.interpretation.choices.length);
+    for (const c of choices) expect(c).toHaveAttribute("aria-pressed", "false");
   });
 
   it("clicking a row toggles its aria-pressed flag", async () => {
@@ -129,7 +131,7 @@ describe("LabPanel", () => {
     await user.click(screen.getByRole("button", { name: /^toggle ph,/i }));
     expect(check).toBeDisabled();
     await user.click(
-      screen.getByRole("radio", {
+      screen.getByRole("button", {
         name: /metabolic acidosis with respiratory compensation/i,
       }),
     );
@@ -146,7 +148,7 @@ describe("LabPanel", () => {
     await user.click(screen.getByRole("button", { name: /^toggle hco3,/i }));
     // Pick the correct interpretation.
     await user.click(
-      screen.getByRole("radio", {
+      screen.getByRole("button", {
         name: /metabolic acidosis with respiratory compensation/i,
       }),
     );
@@ -171,7 +173,7 @@ describe("LabPanel", () => {
     await user.click(screen.getByRole("button", { name: /^toggle ph,/i }));
     await user.click(screen.getByRole("button", { name: /^toggle na,/i }));
     await user.click(
-      screen.getByRole("radio", {
+      screen.getByRole("button", {
         name: /metabolic acidosis with respiratory compensation/i,
       }),
     );
@@ -189,7 +191,7 @@ describe("LabPanel", () => {
     render(<Component config={cfg} onSubmit={vi.fn()} />);
     await user.click(screen.getByRole("button", { name: /^toggle ph,/i }));
     await user.click(
-      screen.getByRole("radio", {
+      screen.getByRole("button", {
         name: /metabolic acidosis with respiratory compensation/i,
       }),
     );
@@ -200,10 +202,10 @@ describe("LabPanel", () => {
       screen.getByRole("button", { name: /^toggle ph,.*not marked$/i }),
     ).toHaveAttribute("aria-pressed", "false");
     expect(
-      screen.getByRole("radio", {
+      screen.getByRole("button", {
         name: /metabolic acidosis.*not selected/i,
       }),
-    ).toHaveAttribute("aria-checked", "false");
+    ).toHaveAttribute("aria-pressed", "false");
   });
 
   it("persists state via onPersist when the learner interacts", async () => {
@@ -217,7 +219,7 @@ describe("LabPanel", () => {
     const lastCall = onPersist.mock.calls.at(-1)?.[0] as string;
     expect(lastCall).toMatch(/"selectedRowIds":\["ph"\]/);
     await user.click(
-      screen.getByRole("radio", {
+      screen.getByRole("button", {
         name: /metabolic acidosis with respiratory compensation/i,
       }),
     );
@@ -236,7 +238,7 @@ describe("LabPanel", () => {
     // Only mark pH; miss the other two abnormals.
     await user.click(screen.getByRole("button", { name: /^toggle ph,/i }));
     await user.click(
-      screen.getByRole("radio", {
+      screen.getByRole("button", {
         name: /metabolic acidosis with respiratory compensation/i,
       }),
     );
@@ -254,7 +256,7 @@ describe("LabPanel", () => {
     // Mark Na (normal value) as abnormal — this should be flagged as incorrect after submit.
     await user.click(screen.getByRole("button", { name: /^toggle na,/i }));
     await user.click(
-      screen.getByRole("radio", {
+      screen.getByRole("button", {
         name: /metabolic acidosis with respiratory compensation/i,
       }),
     );
@@ -266,5 +268,68 @@ describe("LabPanel", () => {
     const row = naBtn.closest("tr");
     expect(row).not.toBeNull();
     expect(row?.className).toMatch(/is-incorrect/);
+  });
+
+  it("completion mode reports success on submit regardless of the score", async () => {
+    const user = userEvent.setup();
+    const onSubmit = vi.fn();
+    const completion: LabPanelConfig = {
+      ...cfg,
+      scoring: { mode: "completion" },
+    };
+    render(<Component config={completion} onSubmit={onSubmit} />);
+    // Pick a wrong interpretation and no rows — far from full marks.
+    await user.click(
+      screen.getByRole("button", { name: /respiratory alkalosis/i }),
+    );
+    await user.click(screen.getByRole("button", { name: /^check$/i }));
+    const score = onSubmit.mock.calls[0]?.[0];
+    expect(score.success).toBe(true);
+    expect(score.raw).toBeLessThan(score.max);
+  });
+
+  it("reveals the unpicked correct choice only when scoring.enableSolutionsButton is on", async () => {
+    const user = userEvent.setup();
+    // Default: no reveal of the correct answer after a wrong submit.
+    const { unmount } = render(<Component config={cfg} onSubmit={vi.fn()} />);
+    await user.click(
+      screen.getByRole("button", { name: /respiratory alkalosis/i }),
+    );
+    await user.click(screen.getByRole("button", { name: /^check$/i }));
+    expect(
+      screen.getByRole("button", { name: /metabolic acidosis.*not selected$/i }),
+    ).toBeInTheDocument();
+    unmount();
+
+    const withSolutions: LabPanelConfig = {
+      ...cfg,
+      scoring: { mode: "points", enableSolutionsButton: true, enableRetry: true },
+    };
+    render(<Component config={withSolutions} onSubmit={vi.fn()} />);
+    await user.click(
+      screen.getByRole("button", { name: /respiratory alkalosis/i }),
+    );
+    await user.click(screen.getByRole("button", { name: /^check$/i }));
+    expect(
+      screen.getByRole("button", {
+        name: /metabolic acidosis.*correct, not selected/i,
+      }),
+    ).toBeInTheDocument();
+  });
+
+  it("drops stale suspend ids that no longer exist in the config", () => {
+    const stale = JSON.stringify({
+      stage: "answering",
+      selectedRowIds: ["ph", "ghost-row"],
+      selectedChoiceId: "ghost-choice",
+      attempts: 1,
+    });
+    render(<Component config={cfg} onSubmit={vi.fn()} suspendData={stale} />);
+    // The known row survives; the ghost row and ghost choice are dropped.
+    expect(
+      screen.getByRole("button", { name: /^toggle ph,.*marked abnormal$/i }),
+    ).toHaveAttribute("aria-pressed", "true");
+    // No choice selected → Check stays disabled.
+    expect(screen.getByRole("button", { name: /^check$/i })).toBeDisabled();
   });
 });

@@ -14,8 +14,35 @@ import {
 import type { AnatomyLabelingConfig } from "./schema.js";
 import type { ActivityProps } from "@kukui/core/types";
 import { ActivityHeader, SafeHtml } from "@kukui/core";
-import { resolveScoring } from "@kukui/core/scoring";
+import { bandMessage, percentage, resolveScoring } from "@kukui/core/scoring";
 import "./Component.css";
+
+/** Tiny seeded PRNG (mulberry32) — stable shuffle across re-renders.
+ * Mirrors multiple-choice's implementation (the house pattern for
+ * randomized option order). */
+function rng(seed: number): () => number {
+  let t = seed >>> 0;
+  return () => {
+    t = (t + 0x6d2b79f5) >>> 0;
+    let r = Math.imul(t ^ (t >>> 15), 1 | t);
+    r = (r + Math.imul(r ^ (r >>> 7), 61 | r)) ^ r;
+    return ((r ^ (r >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+/** Fisher-Yates with the seeded PRNG. Exported for tests: same seed,
+ * same order, every time. */
+export function shuffleWithSeed<T>(items: readonly T[], seed: number): T[] {
+  const out = [...items];
+  const rand = rng(seed);
+  for (let i = out.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(rand() * (i + 1));
+    const tmp = out[i] as T;
+    out[i] = out[j] as T;
+    out[j] = tmp;
+  }
+  return out;
+}
 
 type Stage = "answering" | "submitted";
 
@@ -159,6 +186,21 @@ export default function Component({
   const submitted = state.stage === "submitted";
   const allPlaced = Object.values(state.placement).every((t) => t !== null);
 
+  // Score view for the post-submit line (MC-style raw/max + band message).
+  const correctCount = Object.entries(state.placement).filter(([id, tid]) =>
+    isCorrect(id, tid),
+  ).length;
+  const singlePoint = scoring.mode === "all-or-nothing";
+  const scoreMax = singlePoint ? 1 : config.labels.length;
+  const scoreRaw = singlePoint
+    ? correctCount === config.labels.length
+      ? 1
+      : 0
+    : correctCount;
+  const banner = submitted
+    ? bandMessage(scoring.bands, percentage({ raw: scoreRaw, max: scoreMax }))
+    : null;
+
   const labelsById = useMemo(
     () => Object.fromEntries(config.labels.map((l) => [l.id, l])),
     [config.labels],
@@ -183,15 +225,14 @@ export default function Component({
   }, [state.placement]);
 
   // Tray label order: stable by config order, optionally randomized once.
+  // Seeded shuffle (per-mount seed, stable across re-renders, varies
+  // across mounts) — the multiple-choice pattern.
   const orderedLabels = useMemo(() => {
     if (!config.behaviour?.randomizeLabels) return config.labels;
-    const arr = [...config.labels];
-    for (let i = arr.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [arr[i], arr[j]] = [arr[j]!, arr[i]!];
-    }
-    return arr;
-  }, [config.labels, config.behaviour?.randomizeLabels]);
+    const seed = Math.floor(Math.random() * 0xffffffff) >>> 0;
+    return shuffleWithSeed(config.labels, seed);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [config]);
 
   const trayLabels = orderedLabels.filter((l) => state.placement[l.id] === null);
 
@@ -235,12 +276,25 @@ export default function Component({
                 left: `${t.position.x * 100}%`,
                 top: `${t.position.y * 100}%`,
               };
+              // The placed chip normally floats above the circle, but the
+              // image wrap clips (overflow: hidden) — near the top edge the
+              // chip flips below the circle, and near the side edges it
+              // clamps toward the image instead of centering. Thresholds
+              // are normalized image fractions.
+              const edgeClasses = [
+                t.position.y < 0.12 ? "is-chip-below" : "",
+                t.position.x < 0.12 ? "is-chip-left" : "",
+                t.position.x > 0.88 ? "is-chip-right" : "",
+              ]
+                .filter(Boolean)
+                .join(" ");
               return (
                 <Target
                   key={t.id}
                   targetId={t.id}
                   index={idx}
                   style={style}
+                  edgeClasses={edgeClasses}
                   occupantLabel={occupant?.text}
                   occupantLabelId={occupantId}
                   submitted={submitted}
@@ -292,13 +346,21 @@ export default function Component({
             : ""}
         </div>
 
+        {/* Post-submit the row never empties: the score line always renders,
+            so turning retry off doesn't collapse the row (layout-stable). */}
         <div className="kukui-al__actions">
           {submitted ? (
-            scoring.enableRetry ? (
-              <button type="button" className="kukui-al__secondary" onClick={tryAgain}>
-                {tryAgainLabel}
-              </button>
-            ) : null
+            <>
+              <output className="kukui-al__score">
+                {scoreRaw} / {scoreMax}
+                {banner ? <span className="kukui-al__band"> · {banner}</span> : null}
+              </output>
+              {scoring.enableRetry ? (
+                <button type="button" className="kukui-al__secondary" onClick={tryAgain}>
+                  {tryAgainLabel}
+                </button>
+              ) : null}
+            </>
           ) : (
             <button
               type="button"
@@ -332,6 +394,7 @@ function Target({
   targetId,
   index,
   style,
+  edgeClasses,
   occupantLabel,
   occupantLabelId,
   submitted,
@@ -340,6 +403,7 @@ function Target({
   targetId: string;
   index: number;
   style: CSSProperties;
+  edgeClasses?: string;
   occupantLabel: string | undefined;
   occupantLabelId: string | undefined;
   submitted: boolean;
@@ -350,13 +414,17 @@ function Target({
     ? correct ? "is-correct" : "is-incorrect"
     : "";
   return (
+    // role="group": a bare div's aria-label is not exposed by most
+    // screen readers; the group role makes "Target N: <label>" land.
     <div
       ref={setNodeRef}
+      role="group"
       className={[
         "kukui-al__target",
         isOver ? "is-over" : "",
         occupantLabelId ? "is-occupied" : "",
         stateClass,
+        edgeClasses ?? "",
       ]
         .filter(Boolean)
         .join(" ")}
@@ -367,9 +435,10 @@ function Target({
           : `Target ${index}: empty`
       }
     >
-      <span className="kukui-al__target-number" aria-hidden="true">
-        {index}
-      </span>
+      {/* Not aria-hidden: the visible number is the same cue sighted
+          learners use, and hiding it made the circles silent for SR
+          users navigating by object. */}
+      <span className="kukui-al__target-number">{index}</span>
       {occupantLabelId && occupantLabel ? (
         <PlacedLabel
           labelId={occupantLabelId}

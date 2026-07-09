@@ -17,8 +17,10 @@ const TERM_RE = /^[A-Za-z]{2,32}$/;
  * per seed) so the same JSON yields a stable puzzle within a session but a
  * fresh arrangement when the learner asks for a new round.
  *
- * Scoring is per-cell: `raw` is the count of correctly filled cells,
- * `max` is the total cell count. `success` flips true on full clear.
+ * Scoring is per-cell: `raw` counts correctly filled cells and `max` counts
+ * the scorable cells. Cells the learner revealed are excluded from both
+ * `raw` and `max` (they sit outside the grade rather than counting as
+ * automatically wrong), so a full clear after a reveal can still succeed.
  *
  * Only A–Z letters are allowed in a term — see TERM_RE above. Definitions
  * are plain prose (no HTML) so they render identically in the clue list
@@ -63,8 +65,8 @@ export const CrosswordConfigSchema = z
         allowReshuffle: z.boolean().optional(),
         /**
          * If true, the "Reveal letter" / "Reveal word" buttons render.
-         * Revealing penalises score by marking the revealed cells incorrect
-         * for grading purposes. Default true.
+         * Revealed cells are excluded from the grade entirely — they count
+         * toward neither `raw` nor `max`. Default true.
          */
         allowReveal: z.boolean().optional(),
         /**

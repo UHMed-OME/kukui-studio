@@ -8,6 +8,9 @@ const starter = {
     { id: "p2", left: { text: "Left B" }, right: { text: "Right B" } },
   ],
   behaviour: { enableRetry: true, randomizeRight: true },
+  // appearance has a schema .default(): seed it so the Studio form's
+  // AJV-required check passes on a fresh draft.
+  appearance: { theme: "auto" },
 };
 
 export default starter;

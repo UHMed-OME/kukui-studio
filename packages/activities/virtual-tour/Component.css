@@ -27,6 +27,12 @@
   isolation: isolate;
 }
 
+/* The wrapper is focusable (keyboard camera steering is scoped to it). */
+.kukui-vt__canvas-wrap:focus-visible {
+  outline: 2px solid var(--color-primary, #7b4324);
+  outline-offset: 2px;
+}
+
 .kukui-vt__hint {
   position: absolute;
   top: var(--spacing-sm, 8px);
@@ -35,6 +41,9 @@
   z-index: 1;
   margin: 0;
   padding: var(--spacing-xs, 4px) var(--spacing-md, 12px);
+  /* Wash-paired literal white: the pill supplies its own fixed dark wash
+     (over an arbitrary 3D render), so white text is correct in every
+     scheme — this is not a primary fill, on-primary doesn't apply. */
   background: rgb(0 0 0 / 0.65);
   color: #ffffff;
   font-size: var(--font-size-meta, 13px);
@@ -173,16 +182,46 @@
   min-height: 44px;
   padding: 10px 20px;
   background: var(--color-primary);
-  color: #ffffff;
+  color: var(--color-on-primary, #ffffff);
   border: none;
   border-radius: var(--radius-md, 8px);
   font-size: var(--font-size-answer, 15px);
   font-weight: 700;
 }
 
+.kukui-vt__secondary {
+  min-height: 44px;
+  padding: 10px 20px;
+  background: transparent;
+  color: var(--color-primary, #7b4324);
+  border: 2px solid var(--color-primary, #7b4324);
+  border-radius: var(--radius-md, 8px);
+  font-size: var(--font-size-answer, 15px);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.kukui-vt__secondary:hover {
+  background: var(--color-tip-bg, #f2f0e8);
+}
+
+.kukui-vt__secondary:focus-visible {
+  outline: 2px solid var(--color-primary, #7b4324);
+  outline-offset: 2px;
+}
+
 .kukui-vt__done {
   margin: 0;
   font-size: var(--font-size-prompt, 16px);
   color: var(--color-success);
+  font-weight: 700;
+}
+
+/* Submitted short of the goal — informational, not celebratory. */
+.kukui-vt__partial {
+  margin: 0;
+  align-self: center;
+  font-size: var(--font-size-prompt, 16px);
+  color: var(--color-text-primary, #1c1e20);
   font-weight: 700;
 }

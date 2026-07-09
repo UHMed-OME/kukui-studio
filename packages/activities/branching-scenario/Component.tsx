@@ -1,7 +1,22 @@
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import type { BranchingScenarioConfig } from "./schema.js";
+import { resolveScoring } from "@kukui/core/scoring";
 import { ActivityHeader, SafeHtml, htmlToText, StatusBadge, DotIcon, CheckIcon, type ActivityProps } from "@kukui/core";
 import "./Component.css";
+
+type LastPick = {
+  /** Id of the node the learner was on when they picked (not the destination). */
+  nodeId: string;
+  choiceId: string;
+  /**
+   * Feedback captured at pick time. The picked choice unmounts on navigation,
+   * so looking it up in the *current* node's choices later would miss it (or,
+   * worse, match an unrelated choice that reuses the same id).
+   */
+  feedback: string | null;
+  /** True when the choice pointed at a missing node and navigation was refused. */
+  brokenNext: boolean;
+};
 
 type State = {
   currentNodeId: string;
@@ -9,8 +24,8 @@ type State = {
   path: string[];
   /** True once a terminal node was reached and onSubmit was fired. */
   terminalReached: boolean;
-  /** Id of the last choice clicked, used to render its inline feedback. */
-  lastChoiceId: string | null;
+  /** The last choice picked, captured at pick time (see LastPick). */
+  lastPick: LastPick | null;
 };
 
 type DefaultOutcome = { score: number; success: boolean; message?: string };
@@ -31,7 +46,7 @@ export default function Component({
       currentNodeId: config.startNodeId,
       path: [],
       terminalReached: false,
-      lastChoiceId: null,
+      lastPick: null,
     }),
     [config.startNodeId],
   );
@@ -59,11 +74,28 @@ export default function Component({
 
   const currentNode = nodesById.get(state.currentNodeId);
 
+  const scoring = useMemo(() => resolveScoring(config, { mode: "points" }), [config]);
+
   // Persist on every state change (covers each navigation step).
   useEffect(() => {
     if (!onPersist) return;
     onPersist(JSON.stringify(state));
   }, [state, onPersist]);
+
+  // Focus management: after navigating, the clicked choice button unmounts and
+  // focus would drop to <body>, leaving keyboard and screen-reader users
+  // stranded with no announcement of the new prompt. Move focus to the new
+  // node's prompt region instead (tabIndex={-1} target). Skipped on initial
+  // mount so embedding pages don't get their focus stolen on load.
+  const promptRef = useRef<HTMLDivElement | null>(null);
+  const isFirstRender = useRef(true);
+  useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
+    promptRef.current?.focus();
+  }, [state.currentNodeId]);
 
   // Idempotent terminal handling: fire onSubmit exactly once when terminal
   // is first seen for a given path. We guard with terminalReached + a ref
@@ -78,21 +110,33 @@ export default function Component({
     if (submittedFor.current === currentNode.id) return;
     submittedFor.current = currentNode.id;
     const outcome = currentNode.outcome ?? COMPLETION_DEFAULT;
+    // Under completion scoring, reaching any ending completes the activity
+    // successfully — per-node outcome scores only apply in points modes.
+    const isCompletion = scoring.mode === "completion";
     const next: State = { ...state, terminalReached: true };
     setState(next);
     onSubmit({
-      raw: outcome.score,
+      raw: isCompletion ? 1 : outcome.score,
       max: 1,
-      success: outcome.success,
+      success: isCompletion ? true : outcome.success,
       suspendData: JSON.stringify({ ...next, path: [...state.path] }),
     });
     // We intentionally depend only on currentNode + reached flag — onSubmit /
     // state.path are referentially stable enough for our use here.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentNode, state.terminalReached]);
+  }, [currentNode, state.terminalReached, scoring.mode]);
+
+  const ui = config.ui ?? {};
+  const restartLabel = ui.restartButton ?? "Restart";
+
+  const restart = () => {
+    submittedFor.current = null;
+    setState(initialState);
+  };
 
   if (!currentNode) {
-    // Defensive: bad suspendData or a broken nextNodeId got past validation.
+    // Defensive: a runtime-impossible state got past validation (e.g. a
+    // broken startNodeId). Keep the screen, but make it recoverable.
     return (
       <div className="kukui-bs">
         <article className="kukui-bs__card" role="alert">
@@ -100,6 +144,13 @@ export default function Component({
             This scenario can&apos;t continue: node &quot;{state.currentNodeId}
             &quot; is missing from the configuration.
           </p>
+          <button
+            type="button"
+            className="kukui-bs__secondary"
+            onClick={restart}
+          >
+            {restartLabel}
+          </button>
         </article>
       </div>
     );
@@ -107,8 +158,6 @@ export default function Component({
 
   const isTerminal =
     currentNode.choices === null || currentNode.choices.length === 0;
-  const ui = config.ui ?? {};
-  const restartLabel = ui.restartButton ?? "Restart";
 
   const pickChoice = (choiceId: string) => {
     if (state.terminalReached) return;
@@ -117,36 +166,33 @@ export default function Component({
     const nextNode = nodesById.get(choice.nextNodeId);
     if (!nextNode) {
       // Broken nextNodeId: stay put, surface the error inline.
-      setState((s) => ({ ...s, lastChoiceId: choiceId }));
+      setState((s) => ({
+        ...s,
+        lastPick: {
+          nodeId: s.currentNodeId,
+          choiceId,
+          feedback: choice.feedback ?? null,
+          brokenNext: true,
+        },
+      }));
       return;
     }
     setState((s) => ({
       currentNodeId: choice.nextNodeId,
       path: [...s.path, s.currentNodeId],
       terminalReached: false,
-      lastChoiceId: choiceId,
+      lastPick: {
+        nodeId: s.currentNodeId,
+        choiceId,
+        feedback: choice.feedback ?? null,
+        brokenNext: false,
+      },
     }));
   };
 
-  const restart = () => {
-    submittedFor.current = null;
-    setState(initialState);
-  };
-
-  const lastChoice =
-    state.lastChoiceId && currentNode.choices
-      ? currentNode.choices.find((c) => c.id === state.lastChoiceId) ?? null
-      : null;
-  const lastChoiceFeedback = lastChoice?.feedback ?? "";
-  const brokenNext =
-    state.lastChoiceId && currentNode.choices
-      ? (() => {
-          const c = currentNode.choices.find(
-            (ch) => ch.id === state.lastChoiceId,
-          );
-          return c && !nodesById.has(c.nextNodeId);
-        })()
-      : false;
+  const lastPick = state.lastPick;
+  const lastPickFeedback = lastPick && !lastPick.brokenNext ? lastPick.feedback ?? "" : "";
+  const brokenNext = lastPick?.brokenNext === true;
 
   const outcome = currentNode.outcome ?? (isTerminal ? COMPLETION_DEFAULT : null);
 
@@ -171,7 +217,9 @@ export default function Component({
           badge={headerBadge}
         />
 
-        <SafeHtml className="kukui-bs__prompt" html={currentNode.prompt} />
+        <div className="kukui-bs__prompt" ref={promptRef} tabIndex={-1}>
+          <SafeHtml html={currentNode.prompt} />
+        </div>
 
         {!isTerminal && currentNode.choices ? (
           <ul
@@ -180,7 +228,12 @@ export default function Component({
             className="kukui-bs__choices"
           >
             {currentNode.choices.map((c) => {
-              const justClicked = state.lastChoiceId === c.id;
+              // is-active only when the pick happened *on this node* — choice
+              // ids may be reused across nodes, so the id alone is ambiguous.
+              const justClicked =
+                lastPick !== null &&
+                lastPick.nodeId === currentNode.id &&
+                lastPick.choiceId === c.id;
               return (
                 <li key={c.id} className="kukui-bs__choice-row">
                   <button
@@ -210,7 +263,7 @@ export default function Component({
         <div
           className={[
             "kukui-bs__feedback",
-            lastChoiceFeedback || brokenNext ? "is-visible" : "",
+            lastPickFeedback || brokenNext ? "is-visible" : "",
           ]
             .filter(Boolean)
             .join(" ")}
@@ -218,7 +271,7 @@ export default function Component({
         >
           {brokenNext
             ? `This choice points to an unknown node — please notify the author.`
-            : lastChoiceFeedback}
+            : lastPickFeedback}
         </div>
 
         {isTerminal && outcome ? (
@@ -241,7 +294,7 @@ export default function Component({
                   : "Scenario complete — review your path and try again."}
               </p>
             )}
-            {config.behaviour?.enableRetry ? (
+            {scoring.enableRetry ? (
               <button
                 type="button"
                 className="kukui-bs__secondary"
@@ -269,17 +322,31 @@ function parseSuspend(
       typeof parsed.currentNodeId === "string" &&
       Array.isArray(parsed.path)
     ) {
+      // A stale draft (the author renamed/deleted nodes since the learner's
+      // last visit) may reference a node that no longer exists. Falling back
+      // to initial state beats an unrecoverable missing-node screen.
+      if (!config.nodes.some((n) => n.id === parsed.currentNodeId)) return null;
       return {
         currentNodeId: parsed.currentNodeId,
         path: parsed.path.filter((p): p is string => typeof p === "string"),
         terminalReached: parsed.terminalReached === true,
-        lastChoiceId:
-          typeof parsed.lastChoiceId === "string" ? parsed.lastChoiceId : null,
+        lastPick: parseLastPick(parsed.lastPick),
       };
     }
   } catch {
     /* noop */
   }
-  void config;
   return null;
+}
+
+function parseLastPick(v: unknown): LastPick | null {
+  if (!v || typeof v !== "object") return null;
+  const p = v as Partial<LastPick>;
+  if (typeof p.nodeId !== "string" || typeof p.choiceId !== "string") return null;
+  return {
+    nodeId: p.nodeId,
+    choiceId: p.choiceId,
+    feedback: typeof p.feedback === "string" ? p.feedback : null,
+    brokenNext: p.brokenNext === true,
+  };
 }

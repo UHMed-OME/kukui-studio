@@ -262,4 +262,112 @@ describe("OSCE", () => {
     // Total raw = 2 + 0 + 0 + 3 = 5; max = 2 + 1 + 2 + 3 = 8.
     expect(score).toMatchObject({ raw: 5, max: 8 });
   });
+
+  it("allows stepper navigation back to any visited phase when allowSkipPhase is off", async () => {
+    const user = userEvent.setup();
+    const linear: OSCEConfig = {
+      ...cfg,
+      behaviour: { enableRetry: true, allowSkipPhase: false },
+    };
+    render(<Component config={linear} onSubmit={vi.fn()} />);
+
+    // Walk forward to phase 3 so phases 1 and 2 are both visited.
+    await user.click(screen.getByRole("button", { name: /next phase/i }));
+    await user.click(screen.getByRole("button", { name: /next phase/i }));
+    expect(
+      screen.getByRole("heading", { level: 2, name: /investigations/i }),
+    ).toBeInTheDocument();
+
+    // Jump straight back to phase 1 (two steps away but visited) — the
+    // stepper button is enabled and navigation must accept it.
+    const stepper = screen.getByRole("navigation", { name: /OSCE phases/i });
+    const historyStep = within(stepper).getAllByRole("button")[0];
+    if (!historyStep) throw new Error("missing stepper button");
+    expect(historyStep).toBeEnabled();
+    await user.click(historyStep);
+    expect(
+      screen.getByRole("heading", { level: 2, name: /^history$/i }),
+    ).toBeInTheDocument();
+  });
+
+  it("completion mode reports success without requiring 100%", async () => {
+    const user = userEvent.setup();
+    const onSubmit = vi.fn();
+    const completion: OSCEConfig = {
+      ...cfg,
+      scoring: { mode: "completion" },
+    };
+    render(<Component config={completion} onSubmit={onSubmit} />);
+
+    // Submit with nothing selected — score is far from 100%.
+    await user.click(screen.getByRole("button", { name: /next phase/i }));
+    await user.click(screen.getByRole("button", { name: /next phase/i }));
+    await user.click(screen.getByRole("button", { name: /submit OSCE/i }));
+
+    const score = onSubmit.mock.calls[0]?.[0];
+    expect(score.success).toBe(true);
+    expect(score.raw).toBeLessThan(score.max);
+  });
+
+  it("retry is governed by scoring.enableRetry, not the legacy behaviour flag", async () => {
+    const user = userEvent.setup();
+    // behaviour.enableRetry=true but the Scoring tab turned retry off — the
+    // scoring block wins.
+    const noRetry: OSCEConfig = {
+      ...cfg,
+      scoring: { mode: "points", enableRetry: false },
+    };
+    render(<Component config={noRetry} onSubmit={vi.fn()} />);
+
+    await user.click(screen.getByRole("button", { name: /next phase/i }));
+    await user.click(screen.getByRole("button", { name: /next phase/i }));
+    await user.click(screen.getByRole("button", { name: /submit OSCE/i }));
+
+    expect(screen.getByText(/per-phase summary/i)).toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: /try again/i }),
+    ).not.toBeInTheDocument();
+  });
+
+  it("shows retry from scoring.enableRetry with no behaviour block at all", async () => {
+    const user = userEvent.setup();
+    const { behaviour: _behaviour, ...rest } = cfg;
+    const scoringRetry: OSCEConfig = {
+      ...rest,
+      scoring: { mode: "points", enableRetry: true },
+    };
+    render(<Component config={scoringRetry} onSubmit={vi.fn()} />);
+
+    await user.click(screen.getByRole("button", { name: /next phase/i }));
+    await user.click(screen.getByRole("button", { name: /next phase/i }));
+    await user.click(screen.getByRole("button", { name: /submit OSCE/i }));
+
+    expect(screen.getByRole("button", { name: /try again/i })).toBeInTheDocument();
+  });
+
+  it("awards no order points when allowSkipPhase is off (order is forced)", async () => {
+    const user = userEvent.setup();
+    const onSubmit = vi.fn();
+    const linear: OSCEConfig = {
+      ...cfg,
+      behaviour: { enableRetry: true, allowSkipPhase: false },
+    };
+    render(<Component config={linear} onSubmit={onSubmit} />);
+
+    // Answer everything correctly, walking linearly.
+    await user.click(screen.getByRole("button", { name: /pain character/i }));
+    await user.click(screen.getByRole("button", { name: /cardiac risk factors/i }));
+    await user.click(screen.getByRole("button", { name: /next phase/i }));
+    await user.click(screen.getByRole("button", { name: /auscultate/i }));
+    await user.click(screen.getByRole("button", { name: /next phase/i }));
+    await user.click(screen.getByRole("button", { name: /12-lead ECG/i }));
+    await user.click(screen.getByRole("button", { name: /troponin/i }));
+    await user.click(screen.getByRole("button", { name: /submit OSCE/i }));
+
+    const score = onSubmit.mock.calls[0]?.[0];
+    // 5/5 action points; the 3 order points are not in play.
+    expect(score).toMatchObject({ raw: 5, max: 5, success: true });
+    // The review list has no "Phase order" row when order isn't scored.
+    expect(screen.queryByText(/phase order/i)).not.toBeInTheDocument();
+  });
 });

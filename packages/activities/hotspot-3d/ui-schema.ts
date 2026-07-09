@@ -73,7 +73,10 @@ const uiSchema = {
         "Shown in the keyboard fallback list and as a 3D marker pin when markers are visible.",
       ),
       position: f("Position (x, y, z)", "Where the hotspot sits in the model's local space."),
-      radius: f("Click radius", "How close the click has to be to count as a hit."),
+      radius: f(
+        "Click radius (optional, unused today)",
+        "Reserved for future proximity-based click detection. Learners currently pick via the marker pins or the keyboard list, so this value has no effect yet.",
+      ),
       correct: f("Counts as correct", "Selecting this hotspot is the answer the learner is looking for."),
       feedback: f(
         "Feedback after pick",
@@ -87,7 +90,7 @@ const uiSchema = {
     enableRetry: BEHAVIOUR_RETRY,
     showHotspotMarkers: f(
       "Show hotspot markers",
-      "When on, learners see labeled spheres indicating each hotspot. When off, blind identification.",
+      "When on, learners see labeled pins marking each hotspot in 3D. When off, the 3D view shows no pins and cannot be answered by clicking the model; learners answer through the named list below the viewport instead.",
     ),
     allowOrbit: f("Allow orbit camera", "Lets learners rotate the camera around the model."),
     aspectRatio: {

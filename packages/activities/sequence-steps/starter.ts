@@ -9,6 +9,9 @@ const starter = {
     { id: "s3", text: "Third step" },
   ],
   behaviour: { enableRetry: true, randomize: true },
+  // appearance has a schema .default(): seed it so the Studio form's
+  // AJV-required check passes on a fresh draft.
+  appearance: { theme: "auto" },
 };
 
 export default starter;

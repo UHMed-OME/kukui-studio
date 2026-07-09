@@ -61,6 +61,7 @@ export const HighlightTextConfigSchema = z
     behaviour: z
       .object({
         enableRetry: z.boolean().optional(),
+        showSolutionsButton: z.boolean().optional(),
         singlePoint: z.boolean().optional(),
       })
       .strict()
@@ -68,6 +69,7 @@ export const HighlightTextConfigSchema = z
     ui: z
       .object({
         checkAnswerButton: z.string().optional(),
+        showSolutionButton: z.string().optional(),
         tryAgainButton: z.string().optional(),
       })
       .strict()

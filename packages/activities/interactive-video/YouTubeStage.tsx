@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { MediaState, VideoController } from "./media.js";
 
 export type { VideoController } from "./media.js";
@@ -66,7 +66,7 @@ function loadYouTubeApi(): Promise<YTNamespace> {
   }
   if (window.YT?.Player) return Promise.resolve(window.YT);
   if (apiPromise) return apiPromise;
-  apiPromise = new Promise<YTNamespace>((resolve) => {
+  apiPromise = new Promise<YTNamespace>((resolve, reject) => {
     const prev = window.onYouTubeIframeAPIReady;
     window.onYouTubeIframeAPIReady = () => {
       prev?.();
@@ -74,6 +74,12 @@ function loadYouTubeApi(): Promise<YTNamespace> {
     };
     const tag = document.createElement("script");
     tag.src = "https://www.youtube.com/iframe_api";
+    // Script blocked / offline: reject so callers can show a fallback, and
+    // clear the cached promise so a later mount can retry.
+    tag.onerror = () => {
+      apiPromise = null;
+      reject(new Error("YouTube IFrame API failed to load"));
+    };
     document.head.appendChild(tag);
   });
   return apiPromise;
@@ -106,10 +112,18 @@ export function YouTubeStage({
   onTickRef.current = onTick;
   onEndedRef.current = onEnded;
   onStateRef.current = onState;
+  // Unusable source or the IFrame API script failed to load: show a visible
+  // message instead of an eternally black stage.
+  const [failed, setFailed] = useState(false);
 
   useEffect(() => {
+    setFailed(false);
     const videoId = parseYouTubeId(src);
-    if (!videoId || !hostRef.current) return;
+    if (!videoId) {
+      setFailed(true);
+      return;
+    }
+    if (!hostRef.current) return;
     let cancelled = false;
     let player: YTPlayer | null = null;
     let poll: ReturnType<typeof setInterval> | null = null;
@@ -154,7 +168,8 @@ export function YouTubeStage({
         });
       })
       .catch(() => {
-        /* API blocked/offline — leave host empty. */
+        // API blocked / offline — surface it rather than leaving a black frame.
+        if (!cancelled) setFailed(true);
       });
 
     return () => {
@@ -170,5 +185,13 @@ export function YouTubeStage({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [src]);
 
+  if (failed) {
+    return (
+      <div role="note" className="kukui-iv__placeholder" data-testid="kukui-iv-youtube-fallback">
+        This YouTube video couldn&rsquo;t load. Check the video URL, or check that
+        youtube.com isn&rsquo;t blocked on this network, then reload the page.
+      </div>
+    );
+  }
   return <div ref={hostRef} className={className} data-testid="kukui-iv-youtube" />;
 }
