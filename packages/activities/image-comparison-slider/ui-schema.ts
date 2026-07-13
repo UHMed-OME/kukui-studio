@@ -54,7 +54,17 @@ const AUTHOR = f(
 
 const uiSchema = {
   ...COMMON,
-  "ui:order": ["title", "prompt", "before", "after", "initialPosition", "behaviour", "ui", "*"],
+  "ui:order": [
+    "title",
+    "prompt",
+    "before",
+    "after",
+    "initialPosition",
+    "behaviour",
+    "ui",
+    "attribution",
+    "*",
+  ],
   title: TITLE,
   author: AUTHOR,
   prompt: f("Prompt", "Tells the learner what to look at.", {
@@ -97,6 +107,16 @@ const uiSchema = {
     "ui:title": "Button label overrides",
     doneButton: f("'Done' button text"),
     tryAgainButton: f("'Try again' button text"),
+  },
+  attribution: {
+    "ui:title": "Image credit (optional)",
+    "ui:help":
+      "Credit the photographer or source. One credit covers both images. Shows as a small credit line under the activity. CC0 / public-domain images need no credit, but a courtesy credit is good practice.",
+    author: f("Author", "Name of the photographer or source, shown in the credit line."),
+    authorUrl: f("Author URL", "Optional link to the author's page."),
+    sourceUrl: f("Source URL", "Optional link to the original image page (for example, the Wikimedia Commons file)."),
+    license: f("License", "Short license name, for example \"CC0\" or \"CC BY 4.0\"."),
+    licenseUrl: f("License URL", "Optional link to the canonical license text."),
   },
 } as const;
 

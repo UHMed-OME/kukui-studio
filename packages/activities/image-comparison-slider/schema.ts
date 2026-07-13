@@ -61,6 +61,22 @@ export const ImageComparisonSliderConfigSchema = z
       })
       .strict()
       .optional(),
+    /**
+     * Optional photographer / source credit for the imagery, rendered as
+     * a small footer line under the slider. One credit covers both images.
+     * CC0 / public-domain images need no credit, but a courtesy credit for
+     * the photographer is good practice.
+     */
+    attribution: z
+      .object({
+        author: z.string().min(1),
+        authorUrl: z.string().url().optional(),
+        sourceUrl: z.string().url().optional(),
+        license: z.string().min(1).optional(),
+        licenseUrl: z.string().url().optional(),
+      })
+      .strict()
+      .optional(),
     scoring: ScoringSchema.optional(),
     appearance: AppearanceSchema.default({ theme: "auto" }),
   })

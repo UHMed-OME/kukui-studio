@@ -300,6 +300,25 @@ describe("ImageComparisonSlider", () => {
     expect(screen.queryByRole("button", { name: /try again/i })).toBeNull();
   });
 
+  it("renders the image credit line when attribution is set", () => {
+    const credited: ImageComparisonSliderConfig = {
+      ...cfg,
+      attribution: {
+        author: "David E Mead",
+        sourceUrl: "https://commons.wikimedia.org/wiki/File:Candlenuts_(Aleurites_moluccana).jpg",
+        license: "CC0",
+        licenseUrl: "https://creativecommons.org/publicdomain/zero/1.0/",
+      },
+    };
+    render(<Component config={credited} onSubmit={vi.fn()} />);
+    expect(screen.getByText(/image by/i)).toBeInTheDocument();
+    expect(screen.getByText(/david e mead/i)).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /cc0/i })).toHaveAttribute(
+      "href",
+      "https://creativecommons.org/publicdomain/zero/1.0/",
+    );
+  });
+
   it("checkpoint positions are exposed to screen readers, not aria-hidden", () => {
     const withPrompts: ImageComparisonSliderConfig = {
       ...cfg,

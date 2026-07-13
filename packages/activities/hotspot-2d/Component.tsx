@@ -237,8 +237,59 @@ export default function Component({
             </button>
           ) : null}
         </div>
+
+        {config.image?.attribution ? (
+          <ImageAttribution attribution={config.image.attribution} />
+        ) : null}
       </article>
     </div>
+  );
+}
+
+/**
+ * Creative-Commons-style credit line for the activity image. Always
+ * rendered when `image.attribution` is present, regardless of license:
+ * most CC variants require attribution (CC0 doesn't but a courtesy credit
+ * remains good practice). License name + URL link out to the canonical
+ * license page if `licenseUrl` is set.
+ */
+function ImageAttribution({
+  attribution,
+}: {
+  attribution: NonNullable<NonNullable<Hotspot2DConfig["image"]>["attribution"]>;
+}) {
+  const { author, authorUrl, sourceUrl, license, licenseUrl } = attribution;
+  return (
+    <footer className="kukui-h2d__attribution">
+      <span>Image by </span>
+      {authorUrl ? (
+        <a href={authorUrl} target="_blank" rel="noopener noreferrer">
+          {author}
+        </a>
+      ) : (
+        <span>{author}</span>
+      )}
+      {sourceUrl ? (
+        <>
+          <span> · </span>
+          <a href={sourceUrl} target="_blank" rel="noopener noreferrer">
+            View original
+          </a>
+        </>
+      ) : null}
+      {license ? (
+        <>
+          <span> · </span>
+          {licenseUrl ? (
+            <a href={licenseUrl} target="_blank" rel="noopener noreferrer">
+              {license}
+            </a>
+          ) : (
+            <span>{license}</span>
+          )}
+        </>
+      ) : null}
+    </footer>
   );
 }
 

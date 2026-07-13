@@ -1,16 +1,17 @@
 {
+  "_comment": "Demo fixture using two CC0 photos of kukui (candlenut) kernels (samples/image-comparison-slider/images/candlenuts-whole.jpg and candlenuts-marketed.jpg, Wikimedia Commons, CC0 / public domain; see packages/activities/NOTICE.md). Replace before.src / after.src with your own art for production.",
   "version": "1.0",
-  "title": "Wrist X-ray: healthy vs. distal radius fracture",
-  "prompt": "<p>Slide the seam left and right to compare a healthy wrist with a wrist that has a distal radius fracture. Notice the cortical step-off and angulation on the fractured side.</p>",
+  "title": "From shelled kernels to market: kukui (candlenut)",
+  "prompt": "<p>Slide the seam left and right to compare loose shelled kukui kernels with candlenuts bundled for sale at a Southeast Asian market. Notice how the raw kernels are portioned and packaged for trade.</p>",
   "before": {
-    "src": "samples/image-comparison-slider/images/wrist-healthy.svg",
-    "alt": "Anteroposterior radiograph of a healthy wrist with intact distal radius and ulna.",
-    "caption": "Healthy"
+    "src": "samples/image-comparison-slider/images/candlenuts-whole.jpg",
+    "alt": "Loose shelled kukui (candlenut) kernels, pale and rounded, spread out together.",
+    "caption": "Shelled kernels"
   },
   "after": {
-    "src": "samples/image-comparison-slider/images/wrist-fractured.svg",
-    "alt": "Anteroposterior radiograph of a wrist showing a transverse distal radius fracture with dorsal angulation.",
-    "caption": "Fractured"
+    "src": "samples/image-comparison-slider/images/candlenuts-marketed.jpg",
+    "alt": "Candlenuts portioned into small clear plastic bags and bundled for sale at a Southeast Asian market.",
+    "caption": "Bundled for market"
   },
   "initialPosition": 0.5,
   "behaviour": {
@@ -18,5 +19,11 @@
   },
   "ui": {
     "doneButton": "Done"
+  },
+  "attribution": {
+    "author": "David E Mead",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Candlenuts_(Aleurites_moluccana).jpg",
+    "license": "CC0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
   }
 }

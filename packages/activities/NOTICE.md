@@ -32,6 +32,35 @@ External-hosted, so it needs network access and will not load under a
 strict LMS Content Security Policy or offline. It is only a demo
 fixture; authors swap `video.src` for author-hosted media in production.
 
+## `hotspot-2d/samples/images/kukui-nut.jpg` — kukui (candlenut) tree photo
+
+Photograph of a kukui (candlenut) tree branch with developing fruit.
+
+- **Source:** https://commons.wikimedia.org/wiki/File:Kukui_(Candlenut).jpg
+- **Author:** Philipola (Wikimedia Commons)
+- **License:** CC0 1.0 / public domain (https://creativecommons.org/publicdomain/zero/1.0/)
+
+Bundled locally so the sample renders offline and under strict LMS
+Content Security Policies. CC0 requires no attribution, but the
+photographer is credited on the rendered activity via the
+`image.attribution` block on the sample config.
+
+## `image-comparison-slider/samples/images/candlenuts-whole.jpg`, `candlenuts-marketed.jpg` — candlenut (kukui) kernel photos
+
+Two photographs of candlenut (kukui / Aleurites moluccana) kernels: loose
+shelled kernels, and kernels bundled in bags for sale at a Southeast Asian
+market.
+
+- **Source (whole):** https://commons.wikimedia.org/wiki/File:Candlenuts_(Aleurites_moluccana).jpg
+- **Source (marketed):** https://commons.wikimedia.org/wiki/File:Candlenuts_(Aleurites_moluccana)_marketed.jpg
+- **Author:** David E Mead (Wikimedia Commons)
+- **License:** CC0 1.0 / public domain (https://creativecommons.org/publicdomain/zero/1.0/)
+
+Bundled locally so the sample renders offline and under strict LMS
+Content Security Policies. CC0 requires no attribution, but the
+photographer is credited on the rendered activity via the top-level
+`attribution` block on the sample config.
+
 ## First-party placeholder SVG diagrams
 
 The placeholder images under `*/samples/images/*.svg` (cell, neuron,

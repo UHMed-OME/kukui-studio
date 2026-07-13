@@ -73,6 +73,16 @@ const uiSchema = {
       "Alt text (required)",
       "Describes the image for screen-reader users. Required for accessibility. Describe what the image shows in one short sentence.",
     ),
+    attribution: {
+      "ui:title": "Image credit (optional)",
+      "ui:help":
+        "Credit the photographer or source. Shows as a small credit line under the activity. CC0 / public-domain images need no credit, but a courtesy credit is good practice.",
+      author: f("Author", "Name of the photographer or source, shown in the credit line."),
+      authorUrl: f("Author URL", "Optional link to the author's page."),
+      sourceUrl: f("Source URL", "Optional link to the original image page (for example, the Wikimedia Commons file)."),
+      license: f("License", "Short license name, for example \"CC0\" or \"CC BY 4.0\"."),
+      licenseUrl: f("License URL", "Optional link to the canonical license text."),
+    },
   },
   hotspots: {
     "ui:title": "Hotspots",

@@ -86,6 +86,28 @@ describe("Hotspot2D — selection and submit", () => {
     render(<Component config={custom} onSubmit={vi.fn()} />);
     expect(screen.getByRole("button", { name: /lock it in/i })).toBeInTheDocument();
   });
+
+  it("renders the image credit line when image.attribution is set", () => {
+    const credited: Hotspot2DConfig = {
+      ...cfg,
+      image: {
+        ...cfg.image!,
+        attribution: {
+          author: "Philipola",
+          sourceUrl: "https://commons.wikimedia.org/wiki/File:Kukui_(Candlenut).jpg",
+          license: "CC0",
+          licenseUrl: "https://creativecommons.org/publicdomain/zero/1.0/",
+        },
+      },
+    };
+    render(<Component config={credited} onSubmit={vi.fn()} />);
+    expect(screen.getByText(/image by/i)).toBeInTheDocument();
+    expect(screen.getByText(/philipola/i)).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /cc0/i })).toHaveAttribute(
+      "href",
+      "https://creativecommons.org/publicdomain/zero/1.0/",
+    );
+  });
 });
 
 describe("Hotspot2D — retry via the scoring block", () => {

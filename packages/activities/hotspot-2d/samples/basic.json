@@ -1,33 +1,46 @@
 {
-  "_comment": "Demo fixture using a first-party placeholder SVG (samples/hotspot-2d/images/cell-diagram.svg). Replace image.src with author-provided art for production.",
+  "_comment": "Demo fixture using a CC0 photo of a kukui (candlenut) tree (samples/hotspot-2d/images/kukui-nut.jpg, Wikimedia Commons, CC0 / public domain; see packages/activities/NOTICE.md). Replace image.src with your own art for production.",
   "version": "1.0",
-  "title": "Identify the cell organelle",
-  "prompt": "<p>Click the <em>nucleus</em> in the diagram below.</p>",
+  "title": "Identify the kukui nut",
+  "prompt": "<p>This is a <em>kukui</em> (candlenut) tree. Click on one of the developing nuts, the round fuzzy fruits on the branch.</p>",
   "image": {
-    "src": "samples/hotspot-2d/images/cell-diagram.svg",
-    "alt": "Placeholder for a labeled cell diagram"
+    "src": "samples/hotspot-2d/images/kukui-nut.jpg",
+    "alt": "A kukui (candlenut) tree branch with three round, fuzzy developing fruits among broad green leaves.",
+    "attribution": {
+      "author": "Philipola",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Kukui_(Candlenut).jpg",
+      "license": "CC0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+    }
   },
   "hotspots": [
     {
-      "id": "nucleus",
-      "label": "Nucleus",
-      "rect": { "x": 0.42, "y": 0.36, "w": 0.16, "h": 0.22 },
+      "id": "nut-upper",
+      "label": "Developing kukui nut",
+      "rect": { "x": 0.2, "y": 0.28, "w": 0.18, "h": 0.22 },
       "correct": true,
-      "feedback": "Correct — the nucleus contains the cell's DNA."
+      "feedback": "Correct. That is a developing kukui nut, still in its fuzzy green husk."
     },
     {
-      "id": "mitochondrion",
-      "label": "Mitochondrion",
-      "rect": { "x": 0.7, "y": 0.5, "w": 0.18, "h": 0.16 },
-      "correct": false,
-      "feedback": "That's a mitochondrion. The nucleus is near the center."
+      "id": "nut-center",
+      "label": "Developing kukui nut",
+      "rect": { "x": 0.37, "y": 0.41, "w": 0.18, "h": 0.19 },
+      "correct": true,
+      "feedback": "Correct. Inside this husk are the hard shell and the oily kukui seed."
     },
     {
-      "id": "membrane",
-      "label": "Cell membrane",
-      "rect": { "x": 0.05, "y": 0.05, "w": 0.9, "h": 0.05 },
+      "id": "nut-lower",
+      "label": "Developing kukui nut",
+      "rect": { "x": 0.51, "y": 0.57, "w": 0.18, "h": 0.2 },
+      "correct": true,
+      "feedback": "Correct. Kukui nuts were burned for light, which is why kukui also means light or enlightenment."
+    },
+    {
+      "id": "leaf",
+      "label": "Kukui leaf",
+      "rect": { "x": 0.72, "y": 0.4, "w": 0.24, "h": 0.18 },
       "correct": false,
-      "feedback": "That's the cell membrane. Look for the labeled region near the centre."
+      "feedback": "That is a kukui leaf, not the fruit. The pale, maple-like leaves are how you spot a kukui grove from a distance. Look for the round fuzzy nuts."
     }
   ],
   "behaviour": { "enableRetry": true, "showHotspotMarkers": true }

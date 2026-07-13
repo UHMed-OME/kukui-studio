@@ -248,3 +248,25 @@
 .kukui-h2d__empty span {
   font-size: var(--font-size-meta, 13px);
 }
+
+/* Small courtesy credit line for the source image. Muted, sits under the
+ * activity with a hairline top border. Design tokens only. */
+.kukui-h2d__attribution {
+  margin: var(--spacing-lg, 16px) 0 0;
+  padding-top: var(--spacing-sm, 8px);
+  border-top: 1px solid color-mix(in oklab, var(--color-border, #d1d7df) 50%, transparent);
+  font-size: var(--font-size-micro, 12px);
+  color: var(--color-text-muted, #6e6e76);
+  line-height: 1.5;
+}
+
+.kukui-h2d__attribution a {
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 2px;
+}
+
+.kukui-h2d__attribution a:hover {
+  color: var(--color-text-primary);
+}
