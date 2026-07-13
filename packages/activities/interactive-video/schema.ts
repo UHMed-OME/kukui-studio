@@ -23,14 +23,25 @@ const Video = z
     poster: SAFE_MEDIA_URL.optional(),
     /** Optional caption tracks (html5). */
     tracks: z.array(Track).optional(),
+    /** Trim: playback window start (seconds). Default 0 (no trim). */
+    startAt: z.number().min(0).optional(),
+    /** Trim: playback window end (seconds). Must be greater than startAt. */
+    endAt: z.number().positive().optional(),
   })
-  .strict();
+  .strict()
+  .refine((v) => v.endAt === undefined || v.endAt > (v.startAt ?? 0), {
+    message: "endAt must be greater than startAt",
+    path: ["endAt"],
+  });
 
 /**
  * A timed interaction. `kind` selects what `config` holds:
  *   - "label": `{ html }` — a non-scored info card shown at the timecode.
  *   - "multipleChoice" / "fillInTheBlanks": the embedded activity config,
  *     validated against that activity's schema at render.
+ *   - "reflection": an embedded reflection-prompt config (open response).
+ *     Gates like any required checkpoint but records a zero-max score, so
+ *     it never shifts a points-mode grade.
  */
 const Interaction = z
   .object({
@@ -41,8 +52,30 @@ const Interaction = z
     required: z.boolean().optional(),
     /** Pause playback when reached. Default true. */
     pauseOnReach: z.boolean().optional(),
-    kind: z.enum(["label", "multipleChoice", "fillInTheBlanks"]),
+    kind: z.enum(["label", "multipleChoice", "fillInTheBlanks", "reflection"]),
     config: z.record(z.string(), z.unknown()),
+    /**
+     * Answer-adaptive jump: when a graded checkpoint is answered incorrectly,
+     * offer to rewatch from `seekTo` (seconds) instead of recording the score.
+     * `maxReplays` caps how many times (default 1); once spent, the score is
+     * recorded and playback continues.
+     */
+    onWrong: z
+      .object({
+        seekTo: z.number().min(0),
+        maxReplays: z.number().int().min(1).optional(),
+      })
+      .strict()
+      .optional(),
+  })
+  .strict();
+
+/** A named jump point on the timeline (distinct from a graded interaction). */
+const Chapter = z
+  .object({
+    id: z.string().min(1),
+    atSeconds: z.number().min(0),
+    title: z.string().min(1),
   })
   .strict();
 
@@ -55,12 +88,22 @@ export const InteractiveVideoConfigSchema = z
     prompt: z.string().optional(),
     video: Video,
     interactions: z.array(Interaction),
+    /** Optional chapter markers offering a jump menu on the seek bar. */
+    chapters: z
+      .array(Chapter)
+      .optional()
+      .refine(
+        (cs) => cs === undefined || new Set(cs.map((c) => c.id)).size === cs.length,
+        { message: "Chapter ids must be unique" },
+      ),
     behaviour: z
       .object({
         enableRetry: z.boolean().optional(),
         passPercentage: z.number().min(0).max(100).optional(),
         /** Speed options offered in the player. */
         playbackRates: z.array(z.number().positive()).optional(),
+        /** Show an end-of-video answer summary before final submit. Default true. */
+        showSummary: z.boolean().optional(),
       })
       .strict()
       .optional(),

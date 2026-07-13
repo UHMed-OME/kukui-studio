@@ -54,7 +54,7 @@ const BEHAVIOUR_RETRY = HIDDEN;
 
 const uiSchema = {
   ...COMMON,
-  "ui:order": ["title", "prompt", "video", "interactions", "behaviour", "ui", "*"],
+  "ui:order": ["title", "prompt", "video", "interactions", "chapters", "behaviour", "ui", "*"],
   // Title is authored on the visual editor's stage header, not the form.
   title: HIDDEN,
   author: AUTHOR,
@@ -67,12 +67,17 @@ const uiSchema = {
     src: f("Video URL", "Direct MP4 URL or a YouTube URL."),
     type: f("Source type", "html5 for a direct MP4; youtube for a YouTube URL."),
     poster: f("Poster image", "Optional. Shown before play."),
+    // Trim window is set on the visual timeline (the Edit tab), not the form.
+    startAt: HIDDEN,
+    endAt: HIDDEN,
   },
   // Interactions are authored on the visual timeline (the Edit tab), not in
   // this form: a raw RJSF array can't seed a valid sub-activity `config` (it's
   // a free-form record) or set timecodes, so adding one here produced a broken,
   // unfixable item. Hidden so the timeline is the single, working path.
   interactions: HIDDEN,
+  // Chapters (named seek-bar jump points) are authored on the timeline too.
+  chapters: HIDDEN,
   behaviour: {
     "ui:title": "Activity behaviour",
     enableRetry: BEHAVIOUR_RETRY,
@@ -81,6 +86,8 @@ const uiSchema = {
       "Playback speeds",
       "Speed options offered in the player menu, e.g. 0.75, 1, 1.25, 1.5, 2.",
     ),
+    // The end-of-video summary toggle lives on the canvas behaviour section.
+    showSummary: HIDDEN,
   },
   ui: {
     "ui:title": "Button label overrides",

@@ -10,6 +10,12 @@ export type SeekMarker = {
   resolved: boolean;
 };
 
+export type ChapterMark = {
+  id: string;
+  atSeconds: number;
+  title: string;
+};
+
 type Props = {
   media: MediaState;
   markers: SeekMarker[];
@@ -26,6 +32,12 @@ type Props = {
   onFullscreen: () => void;
   /** Disable transport while an interaction overlay is open. */
   disabled?: boolean;
+  /** Trim window start (seconds). The scrubber and clock remap to it. */
+  trimStart?: number;
+  /** Trim window end (seconds). Defaults to the media duration. */
+  trimEnd?: number;
+  /** Optional chapter jump points shown as ticks plus a menu. */
+  chapters?: ChapterMark[];
 };
 
 /** Custom video control bar: play/pause, seek + interaction markers, volume,
@@ -45,9 +57,25 @@ export function VideoControls({
   onSetRate,
   onFullscreen,
   disabled,
+  trimStart,
+  trimEnd,
+  chapters,
 }: Props) {
   const { currentTime, duration, paused, volume, muted, rate } = media;
-  const pct = (t: number) => (duration > 0 ? Math.min(100, (t / duration) * 100) : 0);
+  // The displayed timeline is the trim window, not the raw file: elapsed and
+  // total read as window-relative, the scrubber's range is the window, and
+  // markers are positioned by their fraction of the window.
+  const winStart = trimStart ?? 0;
+  const winEnd =
+    trimEnd !== undefined && trimEnd > winStart
+      ? duration > 0
+        ? Math.min(trimEnd, duration)
+        : trimEnd
+      : duration;
+  const winLength = Math.max(0, winEnd - winStart);
+  const pct = (t: number) =>
+    winLength > 0 ? Math.min(100, Math.max(0, ((t - winStart) / winLength) * 100)) : 0;
+  const shownTime = Math.min(Math.max(currentTime, winStart), winEnd || currentTime);
 
   return (
     <div className="kukui-iv__controls">
@@ -62,23 +90,34 @@ export function VideoControls({
       </button>
 
       <span className="kukui-iv__time" aria-hidden="true">
-        {formatTime(currentTime)} / {formatTime(duration)}
+        {formatTime(shownTime - winStart)} / {formatTime(winLength)}
       </span>
 
       <div className="kukui-iv__seek">
         <input
           type="range"
           className="kukui-iv__seek-input"
-          min={0}
-          max={duration > 0 ? duration : 0}
+          min={winStart}
+          max={winLength > 0 ? winEnd : winStart}
           step={0.1}
-          value={Math.min(currentTime, duration || 0)}
-          disabled={disabled || duration === 0}
+          value={shownTime}
+          disabled={disabled || winLength === 0}
           aria-label="Seek"
-          style={{ ["--pct" as string]: `${pct(currentTime)}%` }}
+          style={{ ["--pct" as string]: `${pct(shownTime)}%` }}
           onChange={(e) => onSeek(Number(e.target.value))}
         />
         <div className="kukui-iv__markers">
+          {(chapters ?? [])
+            .filter((ch) => ch.atSeconds >= winStart && ch.atSeconds <= (winEnd || ch.atSeconds))
+            .map((ch) => (
+              <span
+                key={`ch-${ch.id}`}
+                className="kukui-iv__chapter-tick"
+                style={{ left: `${pct(ch.atSeconds)}%` }}
+                aria-hidden="true"
+                title={`${formatTime(ch.atSeconds)}: ${ch.title}`}
+              />
+            ))}
           {markers.map((m) => (
             <button
               key={m.id}
@@ -144,6 +183,32 @@ export function VideoControls({
         >
           <span className="kukui-iv__cc">CC</span>
         </button>
+      ) : null}
+
+      {chapters && chapters.length > 0 ? (
+        <label className="kukui-iv__rate">
+          <span className="kukui-iv__sr-only">Jump to chapter</span>
+          <select
+            className="kukui-iv__rate-select"
+            value=""
+            disabled={disabled}
+            aria-label="Jump to chapter"
+            onChange={(e) => {
+              const ch = chapters.find((c) => c.id === e.target.value);
+              if (ch) onSeek(ch.atSeconds);
+              e.target.value = "";
+            }}
+          >
+            <option value="" disabled>
+              Chapters
+            </option>
+            {chapters.map((ch) => (
+              <option key={ch.id} value={ch.id}>
+                {formatTime(ch.atSeconds)} {ch.title}
+              </option>
+            ))}
+          </select>
+        </label>
       ) : null}
 
       <button

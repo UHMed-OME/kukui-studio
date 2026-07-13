@@ -136,7 +136,10 @@ describe("interactive-video Component", () => {
   it("video ended event triggers aggregate onSubmit with summed score", async () => {
     const user = userEvent.setup();
     const onSubmit = vi.fn();
-    render(<Component config={cfg} onSubmit={onSubmit} />);
+    // showSummary:false exercises the direct submit path (the summary flow is
+    // covered separately).
+    const noSummary = { ...cfg, behaviour: { ...cfg.behaviour, showSummary: false } };
+    render(<Component config={noSummary} onSubmit={onSubmit} />);
     const video = getVideo();
     stubVideoMethods(video);
 
@@ -384,5 +387,310 @@ describe("interactive-video Component", () => {
     expect(
       screen.queryByRole("button", { name: /try again/i }),
     ).not.toBeInTheDocument();
+  });
+});
+
+describe("returning-learner resume states", () => {
+  const submittedSuspend = JSON.stringify({
+    stage: "submitted",
+    resolvedInteractions: {
+      q1: { raw: 1, max: 1, success: true },
+      q2: { raw: 0, max: 1, success: false },
+    },
+    lastTime: 14,
+  });
+
+  it("restored submitted attempt shows the completed panel with the recorded score", () => {
+    render(<Component config={cfg} onSubmit={vi.fn()} suspendData={submittedSuspend} />);
+    expect(screen.getByText(/completed on a previous attempt/i)).toBeInTheDocument();
+    expect(screen.getByText(/your recorded score is 1 of 2/i)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /try again/i })).toBeInTheDocument();
+  });
+
+  it("Watch again dismisses the panel without resetting the recorded state", async () => {
+    const user = userEvent.setup();
+    render(<Component config={cfg} onSubmit={vi.fn()} suspendData={submittedSuspend} />);
+    await user.click(screen.getByRole("button", { name: /watch again/i }));
+    expect(screen.queryByText(/completed on a previous attempt/i)).not.toBeInTheDocument();
+    // Still submitted: the status line keeps the submitted wording.
+    expect(screen.getByText(/submitted\. 2 of 2 interactions answered/i)).toBeInTheDocument();
+  });
+
+  it("Try again from the panel starts a fresh attempt", async () => {
+    const user = userEvent.setup();
+    render(<Component config={cfg} onSubmit={vi.fn()} suspendData={submittedSuspend} />);
+    await user.click(screen.getByRole("button", { name: /try again/i }));
+    expect(screen.queryByText(/completed on a previous attempt/i)).not.toBeInTheDocument();
+    expect(screen.getByText(/^0 of 2 interactions answered/i)).toBeInTheDocument();
+  });
+
+  it("restored mid-watch progress announces the resume", () => {
+    const midSuspend = JSON.stringify({
+      stage: "watching",
+      resolvedInteractions: { q1: { raw: 1, max: 1, success: true } },
+      lastTime: 7,
+    });
+    render(<Component config={cfg} onSubmit={vi.fn()} suspendData={midSuspend} />);
+    expect(screen.getByText(/resumed\. 1 of 2 interactions answered/i)).toBeInTheDocument();
+  });
+});
+
+describe("reflection checkpoints", () => {
+  const reflCfg = {
+    ...cfg,
+    interactions: [
+      {
+        id: "r1",
+        atSeconds: 5,
+        required: true,
+        kind: "reflection" as const,
+        config: {
+          version: "1.0",
+          title: "Pause and reflect",
+          prompt: "<p>What stood out so far?</p>",
+        },
+      },
+    ],
+  };
+
+  it("pauses, embeds the prompt, and records a zero-max sentinel on submit", async () => {
+    const user = userEvent.setup();
+    const onSubmit = vi.fn();
+    render(<Component config={reflCfg} onSubmit={onSubmit} />);
+    const video = screen.getByTestId("kukui-iv-video") as HTMLVideoElement;
+    const { pause } = stubVideoMethods(video);
+
+    tick(video, 5);
+    expect(pause).toHaveBeenCalled();
+    const dialog = screen.getByRole("dialog");
+    expect(dialog).toBeInTheDocument();
+
+    await user.type(screen.getByRole("textbox"), "The pacing of the intro.");
+    await user.click(screen.getByRole("button", { name: /^submit$/i }));
+
+    // Resume unlocks once the reflection is recorded.
+    await user.click(screen.getByRole("button", { name: /resume/i }));
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+
+    // Ending the video shows the summary; Submit finalizes with completion
+    // semantics (the reflection contributed a zero-max sentinel).
+    fireEvent.ended(video);
+    await user.click(screen.getByRole("button", { name: /^submit$/i }));
+    expect(onSubmit).toHaveBeenCalledTimes(1);
+    expect(onSubmit.mock.calls[0]?.[0]).toMatchObject({ raw: 0, max: 0, success: true });
+  });
+});
+
+describe("trim window (startAt/endAt)", () => {
+  it("drops out-of-window interactions and submits completion at trim end", () => {
+    const trimCfg = {
+      ...cfg,
+      video: { ...cfg.video, startAt: 10, endAt: 60 },
+      // Both checkpoints sit before startAt, so nothing inside the window
+      // can gate: reaching the trim end completes the activity.
+      interactions: cfg.interactions.map((it) => ({ ...it, atSeconds: 2 })),
+    };
+    const onSubmit = vi.fn();
+    render(<Component config={trimCfg} onSubmit={onSubmit} />);
+    const video = screen.getByTestId("kukui-iv-video") as HTMLVideoElement;
+    stubVideoMethods(video);
+
+    // Out-of-window interactions are not listed or gating.
+    expect(screen.queryByRole("list", { name: /interactions/i })).not.toBeInTheDocument();
+
+    tick(video, 60);
+    expect(onSubmit).toHaveBeenCalledTimes(1);
+    expect(onSubmit.mock.calls[0]?.[0]).toMatchObject({ raw: 0, max: 0, success: true });
+  });
+
+  it("does not submit at trim end while an in-window required checkpoint is unresolved", () => {
+    const trimCfg = {
+      ...cfg,
+      video: { ...cfg.video, endAt: 60 },
+      interactions: [cfg.interactions[0]!], // required MC at 5s, inside the window
+    };
+    const onSubmit = vi.fn();
+    render(<Component config={trimCfg} onSubmit={onSubmit} />);
+    const video = screen.getByTestId("kukui-iv-video") as HTMLVideoElement;
+    stubVideoMethods(video);
+
+    // Jump straight to the trim end without answering: the ended sweep must
+    // rewind to the unresolved checkpoint, not grade the attempt.
+    tick(video, 60);
+    expect(onSubmit).not.toHaveBeenCalled();
+  });
+});
+
+describe("chapters", () => {
+  const chapCfg = {
+    ...cfg,
+    interactions: [],
+    chapters: [
+      { id: "c-intro", atSeconds: 0, title: "Intro" },
+      { id: "c-body", atSeconds: 30, title: "Main point" },
+    ],
+  };
+
+  it("offers a chapters menu that seeks to the chosen chapter", async () => {
+    const user = userEvent.setup();
+    render(<Component config={chapCfg} onSubmit={vi.fn()} />);
+    const video = screen.getByTestId("kukui-iv-video") as HTMLVideoElement;
+    let sought = -1;
+    Object.defineProperty(video, "currentTime", {
+      configurable: true,
+      get: () => 0,
+      set: (v: number) => { sought = v; },
+    });
+    Object.defineProperty(video, "play", { configurable: true, value: vi.fn() });
+    Object.defineProperty(video, "pause", { configurable: true, value: vi.fn() });
+
+    await user.selectOptions(
+      screen.getByRole("combobox", { name: /jump to chapter/i }),
+      "c-body",
+    );
+    expect(sought).toBe(30);
+  });
+});
+
+describe("end-of-video summary", () => {
+  it("shows the review summary at the end and submits only on click", async () => {
+    const user = userEvent.setup();
+    const onSubmit = vi.fn();
+    render(<Component config={cfg} onSubmit={onSubmit} />);
+    const video = screen.getByTestId("kukui-iv-video") as HTMLVideoElement;
+    stubVideoMethods(video);
+
+    // Answer both required checkpoints.
+    tick(video, 5);
+    await user.click(screen.getByRole("button", { name: /^a,/i }));
+    await user.click(screen.getByRole("button", { name: /^check$/i }));
+    await user.click(screen.getByRole("button", { name: /^resume$/i }));
+    tick(video, 12);
+    await user.click(screen.getByRole("button", { name: /^c,/i }));
+    await user.click(screen.getByRole("button", { name: /^check$/i }));
+
+    // The summary appears and nothing is submitted yet.
+    expect(screen.getByRole("region", { name: /review your answers/i })).toBeInTheDocument();
+    expect(onSubmit).not.toHaveBeenCalled();
+
+    await user.click(screen.getByRole("button", { name: /^submit$/i }));
+    expect(onSubmit).toHaveBeenCalledTimes(1);
+    expect(onSubmit.mock.calls[0]?.[0]).toMatchObject({ raw: 2, max: 2, success: true });
+  });
+
+  it("behaviour.showSummary=false keeps the immediate submit", async () => {
+    const user = userEvent.setup();
+    const onSubmit = vi.fn();
+    render(
+      <Component
+        config={{ ...cfg, behaviour: { ...cfg.behaviour, showSummary: false } }}
+        onSubmit={onSubmit}
+      />,
+    );
+    const video = screen.getByTestId("kukui-iv-video") as HTMLVideoElement;
+    stubVideoMethods(video);
+    tick(video, 5);
+    await user.click(screen.getByRole("button", { name: /^a,/i }));
+    await user.click(screen.getByRole("button", { name: /^check$/i }));
+    await user.click(screen.getByRole("button", { name: /^resume$/i }));
+    tick(video, 12);
+    await user.click(screen.getByRole("button", { name: /^c,/i }));
+    await user.click(screen.getByRole("button", { name: /^check$/i }));
+    expect(screen.queryByRole("region", { name: /review your answers/i })).not.toBeInTheDocument();
+    expect(onSubmit).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe("answer-adaptive jumps (onWrong)", () => {
+  const adaptiveCfg = {
+    ...cfg,
+    behaviour: { ...cfg.behaviour, showSummary: false },
+    interactions: [
+      {
+        id: "q1",
+        atSeconds: 5,
+        required: true,
+        kind: "multipleChoice" as const,
+        onWrong: { seekTo: 1, maxReplays: 1 },
+        config: {
+          version: "1.0",
+          title: "Checkpoint",
+          question: "<p>Pick A.</p>",
+          answers: [
+            { text: "A", correct: true },
+            { text: "B", correct: false },
+          ],
+        },
+      },
+    ],
+  };
+
+  it("offers a rewatch on a wrong answer, seeks back, and does not record the score", async () => {
+    const user = userEvent.setup();
+    const onSubmit = vi.fn();
+    render(<Component config={adaptiveCfg} onSubmit={onSubmit} />);
+    const video = screen.getByTestId("kukui-iv-video") as HTMLVideoElement;
+    Object.defineProperty(video, "play", { configurable: true, value: vi.fn() });
+    Object.defineProperty(video, "pause", { configurable: true, value: vi.fn() });
+
+    tick(video, 5);
+    await user.click(screen.getByRole("button", { name: /^b,/i }));
+    await user.click(screen.getByRole("button", { name: /^check$/i }));
+
+    // The rewatch offer appears; nothing recorded yet.
+    const review = screen.getByRole("button", { name: /review that section/i });
+    expect(review).toBeInTheDocument();
+    expect(onSubmit).not.toHaveBeenCalled();
+
+    // Capture the seek (tick redefined currentTime with a no-op setter).
+    let sought = -1;
+    Object.defineProperty(video, "currentTime", {
+      configurable: true, get: () => 5, set: (v: number) => { sought = v; },
+    });
+    await user.click(review);
+    expect(sought).toBe(1); // seeked back to onWrong.seekTo
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+  });
+
+  it("records the wrong score once the replay budget is spent", async () => {
+    const user = userEvent.setup();
+    render(<Component config={adaptiveCfg} onSubmit={vi.fn()} />);
+    const video = screen.getByTestId("kukui-iv-video") as HTMLVideoElement;
+    Object.defineProperty(video, "currentTime", { configurable: true, get: () => 5, set: () => {} });
+    Object.defineProperty(video, "play", { configurable: true, value: vi.fn() });
+    Object.defineProperty(video, "pause", { configurable: true, value: vi.fn() });
+
+    // First wrong answer: rewatch offered, spend the budget.
+    tick(video, 5);
+    await user.click(screen.getByRole("button", { name: /^b,/i }));
+    await user.click(screen.getByRole("button", { name: /^check$/i }));
+    await user.click(screen.getByRole("button", { name: /review that section/i }));
+
+    // Checkpoint re-triggers; answer wrong again. Budget spent, so the score
+    // is recorded and the learner can resume (no second rewatch offer).
+    tick(video, 5);
+    await user.click(screen.getByRole("button", { name: /^b,/i }));
+    await user.click(screen.getByRole("button", { name: /^check$/i }));
+    expect(screen.queryByRole("button", { name: /review that section/i })).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /^resume$/i })).toBeEnabled();
+  });
+
+  it("Continue anyway records the learner's real wrong score", async () => {
+    const user = userEvent.setup();
+    const onSubmit = vi.fn();
+    render(<Component config={adaptiveCfg} onSubmit={onSubmit} />);
+    const video = screen.getByTestId("kukui-iv-video") as HTMLVideoElement;
+    Object.defineProperty(video, "currentTime", { configurable: true, get: () => 5, set: () => {} });
+    Object.defineProperty(video, "play", { configurable: true, value: vi.fn() });
+    Object.defineProperty(video, "pause", { configurable: true, value: vi.fn() });
+
+    tick(video, 5);
+    await user.click(screen.getByRole("button", { name: /^b,/i }));
+    await user.click(screen.getByRole("button", { name: /^check$/i }));
+    await user.click(screen.getByRole("button", { name: /continue anyway/i }));
+
+    // Single required checkpoint resolved (as wrong) -> submits with 0/1.
+    expect(onSubmit).toHaveBeenCalledTimes(1);
+    expect(onSubmit.mock.calls[0]?.[0]).toMatchObject({ raw: 0, max: 1, success: false });
   });
 });

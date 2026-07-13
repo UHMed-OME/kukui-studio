@@ -6,10 +6,12 @@
 const starter = {
   version: "1.0",
   title: "Interactive Video",
-  prompt: "<p>Watch the clip. It pauses for a question at 0:30 — answer to continue.</p>",
+  prompt: "<p>Watch the clip. It pauses for a question at 0:30, answer to continue.</p>",
   video: {
-    // Big Buck Bunny (Blender Foundation, CC-BY) — a stable, public YouTube
-    // clip so the example works out of the box. Swap in your own URL.
+    // Big Buck Bunny (Blender Foundation, CC-BY), a stable public YouTube
+    // clip so the example works out of the box. YouTube needs network access
+    // and is blocked by strict LMS Content Security Policies; for SCORM
+    // delivery, host an MP4 (type "html5") instead. Swap in your own URL.
     src: "https://www.youtube.com/watch?v=aqz-KE-bpKQ",
     type: "youtube",
   },

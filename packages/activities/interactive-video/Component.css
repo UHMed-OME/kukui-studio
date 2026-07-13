@@ -117,6 +117,20 @@
   box-shadow: 0 16px 48px rgb(0 0 0 / 0.35);
 }
 
+/* Returning-learner panel: explains a restored completed attempt instead of
+   leaving a silent dead frame. Reuses the interaction-overlay shell. */
+.kukui-iv__resume-title {
+  margin: 0 0 var(--spacing-sm, 8px);
+  font-size: var(--font-size-subtitle, 18px);
+  color: var(--color-text-primary);
+}
+
+.kukui-iv__resume-detail {
+  margin: 0 0 var(--spacing-md, 12px);
+  font-size: var(--font-size-answer, 15px);
+  color: var(--color-text-secondary, #49515b);
+}
+
 .kukui-iv__overlay-actions {
   display: flex;
   justify-content: flex-end;
@@ -308,6 +322,19 @@
   background: var(--color-primary, #7b4324);
   cursor: pointer;
 }
+/* Chapter ticks: thin neutral marks distinct from the round interaction
+   markers, non-interactive (the Chapters menu does the seeking). */
+.kukui-iv__chapter-tick {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  transform: translateX(-1px);
+  background: var(--color-text-secondary, #49515b);
+  opacity: 0.55;
+  pointer-events: none;
+}
+
 .kukui-iv__markers {
   position: absolute;
   inset: 0;
@@ -448,4 +475,85 @@
   .kukui-iv__primary {
     transition: none;
   }
+}
+
+/* End-of-video answer summary: a review list with per-interaction outcome
+   chips and a deliberate Submit, so completion is never a silent surprise. */
+.kukui-iv__summary {
+  margin-top: var(--spacing-lg, 16px);
+  padding: var(--spacing-lg, 16px);
+  border: 1px solid var(--color-border, #d1d7df);
+  border-radius: var(--radius-md, 8px);
+  background: var(--color-surface, #ffffff);
+}
+
+.kukui-iv__summary-title {
+  margin: 0 0 var(--spacing-md, 12px);
+  font-size: var(--font-size-subtitle, 18px);
+  color: var(--color-text-primary);
+}
+
+.kukui-iv__summary-list {
+  list-style: none;
+  margin: 0 0 var(--spacing-md, 12px);
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs, 4px);
+}
+
+.kukui-iv__summary-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-md, 12px);
+}
+
+.kukui-iv__summary-jump {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm, 8px);
+  min-height: 44px;
+  flex: 1;
+  padding: var(--spacing-xs, 4px) var(--spacing-sm, 8px);
+  background: none;
+  border: none;
+  border-radius: var(--radius-sm, 6px);
+  cursor: pointer;
+  text-align: left;
+  color: var(--color-text-primary);
+  font: inherit;
+}
+
+.kukui-iv__summary-jump:hover {
+  background: var(--color-primary-soft);
+}
+
+.kukui-iv__summary-outcome {
+  flex-shrink: 0;
+  padding: 2px var(--spacing-sm, 8px);
+  border-radius: var(--radius-pill, 4px);
+  font-size: var(--font-size-micro, 12px);
+  font-weight: 600;
+}
+
+.kukui-iv__summary-outcome.is-correct {
+  color: var(--color-success, #2e6e41);
+  background: var(--color-success-soft);
+}
+
+.kukui-iv__summary-outcome.is-incorrect {
+  color: var(--color-error, #c34132);
+  background: var(--color-error-soft);
+}
+
+.kukui-iv__summary-outcome.is-answered,
+.kukui-iv__summary-outcome.is-viewed {
+  color: var(--color-info, #1f6f78);
+  background: var(--color-info-soft);
+}
+
+.kukui-iv__summary-outcome.is-missed {
+  color: var(--color-warning, #8a5a12);
+  background: var(--color-warning-soft);
 }

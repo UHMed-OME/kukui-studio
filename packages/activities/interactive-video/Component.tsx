@@ -7,24 +7,31 @@ import {
   FillInTheBlanksConfigSchema,
   type FillInTheBlanksConfig,
 } from "@kukui/activities/fill-in-the-blanks/schema";
+import {
+  ReflectionPromptConfigSchema,
+  type ReflectionPromptConfig,
+} from "@kukui/activities/reflection-prompt/schema";
 import type { InteractiveVideoConfig } from "./schema.js";
 import type { ActivityProps, ScoreState } from "@kukui/core/types";
 import { aggregate, resolveScoring } from "@kukui/core/scoring";
 import MultipleChoice from "@kukui/activities/multiple-choice/Component";
 import FillInTheBlanks from "@kukui/activities/fill-in-the-blanks/Component";
+import ReflectionPrompt from "@kukui/activities/reflection-prompt/Component";
 import { ActivityHeader, SafeHtml, StatusBadge, DotIcon, CheckIcon, TrophyIcon } from "@kukui/core";
 import { YouTubeStage, type VideoController } from "./YouTubeStage.js";
 import { VideoControls, type SeekMarker } from "./VideoControls.js";
 import { INITIAL_MEDIA, type MediaState, formatTime } from "./media.js";
 import "./Component.css";
 
-type Stage = "watching" | "submitted";
+type Stage = "watching" | "summary" | "submitted";
 
 type State = {
   stage: Stage;
   resolvedInteractions: Record<string, ScoreState>;
   /** Last seen time (whole seconds) for resume. */
   lastTime: number;
+  /** Answer-adaptive rewatch counts per interaction id (onWrong budget). */
+  replays?: Record<string, number>;
 };
 
 type Base = {
@@ -33,11 +40,13 @@ type Base = {
   required: boolean;
   pauseOnReach: boolean;
   title?: string;
+  onWrong?: { seekTo: number; maxReplays?: number };
 };
 type ValidatedInteraction =
   | (Base & { kind: "label"; html: string })
   | (Base & { kind: "multipleChoice"; config: MultipleChoiceConfig })
   | (Base & { kind: "fillInTheBlanks"; config: FillInTheBlanksConfig })
+  | (Base & { kind: "reflection"; config: ReflectionPromptConfig })
   | (Base & { kind: "invalid"; reason: string });
 
 const TRIGGER_WINDOW = 0.5;
@@ -46,6 +55,21 @@ const TRIGGER_WINDOW = 0.5;
 const SENTINEL: ScoreState = { raw: 0, max: 0, success: true };
 /** Persist the resume position at most this often (seconds of playback). */
 const LAST_TIME_INTERVAL = 5;
+
+/** What restored suspend data means for the returning learner. */
+type ResumeInfo = {
+  /** True when the previous attempt was submitted (score already recorded). */
+  submitted: boolean;
+  /** How many interactions the previous session resolved. */
+  answered: number;
+};
+
+function resumeInfoFrom(parsed: State | null): ResumeInfo | null {
+  if (!parsed) return null;
+  const answered = Object.keys(parsed.resolvedInteractions).length;
+  if (parsed.stage === "submitted") return { submitted: true, answered };
+  return answered > 0 ? { submitted: false, answered } : null;
+}
 
 export default function Component({
   config,
@@ -70,6 +94,7 @@ export default function Component({
         required: it.required ?? true,
         pauseOnReach: it.pauseOnReach ?? true,
         title: it.title,
+        onWrong: it.onWrong,
       };
       if (it.kind === "label") {
         const html = typeof it.config.html === "string" ? it.config.html : "";
@@ -78,6 +103,10 @@ export default function Component({
         const r = MultipleChoiceConfigSchema.safeParse(it.config);
         if (r.success) out.push({ ...base, kind: "multipleChoice", config: r.data });
         else out.push({ ...base, kind: "invalid", reason: r.error.issues[0]?.message ?? "Invalid multiple-choice config" });
+      } else if (it.kind === "reflection") {
+        const r = ReflectionPromptConfigSchema.safeParse(it.config);
+        if (r.success) out.push({ ...base, kind: "reflection", config: r.data });
+        else out.push({ ...base, kind: "invalid", reason: r.error.issues[0]?.message ?? "Invalid reflection config" });
       } else {
         const r = FillInTheBlanksConfigSchema.safeParse(it.config);
         if (r.success) out.push({ ...base, kind: "fillInTheBlanks", config: r.data });
@@ -85,17 +114,36 @@ export default function Component({
       }
     });
     out.sort((a, b) => a.atSeconds - b.atSeconds);
-    return out;
-  }, [config.interactions]);
+    // Interactions outside the trim window can never trigger; drop them so
+    // they don't gate completion. The editor warns about these at author time.
+    const winStart = config.video.startAt ?? 0;
+    const winEnd = config.video.endAt;
+    return out.filter(
+      (it) => it.atSeconds >= winStart && (winEnd === undefined || it.atSeconds <= winEnd),
+    );
+  }, [config.interactions, config.video.startAt, config.video.endAt]);
 
   const [state, setState] = useState<State>(
     () => parseSuspend(suspendData) ?? { stage: "watching", resolvedInteractions: {}, lastTime: 0 },
   );
   const [media, setMedia] = useState<MediaState>(INITIAL_MEDIA);
   const [activeId, setActiveId] = useState<string | null>(null);
+  // The pending wrong answer offering an answer-adaptive rewatch (set when a
+  // graded checkpoint is answered wrong and its onWrong budget remains). The
+  // learner's real score rides along so "Continue anyway" records it faithfully.
+  const [reviewOffer, setReviewOffer] = useState<{ id: string; score: ScoreState } | null>(null);
   const [captionsOn, setCaptionsOn] = useState<boolean>(() =>
     (config.video.tracks ?? []).some((t) => !!t.default),
   );
+  // What the restored suspend data said at mount, so a returning learner
+  // gets an honest explanation instead of a silent dead frame ("it just
+  // auto-completed") or an unexplained mid-video answered state.
+  const [resumedAttempt, setResumedAttempt] = useState<ResumeInfo | null>(() =>
+    resumeInfoFrom(parseSuspend(suspendData)),
+  );
+  // "Watch again" dismisses the completed-attempt panel; playback while
+  // submitted never re-triggers interactions (tick gates on stage).
+  const [resumePanelDismissed, setResumePanelDismissed] = useState(false);
 
   // Live playhead (whole seconds). Mirrors playback without a state write per
   // tick; flushed into persisted state at the throttle points below.
@@ -103,17 +151,23 @@ export default function Component({
   // Position restored from suspend data; seek here once the media is ready.
   const resumeTargetRef = useRef(state.lastTime);
   const resumeDoneRef = useRef(false);
+  // One-shot guard for the trim-end submit (see tick()).
+  const trimEndFiredRef = useRef(false);
 
   useEffect(() => {
-    const next =
-      parseSuspend(suspendData) ?? { stage: "watching", resolvedInteractions: {}, lastTime: 0 };
+    const parsed = parseSuspend(suspendData);
+    const next = parsed ?? { stage: "watching", resolvedInteractions: {}, lastTime: 0 };
     setState(next);
     setActiveId(null);
+    setReviewOffer(null);
     setMedia(INITIAL_MEDIA);
     setCaptionsOn((config.video.tracks ?? []).some((t) => !!t.default));
+    setResumedAttempt(resumeInfoFrom(parsed));
+    setResumePanelDismissed(false);
     lastTimeRef.current = next.lastTime;
     resumeTargetRef.current = next.lastTime;
     resumeDoneRef.current = false;
+    trimEndFiredRef.current = false;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [config]);
 
@@ -123,10 +177,16 @@ export default function Component({
 
   const videoType = config.video.type ?? "html5";
   const isYouTube = videoType === "youtube";
+  // Trim window: playback is confined to [trimStart, trimEnd]. trimEnd
+  // resolves against the real duration once known (media.duration is 0
+  // until metadata loads; Infinity keeps comparisons inert until then).
+  const trimStart = config.video.startAt ?? 0;
+  const configuredTrimEnd = config.video.endAt;
   const tracks = config.video.tracks ?? [];
   const rates = config.behaviour?.playbackRates ?? [0.75, 1, 1.25, 1.5, 2];
   const ui = config.ui ?? {};
   const resumeLabel = ui.resumeButtonLabel ?? "Resume";
+  const showSummary = config.behaviour?.showSummary ?? true;
 
   const ctl = (): VideoController | null => {
     if (isYouTube) return controllerRef.current;
@@ -174,6 +234,17 @@ export default function Component({
     });
   };
 
+  // End of the activity: show the review summary first (default) so the
+  // learner sees what they answered and submits deliberately, or submit
+  // straight away when the summary is disabled or nothing is scorable.
+  const finishOrSummarize = (snapshot: State) => {
+    if (showSummary && validated.length > 0) {
+      setState({ ...snapshot, stage: "summary" });
+      return;
+    }
+    submitFrom(snapshot);
+  };
+
   const requiredOnes = useMemo(() => validated.filter((v) => v.required), [validated]);
   const allRequiredResolved = useMemo(() => {
     if (requiredOnes.length === 0) return false;
@@ -183,7 +254,7 @@ export default function Component({
   useEffect(() => {
     if (state.stage !== "watching") return;
     if (!allRequiredResolved) return;
-    submitFrom(state);
+    finishOrSummarize(state);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [allRequiredResolved, state]);
 
@@ -228,6 +299,17 @@ export default function Component({
     if (activeId !== null) return;
     if (state.stage !== "watching") return;
     const c = ctl();
+    // Trim end: reaching the window's end IS the end of the activity. Guarded
+    // so one crossing fires one handleEnded (the pause stops further ticks,
+    // but a slow pause on the YouTube poll path could tick again first).
+    if (configuredTrimEnd !== undefined && t >= configuredTrimEnd) {
+      if (!trimEndFiredRef.current) {
+        trimEndFiredRef.current = true;
+        c?.pause();
+        handleEnded();
+      }
+      return;
+    }
     for (const it of validated) {
       if (state.resolvedInteractions[it.id]) continue;
       if (Math.abs(t - it.atSeconds) < TRIGGER_WINDOW && t >= it.atSeconds - TRIGGER_WINDOW) {
@@ -257,7 +339,11 @@ export default function Component({
     }
   };
 
-  const handleSeek = (target: number) => {
+  const handleSeek = (raw: number) => {
+    // Clamp every seek into the trim window; content outside it is not part
+    // of this activity.
+    const upper = configuredTrimEnd !== undefined ? configuredTrimEnd : Infinity;
+    const target = Math.min(Math.max(raw, trimStart), upper);
     if (state.stage === "submitted") {
       ctl()?.seek(target);
       return;
@@ -285,14 +371,47 @@ export default function Component({
     }));
   };
 
+  // Graded checkpoint submit: on a wrong answer with an onWrong rule and
+  // remaining replay budget, offer a rewatch instead of recording the score.
+  const handleCheckpointSubmit = (it: ValidatedInteraction, score: ScoreState) => {
+    const rule = it.onWrong;
+    if (rule && !score.success) {
+      const used = state.replays?.[it.id] ?? 0;
+      const budget = rule.maxReplays ?? 1;
+      if (used < budget) {
+        setReviewOffer({ id: it.id, score });
+        return;
+      }
+    }
+    recordResolved(it.id, score);
+  };
+
+  // Accept the rewatch: spend one replay, close the overlay, seek back, and
+  // play. The checkpoint re-triggers at its window with a fresh attempt.
+  const acceptReview = (it: ValidatedInteraction) => {
+    if (!it.onWrong) return;
+    setState((s) => ({
+      ...s,
+      replays: { ...(s.replays ?? {}), [it.id]: (s.replays?.[it.id] ?? 0) + 1 },
+    }));
+    setReviewOffer(null);
+    setActiveId(null);
+    trimEndFiredRef.current = false;
+    const c = ctl();
+    c?.seek(Math.max(trimStart, it.onWrong.seekTo));
+    c?.play();
+  };
+
   const resume = () => {
     setActiveId(null);
+    setReviewOffer(null);
     ctl()?.play();
   };
 
   const skip = () => {
     if (activeId) recordResolved(activeId, SENTINEL);
     setActiveId(null);
+    setReviewOffer(null);
     ctl()?.play();
   };
 
@@ -315,15 +434,30 @@ export default function Component({
       c.play();
       return;
     }
-    submitFrom({ ...state, resolvedInteractions: resolved });
+    finishOrSummarize({ ...state, resolvedInteractions: resolved });
   };
 
   const tryAgain = () => {
     setActiveId(null);
-    lastTimeRef.current = 0;
-    resumeTargetRef.current = 0;
-    setState({ stage: "watching", resolvedInteractions: {}, lastTime: 0 });
-    ctl()?.seek(0);
+    lastTimeRef.current = trimStart;
+    resumeTargetRef.current = trimStart;
+    trimEndFiredRef.current = false;
+    setResumedAttempt(null);
+    setResumePanelDismissed(false);
+    setReviewOffer(null);
+    setState({ stage: "watching", resolvedInteractions: {}, lastTime: trimStart });
+    ctl()?.seek(trimStart);
+  };
+
+  // From the summary: rewatch a segment for context, then the video re-ends
+  // and the summary returns (required questions are already resolved, so they
+  // do not re-prompt).
+  const rewatchFrom = (seconds: number) => {
+    trimEndFiredRef.current = false;
+    setState((s) => ({ ...s, stage: "watching" }));
+    const c = ctl();
+    c?.seek(Math.max(trimStart, seconds));
+    c?.play();
   };
 
   const toggleCaptions = () => {
@@ -372,15 +506,20 @@ export default function Component({
   };
 
   // Resume playback position: once the media reports ready, seek to the
-  // position restored from suspend data (a fresh session starts at 0).
+  // position restored from suspend data, clamped into the trim window (a
+  // fresh session starts at the window's start).
   useEffect(() => {
     if (resumeDoneRef.current || !media.ready) return;
     resumeDoneRef.current = true;
     if (state.stage !== "watching") return;
-    const target = resumeTargetRef.current;
-    if (target <= 0) return;
-    // Don't resume at (or past) the very end; leave a beat of playback.
-    ctl()?.seek(Math.min(target, Math.max(0, media.duration - 1)));
+    const restored = Math.max(resumeTargetRef.current, trimStart);
+    if (restored <= 0) return;
+    // Don't resume at (or past) the window's end; leave a beat of playback.
+    const windowEnd = Math.min(
+      configuredTrimEnd ?? Infinity,
+      media.duration > 0 ? media.duration : Infinity,
+    );
+    ctl()?.seek(Math.min(restored, Math.max(trimStart, windowEnd - 1)));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [media.ready]);
 
@@ -429,6 +568,9 @@ export default function Component({
 
   const active = activeId ? validated.find((v) => v.id === activeId) ?? null : null;
 
+  const resumePanelVisible =
+    !!resumedAttempt?.submitted && state.stage === "submitted" && !resumePanelDismissed;
+
   const markers: SeekMarker[] = validated.map((it) => ({
     id: it.id,
     atSeconds: it.atSeconds,
@@ -437,6 +579,15 @@ export default function Component({
     resolved: !!state.resolvedInteractions[it.id],
   }));
 
+  const summaryRows = validated.map((it) => {
+    const score = state.resolvedInteractions[it.id];
+    const scorable = it.kind === "multipleChoice" || it.kind === "fillInTheBlanks";
+    let outcome: "correct" | "incorrect" | "answered" | "viewed" | "missed";
+    if (!score) outcome = "missed";
+    else if (!scorable) outcome = it.kind === "reflection" ? "answered" : "viewed";
+    else outcome = score.success ? "correct" : "incorrect";
+    return { it, outcome };
+  });
   const answeredCount = Object.keys(state.resolvedInteractions).length;
   const correctScore = aggregate(Object.values(state.resolvedInteractions), scoring.passPercentage);
   const headerBadge =
@@ -525,9 +676,17 @@ export default function Component({
                 >
                   <div className="kukui-iv__overlay-body">
                     {active.kind === "multipleChoice" ? (
-                      <MultipleChoice config={active.config} onSubmit={(s) => recordResolved(active.id, s)} headingLevel={2} />
+                      <MultipleChoice config={active.config} onSubmit={(s) => handleCheckpointSubmit(active, s)} headingLevel={2} />
                     ) : active.kind === "fillInTheBlanks" ? (
-                      <FillInTheBlanks config={active.config} onSubmit={(s) => recordResolved(active.id, s)} headingLevel={2} />
+                      <FillInTheBlanks config={active.config} onSubmit={(s) => handleCheckpointSubmit(active, s)} headingLevel={2} />
+                    ) : active.kind === "reflection" ? (
+                      // Open response: gates like any checkpoint but records a
+                      // zero-max sentinel so it never shifts a points grade.
+                      <ReflectionPrompt
+                        config={active.config}
+                        onSubmit={() => recordResolved(active.id, SENTINEL)}
+                        headingLevel={2}
+                      />
                     ) : active.kind === "label" ? (
                       <div className="kukui-iv__label">
                         {active.title ? <h2 className="kukui-iv__label-title">{active.title}</h2> : null}
@@ -539,25 +698,83 @@ export default function Component({
                       </div>
                     )}
                     <div className="kukui-iv__overlay-actions">
-                      {!active.required && !state.resolvedInteractions[active.id] ? (
-                        <button type="button" className="kukui-iv__secondary" onClick={skip}>
-                          Skip
+                      {reviewOffer?.id === active.id ? (
+                        <>
+                          <button
+                            type="button"
+                            className="kukui-iv__primary"
+                            onClick={() => acceptReview(active)}
+                          >
+                            Review that section
+                          </button>
+                          <button
+                            type="button"
+                            className="kukui-iv__secondary"
+                            onClick={() => {
+                              const score = reviewOffer.score;
+                              setReviewOffer(null);
+                              recordResolved(active.id, score);
+                            }}
+                          >
+                            Continue anyway
+                          </button>
+                        </>
+                      ) : (
+                        <>
+                          {!active.required && !state.resolvedInteractions[active.id] ? (
+                            <button type="button" className="kukui-iv__secondary" onClick={skip}>
+                              Skip
+                            </button>
+                          ) : null}
+                          {active.kind === "label" || active.kind === "invalid" ? (
+                            <button type="button" className="kukui-iv__primary" onClick={skip}>
+                              Continue
+                            </button>
+                          ) : (
+                            <button
+                              type="button"
+                              className="kukui-iv__primary"
+                              onClick={resume}
+                              disabled={!state.resolvedInteractions[active.id]}
+                            >
+                              {resumeLabel}
+                            </button>
+                          )}
+                        </>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </>
+            ) : null}
+
+            {/* Returning-learner explanation: without this a restored
+                submitted attempt reads as "the video auto-completed and
+                never asked me anything." */}
+            {resumePanelVisible ? (
+              <>
+                <div className="kukui-iv__scrim" aria-hidden="true" />
+                <div className="kukui-iv__overlay kukui-iv__overlay--resume" role="status">
+                  <div className="kukui-iv__overlay-body">
+                    <h2 className="kukui-iv__resume-title">Completed on a previous attempt</h2>
+                    <p className="kukui-iv__resume-detail">
+                      {correctScore.max > 0
+                        ? `Your recorded score is ${correctScore.raw} of ${correctScore.max} (${correctScore.success ? "passed" : "not passed"}).`
+                        : "This activity was marked complete."}
+                    </p>
+                    <div className="kukui-iv__overlay-actions">
+                      {scoring.enableRetry ? (
+                        <button type="button" className="kukui-iv__primary" onClick={tryAgain}>
+                          Try again
                         </button>
                       ) : null}
-                      {active.kind === "label" || active.kind === "invalid" ? (
-                        <button type="button" className="kukui-iv__primary" onClick={skip}>
-                          Continue
-                        </button>
-                      ) : (
-                        <button
-                          type="button"
-                          className="kukui-iv__primary"
-                          onClick={resume}
-                          disabled={!state.resolvedInteractions[active.id]}
-                        >
-                          {resumeLabel}
-                        </button>
-                      )}
+                      <button
+                        type="button"
+                        className="kukui-iv__secondary"
+                        onClick={() => setResumePanelDismissed(true)}
+                      >
+                        Watch again
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -579,6 +796,9 @@ export default function Component({
             onSetRate={(r) => ctl()?.setRate(r)}
             onFullscreen={onFullscreen}
             disabled={active !== null}
+            trimStart={trimStart > 0 ? trimStart : undefined}
+            trimEnd={configuredTrimEnd}
+            chapters={config.chapters}
           />
         </div>
 
@@ -607,6 +827,38 @@ export default function Component({
           </ol>
         ) : null}
 
+        {state.stage === "summary" ? (
+          <section className="kukui-iv__summary" aria-label="Review your answers">
+            <h2 className="kukui-iv__summary-title">Review your answers</h2>
+            <ol className="kukui-iv__summary-list">
+              {summaryRows.map(({ it, outcome }) => (
+                <li key={it.id} className="kukui-iv__summary-row">
+                  <button
+                    type="button"
+                    className="kukui-iv__summary-jump"
+                    onClick={() => rewatchFrom(it.atSeconds)}
+                  >
+                    <span className="kukui-iv__list-time">{formatTime(it.atSeconds)}</span>
+                    <span className="kukui-iv__list-title">{it.title ?? KIND_LABEL[it.kind]}</span>
+                  </button>
+                  <span className={`kukui-iv__summary-outcome is-${outcome}`}>
+                    {SUMMARY_OUTCOME_LABEL[outcome]}
+                  </span>
+                </li>
+              ))}
+            </ol>
+            <div className="kukui-iv__actions">
+              <button
+                type="button"
+                className="kukui-iv__primary"
+                onClick={() => submitFrom(state)}
+              >
+                Submit
+              </button>
+            </div>
+          </section>
+        ) : null}
+
         <p
           className={["kukui-iv__status", state.stage === "submitted" ? "is-visible" : ""].filter(Boolean).join(" ")}
           role="status"
@@ -614,10 +866,14 @@ export default function Component({
         >
           {state.stage === "submitted"
             ? `Submitted. ${answeredCount} of ${validated.length} interactions answered.`
-            : `${answeredCount} of ${validated.length} interactions answered.`}
+            : resumedAttempt && !resumedAttempt.submitted
+              ? `Resumed. ${answeredCount} of ${validated.length} interactions answered.`
+              : `${answeredCount} of ${validated.length} interactions answered.`}
         </p>
 
-        {state.stage === "submitted" && scoring.enableRetry ? (
+        {/* Suppressed while the resume panel is open so there is exactly one
+            Try again affordance on screen. */}
+        {state.stage === "submitted" && scoring.enableRetry && !resumePanelVisible ? (
           <div className="kukui-iv__actions">
             <button type="button" className="kukui-iv__secondary" onClick={tryAgain}>
               Try again
@@ -629,10 +885,19 @@ export default function Component({
   );
 }
 
+const SUMMARY_OUTCOME_LABEL: Record<string, string> = {
+  correct: "Correct",
+  incorrect: "Incorrect",
+  answered: "Answered",
+  viewed: "Viewed",
+  missed: "Not answered",
+};
+
 const KIND_LABEL: Record<string, string> = {
   label: "Info card",
   multipleChoice: "Multiple choice",
   fillInTheBlanks: "Fill in the blanks",
+  reflection: "Reflection",
   invalid: "Misconfigured",
 };
 
