@@ -212,7 +212,7 @@ function ZoneRefPicker({
   if (zones.length === 0) {
     return (
       <p className="ks-edit-dnd__zone-picker-empty">
-        No zones yet — draw one on the canvas first.
+        No zones yet. Draw one on the canvas first.
       </p>
     );
   }

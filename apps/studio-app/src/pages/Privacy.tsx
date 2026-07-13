@@ -44,14 +44,14 @@ export function Privacy() {
           <p>
             If you click <strong>Open from Drive</strong> or <strong>Save to Drive</strong>,
             Studio opens an OAuth window directly with Google. Your sign-in and the
-            resulting access token never pass through any Kukui-operated server — the
+            resulting access token never pass through any Kukui-operated server. The
             entire flow happens between your browser and Google.
           </p>
           <p>
             Kukui requests the <code>drive.file</code> scope, which is the most
             restrictive Google offers: the app can only read or write files it created
             itself, or files you explicitly pick through Google's file picker. We
-            cannot list, search, or read the rest of your Drive — not even
+            cannot list, search, or read the rest of your Drive, not even
             metadata. The access token stays in memory and expires roughly every
             hour; we don't persist it to <code>localStorage</code> or anywhere else.
           </p>
@@ -71,7 +71,7 @@ export function Privacy() {
           <h2>Learner grades (SCORM passback)</h2>
           <p>
             SCORM activities packaged by Studio post grades only to the LMS that hosts
-            them (Brightspace, Canvas, Moodle, etc.) — the same channel any
+            them (Brightspace, Canvas, Moodle, etc.), the same channel any
             LMS-hosted activity uses. Kukui Studio is not a party to that traffic.
           </p>
 
@@ -81,13 +81,13 @@ export function Privacy() {
             browser to whatever LLM endpoint you configured (OpenAI, Groq, your
             institution's internal proxy, etc.). Kukui Studio never sees or proxies the
             request. Your API key and base URL are stored in your browser only
-            (<code>localStorage</code> or <code>sessionStorage</code> — your choice on the
+            (<code>localStorage</code> or <code>sessionStorage</code>, your choice on the
             AI Assist tab).
           </p>
           <p>
             The activity JSON you're working on, plus your prompt, are sent to the
             endpoint you picked; the response comes back to your browser only. Your
-            provider's data-handling policies apply to that traffic — pick a provider
+            provider's data-handling policies apply to that traffic. Pick a provider
             whose policies match your institution's rules.
           </p>
 

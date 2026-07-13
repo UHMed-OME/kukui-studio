@@ -91,7 +91,7 @@ export function RichTextWidget(props: WidgetProps) {
     const MAX_IMAGE_BYTES = 2 * 1024 * 1024;
     if (file.size > MAX_IMAGE_BYTES) {
       window.alert(
-        `Image is ${(file.size / 1024 / 1024).toFixed(1)} MB — please pick one under 2 MB or paste an image URL instead.`,
+        `Image is ${(file.size / 1024 / 1024).toFixed(1)} MB. Please pick one under 2 MB or paste an image URL instead.`,
       );
       return;
     }

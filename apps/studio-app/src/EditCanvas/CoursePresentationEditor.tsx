@@ -89,7 +89,7 @@ function seedMcConfig(): McConfig {
   return {
     version: "1.0",
     title: "Checkpoint question",
-    question: "<p>New question — edit me.</p>",
+    question: "<p>New question. Edit me.</p>",
     answers: [
       { text: "Correct answer", correct: true },
       { text: "Another option", correct: false },
@@ -412,7 +412,7 @@ export function CoursePresentationEditor({
       <p className="ks-edit-canvas__hint">
         <strong>Import PDF</strong> to add slides (export PowerPoint / Keynote / Google Slides to
         PDF first). Then <strong>Add hotspot</strong> or <strong>Add checkpoint</strong> drops an
-        interaction on the slide — drag it to move, drag its corner to resize, click to edit. Test
+        interaction on the slide: drag it to move, drag its corner to resize, click to edit. Test
         playback on the <strong>Live</strong> tab.
       </p>
 
@@ -583,7 +583,7 @@ export function CoursePresentationEditor({
                 )
               ) : (
                 <div className="ks-cp-ed__board-blank">
-                  Blank slide — a title / section divider. Interactions need a slide image.
+                  Blank slide: a title or section divider. Interactions need a slide image.
                 </div>
               )}
 
@@ -814,7 +814,7 @@ function CheckpointInspector({
         </>
       ) : (
         <label className="ks-cp-ed__field">
-          Cloze text — wrap each blank in asterisks, e.g. <code>*answer*</code>
+          Cloze text: wrap each blank in asterisks, e.g. <code>*answer*</code>
           <textarea
             rows={3}
             value={typeof mc.text === "string" ? (mc.text as string) : ""}

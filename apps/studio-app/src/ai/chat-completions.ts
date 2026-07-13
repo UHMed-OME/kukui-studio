@@ -261,7 +261,7 @@ async function attempt(
     throw new ChatCompletionsError(
       looksLikeCors ? "cors" : "network",
       looksLikeCors
-        ? "Couldn't reach the provider. This is often a CORS restriction — some institutional proxies block browser requests entirely."
+        ? "Couldn't reach the provider. This is often a CORS restriction. Some institutional proxies block browser requests entirely."
         : "Network error reaching the provider.",
       { cause: err },
     );

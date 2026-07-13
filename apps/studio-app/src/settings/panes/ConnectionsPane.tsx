@@ -89,7 +89,7 @@ function DriveSection() {
       <p className="ks-dialog__message">
         Save Kukui activity JSON to your own Google Drive and open files back
         from it. Kukui requests the <code className="ks-ai-form__code">drive.file</code>{" "}
-        scope — the most restrictive option Google offers. We can only touch
+        scope, the most restrictive option Google offers. We can only touch
         files Kukui itself created or that you explicitly pick through Google's
         file picker; the rest of your Drive stays invisible to us.
       </p>
@@ -178,7 +178,7 @@ function SketchfabSection() {
   return (
     <>
       <p className="ks-dialog__message">
-        Sign in to Sketchfab to import your Creative Commons–licensed 3D
+        Sign in to Sketchfab to import your Creative Commons-licensed 3D
         models into 3D Hotspot activities. Kukui only requests the
         minimum-scope read token; we never upload anything to Sketchfab
         and never see your private library.
@@ -251,7 +251,7 @@ function SketchfabSection() {
       </div>
       {import.meta.env.DEV && status !== "signed-in" ? (
         <details className="ks-connections-dev-affordance" style={{ marginTop: 12 }}>
-          <summary>Dev only — paste a token manually</summary>
+          <summary>Dev only: paste a token manually</summary>
           <p className="ks-dialog__message">
             Local dev can't complete a real OAuth flow until Sketchfab
             adds <code>http://localhost:5174/auth/sketchfab/callback</code> as

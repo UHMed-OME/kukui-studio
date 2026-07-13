@@ -61,7 +61,7 @@ function seedMcConfig(): McConfig {
   return {
     version: "1.0",
     title: "Checkpoint question",
-    question: "<p>New question — edit me.</p>",
+    question: "<p>New question. Edit me.</p>",
     answers: [
       { text: "Correct answer", correct: true },
       { text: "Another option", correct: false },
@@ -466,8 +466,8 @@ export function InteractiveVideoEditor({
           <div className="ks-iv-tl__noscrub">
             <p>
               {src ? (
-                <>In-canvas scrubbing supports MP4 and YouTube. This is a <strong>{videoType}</strong> source —
-                set the length below, place markers, and test in the <strong>Live</strong> tab.</>
+                <>In-canvas scrubbing supports MP4 and YouTube. This is a <strong>{videoType}</strong> source.
+                Set the length below, place markers, and test in the <strong>Live</strong> tab.</>
               ) : (
                 <>Add a video URL in the form to start placing interactions.</>
               )}
@@ -530,7 +530,7 @@ export function InteractiveVideoEditor({
                 setSelectedId(it.id);
                 seekTo(it.atSeconds);
               }}
-              title={`${fmt(it.atSeconds)} — ${it.kind === "multipleChoice" ? "Multiple choice" : "Fill in the blanks"}`}
+              title={`${fmt(it.atSeconds)}, ${it.kind === "multipleChoice" ? "Multiple choice" : "Fill in the blanks"}`}
             >
               <span className="ks-iv-tl__marker-time">{fmt(it.atSeconds)}</span>
             </button>

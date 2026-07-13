@@ -44,7 +44,7 @@ export function ArrayFieldTemplate(props: ArrayFieldTemplateProps) {
           ))}
         </ul>
       ) : (
-        <p className="ks-array__empty">No items yet — use Add below.</p>
+        <p className="ks-array__empty">No items yet. Use Add below.</p>
       )}
       {canAdd ? (
         <button

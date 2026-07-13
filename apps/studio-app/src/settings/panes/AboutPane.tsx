@@ -10,7 +10,7 @@ export function AboutPane() {
       </p>
       <p>
         Open-source, MIT-licensed, no telemetry. Fork the repo and host your
-        own instance on GitHub Pages in about five minutes — see the{" "}
+        own instance on GitHub Pages in about five minutes. See the{" "}
         <Link to="/docs/self-hosting">self-hosting guide</Link>.
       </p>
       <ul className="ks-settings-pane__links">

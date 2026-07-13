@@ -98,7 +98,7 @@ export function StageHeader({
             dangerouslySetInnerHTML={{ __html: prompt }}
           />
           <p className="ks-stage-head__hint">
-            Formatted prompt — edit it in the <strong>Editor</strong> form on the right to keep its formatting.
+            Formatted prompt. Edit it in the <strong>Editor</strong> form on the right to keep its formatting.
           </p>
         </div>
       ) : (

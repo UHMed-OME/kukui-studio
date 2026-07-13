@@ -48,7 +48,7 @@ export function JsonEditor({
           <span className="ks-json__msg ks-json__msg--err">{error}</span>
         ) : (
           <span className="ks-json__msg">
-            Edits aren't live — click Apply to feed them into the form + preview.
+            Edits aren't live. Click Apply to feed them into the form and preview.
           </span>
         )}
       </div>

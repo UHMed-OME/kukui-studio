@@ -24,7 +24,7 @@ const VALUE_PROPS = [
   },
   {
     title: "AI-assisted authoring",
-    body: "Describe what you want in plain English and let AI draft the activity for you. Bring your own API key — no Studio account needed.",
+    body: "Describe what you want in plain English and let AI draft the activity for you. Bring your own API key; you do not need a Studio account.",
   },
   {
     title: "Accessible by default",
@@ -112,8 +112,8 @@ export function Landing() {
           24 activity types, ready to author
         </h2>
         <p className="kukui-landing__section-lede">
-          Organized by Bloom's revised taxonomy — pick the cognitive level you want
-          to exercise, fill in the content, ship.
+          Organized by Bloom's revised taxonomy. Pick the cognitive level you want
+          to exercise, then fill in the content.
         </p>
         <ul className="kukui-landing__catalog-grid">
           {SHOWCASE.map(({ kind, blurb }) => (
@@ -309,7 +309,7 @@ function HeroFlashcard() {
       <div className="kukui-landing__card-face kukui-landing__card-face--back">
         <span className="kukui-landing__card-pill">Back</span>
         <p className="kukui-landing__card-text">
-          Supply–demand mismatch — typically from another condition (sepsis,
+          Supply-demand mismatch, usually from another condition (sepsis,
           tachyarrhythmia, severe anemia) rather than a primary plaque rupture.
         </p>
       </div>

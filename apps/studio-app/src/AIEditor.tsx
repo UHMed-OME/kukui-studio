@@ -116,7 +116,7 @@ const PLACEHOLDER_EXAMPLES: Partial<
     edit: "e.g. Add two more questions on metabolic acidosis",
   },
   flashcards: {
-    gen: "e.g. 12 Q/A flashcards on common ECG findings — prompt on front, answer on back",
+    gen: "e.g. 12 Q/A flashcards on common ECG findings: prompt on front, answer on back",
     edit: "e.g. Add 3 more Q/A cards covering atrial fibrillation",
   },
   "matching-pairs": {
@@ -156,15 +156,15 @@ const PLACEHOLDER_EXAMPLES: Partial<
     edit: "e.g. Reword the prompt to focus on team dynamics instead",
   },
   "branching-scenario": {
-    gen: "e.g. Triage scenario — 5 nodes, 2 terminal outcomes, chest-pain patient",
+    gen: "e.g. Triage scenario: 5 nodes, 2 terminal outcomes, chest-pain patient",
     edit: "e.g. Add a wrong-turn branch that ends in a missed STEMI",
   },
   "ddx-tree": {
-    gen: "e.g. Differential for new-onset dyspnea in an adult — 4 branches, 3 diagnoses",
+    gen: "e.g. Differential for new-onset dyspnea in an adult: 4 branches, 3 diagnoses",
     edit: "e.g. Make the PE branch require an ABG before terminating",
   },
   osce: {
-    gen: "e.g. 3-phase OSCE encounter for acute abdominal pain — History → Exam → Plan",
+    gen: "e.g. 3-phase OSCE encounter for acute abdominal pain: History → Exam → Plan",
     edit: "e.g. Add an anti-guess penalty and tighten the expected-action list",
   },
   "lab-panel": {
@@ -172,7 +172,7 @@ const PLACEHOLDER_EXAMPLES: Partial<
     edit: "e.g. Swap in hyperkalemia values and update the interpretation choices",
   },
   "concept-map": {
-    gen: "e.g. Concept map of the RAAS pathway — 6 nodes, 5 directed edges",
+    gen: "e.g. Concept map of the RAAS pathway: 6 nodes, 5 directed edges",
     edit: "e.g. Add aldosterone as a node and connect it to sodium reabsorption",
   },
   "interactive-video": {
@@ -180,7 +180,7 @@ const PLACEHOLDER_EXAMPLES: Partial<
     edit: "e.g. Move the second interaction earlier and make it a fill-in-the-blank",
   },
   "audio-recording": {
-    gen: "e.g. Spanish-language H&P intro practice, 30–60 second clip",
+    gen: "e.g. Spanish-language H&P intro practice, 30-60 second clip",
     edit: "e.g. Replace the reference audio with a slower-paced version",
   },
   "hotspot-2d": {
@@ -192,11 +192,11 @@ const PLACEHOLDER_EXAMPLES: Partial<
     edit: "e.g. Tighten the correct-region tolerance",
   },
   "virtual-tour": {
-    gen: "e.g. Virtual tour of an ICU bay with 4 clickable overlays — monitor, vent, IV pole, bed",
+    gen: "e.g. Virtual tour of an ICU bay with 4 clickable overlays: monitor, vent, IV pole, bed",
     edit: "e.g. Add a fifth overlay over the crash cart",
   },
   crossword: {
-    gen: "e.g. 8-term crossword on cardiology vocabulary — chamber names, vessels, and conduction-system structures",
+    gen: "e.g. 8-term crossword on cardiology vocabulary: chamber names, vessels, and conduction-system structures",
     edit: "e.g. Replace two of the simpler terms with pathology vocabulary like 'stenosis' and 'aneurysm'",
   },
   "straw-poll": {
@@ -492,7 +492,7 @@ export function AIEditor({
         <div className="kukui-studio-ai__empty">
           <h2 className="kukui-studio-ai__empty-title">AI editor isn't configured yet</h2>
           <p className="kukui-studio-ai__empty-body">
-            Kukui Studio runs entirely in your browser, so we don't ship a shared key — every
+            Kukui Studio runs entirely in your browser, so we don't ship a shared key. Every
             author brings their own. Open settings to point Studio at OpenAI, Groq, Together,
             OpenRouter, Anthropic, Azure OpenAI, or your institution's internal proxy. Your key
             stays in this browser only.
@@ -570,7 +570,7 @@ export function AIEditor({
           <div className="kukui-studio-ai__progress-text">
             <strong>Generating with {settings.model}…</strong>
             <span className="kukui-studio-ai__progress-sub">
-              This usually takes 5–15 seconds. Larger schemas may take longer.
+              This usually takes 5-15 seconds. Larger schemas may take longer.
             </span>
           </div>
         </div>
@@ -597,7 +597,7 @@ export function AIEditor({
       {response.kind === "confirming" ? (
         <div className="kukui-studio-ai__confirm" role="alertdialog" aria-labelledby="kukui-ai-confirm-title">
           <h3 id="kukui-ai-confirm-title" className="kukui-studio-ai__confirm-title">
-            This is a big rewrite — apply it?
+            This is a big rewrite. Apply it?
           </h3>
           <p className="kukui-studio-ai__confirm-body">
             About {Math.round(response.changeRatio * 100)}% of your activity's top-level

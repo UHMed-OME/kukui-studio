@@ -202,7 +202,7 @@ export function AnatomyLabelingEditor({
       <p className="ks-edit-canvas__hint">
         Click the image to drop a target. Drag to reposition. Right-click for stacking.
         <kbd>Delete</kbd> removes the selected target. Labels are edited in the form on the
-        right — they reference targets by id.
+        right. They reference targets by id.
       </p>
       <div
         ref={boardRef}

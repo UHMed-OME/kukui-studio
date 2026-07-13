@@ -38,7 +38,7 @@ export const PRESETS: readonly ProviderPreset[] = [
     baseUrl: "https://api.openai.com/v1",
     model: "gpt-4o-mini",
     signupUrl: "https://platform.openai.com/api-keys",
-    description: "OpenAI direct — supports strict json_schema output.",
+    description: "OpenAI direct, supports strict json_schema output.",
   },
   {
     id: "groq",
@@ -62,7 +62,7 @@ export const PRESETS: readonly ProviderPreset[] = [
     baseUrl: "https://openrouter.ai/api/v1",
     model: "openai/gpt-4o-mini",
     signupUrl: "https://openrouter.ai/keys",
-    description: "Aggregator — one key reaches many model providers.",
+    description: "Aggregator: one key reaches many model providers.",
   },
   {
     id: "anthropic",
@@ -79,7 +79,7 @@ export const PRESETS: readonly ProviderPreset[] = [
     model: "gemini-2.5-flash",
     signupUrl: "https://aistudio.google.com/apikey",
     description:
-      "Google AI Studio key — free tier with generous quota. Note: institutional Google Workspace tenants (incl. UH) often block AI Studio at the admin level; try Groq / Together / OpenRouter instead if the signup link is blocked.",
+      "Google AI Studio key, free tier with generous quota. Note: institutional Google Workspace tenants (incl. UH) often block AI Studio at the admin level; try Groq / Together / OpenRouter instead if the signup link is blocked.",
   },
   {
     id: "azure",
@@ -87,7 +87,7 @@ export const PRESETS: readonly ProviderPreset[] = [
     baseUrl: "",
     model: "gpt-4o-mini",
     signupUrl: "https://portal.azure.com/",
-    description: "Institutional — paste your resource URL + deployment.",
+    description: "Institutional: paste your resource URL and deployment.",
   },
   {
     id: "custom",

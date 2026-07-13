@@ -11,7 +11,7 @@ type Band = { from: number; to: number; message: string };
 
 const DEFAULT_BANDS: Band[] = [
   { from: 0, to: 49, message: "Review the material and try again." },
-  { from: 50, to: 84, message: "Solid work — keep going." },
+  { from: 50, to: 84, message: "Solid work. Keep going." },
   { from: 85, to: 100, message: "Excellent." },
 ];
 
@@ -78,7 +78,7 @@ export function BandsEditor({
                     updateBand(i, { from: clampPct(Number(e.target.value)) })
                   }
                 />
-                <span aria-hidden="true">–</span>
+                <span aria-hidden="true">-</span>
                 <input
                   type="number"
                   min={0}
@@ -110,7 +110,7 @@ export function BandsEditor({
               </button>
               {overlapFlags[i] ? (
                 <p className="ks-scoring-band-warn" role="status">
-                  Overlaps with another band — the earlier band wins.
+                  Overlaps with another band. The earlier band wins.
                 </p>
               ) : null}
             </li>

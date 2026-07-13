@@ -150,7 +150,7 @@ export function Preview({
     if (!fallbackConfig) {
       return (
         <div className="kukui-studio-preview-error" role="status">
-          <strong>Preview is paused — config doesn't validate yet:</strong>
+          <strong>Preview is paused. Config doesn't validate yet:</strong>
           <ul>
             {(result.error.issues as ReadonlyArray<{ path: PropertyKey[]; message: string }>)
               .slice(0, 8)
@@ -160,8 +160,8 @@ export function Preview({
                     {issue.path
                       .map((p) => (typeof p === "symbol" ? p.toString() : String(p)))
                       .join(".") || "(root)"}
-                  </code>{" "}
-                  — {issue.message}
+                  </code>{": "}
+                  {issue.message}
                 </li>
               ))}
           </ul>
@@ -192,7 +192,7 @@ export function Preview({
       <PreviewErrorBoundary resetKey={kind}>
         <Suspense fallback={<PreviewLoading />}>
           <div className="kukui-studio-preview-stale" role="status" aria-live="polite">
-            <strong>Form has unresolved errors</strong> — preview is paused at the last valid
+            <strong>Form has unresolved errors.</strong> Preview is paused at the last valid
             state. Fix the highlighted fields in the form to resume live updates.
           </div>
           <div
@@ -457,7 +457,7 @@ function LiveTestLauncher({
           </div>
           {!adminKey ? (
             <p className="kukui-studio-live-launch__warn">
-              No admin key set — anyone with the student URL could claim host. Set one under{" "}
+              No admin key set. Anyone with the student URL could claim host. Set one under{" "}
               <em>Live session settings</em>.
             </p>
           ) : null}

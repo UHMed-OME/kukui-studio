@@ -69,7 +69,7 @@ export async function importGoogleSlides(link: string): Promise<never> {
   }
   throw new GoogleSlidesUnavailableError(
     "Google Slides can't be snapshotted directly in the browser (Google blocks cross-origin image access). " +
-      "In Slides choose File → Download → PDF document, then use Import PDF here — the deck will be fully offline and accessible.",
+      "In Slides choose File → Download → PDF document, then use Import PDF here. The deck will be fully offline and accessible.",
     deckId,
   );
 }

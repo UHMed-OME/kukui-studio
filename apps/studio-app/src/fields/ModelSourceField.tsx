@@ -270,7 +270,7 @@ function SketchfabInput({
         </p>
       ) : (
         <p className="ks-model-source__hint">
-          Paste any Sketchfab model URL — we'll extract the UID automatically.
+          Paste any Sketchfab model URL and we'll extract the UID automatically.
         </p>
       )}
     </>

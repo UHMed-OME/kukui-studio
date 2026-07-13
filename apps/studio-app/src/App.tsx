@@ -545,7 +545,7 @@ export function App() {
   const downloadScorm = async () => {
     if (busy) return;
     if (isPlanned) {
-      flash("This activity is in design — SCORM download will work once it ships.");
+      flash("This activity is in design. SCORM download will work once it ships.");
       return;
     }
     if (!validation.success) {
@@ -580,7 +580,7 @@ export function App() {
   const downloadWeb = async () => {
     if (busy) return;
     if (isPlanned) {
-      flash("This activity is in design — web download will work once it ships.");
+      flash("This activity is in design. Web download will work once it ships.");
       return;
     }
     if (!validation.success) {
@@ -667,7 +667,7 @@ export function App() {
             onClick={downloadWeb}
             disabled={busy}
             className="kukui-studio-btn kukui-studio-btn--with-subtext"
-            title="Download a portable web package to host anywhere — no LMS required (see Docs → Host on the web)"
+            title="Download a portable web package to host anywhere, no LMS required (see Docs → Host on the web)"
           >
             <DownloadIcon />
             <span className="kukui-studio-btn__stack">
@@ -1096,7 +1096,7 @@ export function App() {
 
       <footer className="kukui-studio-footer">
         <p className="kukui-studio-footer__about">
-          <strong>Kukui Studio</strong> — open-source interactive learning activities for the
+          <strong>Kukui Studio</strong>: open-source interactive learning activities for the
           LMS. Built at{" "}
           <a
             href="https://jabsom.hawaii.edu/"
@@ -1230,7 +1230,7 @@ export function App() {
       <ConfirmDialog
         open={confirmResetAll}
         title="Reset everything?"
-        message="Clears every saved draft, your AI provider + key, and your appearance preference. Activities reset to their default starter. This can't be undone — make sure you've exported anything you want to keep first."
+        message="Clears every saved draft, your AI provider and key, and your appearance preference. Activities reset to their default starter. This can't be undone. Make sure you've exported anything you want to keep first."
         confirmLabel="Reset everything"
         cancelLabel="Cancel"
         destructive

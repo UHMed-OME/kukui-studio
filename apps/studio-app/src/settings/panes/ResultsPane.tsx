@@ -31,7 +31,7 @@ export function ResultsPane() {
     <div className="ks-settings-pane ks-settings-pane--prose">
       <p>
         Paste a <strong>completion code</strong> a learner sent you from a web
-        package to see their score. Codes are self-reported — use them for
+        package to see their score. Codes are self-reported, so use them for
         low-stakes, formative work, not graded assessment.
       </p>
 

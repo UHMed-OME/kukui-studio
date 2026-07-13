@@ -80,7 +80,7 @@ export function AIPane({ onSaved }: { onSaved?: (s: AISettings) => void }) {
   return (
     <div className="ks-settings-pane">
       <p className="ks-dialog__message">
-        Bring your own provider. Your key stays in this browser only — Kukui
+        Bring your own provider. Your key stays in this browser only. Kukui
         Studio never sees it or proxies your requests.
       </p>
 
@@ -156,7 +156,7 @@ export function AIPane({ onSaved }: { onSaved?: (s: AISettings) => void }) {
           />
           <span className="ks-ai-form__hint" id="ks-ai-key-hint">
             Stored in your browser only. Most providers let you restrict a key
-            to a specific referrer in their dashboard — paste{" "}
+            to a specific referrer in their dashboard. Paste{" "}
             <code className="ks-ai-form__code">{referrer}</code> into the
             restriction field if yours supports it.
           </span>

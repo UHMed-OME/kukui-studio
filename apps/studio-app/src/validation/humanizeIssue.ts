@@ -81,14 +81,14 @@ export function humanizeMessage(issue: LooseIssue): string {
         return min === 1 ? "Add at least one." : `Add at least ${min}.`;
       if (origin === "number" || origin === "int" || origin === "bigint")
         return `Must be ${min} or more.`;
-      return `Too small — minimum is ${min}.`;
+      return `Too small. Minimum is ${min}.`;
     }
     case "too_big": {
       if (origin === "string") return `Keep it to ${max} characters or fewer.`;
       if (origin === "array") return `Use at most ${max}.`;
       if (origin === "number" || origin === "int" || origin === "bigint")
         return `Must be ${max} or less.`;
-      return `Too large — maximum is ${max}.`;
+      return `Too large. Maximum is ${max}.`;
     }
     case "invalid_string":
     case "invalid_format": {

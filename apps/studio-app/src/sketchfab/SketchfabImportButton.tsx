@@ -27,7 +27,7 @@ export function SketchfabImportButton({ onImported }: SketchfabImportButtonProps
     return (
       <div className="ks-sketchfab-import">
         <p className="ks-sketchfab-import__msg">
-          Sign in to Sketchfab to import a Creative Commons–licensed model.
+          Sign in to Sketchfab to import a Creative Commons-licensed model.
         </p>
         <button
           type="button"

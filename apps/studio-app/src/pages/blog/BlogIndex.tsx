@@ -17,7 +17,7 @@ export function BlogIndex() {
           </p>
         </header>
         {BLOG.length === 0 ? (
-          <p className="kukui-blog__empty">No posts yet — check back soon.</p>
+          <p className="kukui-blog__empty">No posts yet. Check back soon.</p>
         ) : (
           <ul className="kukui-blog__list">
             {BLOG.map(({ meta }) => (

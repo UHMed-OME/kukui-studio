@@ -33,7 +33,7 @@ export function NodeSelectWidget(props: WidgetProps) {
       disabled={disabled}
       aria-required={required}
     >
-      <option value="">— Pick a step —</option>
+      <option value="">Pick a step</option>
       {nodes.map((n, i) => {
         const nodeId = n.id ?? `step-${i + 1}`;
         const label = previewLabel(n) || `Step ${i + 1}`;

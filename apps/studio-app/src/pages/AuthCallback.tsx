@@ -41,7 +41,7 @@ export function AuthCallback() {
     if (!expectedState || result.state !== expectedState) {
       setStatus({
         kind: "error",
-        message: "State mismatch — possible CSRF. Sign-in aborted.",
+        message: "State mismatch, possible CSRF. Sign-in aborted.",
       });
       return;
     }

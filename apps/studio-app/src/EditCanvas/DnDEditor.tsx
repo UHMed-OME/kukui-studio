@@ -335,7 +335,7 @@ export function DnDEditor({
               type="button"
               className="ks-edit-dnd__bg-clear"
               onClick={clearBackground}
-              title="Remove the background image — the activity will run on a plain stage"
+              title="Remove the background image. The activity will run on a plain stage"
             >
               Clear background
             </button>

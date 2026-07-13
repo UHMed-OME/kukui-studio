@@ -38,12 +38,12 @@ const GROUPS: Group[] = [
       {
         value: "high-contrast",
         label: "High contrast (light)",
-        description: "WCAG AAA — black on white, deep accents.",
+        description: "WCAG AAA: black on white, deep accents.",
       },
       {
         value: "high-contrast-dark",
         label: "High contrast (dark)",
-        description: "WCAG AAA — white on black, light accents.",
+        description: "WCAG AAA: white on black, light accents.",
       },
     ],
   },
@@ -56,7 +56,7 @@ const GROUPS: Group[] = [
       { value: "kalo", label: "Kalo", description: "Taro-leaf dark with sage greens, grounded." },
       { value: "lab", label: "Lab", description: "Cool clinical light scheme with navy accents." },
       { value: "twilight", label: "Twilight", description: "Plum-tinted dark, reflective." },
-      { value: "kai", label: "Kai", description: "Clinical ocean-blue light scheme — bright, medical." },
+      { value: "kai", label: "Kai", description: "Clinical ocean-blue light scheme, bright and medical." },
     ],
   },
 ];
@@ -78,7 +78,7 @@ export function AppearancePane() {
     <div className="ks-settings-pane">
       <p className="ks-dialog__message">
         Choose how Kukui Studio looks. Authors can also pin a specific
-        theme per activity — that pin wins for learners viewing the
+        theme per activity, and that pin wins for learners viewing the
         SCORM-packaged version.
       </p>
 
