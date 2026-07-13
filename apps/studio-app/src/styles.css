@@ -1750,6 +1750,26 @@ button {
   cursor: not-allowed;
 }
 
+/* "Test as learner" attempt bar above the live preview: last submitted
+ * score plus a Reset-attempt control. Slim and neutral so it reads as
+ * tooling chrome, not part of the activity being previewed. */
+.kukui-studio-preview-attempt {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-md);
+  margin: var(--spacing-md) var(--spacing-md) 0;
+  padding: var(--spacing-xs) var(--spacing-md);
+  border: 1px dashed var(--color-border, #d1d7df);
+  border-radius: var(--radius-sm, 6px);
+  font-size: var(--font-size-meta, 13px);
+  color: var(--color-text-secondary, #49515b);
+}
+
+.kukui-studio-preview-attempt__score {
+  min-height: 20px;
+}
+
 /* Non-blocking banner shown above the last-valid preview when the form
  * has unresolved errors. Author keeps seeing the activity as it was
  * before the broken edit instead of going dark. */
@@ -3213,6 +3233,104 @@ button {
   margin: 0;
   font-size: var(--font-size-meta);
   color: var(--color-text-secondary);
+}
+
+/* Inline field variant: label sits beside its control (select / number). */
+.ks-iv-tl__field--inline {
+  flex-direction: row;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+.ks-iv-tl__field--inline select,
+.ks-iv-tl__field--inline input[type="number"] {
+  min-height: 44px;
+  padding: 6px 10px;
+  border: 1px solid color-mix(in oklab, var(--color-border) 70%, transparent);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+  font: inherit;
+  font-size: var(--font-size-meta);
+}
+
+/* Grouped settings block (Trim, Chapters, Behaviour). */
+.ks-iv-tl__section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-md);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+}
+.ks-iv-tl__section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-sm);
+  flex-wrap: wrap;
+}
+.ks-iv-tl__section-title {
+  font-size: var(--font-size-meta);
+  font-weight: 700;
+  color: var(--color-text-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* Inline validation error (trim window, onWrong seek point). */
+.ks-iv-tl__error {
+  margin: 0;
+  font-size: var(--font-size-meta);
+  font-weight: 600;
+  color: var(--color-error);
+}
+
+/* Author warning banner above the timeline. */
+.ks-iv-tl__warn {
+  margin: 0;
+  padding: var(--spacing-sm) var(--spacing-md);
+  font-size: var(--font-size-meta);
+  color: var(--color-warning);
+  background: var(--color-warning-soft);
+  border: 1px solid var(--color-warning);
+  border-radius: var(--radius-md);
+}
+
+/* Chapter rows. */
+.ks-iv-tl__chapters {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+.ks-iv-tl__chapter {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--spacing-sm);
+  flex-wrap: wrap;
+}
+.ks-iv-tl__chapter-title {
+  flex: 1;
+  min-width: 8rem;
+}
+
+/* onWrong (answer-adaptive jump) editor block. */
+.ks-iv-tl__onwrong {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  padding-top: var(--spacing-sm);
+  border-top: 1px solid var(--color-border);
+}
+
+/* Marker whose time falls outside the trim window: it won't play. */
+.ks-iv-tl__marker.is-outside-trim .ks-iv-tl__marker-time {
+  border-color: var(--color-warning);
+  color: var(--color-warning);
+  border-style: dashed;
 }
 
 /* ---------- DnD editor — side panel + link overlay ----------
@@ -6349,21 +6467,133 @@ html[data-theme="glass"] .kukui-studio-footer {
 }
 
 /* ── Course Presentation editor ─────────────────────────────────────────────
- * Visual deck editor: import bar, slide filmstrip, an overlay-placement board
- * (normalized-rect markers reuse the same conventions as the 2D rect editors),
- * and an inspector. Tokens only; 44px tap targets; layout-stable.
+ * Visual deck editor in two panes (mirrors .ks-h3d-editor): stage header row
+ * spanning both columns, then the deck column (filmstrip, toolbar, board,
+ * notes) beside a sticky contextual rail (overlay inspector or slide panel).
+ * Normalized-rect markers reuse the same conventions as the 2D rect editors.
+ * Tokens only; 44px tap targets; layout-stable.
  */
 .ks-cp-ed {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(260px, 1fr);
+  gap: var(--spacing-md);
+  align-items: start;
+}
+
+.ks-cp-ed > .ks-stage-head {
+  grid-column: 1 / -1;
+  margin-bottom: 0;
+}
+
+.ks-cp-ed__main {
+  grid-column: 1;
+  min-width: 0;
   display: flex;
   flex-direction: column;
   gap: var(--spacing-md);
 }
 
-.ks-cp-ed__import {
+/* Sticky so selecting an overlay never requires scrolling to its inspector. */
+.ks-cp-ed__rail {
+  grid-column: 2;
+  position: sticky;
+  top: var(--spacing-md);
+  align-self: start;
+  max-height: calc(100vh - 2 * var(--spacing-md));
+  overflow: auto;
+}
+
+@media (max-width: 900px) {
+  .ks-cp-ed {
+    grid-template-columns: 1fr;
+  }
+
+  .ks-cp-ed__main,
+  .ks-cp-ed__rail {
+    grid-column: 1;
+  }
+
+  .ks-cp-ed__rail {
+    position: static;
+    max-height: none;
+  }
+}
+
+/* Staged empty state: three numbered steps, then the import actions. */
+.ks-cp-ed__start {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-md);
+  padding: var(--spacing-2xl);
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  text-align: center;
+}
+
+.ks-cp-ed__start-title {
+  margin: 0;
+  font-size: var(--font-size-body);
+  color: var(--color-text-primary);
+}
+
+.ks-cp-ed__start-steps {
+  margin: 0;
+  padding: 0 0 0 1.5em;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-meta);
+  text-align: left;
+}
+
+.ks-cp-ed__start-steps li::marker {
+  font-weight: 700;
+  color: var(--color-primary);
+}
+
+.ks-cp-ed__start-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--spacing-sm);
+}
+
+.ks-cp-ed__start-more {
+  font-size: var(--font-size-meta);
+  color: var(--color-text-secondary);
+}
+
+.ks-cp-ed__start-more summary {
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 var(--spacing-sm);
+  cursor: pointer;
+  color: var(--color-primary);
+  font-weight: 600;
+}
+
+.ks-cp-ed__start-more summary:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+.ks-cp-ed__start-more-body {
+  padding-top: var(--spacing-sm);
+}
+
+/* Inline row revealed by the add-slides menu's Google Slides option. */
+.ks-cp-ed__link-row {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: var(--spacing-sm);
+  gap: var(--spacing-xs);
 }
 
 .ks-cp-ed__slides-link {
@@ -6384,6 +6614,7 @@ html[data-theme="glass"] .kukui-studio-footer {
 }
 
 .ks-cp-ed__notice {
+  grid-column: 1 / -1;
   margin: 0;
   padding: var(--spacing-sm) var(--spacing-md);
   border: 1px solid var(--color-info);
@@ -6391,14 +6622,6 @@ html[data-theme="glass"] .kukui-studio-footer {
   background: var(--color-info-soft);
   color: var(--color-text-primary);
   font-size: 13px;
-}
-
-.ks-cp-ed__empty {
-  padding: var(--spacing-2xl);
-  border: 1px dashed var(--color-border);
-  border-radius: var(--radius-md);
-  color: var(--color-text-secondary);
-  text-align: center;
 }
 
 .ks-cp-ed__strip {
@@ -6456,10 +6679,30 @@ html[data-theme="glass"] .kukui-studio-footer {
   padding: 0 4px;
   border-radius: var(--radius-pill, 999px);
   background: var(--color-primary);
-  color: #fff;
+  color: var(--color-on-primary);
   font-size: 11px;
   font-weight: 700;
   line-height: 18px;
+  text-align: center;
+}
+
+/* "!" badge: this slide carries at least one required checkpoint. Sits
+   opposite the count badge; glyph + aria-label carry the meaning, the
+   warning ramp is reinforcement only. */
+.ks-cp-ed__thumb-req {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
+  border: 1px solid var(--color-warning);
+  border-radius: var(--radius-pill, 999px);
+  background: var(--color-warning-soft);
+  color: var(--color-text-primary);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 16px;
   text-align: center;
 }
 
@@ -6539,7 +6782,15 @@ html[data-theme="glass"] .kukui-studio-footer {
   outline-offset: 1px;
 }
 
+.ks-cp-ed__overlay:focus-visible {
+  outline: 3px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
 .ks-cp-ed__overlay-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
   font-size: 12px;
   font-weight: 700;
   pointer-events: none;
@@ -6548,16 +6799,106 @@ html[data-theme="glass"] .kukui-studio-footer {
   white-space: nowrap;
 }
 
-.ks-cp-ed__overlay-resize {
-  position: absolute;
-  right: -2px;
-  bottom: -2px;
+/* Kind glyph: "i" for info, "?" for checkpoint — the non-color half of the
+   info/checkpoint signal (WCAG 1.4.1). Inherits the pair's colors when inside
+   an overlay; the is-info / is-checkpoint modifiers color the standalone copy
+   in the inspector heading. */
+.ks-cp-ed__overlay-glyph {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   width: 16px;
   height: 16px;
+  flex: none;
+  border: 1px solid currentColor;
+  border-radius: var(--radius-pill, 999px);
+  font-size: 11px;
+  font-weight: 700;
+  font-style: normal;
+  line-height: 1;
+}
+
+.ks-cp-ed__overlay-glyph.is-info {
+  color: var(--color-info);
+  background: var(--color-info-soft);
+}
+
+.ks-cp-ed__overlay-glyph.is-checkpoint {
+  color: var(--color-primary);
+  background: var(--color-primary-soft);
+}
+
+/* Corner resize handle on the selected overlay: 20px visible, 44px effective
+   hit area via the ::after extension. */
+.ks-cp-ed__overlay-resize {
+  position: absolute;
+  right: -4px;
+  bottom: -4px;
+  width: 20px;
+  height: 20px;
   border: 2px solid var(--color-primary);
-  border-radius: 3px;
+  border-radius: 4px;
   background: var(--color-surface);
   cursor: nwse-resize;
+}
+
+.ks-cp-ed__overlay-resize::after {
+  content: "";
+  position: absolute;
+  inset: -12px;
+}
+
+/* Mini action row for the selected overlay. Board sibling positioned off the
+   rect's top edge (or bottom edge via .is-below when the rect hugs the top). */
+.ks-cp-ed__overlay-actions {
+  position: absolute;
+  display: flex;
+  gap: var(--spacing-xs);
+  transform: translateY(calc(-100% - 6px));
+  z-index: 2;
+}
+
+.ks-cp-ed__overlay-actions.is-below {
+  transform: translateY(6px);
+}
+
+/* 28px visible pill, 44px effective hit area via the ::after extension. */
+.ks-cp-ed__overlay-act {
+  position: relative;
+  min-height: 28px;
+  padding: 4px 10px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-pill, 999px);
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: var(--shadow-card);
+}
+
+.ks-cp-ed__overlay-act::after {
+  content: "";
+  position: absolute;
+  inset: -8px;
+}
+
+.ks-cp-ed__overlay-act:hover {
+  background: var(--color-primary-soft);
+}
+
+.ks-cp-ed__overlay-act:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.ks-cp-ed__overlay-act--danger {
+  color: var(--color-error);
+  border-color: var(--color-error);
+}
+
+.ks-cp-ed__overlay-act--danger:hover {
+  background: var(--color-error-soft);
 }
 
 .ks-cp-ed__notes-field,
@@ -6595,6 +6936,60 @@ html[data-theme="glass"] .kukui-studio-footer {
   font-size: 13px;
 }
 
+/* Rail slide panel (shown when no overlay is selected). */
+.ks-cp-ed__panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-md);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+}
+
+.ks-cp-ed__panel-title {
+  margin: 0;
+  font-size: 15px;
+  color: var(--color-text-primary);
+}
+
+.ks-cp-ed__bg-summary {
+  margin: 0;
+  font-size: 13px;
+  color: var(--color-text-secondary);
+}
+
+.ks-cp-ed__panel-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-xs);
+}
+
+/* Inline two-button confirm for destructive slide actions (delete slide,
+   convert an image slide with interactions to blank). Lives in the rail so
+   it's keyboard-reachable and testable without a modal. */
+.ks-cp-ed__confirm {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-sm);
+  border: 1px solid var(--color-warning);
+  border-radius: var(--radius-sm);
+  background: var(--color-warning-soft);
+}
+
+.ks-cp-ed__confirm-msg {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.ks-cp-ed__confirm-actions {
+  display: flex;
+  gap: var(--spacing-xs);
+}
+
 .ks-cp-ed__inspector {
   display: flex;
   flex-direction: column;
@@ -6612,6 +7007,9 @@ html[data-theme="glass"] .kukui-studio-footer {
 }
 
 .ks-cp-ed__inspector-head h3 {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
   margin: 0;
   font-size: 15px;
 }

@@ -3,15 +3,14 @@ import {
   useMemo,
   useRef,
   useState,
+  type KeyboardEvent as ReactKeyboardEvent,
   type PointerEvent as ReactPointerEvent,
 } from "react";
 import { minNormalized, enforceMinRect } from "./minRect.js";
+import { seedMcConfig, seedFitbConfig } from "./checkpointSeeds.js";
 import { reorder, roundCoord } from "./zorder.js";
-import {
-  loadSlideAsset,
-  newAssetId,
-  putSlideAsset,
-} from "../slides/slideAssetStore.js";
+import { InlineEdit } from "./InlineEdit.js";
+import { loadSlideAsset } from "../slides/slideAssetStore.js";
 import {
   importGoogleSlides,
   GoogleSlidesUnavailableError,
@@ -20,11 +19,14 @@ import {
 /**
  * Visual editor for the course-presentation activity.
  *
- * The form pane (left) edits chrome (title, author). This canvas owns the deck:
- * importing slides (PDF / PowerPoint-via-PDF / Google Slides), arranging them,
- * and placing positioned interactions on each slide — click-to-reveal info
- * hotspots and embedded multiple-choice / fill-in-the-blanks checkpoints. It's
- * the slide-deck analog of the interactive-video timeline editor.
+ * Two-pane layout (mirrors Hotspot3DEditor): the left column owns the deck —
+ * filmstrip, slide toolbar, placement board, notes — and the sticky right rail
+ * is contextual: the overlay inspector when an interaction is selected, a
+ * slide panel (title, background summary, slide actions) otherwise. A stage
+ * header row spans both columns for inline title editing. The activity has a
+ * `title` but no `prompt`, so we wire InlineEdit (StageHeader's title
+ * primitive) directly rather than rendering StageHeader's mandatory prompt
+ * editor for a field the schema doesn't carry.
  *
  * Slide images are large, so they live in IndexedDB (slideAssetStore) keyed by
  * an `assetId`; the saved config holds only the id + alt + dimensions. We
@@ -77,6 +79,8 @@ type Slide = {
 type CPConfig = { slides?: Slide[]; [k: string]: unknown };
 
 const DEFAULT_RECT: Rect = { x: 0.4, y: 0.42, w: 0.2, h: 0.14 };
+/** Keyboard nudge step for move/resize on a focused overlay. */
+const NUDGE = 0.01;
 
 function newId(prefix: string, existing: string[]): string {
   let i = existing.length + 1;
@@ -84,30 +88,12 @@ function newId(prefix: string, existing: string[]): string {
   return `${prefix}-${i}`;
 }
 
-/** A fresh, schema-valid multiple-choice config so a new checkpoint works immediately. */
-function seedMcConfig(): McConfig {
-  return {
-    version: "1.0",
-    title: "Checkpoint question",
-    question: "<p>New question. Edit me.</p>",
-    answers: [
-      { text: "Correct answer", correct: true },
-      { text: "Another option", correct: false },
-    ],
-  };
-}
-
-/** A fresh, schema-valid fill-in-the-blanks config. */
-function seedFitbConfig(): Record<string, unknown> {
-  return {
-    version: "1.0",
-    title: "Checkpoint",
-    text: "The capital of France is *Paris*.",
-  };
-}
-
 function htmlToText(html: string): string {
   return html.replace(/<[^>]+>/g, "").trim();
+}
+
+function hasRequiredCheckpoint(s: Slide): boolean {
+  return s.overlays.some((o) => o.kind === "checkpoint" && o.required !== false);
 }
 
 /**
@@ -159,6 +145,8 @@ type DragState =
   | { mode: "move"; id: string; offX: number; offY: number }
   | { mode: "resize"; id: string };
 
+type RailConfirm = "delete" | "convert" | null;
+
 export function CoursePresentationEditor({
   config,
   onChange,
@@ -168,6 +156,9 @@ export function CoursePresentationEditor({
 }) {
   const boardRef = useRef<HTMLDivElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+  const railRef = useRef<HTMLElement>(null);
+  /** Rect of the most recently added overlay — new ones cascade from it. */
+  const lastAddedRectRef = useRef<Rect | null>(null);
 
   const slides = useMemo<Slide[]>(
     () => (Array.isArray(config.slides) ? config.slides : []),
@@ -180,6 +171,10 @@ export function CoursePresentationEditor({
   const [importing, setImporting] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [slidesLink, setSlidesLink] = useState("");
+  const [showLinkRow, setShowLinkRow] = useState(false);
+  const [addMenuPos, setAddMenuPos] = useState<{ x: number; y: number } | null>(null);
+  const [railConfirm, setRailConfirm] = useState<RailConfirm>(null);
+  const [railFocusTick, setRailFocusTick] = useState(0);
 
   const clampedCurrent = Math.min(current, Math.max(0, slides.length - 1));
   const slide = slides[clampedCurrent] ?? null;
@@ -201,7 +196,19 @@ export function CoursePresentationEditor({
   useEffect(() => {
     setSelectedOverlayId(null);
     setDrag({ mode: "none" });
+    setRailConfirm(null);
+    lastAddedRectRef.current = null;
   }, [clampedCurrent]);
+
+  // Move focus into the rail's first field after an explicit "open" gesture
+  // (Enter/Space on an overlay, the Edit action, or adding an overlay). The
+  // tick bumps after selection state lands, so the inspector is mounted.
+  useEffect(() => {
+    if (!railFocusTick) return;
+    const el = railRef.current?.querySelector<HTMLElement>("input, textarea, select");
+    el?.focus();
+  }, [railFocusTick]);
+  const focusRail = () => setRailFocusTick((t) => t + 1);
 
   const commitSlides = (next: Slide[]) => onChange({ ...config, slides: next });
 
@@ -280,6 +287,7 @@ export function CoursePresentationEditor({
     const next = slides.filter((_, i) => i !== index);
     commitSlides(next);
     setCurrent((c) => Math.max(0, Math.min(c, next.length - 1)));
+    setRailConfirm(null);
     // Best-effort asset cleanup is deferred: other slides may share an import
     // run, and undo should still find the blob. The cache-clear control in
     // Connections handles reclaiming space.
@@ -293,6 +301,18 @@ export function CoursePresentationEditor({
     setCurrent(Math.max(0, Math.min(slides.length - 1, index + delta)));
   };
 
+  /** Replace an image background with blank. Runtime drops overlays on blank
+   *  slides, so callers route through the rail confirm when overlays exist. */
+  const convertToBlank = () => {
+    patchSlide(clampedCurrent, { background: { kind: "blank" } });
+    setRailConfirm(null);
+  };
+
+  const requestConvertToBlank = () => {
+    if ((slide?.overlays.length ?? 0) > 0) setRailConfirm("convert");
+    else convertToBlank();
+  };
+
   /* ---- overlays ----------------------------------------------------------- */
 
   const addOverlay = (kind: "info" | "checkpoint") => {
@@ -301,18 +321,32 @@ export function CoursePresentationEditor({
       return;
     }
     const id = newId(kind === "info" ? "info" : "cp", slide.overlays.map((o) => o.id));
+    // Cascade from the previously added overlay so new ones don't stack
+    // invisibly; wrap back near center once the offset would leave the slide.
+    const prev = lastAddedRectRef.current;
+    let rect: Rect = prev
+      ? {
+          x: roundCoord(prev.x + 0.04),
+          y: roundCoord(prev.y + 0.04),
+          w: prev.w,
+          h: prev.h,
+        }
+      : { ...DEFAULT_RECT };
+    if (rect.x + rect.w > 1 || rect.y + rect.h > 1) rect = { ...DEFAULT_RECT };
+    lastAddedRectRef.current = rect;
     const overlay: Overlay =
       kind === "info"
-        ? { kind: "info", id, rect: { ...DEFAULT_RECT }, label: "Info", html: "<p>Detail to reveal.</p>" }
+        ? { kind: "info", id, rect, label: "Info", html: "<p>Detail to reveal.</p>" }
         : {
             kind: "checkpoint",
             id,
-            rect: { ...DEFAULT_RECT },
+            rect,
             required: true,
             activity: { kind: "multipleChoice", config: seedMcConfig() },
           };
     setOverlays([...slide.overlays, overlay]);
     setSelectedOverlayId(id);
+    focusRail();
   };
 
   const patchOverlay = (id: string, fields: OverlayPatch) => {
@@ -405,62 +439,140 @@ export function CoursePresentationEditor({
     setDrag({ mode: "none" });
   };
 
+  /* ---- keyboard ------------------------------------------------------------
+   * Arrows move the focused overlay by 0.01; Shift+arrows resize; Delete /
+   * Backspace removes; Enter / Space selects and moves focus into the rail
+   * inspector. Move keeps size and clamps to 0..1; resize clamps then runs
+   * through enforceMinRect so the rect never drops below the 44px floor.
+   */
+
+  const nudgeOverlay = (id: string, dx: number, dy: number, resize: boolean) => {
+    if (!slide) return;
+    const { mw, mh } = minNormalized(boardRef.current);
+    setOverlays(
+      slide.overlays.map((o) => {
+        if (o.id !== id) return o;
+        let rect: Rect;
+        if (resize) {
+          rect = enforceMinRect(
+            {
+              ...o.rect,
+              w: Math.min(1 - o.rect.x, o.rect.w + dx),
+              h: Math.min(1 - o.rect.y, o.rect.h + dy),
+            },
+            mw,
+            mh,
+          );
+        } else {
+          rect = {
+            w: o.rect.w,
+            h: o.rect.h,
+            x: Math.max(0, Math.min(1 - o.rect.w, o.rect.x + dx)),
+            y: Math.max(0, Math.min(1 - o.rect.h, o.rect.y + dy)),
+          };
+        }
+        return {
+          ...o,
+          rect: {
+            x: roundCoord(rect.x),
+            y: roundCoord(rect.y),
+            w: roundCoord(rect.w),
+            h: roundCoord(rect.h),
+          },
+        } as Overlay;
+      }),
+    );
+  };
+
+  const onOverlayKeyDown = (o: Overlay) => (e: ReactKeyboardEvent<HTMLDivElement>) => {
+    // Only act on keys aimed at the overlay itself — never ones bubbling from
+    // an input, textarea, select, contenteditable, or the mini action buttons.
+    if (e.target !== e.currentTarget) return;
+    const t = e.target as HTMLElement;
+    if (t.closest("input, textarea, select, [contenteditable='true']")) return;
+    switch (e.key) {
+      case "ArrowLeft":
+        e.preventDefault();
+        nudgeOverlay(o.id, -NUDGE, 0, e.shiftKey);
+        break;
+      case "ArrowRight":
+        e.preventDefault();
+        nudgeOverlay(o.id, NUDGE, 0, e.shiftKey);
+        break;
+      case "ArrowUp":
+        e.preventDefault();
+        nudgeOverlay(o.id, 0, -NUDGE, e.shiftKey);
+        break;
+      case "ArrowDown":
+        e.preventDefault();
+        nudgeOverlay(o.id, 0, NUDGE, e.shiftKey);
+        break;
+      case "Delete":
+      case "Backspace":
+        e.preventDefault();
+        removeOverlay(o.id);
+        break;
+      case "Enter":
+      case " ":
+        e.preventDefault();
+        setSelectedOverlayId(o.id);
+        focusRail();
+        break;
+      default:
+        break;
+    }
+  };
+
   /* ---- render ------------------------------------------------------------- */
+
+  const title = typeof config.title === "string" ? config.title : "";
+  const overlayCount = slide?.overlays.length ?? 0;
+  const plural = (n: number) => (n === 1 ? "" : "s");
+
+  const slidesLinkRow = (
+    <span className="ks-cp-ed__slides-link">
+      <input
+        type="url"
+        placeholder="Paste a Google Slides link…"
+        value={slidesLink}
+        onChange={(e) => setSlidesLink(e.target.value)}
+        aria-label="Google Slides link"
+      />
+      <button
+        type="button"
+        className="kukui-studio-btn kukui-studio-btn--ghost kukui-studio-btn--sm"
+        onClick={() => void onImportSlidesLink()}
+        disabled={!slidesLink.trim()}
+      >
+        Import link
+      </button>
+    </span>
+  );
 
   return (
     <div className="ks-cp-ed">
-      <p className="ks-edit-canvas__hint">
-        <strong>Import PDF</strong> to add slides (export PowerPoint / Keynote / Google Slides to
-        PDF first). Then <strong>Add hotspot</strong> or <strong>Add checkpoint</strong> drops an
-        interaction on the slide: drag it to move, drag its corner to resize, click to edit. Test
-        playback on the <strong>Live</strong> tab.
-      </p>
-
-      <div className="ks-cp-ed__import">
-        <button
-          type="button"
-          className="kukui-studio-btn kukui-studio-btn--primary"
-          onClick={() => fileRef.current?.click()}
-          disabled={Boolean(importing)}
-        >
-          {importing ?? "Import PDF…"}
-        </button>
-        <input
-          ref={fileRef}
-          type="file"
-          accept="application/pdf,.pdf,.pptx,.ppt,.key"
-          hidden
-          onChange={(e) => {
-            const f = e.target.files?.[0];
-            e.target.value = "";
-            if (f) void onPickFile(f);
-          }}
+      <div className="ks-stage-head">
+        <InlineEdit
+          value={title}
+          ariaLabel="Activity title"
+          editLabel="Edit activity title"
+          placeholder="Untitled activity"
+          valueClassName="ks-stage-head__title"
+          onCommit={(next) => onChange({ ...config, title: next })}
         />
-        <button
-          type="button"
-          className="kukui-studio-btn kukui-studio-btn--ghost kukui-studio-btn--sm"
-          onClick={addBlankSlide}
-        >
-          + Blank slide
-        </button>
-        <span className="ks-cp-ed__slides-link">
-          <input
-            type="url"
-            placeholder="Paste a Google Slides link…"
-            value={slidesLink}
-            onChange={(e) => setSlidesLink(e.target.value)}
-            aria-label="Google Slides link"
-          />
-          <button
-            type="button"
-            className="kukui-studio-btn kukui-studio-btn--ghost kukui-studio-btn--sm"
-            onClick={() => void onImportSlidesLink()}
-            disabled={!slidesLink.trim()}
-          >
-            Import link
-          </button>
-        </span>
       </div>
+
+      <input
+        ref={fileRef}
+        type="file"
+        accept="application/pdf,.pdf,.pptx,.ppt,.key"
+        hidden
+        onChange={(e) => {
+          const f = e.target.files?.[0];
+          e.target.value = "";
+          if (f) void onPickFile(f);
+        }}
+      />
 
       {notice && (
         <p className="ks-cp-ed__notice" role="status">
@@ -469,199 +581,457 @@ export function CoursePresentationEditor({
       )}
 
       {slides.length === 0 ? (
-        <div className="ks-cp-ed__empty">
-          <p>No slides yet. Import a PDF or add a blank slide to begin.</p>
+        /* Staged empty state: three steps, then the import actions. */
+        <div className="ks-cp-ed__start">
+          <h3 className="ks-cp-ed__start-title">Build a deck learners can interact with</h3>
+          <ol className="ks-cp-ed__start-steps">
+            <li>Import your slides (PDF)</li>
+            <li>Drop hotspots and checkpoints onto them</li>
+            <li>Preview as a learner with the Live toggle</li>
+          </ol>
+          <div className="ks-cp-ed__start-actions">
+            <button
+              type="button"
+              className="kukui-studio-btn kukui-studio-btn--primary"
+              onClick={() => fileRef.current?.click()}
+              disabled={Boolean(importing)}
+            >
+              {importing ?? "Import PDF"}
+            </button>
+            <button
+              type="button"
+              className="kukui-studio-btn kukui-studio-btn--secondary"
+              onClick={addBlankSlide}
+            >
+              Start from a blank slide
+            </button>
+          </div>
+          <details className="ks-cp-ed__start-more">
+            <summary>Have a Google Slides link?</summary>
+            <div className="ks-cp-ed__start-more-body">{slidesLinkRow}</div>
+          </details>
         </div>
       ) : (
         <>
-          {/* Filmstrip */}
-          <ol className="ks-cp-ed__strip" aria-label="Slides">
-            {slides.map((s, i) => {
-              const thumbUrl =
-                s.background.kind === "image"
-                  ? (s.background.assetId ? urlMap[s.background.assetId] : undefined) ??
-                    s.background.src
-                  : undefined;
-              return (
-                <li key={s.id}>
-                  <button
-                    type="button"
-                    className={[
-                      "ks-cp-ed__thumb",
-                      i === clampedCurrent ? "is-current" : "",
-                    ]
-                      .filter(Boolean)
-                      .join(" ")}
-                    onClick={() => setCurrent(i)}
-                    aria-current={i === clampedCurrent ? "true" : undefined}
-                    aria-label={`Slide ${i + 1}${s.title ? `: ${s.title}` : ""}`}
-                  >
-                    {thumbUrl ? (
-                      <img src={thumbUrl} alt="" />
-                    ) : (
-                      <span className="ks-cp-ed__thumb-blank">{i + 1}</span>
-                    )}
-                    {s.overlays.length > 0 && (
-                      <span className="ks-cp-ed__thumb-badge" aria-hidden="true">
-                        {s.overlays.length}
-                      </span>
-                    )}
-                  </button>
-                </li>
-              );
-            })}
-          </ol>
-
-          {/* Slide toolbar */}
-          <div className="ks-cp-ed__toolbar">
-            <span className="ks-cp-ed__count">
-              Slide {clampedCurrent + 1} of {slides.length}
-            </span>
-            <div className="ks-cp-ed__toolbar-actions">
-              <button
-                type="button"
-                className="kukui-studio-btn kukui-studio-btn--ghost kukui-studio-btn--sm"
-                onClick={() => moveSlide(clampedCurrent, "backward")}
-                disabled={clampedCurrent === 0}
-              >
-                ← Move
-              </button>
-              <button
-                type="button"
-                className="kukui-studio-btn kukui-studio-btn--ghost kukui-studio-btn--sm"
-                onClick={() => moveSlide(clampedCurrent, "forward")}
-                disabled={clampedCurrent >= slides.length - 1}
-              >
-                Move →
-              </button>
-              <button
-                type="button"
-                className="kukui-studio-btn kukui-studio-btn--primary kukui-studio-btn--sm"
-                onClick={() => addOverlay("info")}
-              >
-                + Hotspot
-              </button>
-              <button
-                type="button"
-                className="kukui-studio-btn kukui-studio-btn--primary kukui-studio-btn--sm"
-                onClick={() => addOverlay("checkpoint")}
-              >
-                + Checkpoint
-              </button>
-              <button
-                type="button"
-                className="kukui-studio-btn kukui-studio-btn--ghost kukui-studio-btn--sm"
-                onClick={() => deleteSlide(clampedCurrent)}
-              >
-                Delete slide
-              </button>
-            </div>
-          </div>
-
-          {/* Canvas */}
-          {slide && (
-            <div
-              ref={boardRef}
-              className="ks-cp-ed__board"
-              style={
-                bg && bg.kind === "image"
-                  ? { aspectRatio: `${bg.naturalWidth} / ${bg.naturalHeight}` }
-                  : undefined
-              }
-              onPointerMove={onBoardMove}
-              onPointerUp={endDrag}
-              onPointerCancel={endDrag}
-              onClick={(e) => {
-                if (e.target === boardRef.current) setSelectedOverlayId(null);
-              }}
-            >
-              {bg && bg.kind === "image" ? (
-                imageUrl ? (
-                  <img className="ks-cp-ed__board-img" src={imageUrl} alt={bg.alt} draggable={false} />
-                ) : (
-                  <div className="ks-cp-ed__board-missing">Loading slide image…</div>
-                )
-              ) : (
-                <div className="ks-cp-ed__board-blank">
-                  Blank slide: a title or section divider. Interactions need a slide image.
-                </div>
-              )}
-
-              {slide.overlays.map((o) => {
-                const isSel = o.id === selectedOverlayId;
+          {/* Left column: filmstrip, toolbar, board, notes */}
+          <div className="ks-cp-ed__main">
+            <ol className="ks-cp-ed__strip" aria-label="Slides">
+              {slides.map((s, i) => {
+                const thumbUrl =
+                  s.background.kind === "image"
+                    ? (s.background.assetId ? urlMap[s.background.assetId] : undefined) ??
+                      s.background.src
+                    : undefined;
+                const required = hasRequiredCheckpoint(s);
                 return (
+                  <li key={s.id}>
+                    <button
+                      type="button"
+                      className={[
+                        "ks-cp-ed__thumb",
+                        i === clampedCurrent ? "is-current" : "",
+                      ]
+                        .filter(Boolean)
+                        .join(" ")}
+                      onClick={() => setCurrent(i)}
+                      aria-current={i === clampedCurrent ? "true" : undefined}
+                      aria-label={`Slide ${i + 1}${s.title ? `: ${s.title}` : ""}${
+                        required ? ", has required checkpoint" : ""
+                      }`}
+                    >
+                      {thumbUrl ? (
+                        <img src={thumbUrl} alt="" />
+                      ) : (
+                        <span className="ks-cp-ed__thumb-blank">{i + 1}</span>
+                      )}
+                      {s.overlays.length > 0 && (
+                        <span className="ks-cp-ed__thumb-badge" aria-hidden="true">
+                          {s.overlays.length}
+                        </span>
+                      )}
+                      {required && (
+                        <span
+                          className="ks-cp-ed__thumb-req"
+                          role="img"
+                          aria-label="has required checkpoint"
+                          title="Has required checkpoint"
+                        >
+                          !
+                        </span>
+                      )}
+                    </button>
+                  </li>
+                );
+              })}
+            </ol>
+
+            <div className="ks-cp-ed__toolbar">
+              <span className="ks-cp-ed__count">
+                Slide {clampedCurrent + 1} of {slides.length}
+              </span>
+              <div className="ks-cp-ed__toolbar-actions">
+                <button
+                  type="button"
+                  className="kukui-studio-btn kukui-studio-btn--primary kukui-studio-btn--sm"
+                  onClick={() => addOverlay("info")}
+                >
+                  + Hotspot
+                </button>
+                <button
+                  type="button"
+                  className="kukui-studio-btn kukui-studio-btn--primary kukui-studio-btn--sm"
+                  onClick={() => addOverlay("checkpoint")}
+                >
+                  + Checkpoint
+                </button>
+                <button
+                  type="button"
+                  className="kukui-studio-btn kukui-studio-btn--ghost kukui-studio-btn--sm"
+                  aria-haspopup="menu"
+                  aria-expanded={addMenuPos ? "true" : "false"}
+                  disabled={Boolean(importing)}
+                  onClick={(e) => {
+                    if (addMenuPos) {
+                      setAddMenuPos(null);
+                      return;
+                    }
+                    const r = e.currentTarget.getBoundingClientRect();
+                    setAddMenuPos({ x: r.left, y: r.bottom + 4 });
+                  }}
+                >
+                  {importing ?? "+ Add slides"}
+                </button>
+              </div>
+            </div>
+
+            {addMenuPos && (
+              <AddSlidesMenu
+                pos={addMenuPos}
+                onImportPdf={() => fileRef.current?.click()}
+                onBlankSlide={addBlankSlide}
+                onSlidesLink={() => setShowLinkRow(true)}
+                onClose={() => setAddMenuPos(null)}
+              />
+            )}
+
+            {showLinkRow && (
+              <div className="ks-cp-ed__link-row">
+                {slidesLinkRow}
+                <button
+                  type="button"
+                  className="kukui-studio-btn kukui-studio-btn--ghost kukui-studio-btn--sm"
+                  onClick={() => setShowLinkRow(false)}
+                >
+                  Hide
+                </button>
+              </div>
+            )}
+
+            {slide && (
+              <div
+                ref={boardRef}
+                className="ks-cp-ed__board"
+                style={
+                  bg && bg.kind === "image"
+                    ? { aspectRatio: `${bg.naturalWidth} / ${bg.naturalHeight}` }
+                    : undefined
+                }
+                onPointerMove={onBoardMove}
+                onPointerUp={endDrag}
+                onPointerCancel={endDrag}
+                onClick={(e) => {
+                  if (e.target === boardRef.current) setSelectedOverlayId(null);
+                }}
+              >
+                {bg && bg.kind === "image" ? (
+                  imageUrl ? (
+                    <img className="ks-cp-ed__board-img" src={imageUrl} alt={bg.alt} draggable={false} />
+                  ) : (
+                    <div className="ks-cp-ed__board-missing">Loading slide image…</div>
+                  )
+                ) : (
+                  <div className="ks-cp-ed__board-blank">
+                    Blank slide: a title or section divider. Interactions need a slide image.
+                  </div>
+                )}
+
+                {slide.overlays.map((o) => {
+                  const isSel = o.id === selectedOverlayId;
+                  return (
+                    <div
+                      key={o.id}
+                      className={[
+                        "ks-cp-ed__overlay",
+                        o.kind === "checkpoint" ? "is-checkpoint" : "is-info",
+                        isSel ? "is-selected" : "",
+                      ]
+                        .filter(Boolean)
+                        .join(" ")}
+                      style={{
+                        left: `${o.rect.x * 100}%`,
+                        top: `${o.rect.y * 100}%`,
+                        width: `${o.rect.w * 100}%`,
+                        height: `${o.rect.h * 100}%`,
+                      }}
+                      onPointerDown={startMove(o)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedOverlayId(o.id);
+                      }}
+                      onKeyDown={onOverlayKeyDown(o)}
+                      role="button"
+                      tabIndex={0}
+                      aria-label={`${o.kind === "info" ? "Info hotspot" : "Checkpoint"}: ${
+                        o.kind === "info" ? o.label : o.activity.kind
+                      }`}
+                    >
+                      <span className="ks-cp-ed__overlay-label">
+                        <span className="ks-cp-ed__overlay-glyph" aria-hidden="true">
+                          {o.kind === "info" ? "i" : "?"}
+                        </span>
+                        {o.kind === "info" ? o.label || "Info" : "Checkpoint"}
+                      </span>
+                      {isSel && (
+                        <span className="ks-cp-ed__overlay-resize" onPointerDown={startResize(o)} aria-hidden="true" />
+                      )}
+                    </div>
+                  );
+                })}
+
+                {/* Mini action row for the selected overlay. Rendered as a board
+                    sibling (not inside the role=button rect) so buttons aren't
+                    interactive descendants of a button. Flips below the rect
+                    when the rect hugs the top edge. */}
+                {selectedOverlay && (
                   <div
-                    key={o.id}
                     className={[
-                      "ks-cp-ed__overlay",
-                      o.kind === "checkpoint" ? "is-checkpoint" : "is-info",
-                      isSel ? "is-selected" : "",
+                      "ks-cp-ed__overlay-actions",
+                      selectedOverlay.rect.y < 0.12 ? "is-below" : "",
                     ]
                       .filter(Boolean)
                       .join(" ")}
                     style={{
-                      left: `${o.rect.x * 100}%`,
-                      top: `${o.rect.y * 100}%`,
-                      width: `${o.rect.w * 100}%`,
-                      height: `${o.rect.h * 100}%`,
+                      left: `${selectedOverlay.rect.x * 100}%`,
+                      top:
+                        selectedOverlay.rect.y < 0.12
+                          ? `${(selectedOverlay.rect.y + selectedOverlay.rect.h) * 100}%`
+                          : `${selectedOverlay.rect.y * 100}%`,
                     }}
-                    onPointerDown={startMove(o)}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setSelectedOverlayId(o.id);
-                    }}
-                    role="button"
-                    tabIndex={0}
-                    aria-label={`${o.kind === "info" ? "Info hotspot" : "Checkpoint"}: ${
-                      o.kind === "info" ? o.label : o.activity.kind
-                    }`}
+                    role="group"
+                    aria-label="Selected interaction actions"
                   >
-                    <span className="ks-cp-ed__overlay-label">
-                      {o.kind === "info" ? o.label || "Info" : "Checkpoint"}
-                    </span>
-                    <span
-                      className="ks-cp-ed__overlay-resize"
-                      onPointerDown={startResize(o)}
-                      aria-hidden="true"
-                    />
+                    <button type="button" className="ks-cp-ed__overlay-act" onClick={focusRail}>
+                      Edit
+                    </button>
+                    <button
+                      type="button"
+                      className="ks-cp-ed__overlay-act ks-cp-ed__overlay-act--danger"
+                      onClick={() => removeOverlay(selectedOverlay.id)}
+                    >
+                      Delete
+                    </button>
                   </div>
-                );
-              })}
-            </div>
-          )}
+                )}
+              </div>
+            )}
 
-          {/* Slide notes */}
-          {slide && (
-            <label className="ks-cp-ed__notes-field">
-              Slide notes (accessible text, shown below the slide)
-              <textarea
-                rows={2}
-                value={slide.notes ? htmlToText(slide.notes) : ""}
-                onChange={(e) =>
-                  patchSlide(clampedCurrent, {
-                    notes: e.target.value ? `<p>${e.target.value}</p>` : undefined,
-                  })
-                }
+            {slide && (
+              <label className="ks-cp-ed__notes-field">
+                Slide notes (accessible text, shown below the slide)
+                <textarea
+                  rows={2}
+                  value={slide.notes ? htmlToText(slide.notes) : ""}
+                  onChange={(e) =>
+                    patchSlide(clampedCurrent, {
+                      notes: e.target.value ? `<p>${e.target.value}</p>` : undefined,
+                    })
+                  }
+                />
+              </label>
+            )}
+          </div>
+
+          {/* Right rail: overlay inspector when selected, slide panel otherwise. */}
+          <aside className="ks-cp-ed__rail" ref={railRef} aria-label="Slide and interaction settings">
+            {selectedOverlay ? (
+              <OverlayInspector
+                key={selectedOverlay.id}
+                overlay={selectedOverlay}
+                onPatch={(fields) => patchOverlay(selectedOverlay.id, fields)}
+                onRemove={() => removeOverlay(selectedOverlay.id)}
               />
-            </label>
-          )}
-
-          {/* Inspector */}
-          {selectedOverlay ? (
-            <OverlayInspector
-              key={selectedOverlay.id}
-              overlay={selectedOverlay}
-              onPatch={(fields) => patchOverlay(selectedOverlay.id, fields)}
-              onRemove={() => removeOverlay(selectedOverlay.id)}
-            />
-          ) : (
-            <p className="ks-cp-ed__noselect">
-              Select an interaction on the slide to edit it, or add one above.
-            </p>
-          )}
+            ) : slide ? (
+              <div className="ks-cp-ed__panel">
+                <h3 className="ks-cp-ed__panel-title">
+                  Slide {clampedCurrent + 1} of {slides.length}
+                </h3>
+                <label className="ks-cp-ed__field">
+                  Slide title
+                  <input
+                    type="text"
+                    value={slide.title ?? ""}
+                    onChange={(e) =>
+                      patchSlide(clampedCurrent, { title: e.target.value || undefined })
+                    }
+                  />
+                </label>
+                <p className="ks-cp-ed__bg-summary">
+                  {bg && bg.kind === "image" ? (
+                    <>
+                      Background: image
+                      <span className="ks-cp-ed__bg-alt"> (alt: {bg.alt})</span>
+                    </>
+                  ) : (
+                    <>Background: blank (title or section divider)</>
+                  )}
+                </p>
+                <div className="ks-cp-ed__panel-actions">
+                  <button
+                    type="button"
+                    className="kukui-studio-btn kukui-studio-btn--ghost kukui-studio-btn--sm"
+                    onClick={() => moveSlide(clampedCurrent, "backward")}
+                    disabled={clampedCurrent === 0}
+                  >
+                    ← Move back
+                  </button>
+                  <button
+                    type="button"
+                    className="kukui-studio-btn kukui-studio-btn--ghost kukui-studio-btn--sm"
+                    onClick={() => moveSlide(clampedCurrent, "forward")}
+                    disabled={clampedCurrent >= slides.length - 1}
+                  >
+                    Move forward →
+                  </button>
+                  {bg && bg.kind === "image" && (
+                    <button
+                      type="button"
+                      className="kukui-studio-btn kukui-studio-btn--ghost kukui-studio-btn--sm"
+                      onClick={requestConvertToBlank}
+                    >
+                      Convert to blank
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    className="kukui-studio-btn kukui-studio-btn--ghost kukui-studio-btn--sm"
+                    onClick={() => setRailConfirm("delete")}
+                  >
+                    Delete slide
+                  </button>
+                </div>
+                {railConfirm && (
+                  <div className="ks-cp-ed__confirm" role="group" aria-label="Confirm slide change">
+                    <p className="ks-cp-ed__confirm-msg">
+                      {railConfirm === "convert"
+                        ? `This slide has ${overlayCount} interaction${plural(
+                            overlayCount,
+                          )}; a blank slide hides them. Convert anyway?`
+                        : overlayCount > 0
+                          ? `Delete slide ${clampedCurrent + 1} and its ${overlayCount} interaction${plural(
+                              overlayCount,
+                            )}?`
+                          : `Delete slide ${clampedCurrent + 1}?`}
+                    </p>
+                    <div className="ks-cp-ed__confirm-actions">
+                      <button
+                        type="button"
+                        className="kukui-studio-btn kukui-studio-btn--danger kukui-studio-btn--sm"
+                        onClick={
+                          railConfirm === "convert"
+                            ? convertToBlank
+                            : () => deleteSlide(clampedCurrent)
+                        }
+                      >
+                        {railConfirm === "convert" ? "Convert" : "Delete"}
+                      </button>
+                      <button
+                        type="button"
+                        className="kukui-studio-btn kukui-studio-btn--ghost kukui-studio-btn--sm"
+                        onClick={() => setRailConfirm(null)}
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                )}
+                <p className="ks-cp-ed__noselect">Select an interaction on the slide to edit it.</p>
+              </div>
+            ) : null}
+          </aside>
         </>
       )}
     </div>
+  );
+}
+
+/**
+ * Compact "+ Add slides" menu. Same look and dismissal contract as the shared
+ * ContextMenu (whose API is z-order specific), reusing its .ks-ctx-menu
+ * classes: closes on outside pointerdown, Escape, or after any action.
+ */
+function AddSlidesMenu({
+  pos,
+  onImportPdf,
+  onBlankSlide,
+  onSlidesLink,
+  onClose,
+}: {
+  pos: { x: number; y: number };
+  onImportPdf: () => void;
+  onBlankSlide: () => void;
+  onSlidesLink: () => void;
+  onClose: () => void;
+}) {
+  const ref = useRef<HTMLUListElement>(null);
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        onClose();
+      }
+    };
+    const onDown = (e: PointerEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) onClose();
+    };
+    window.addEventListener("keydown", onKey);
+    window.addEventListener("pointerdown", onDown);
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      window.removeEventListener("pointerdown", onDown);
+    };
+  }, [onClose]);
+
+  const item = (label: string, action: () => void) => (
+    <li>
+      <button
+        type="button"
+        role="menuitem"
+        className="ks-ctx-menu__btn"
+        onClick={() => {
+          action();
+          onClose();
+        }}
+      >
+        {label}
+      </button>
+    </li>
+  );
+
+  return (
+    <ul
+      ref={ref}
+      className="ks-ctx-menu"
+      role="menu"
+      aria-label="Add slides"
+      style={{ left: pos.x, top: pos.y }}
+      onPointerDown={(e) => e.stopPropagation()}
+      onContextMenu={(e) => e.preventDefault()}
+    >
+      {item("Import PDF…", onImportPdf)}
+      {item("Blank slide", onBlankSlide)}
+      {item("Google Slides link…", onSlidesLink)}
+    </ul>
   );
 }
 
@@ -677,7 +1047,18 @@ function OverlayInspector({
   return (
     <div className="ks-cp-ed__inspector">
       <div className="ks-cp-ed__inspector-head">
-        <h3>{overlay.kind === "info" ? "Info hotspot" : "Checkpoint"}</h3>
+        <h3>
+          <span
+            className={[
+              "ks-cp-ed__overlay-glyph",
+              overlay.kind === "checkpoint" ? "is-checkpoint" : "is-info",
+            ].join(" ")}
+            aria-hidden="true"
+          >
+            {overlay.kind === "info" ? "i" : "?"}
+          </span>
+          {overlay.kind === "info" ? "Info hotspot" : "Checkpoint"}
+        </h3>
         <button
           type="button"
           className="kukui-studio-btn kukui-studio-btn--ghost kukui-studio-btn--sm"

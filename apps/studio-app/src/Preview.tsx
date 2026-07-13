@@ -1,6 +1,19 @@
-import { Component, Suspense, useMemo, useRef, useState, type ReactNode } from "react";
+import {
+  Component,
+  Suspense,
+  useCallback,
+  useMemo,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
 import { SchemaRegistry, type SchemaRegistryKey } from "@kukui/schemas";
-import { type ActivityKind, PLANNED_ACTIVITY_KINDS, ActivityFooter } from "@kukui/core";
+import {
+  type ActivityKind,
+  type ScoreState,
+  PLANNED_ACTIVITY_KINDS,
+  ActivityFooter,
+} from "@kukui/core";
 import {
   ACTIVITY_REGISTRY,
   StubActivityLazy,
@@ -19,15 +32,17 @@ export type PreviewMode = "live" | "edit";
 function ResolvedDeckPreview({
   Component,
   config,
-  onSubmit,
+  ...activityProps
 }: {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  Component: React.ComponentType<{ config: any; onSubmit: () => void }>;
+  Component: React.ComponentType<any>;
   config: unknown;
-  onSubmit: () => void;
+  onSubmit: (s: ScoreState) => void;
+  onPersist?: (suspendData: string) => void;
+  suspendData?: string;
 }) {
   const resolved = useResolvedDeck(config);
-  return <Component config={resolved ?? config} onSubmit={onSubmit} />;
+  return <Component config={resolved ?? config} {...activityProps} />;
 }
 
 /**
@@ -38,6 +53,43 @@ function ResolvedDeckPreview({
 export type PreviewValidation = ReturnType<
   (typeof SchemaRegistry)[SchemaRegistryKey]["safeParse"]
 >;
+
+/**
+ * Slim status row above the live preview: shows the last submitted score
+ * for this kind (what the LMS would have recorded) and a Reset-attempt
+ * button that restarts the activity from a clean slate. Always rendered
+ * in live mode so the affordance is discoverable before first submit.
+ */
+function AttemptBar({
+  score,
+  onReset,
+}: {
+  score: ScoreState | undefined;
+  onReset: () => void;
+}) {
+  return (
+    <div className="kukui-studio-preview-attempt">
+      <span
+        className="kukui-studio-preview-attempt__score"
+        role="status"
+        aria-live="polite"
+      >
+        {score
+          ? score.max === 0
+            ? "Submitted: completed"
+            : `Submitted: ${score.raw}/${score.max} (${score.success ? "passed" : "failed"})`
+          : "Testing as a learner. Progress persists until you reset."}
+      </span>
+      <button
+        type="button"
+        className="kukui-studio-btn kukui-studio-btn--ghost kukui-studio-btn--sm"
+        onClick={onReset}
+      >
+        Reset attempt
+      </button>
+    </div>
+  );
+}
 
 /**
  * Live preview pane. Validates the current draft against the matching Zod
@@ -118,6 +170,45 @@ export function Preview({
   );
   const result = localValidation;
 
+  // ---- "Test as learner" attempt harness -------------------------------
+  // Live preview simulates the delivered runtime's persistence contract so
+  // authors can test resume, required-gating, and completed states without
+  // packaging a zip. Suspend strings live in a ref (persist writes must not
+  // re-render the activity mid-interaction, mirroring ActivityHost's
+  // read-once semantics); the activity reads its suspendData at mount, so
+  // state survives Edit/Live toggles and kind switches. "Reset attempt"
+  // clears the stored string and bumps an epoch to force a fresh mount.
+  const attemptRef = useRef<Map<string, string>>(new Map());
+  const [attemptScores, setAttemptScores] = useState<
+    Partial<Record<string, ScoreState>>
+  >({});
+  const [attemptEpoch, setAttemptEpoch] = useState(0);
+
+  const handlePersist = useCallback(
+    (suspendData: string) => {
+      attemptRef.current.set(kind, suspendData);
+    },
+    [kind],
+  );
+
+  const handleSubmit = useCallback(
+    (score: ScoreState) => {
+      if (score?.suspendData !== undefined) {
+        attemptRef.current.set(kind, score.suspendData);
+      }
+      setAttemptScores((prev) => ({ ...prev, [kind]: score }));
+    },
+    [kind],
+  );
+
+  const resetAttempt = useCallback(() => {
+    attemptRef.current.delete(kind);
+    setAttemptScores((prev) => ({ ...prev, [kind]: undefined }));
+    setAttemptEpoch((n) => n + 1);
+  }, [kind]);
+
+  const attemptScore = attemptScores[kind];
+
   // Stash the last value that validated cleanly per activity kind. When
   // the author is mid-edit and the form temporarily fails validation,
   // we keep rendering the previous good preview rather than going
@@ -176,7 +267,9 @@ export function Preview({
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       config: any;
       kind: never;
-      onSubmit: () => void;
+      onSubmit: (s: ScoreState) => void;
+      onPersist?: (suspendData: string) => void;
+      suspendData?: string;
     }>;
     const Component = ACTIVITY_REGISTRY[kind as keyof typeof ACTIVITY_REGISTRY];
     const isPlanned = (PLANNED_ACTIVITY_KINDS as readonly string[]).includes(kind);
@@ -195,14 +288,27 @@ export function Preview({
             <strong>Form has unresolved errors.</strong> Preview is paused at the last valid
             state. Fix the highlighted fields in the form to resume live updates.
           </div>
+          <AttemptBar score={attemptScore} onReset={resetAttempt} />
           <div
+            key={`${kind}:${attemptEpoch}`}
             className="kukui-studio-preview-scheme"
             data-color-scheme={fallbackScheme}
           >
             {isPlanned || !Component ? (
-              <Stub config={fallbackConfig} kind={kind as never} onSubmit={() => {}} />
+              <Stub
+                config={fallbackConfig}
+                kind={kind as never}
+                onSubmit={handleSubmit}
+                onPersist={handlePersist}
+                suspendData={attemptRef.current.get(kind)}
+              />
             ) : (
-              <Component config={fallbackConfig} onSubmit={() => {}} />
+              <Component
+                config={fallbackConfig}
+                onSubmit={handleSubmit}
+                onPersist={handlePersist}
+                suspendData={attemptRef.current.get(kind)}
+              />
             )}
             {/* Mirror the integrated runtime's credit line so the preview shows
                 exactly what learners see at the bottom of the activity. */}
@@ -220,7 +326,6 @@ export function Preview({
   // `kind`. TypeScript can't track that through the dispatch registry.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const config = result.data as any;
-  const noop = () => {};
 
   const isPlanned = (PLANNED_ACTIVITY_KINDS as readonly string[]).includes(kind);
   // Stub takes an extra `kind` prop that the regular ActivityProps doesn't
@@ -248,18 +353,37 @@ export function Preview({
   return (
     <PreviewErrorBoundary resetKey={kind}>
       <Suspense fallback={<PreviewLoading />}>
+        <AttemptBar score={attemptScore} onReset={resetAttempt} />
         <div
+          key={`${kind}:${attemptEpoch}`}
           className="kukui-studio-preview-scheme"
           data-color-scheme={pinnedScheme}
         >
           {isPlanned || !Component ? (
-            <Stub config={config} kind={kind as never} onSubmit={noop} />
+            <Stub
+              config={config}
+              kind={kind as never}
+              onSubmit={handleSubmit}
+              onPersist={handlePersist}
+              suspendData={attemptRef.current.get(kind)}
+            />
           ) : kind === "course-presentation" ? (
             // Slide backgrounds live in IndexedDB by assetId; resolve them to
             // object URLs so the Live preview renders imported decks offline.
-            <ResolvedDeckPreview Component={Component} config={config} onSubmit={noop} />
+            <ResolvedDeckPreview
+              Component={Component}
+              config={config}
+              onSubmit={handleSubmit}
+              onPersist={handlePersist}
+              suspendData={attemptRef.current.get(kind)}
+            />
           ) : (
-            <Component config={config} onSubmit={noop} />
+            <Component
+              config={config}
+              onSubmit={handleSubmit}
+              onPersist={handlePersist}
+              suspendData={attemptRef.current.get(kind)}
+            />
           )}
           {/* Mirror the integrated runtime's credit line so the preview shows
               exactly what learners see at the bottom of the activity. */}
