@@ -5,7 +5,7 @@ export const label = "Confidence Meter (Live)";
 
 /** One-line description for any tooling that asks. */
 export const description =
-  "Live self-assessment slider — students each set a 0..100 rating, instructor watches the histogram + mean stream in.";
+  "Live self-assessment slider. Students each set a 0 to 100 rating while the instructor watches the histogram and mean stream in.";
 
 /**
  * Bloom's taxonomy level. From LEGACY_BLOOM in App.tsx — students

@@ -5,7 +5,7 @@ export const label = "Quick Quiz (Live)";
 
 /** One-line description for any tooling that asks. */
 export const description =
-  "Live single-question MC check — students answer in real time, the instructor sees the distribution and reveals the correct answer.";
+  "Live single-question MC check. Students answer in real time, and the instructor sees the distribution and reveals the correct answer.";
 
 /**
  * Bloom's taxonomy level. From LEGACY_BLOOM in App.tsx — picking the

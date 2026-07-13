@@ -5,7 +5,7 @@ export const label = "OSCE Clinical Encounter";
 
 /** One-line description for Studio's catalog and learning-objective matching. */
 export const description =
-  "Learners work a simulated patient encounter through sequenced phases — history, exam, investigations, management — selecting actions from each phase's checklist. Scored on what they did and the order they did it in.";
+  "Learners work a simulated patient encounter through sequenced phases (history, exam, investigations, management), selecting actions from each phase's checklist. Scored on what they did and the order they did it in.";
 
 /**
  * Bloom's taxonomy level — drives Studio's cognitive-level filter.

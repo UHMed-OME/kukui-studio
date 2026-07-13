@@ -74,7 +74,7 @@ const uiSchema = {
   },
   expectedOrder: f(
     "Expected phase order",
-    "Optional. Phase ids in the order the learner should perform them. Order points are only awarded when \"Allow free phase navigation\" is on — with linear navigation the order is forced, so none are given.",
+    "Optional. Phase ids in the order the learner should perform them. Order points are only awarded when \"Allow free phase navigation\" is on. With linear navigation the order is forced, so none are given.",
   ),
   behaviour: {
     "ui:title": "Activity behaviour",

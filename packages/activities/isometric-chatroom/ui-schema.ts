@@ -58,7 +58,7 @@ const LIVE_SETTINGS_UI = {
   ),
   signaling: f(
     "Signaling backend (advanced)",
-    "Nostr (default) is federated WebSocket signaling — usually permitted on edu networks. MQTT is the fallback if Nostr is blocked.",
+    "Nostr (default) is federated WebSocket signaling, usually permitted on edu networks. MQTT is the fallback if Nostr is blocked.",
   ),
   relayUrls: f(
     "Pinned relay URLs (advanced, optional)",
@@ -97,10 +97,10 @@ const uiSchema = {
       "Background alt text (required if image set)",
       "Describes the custom background for screen-reader users.",
     ),
-    width: f("Room width (tiles)", "8–20 tiles. Wider rooms give more walking space.", {
+    width: f("Room width (tiles)", "8-20 tiles. Wider rooms give more walking space.", {
       "ui:options": { step: 1, min: 8, max: 20 },
     }),
-    height: f("Room height (tiles)", "8–20 tiles.", {
+    height: f("Room height (tiles)", "8-20 tiles.", {
       "ui:options": { step: 1, min: 8, max: 20 },
     }),
     seed: f(
@@ -194,7 +194,7 @@ const uiSchema = {
       "ui:help": "Only used when preset is 'Custom'. Min 4, max 24 entries.",
       items: {
         name: f("Name", "Display name for this emoji."),
-        char: f("Emoji character", "The emoji character (1–4 code units)."),
+        char: f("Emoji character", "The emoji character (1-4 code units)."),
       },
     },
   },

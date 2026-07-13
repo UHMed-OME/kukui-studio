@@ -5,7 +5,7 @@ export const label = "Straw Poll (Live)";
 
 /** One-line description for any tooling that asks. */
 export const description =
-  "Live classroom temperature check — instructor poses a question, students vote, everyone watches the tally update in real time.";
+  "Live classroom temperature check. The instructor poses a question, students vote, and everyone watches the tally update in real time.";
 
 /**
  * Bloom's taxonomy level. From LEGACY_BLOOM in App.tsx — students judge

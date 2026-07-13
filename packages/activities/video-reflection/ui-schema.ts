@@ -62,12 +62,12 @@ const uiSchema = {
   }),
   submissionTarget: f(
     "Where to submit (optional)",
-    "Named in the submit step, e.g. \"the Reflection 1 dropbox in Lamakū\". The learner downloads their video and uploads it there — the video is not sent through Kukui.",
+    "Named in the submit step, e.g. \"the Reflection 1 dropbox in Lamakū\". The learner downloads their video and uploads it there. The video is not sent through Kukui.",
   ),
   minDurationSeconds: f("Minimum seconds", "Optional. Submit disabled until met."),
   maxDurationSeconds: f(
     "Maximum seconds",
-    "Optional. Recording auto-stops at this length. Keep reflections short — videos are downloaded and uploaded to your LMS dropbox, not stored by Kukui.",
+    "Optional. Recording auto-stops at this length. Keep reflections short; videos are downloaded and uploaded to your LMS dropbox, not stored by Kukui.",
   ),
   behaviour: {
     "ui:title": "Activity behaviour",

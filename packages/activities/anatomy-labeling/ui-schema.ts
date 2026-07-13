@@ -71,7 +71,7 @@ const uiSchema = {
     }),
     alt: f(
       "Alt text (required)",
-      "Description for screen-reader users. Required for accessibility — describe what the diagram shows in one short sentence.",
+      "Description for screen-reader users. Required for accessibility. Describe what the diagram shows in one short sentence.",
     ),
   },
   labels: {

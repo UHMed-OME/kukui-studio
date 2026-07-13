@@ -63,13 +63,13 @@ const uiSchema = {
   author: AUTHOR,
   prompt: f(
     "Instructions",
-    "One-line direction shown below the title — what the learner should do. Leave blank to use the built-in default (\"Drag each label to its matching drop zone, then tap Check…\").",
+    "One-line direction shown below the title: what the learner should do. Leave blank to use the built-in default (\"Drag each label to its matching drop zone, then tap Check…\").",
     { "ui:widget": "html", "ui:options": { rows: 2 } },
   ),
   background: {
     "ui:title": "Background image (optional)",
     "ui:help":
-      "The image learners drop labels onto. Drop-zone rectangles are placed on top of it. Leave blank to use a plain stage with a faint grid — useful for text-table / labelled-bin puzzles where the drop zones do the visual work themselves.",
+      "The image learners drop labels onto. Drop-zone rectangles are placed on top of it. Leave blank to use a plain stage with a faint grid, useful for text-table or labelled-bin puzzles where the drop zones do the visual work themselves.",
     src: f(
       "Image",
       "Paste a link or upload a file. Uploaded files are saved inside the activity. Leave blank for an image-less stage.",
@@ -80,7 +80,7 @@ const uiSchema = {
     ),
     alt: f(
       "Alt text (required if image set)",
-      "Describes the image for screen-reader users. Required for accessibility whenever you've supplied an image — describe what it shows in one short sentence.",
+      "Describes the image for screen-reader users. Required for accessibility whenever you've supplied an image. Describe what it shows in one short sentence.",
     ),
   },
   draggables: {
@@ -92,7 +92,7 @@ const uiSchema = {
       // it manually risks orphaning references — lock it down.
       id: f(
         "ID (read-only)",
-        "Auto-generated — used to identify this label internally.",
+        "Auto-generated. Used to identify this label internally.",
         { "ui:readonly": true },
       ),
       label: f("Text", "What the learner sees on the label."),
@@ -117,10 +117,10 @@ const uiSchema = {
       // references; lock it down.
       id: f(
         "ID (read-only)",
-        "Auto-generated — referenced by labels in their `correctZones` list.",
+        "Auto-generated. Referenced by labels in their `correctZones` list.",
         { "ui:readonly": true },
       ),
-      label: f("Zone label", "Optional — shown when the zone has its label visible."),
+      label: f("Zone label", "Optional. Shown when the zone has its label visible."),
       rect: {
         "ui:title": "Rectangle (normalized 0..1)",
         "ui:help": "Position and size as fractions of the background image. (0,0) is top-left.",

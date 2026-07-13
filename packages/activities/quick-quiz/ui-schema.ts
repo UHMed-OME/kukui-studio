@@ -58,7 +58,7 @@ const LIVE_SETTINGS_UI = {
   ),
   signaling: f(
     "Signaling backend (advanced)",
-    "Nostr (default) is federated WebSocket signaling — usually permitted on edu networks. MQTT is the fallback if Nostr is blocked.",
+    "Nostr (default) is federated WebSocket signaling, usually permitted on edu networks. MQTT is the fallback if Nostr is blocked.",
   ),
   relayUrls: f(
     "Pinned relay URLs (advanced, optional)",
@@ -79,7 +79,7 @@ const uiSchema = {
   choices: {
     "ui:title": "Choices",
     "ui:help":
-      "2–6 options. Tick the box on the correct one. At least one choice must be marked correct.",
+      "2-6 options. Tick the box on the correct one. At least one choice must be marked correct.",
     items: {
       id: HIDDEN,
       label: f("Choice text", "What the student sees on the answer button."),

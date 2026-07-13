@@ -5,7 +5,7 @@ export const label = "Course Presentation";
 
 /** One-line description for Studio's catalog and learning-objective matching. */
 export const description =
-  "Import a slide deck from a PDF, PowerPoint export, or Google Slides link, then make it interactive: drop click-to-reveal info hotspots and embedded multiple-choice or fill-in-the-blanks checkpoints onto the slides. Learners move through at their own pace, explore the hotspots, and answer the checkpoints — building toward the deck's overall concept.";
+  "Import a slide deck from a PDF, PowerPoint export, or Google Slides link, then make it interactive: drop click-to-reveal info hotspots and embedded multiple-choice or fill-in-the-blanks checkpoints onto the slides. Learners move through at their own pace, explore the hotspots, and answer the checkpoints that build toward the deck's overall concept.";
 
 /**
  * Bloom's taxonomy level — drives Studio's cognitive-level filter. Working

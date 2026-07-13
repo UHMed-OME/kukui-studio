@@ -81,7 +81,7 @@ const uiSchema = {
         result: f("Result", "Numeric or qualitative value."),
         units: f("Units"),
         reference: f("Reference range"),
-        flag: f("Flag", "high / low / normal — colour-codes the row."),
+        flag: f("Flag", "high, low, or normal. Colour-codes the row."),
         isAbnormal: f(
           "Abnormal (answer key)",
           "Mark on if the learner should flag this row as abnormal. This is the answer key the row selections are scored against.",

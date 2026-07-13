@@ -5,7 +5,7 @@ export const label = "Differential Diagnosis Tree";
 
 /** One-line description for Studio's catalog and learning-objective matching. */
 export const description =
-  "Learners walk a clinical decision tree — picking investigations, tests, and ultimately a diagnosis. Each choice adds clinical detail to a running case-so-far panel; terminal nodes yield the final score.";
+  "Learners walk a clinical decision tree, picking investigations, tests, and ultimately a diagnosis. Each choice adds clinical detail to a running case-so-far panel, and terminal nodes yield the final score.";
 
 /**
  * Bloom's taxonomy level — drives Studio's cognitive-level filter.

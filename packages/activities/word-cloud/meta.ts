@@ -5,7 +5,7 @@ export const label = "Word Cloud (Live)";
 
 /** One-line description for any tooling that asks. */
 export const description =
-  "Live free-text submissions — students each post one or two short words; everyone watches an emergent frequency tally form in real time.";
+  "Live free-text submissions. Students each post one or two short words, and everyone watches an emergent frequency tally form in real time.";
 
 /**
  * Bloom's taxonomy level. From LEGACY_BLOOM in App.tsx — short-answer

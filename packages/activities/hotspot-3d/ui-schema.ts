@@ -96,7 +96,7 @@ const uiSchema = {
     aspectRatio: {
       ...f(
         "Viewport aspect ratio",
-        "Shape of the 3D canvas. Pick what matches your reference art — widescreen for landscape models, square for figurines, 4/3 for portrait setups.",
+        "Shape of the 3D canvas. Pick what matches your reference art: widescreen for landscape models, square for figurines, 4/3 for portrait setups.",
       ),
       "ui:enumNames": ["16 : 10 (default)", "16 : 9 (widescreen)", "4 : 3", "1 : 1 (square)"],
     },

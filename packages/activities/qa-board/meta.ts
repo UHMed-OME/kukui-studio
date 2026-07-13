@@ -5,7 +5,7 @@ export const label = "Q&A Board (Live)";
 
 /** One-line description for any tooling that asks. */
 export const description =
-  "Live backchannel — students post questions during class, anyone can upvote, the instructor sees the queue ranked by votes and can mark items answered.";
+  "Live backchannel. Students post questions during class, anyone can upvote, and the instructor sees the queue ranked by votes and can mark items answered.";
 
 /**
  * Bloom's taxonomy level. From LEGACY_BLOOM in App.tsx — judging

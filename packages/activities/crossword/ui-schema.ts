@@ -64,13 +64,13 @@ const uiSchema = {
   author: AUTHOR,
   prompt: f(
     "Prompt",
-    "Optional. Shown above the puzzle — frame the topic or give solving instructions.",
+    "Optional. Shown above the puzzle. Frame the topic or give solving instructions.",
     { "ui:widget": "html", "ui:options": { rows: 2 } },
   ),
   entries: {
     "ui:title": "Terms & definitions",
     "ui:help":
-      "Each entry is one word in the crossword paired with the clue learners see. Terms must be 2–32 A–Z letters (no spaces or punctuation). Add at least 2 entries; aim for 6–12 for a satisfying puzzle.",
+      "Each entry is one word in the crossword paired with the clue learners see. Terms must be 2-32 A-Z letters (no spaces or punctuation). Add at least 2 entries; aim for 6-12 for a satisfying puzzle.",
     // Hide the editor's row index — its "1, 2, 3…" reads like a clue number,
     // but the puzzle numbers clues by grid position, not entry order. The
     // term itself (shown as the card label) is the unambiguous identifier.
@@ -79,7 +79,7 @@ const uiSchema = {
       id: HIDDEN,
       term: f(
         "Term (answer)",
-        "The word learners must fill in. Letters only (A–Z). Case is ignored — it always renders in upper case.",
+        "The word learners must fill in. Letters only (A-Z). Case is ignored; it always renders in upper case.",
       ),
       definition: f("Definition (clue)", "The clue shown in the Across/Down list."),
       hint: f(

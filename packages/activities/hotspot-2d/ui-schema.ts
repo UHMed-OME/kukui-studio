@@ -71,7 +71,7 @@ const uiSchema = {
     }),
     alt: f(
       "Alt text (required)",
-      "Describes the image for screen-reader users. Required for accessibility — describe what the image shows in one short sentence.",
+      "Describes the image for screen-reader users. Required for accessibility. Describe what the image shows in one short sentence.",
     ),
   },
   hotspots: {

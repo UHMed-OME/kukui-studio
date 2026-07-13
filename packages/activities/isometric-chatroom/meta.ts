@@ -5,7 +5,7 @@ export const label = "Pixel Chat (Live)";
 
 /** One-line description for Studio's catalog and learning-objective matching. */
 export const description =
-  "Live isometric pixel-art room — students join as avatars, walk around, type speech bubbles, and react with emoji while the instructor drives the discussion.";
+  "Live isometric pixel-art room. Students join as avatars, walk around, type speech bubbles, and react with emoji while the instructor drives the discussion.";
 
 /**
  * Bloom's taxonomy level. From the commented-out LEGACY_BLOOM entry in

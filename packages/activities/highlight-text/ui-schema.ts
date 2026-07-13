@@ -73,7 +73,7 @@ const uiSchema = {
   tokens: {
     "ui:title": "Tokens (each is clickable)",
     "ui:help":
-      "Render order matters — tokens render with single spaces between unless a separator is set.",
+      "Render order matters. Tokens render with single spaces between them unless a separator is set.",
     items: {
       id: HIDDEN,
       text: f("Token text", "The word or phrase the learner sees."),

@@ -58,7 +58,7 @@ const LIVE_SETTINGS_UI = {
   ),
   signaling: f(
     "Signaling backend (advanced)",
-    "Nostr (default) is federated WebSocket signaling — usually permitted on edu networks. MQTT is the fallback if Nostr is blocked.",
+    "Nostr (default) is federated WebSocket signaling, usually permitted on edu networks. MQTT is the fallback if Nostr is blocked.",
   ),
   relayUrls: f(
     "Pinned relay URLs (advanced, optional)",
@@ -83,7 +83,7 @@ const uiSchema = {
   author: AUTHOR,
   prompt: f(
     "Prompt",
-    "Frame the response — e.g. 'Sum up today's lecture in one or two words'. Short answers are the whole point; longer prompts dilute the cloud.",
+    "Frame the response, e.g. 'Sum up today's lecture in one or two words'. Short answers are the whole point; longer prompts dilute the cloud.",
     { "ui:widget": "textarea", "ui:options": { rows: 2 } },
   ),
   submissionsPerStudent: f(
@@ -92,7 +92,7 @@ const uiSchema = {
   ),
   maxWordsPerSubmission: f(
     "Max words per submission",
-    "Default 2. Keep low (1–3) so the cloud aggregates meaningfully.",
+    "Default 2. Keep low (1-3) so the cloud aggregates meaningfully.",
   ),
   maxCharsPerSubmission: f(
     "Max characters per submission",
@@ -106,7 +106,7 @@ const uiSchema = {
     ),
     caseSensitive: f(
       "Case-sensitive tally",
-      "Default off — 'apple' and 'Apple' merge. Turn on for case-distinct content (gene names, acronyms).",
+      "Default off, so 'apple' and 'Apple' merge. Turn on for case-distinct content (gene names, acronyms).",
     ),
   },
   ui: { "ui:title": "Button label overrides" },

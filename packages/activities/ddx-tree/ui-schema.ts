@@ -79,7 +79,7 @@ const uiSchema = {
       choices: {
         "ui:title": "Choices",
         "ui:help":
-          "Leave Choices empty on the final step(s) of a branch — those are terminal steps and need a Final diagnosis instead.",
+          "Leave Choices empty on the final step(s) of a branch. Those are terminal steps and need a Final diagnosis instead.",
         items: {
           id: HIDDEN,
           text: f("Choice text"),
@@ -100,7 +100,7 @@ const uiSchema = {
       diagnosis: {
         "ui:title": "Final diagnosis (terminal step only)",
         "ui:help":
-          "Required when this step has no choices — the diagnosis the learner reaches at the end of this branch. Empty name auto-fills with a 'New diagnosis' placeholder so the activity stays valid while you're authoring.",
+          "Required when this step has no choices. This is the diagnosis the learner reaches at the end of this branch. Empty name auto-fills with a 'New diagnosis' placeholder so the activity stays valid while you're authoring.",
         name: f(
           "Diagnosis name",
           "Display name shown when the learner reaches this terminal step.",
@@ -110,7 +110,7 @@ const uiSchema = {
           "Whether reaching this terminal represents correct reasoning. Drives the success/failure outcome reported to the LMS.",
         ),
         score: f(
-          "Score (0–1)",
+          "Score (0-1)",
           "0 = fully wrong path, 1 = textbook reasoning. Maps directly to the 0..1 score reported to SCORM.",
           {
             "ui:widget": "updown",

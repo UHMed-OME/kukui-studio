@@ -5,7 +5,7 @@ export const label = "Concept Map";
 
 /** One-line description for Studio's catalog and learning-objective matching. */
 export const description =
-  "Learners build a node-link diagram of relationships between concepts — drag nodes onto a canvas, draw labeled edges between them, and submit for partial credit against an optional answer key.";
+  "Learners build a node-link diagram of relationships between concepts. They drag nodes onto a canvas, draw labeled edges between them, and submit for partial credit against an optional answer key.";
 
 /**
  * Bloom's taxonomy level — drives Studio's cognitive-level filter.

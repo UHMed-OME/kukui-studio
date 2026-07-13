@@ -58,7 +58,7 @@ const LIVE_SETTINGS_UI = {
   ),
   signaling: f(
     "Signaling backend (advanced)",
-    "Nostr (default) is federated WebSocket signaling — usually permitted on edu networks. MQTT is the fallback if Nostr is blocked.",
+    "Nostr (default) is federated WebSocket signaling, usually permitted on edu networks. MQTT is the fallback if Nostr is blocked.",
   ),
   relayUrls: f(
     "Pinned relay URLs (advanced, optional)",
@@ -73,19 +73,19 @@ const uiSchema = {
   author: AUTHOR,
   prompt: f(
     "Poll prompt",
-    "The question the instructor projects and students answer. Keep it short — straw polls are temperature checks, not essay prompts.",
+    "The question the instructor projects and students answer. Keep it short; straw polls are temperature checks, not essay prompts.",
     { "ui:widget": "textarea", "ui:options": { rows: 2 } },
   ),
   choices: {
     "ui:title": "Choices",
     "ui:help":
-      "2–8 options. Each choice gets a button on the student view and a bar in the live tally; long labels wrap to the second line, so keep them brief.",
+      "2-8 options. Each choice gets a button on the student view and a bar in the live tally; long labels wrap to the second line, so keep them brief.",
     items: {
       id: HIDDEN,
       label: f("Choice label", "Shown to students and as the bar label in the tally."),
       description: f(
         "Choice description (optional)",
-        "Brief hint under the label — useful when the label is a single word that needs context.",
+        "Brief hint under the label, useful when the label is a single word that needs context.",
       ),
     },
   },
@@ -93,7 +93,7 @@ const uiSchema = {
     "ui:title": "Activity behaviour",
     showLiveResultsToStudents: f(
       "Show live counts to students after they vote",
-      "Default on. Turn off for high-stakes polls where seeing others' answers would bias the response — the tally then only appears at reveal.",
+      "Default on. Turn off for high-stakes polls where seeing others' answers would bias the response. The tally then only appears at reveal.",
     ),
     allowChangeVote: f(
       "Allow students to change their vote",
@@ -101,7 +101,7 @@ const uiSchema = {
     ),
     showIndividualVotes: f(
       "Show individual votes to the instructor",
-      "Default off (aggregate only). Enabling this lists each voter and their pick — use only when the poll is openly attributed.",
+      "Default off (aggregate only). Enabling this lists each voter and their pick. Use only when the poll is openly attributed.",
     ),
   },
   ui: {

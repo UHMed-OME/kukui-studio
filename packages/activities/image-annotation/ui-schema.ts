@@ -80,7 +80,7 @@ const uiSchema = {
     }),
     alt: f(
       "Alt text (required)",
-      "Required for accessibility — describe what the image shows in one short sentence.",
+      "Required for accessibility. Describe what the image shows in one short sentence.",
     ),
   },
   tools: {
