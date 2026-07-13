@@ -16,11 +16,16 @@
   box-shadow: var(--shadow-card);
 }
 
-.kukui-h3d__prompt {
-  margin: 0 0 var(--spacing-lg, 16px);
-  font-size: var(--font-size-prompt, 16px);
-  color: var(--color-text-primary);
-  line-height: 1.5;
+/*
+ * Compact header for the 3D activity: the model canvas is the focus, so the
+ * default minimal header is tightened (smaller gap below the title, no tall
+ * gradient banner) to hand as much vertical room as possible to the viewport.
+ */
+.kukui-h3d__card .kukui-actheader--minimal {
+  padding-top: 0;
+  padding-bottom: 0;
+  border-bottom: none;
+  --kukui-header-gap: var(--spacing-md, 12px);
 }
 
 .kukui-h3d__canvas-wrap {

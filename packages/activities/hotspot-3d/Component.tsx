@@ -236,7 +236,7 @@ export default function Component({
           title={config.title}
           titleId={headingId}
           headingLevel={headingLevel}
-          variant={config.appearance?.header ?? "full"}
+          variant={config.appearance?.header ?? "minimal"}
           prompt={config.prompt ? <SafeHtml html={config.prompt} /> : undefined}
         />
 
