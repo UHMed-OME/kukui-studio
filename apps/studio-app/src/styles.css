@@ -1681,6 +1681,13 @@ button {
      close to the card's #fdfbf6 surface — they blended. */
   background: var(--color-surface-alt);
   padding: 0;
+  /* Query container for the visual editors that render inside this panel.
+     Their two-pane -> stacked collapse must key off THIS panel's width, not
+     the viewport: the panel is only ~63% of the window, so a viewport media
+     query never fires until the whole window is very wide and the editor
+     renders crushed on normal laptops. */
+  container-type: inline-size;
+  container-name: ks-stage;
 }
 
 .kukui-studio-preview-error {
@@ -3344,7 +3351,7 @@ button {
   align-items: start;
 }
 
-@media (max-width: 900px) {
+@container ks-stage (max-width: 620px) {
   .ks-edit-dnd__layout {
     grid-template-columns: 1fr;
   }
@@ -5699,7 +5706,7 @@ html[data-theme="glass"] .kukui-studio-footer {
   margin-bottom: 0;
 }
 
-@media (max-width: 880px) {
+@container ks-stage (max-width: 640px) {
   .ks-h3d-editor {
     grid-template-columns: 1fr;
   }
@@ -6503,7 +6510,7 @@ html[data-theme="glass"] .kukui-studio-footer {
   overflow: auto;
 }
 
-@media (max-width: 900px) {
+@container ks-stage (max-width: 720px) {
   .ks-cp-ed {
     grid-template-columns: 1fr;
   }
