@@ -37,7 +37,11 @@ export async function downloadScormZip(kind: ActivityKind, config: unknown): Pro
   // gets bundled into the zip and model.src is rewritten to point at it.
   // Then bundle any course-presentation slide images the same way (IndexedDB
   // blob → samples/<kind>/assets/<id>.png, background.src → relative path).
-  const finalConfig = await embedSlideAssets(kind, await embedSketchfabImports(kind, config, zip), zip);
+  const finalConfig = await embedBranchingAssets(
+    kind,
+    await embedSlideAssets(kind, await embedSketchfabImports(kind, config, zip), zip),
+    zip,
+  );
 
   // Swap in the author's JSON.
   const samplePath = `samples/${kind}/basic.json`;
@@ -155,6 +159,55 @@ export async function embedSlideAssets(
     zip.file(assetPath, await blob.arrayBuffer());
     bg.src = `./assets/${bg.assetId}.png`;
     delete bg.assetId;
+  }
+  return next;
+}
+
+/** Pick a file extension from an image blob's MIME type (default png). */
+function extFor(type: string): string {
+  if (type === "image/jpeg") return "jpg";
+  if (type === "image/webp") return "webp";
+  if (type === "image/gif") return "gif";
+  if (type === "image/svg+xml") return "svg";
+  return "png";
+}
+
+/**
+ * If the config is a branching-scenario whose node/outcome images carry an
+ * `assetId` (uploaded, cached in IndexedDB), bundle each into the zip and
+ * rewrite its `src` to the relative asset path, dropping `assetId`. Mirrors
+ * embedSlideAssets. For any other kind the config is unchanged.
+ */
+export async function embedBranchingAssets(
+  kind: ActivityKind,
+  config: unknown,
+  zip: JSZipType,
+): Promise<unknown> {
+  if (!config || typeof config !== "object") return config;
+  const nodes = (config as { nodes?: unknown }).nodes;
+  if (!Array.isArray(nodes)) return config;
+
+  const next = JSON.parse(JSON.stringify(config)) as {
+    nodes: Array<Record<string, unknown>>;
+  };
+  const embed = async (img: { assetId?: string; src?: string } | undefined) => {
+    if (!img || !img.assetId) return;
+    const blob = await loadSlideAsset(img.assetId);
+    if (!blob) {
+      throw new Error(
+        `Image ${img.assetId} is referenced but not in cache. Re-add the image and try again.`,
+      );
+    }
+    const ext = extFor(blob.type);
+    const assetPath = `samples/${kind}/assets/${img.assetId}.${ext}`;
+    zip.file(assetPath, await blob.arrayBuffer());
+    img.src = `./assets/${img.assetId}.${ext}`;
+    delete img.assetId;
+  };
+  for (const node of next.nodes) {
+    await embed(node?.image as { assetId?: string; src?: string } | undefined);
+    const outcome = node?.outcome as { image?: { assetId?: string; src?: string } } | undefined;
+    await embed(outcome?.image);
   }
   return next;
 }

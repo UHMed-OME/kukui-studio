@@ -47,6 +47,7 @@
       "outcome": {
         "score": 1,
         "success": true,
+        "title": "STEMI caught in time",
         "message": "<p><strong>Excellent workup.</strong> The patient was diagnosed with an inferior STEMI and went to the cath lab within the 90-minute door-to-balloon window.</p>"
       }
     },
@@ -57,6 +58,7 @@
       "outcome": {
         "score": 0,
         "success": false,
+        "title": "Window missed",
         "message": "<p><strong>Adverse outcome.</strong> The treatment window was missed. Review the decision points and try again.</p>"
       }
     }

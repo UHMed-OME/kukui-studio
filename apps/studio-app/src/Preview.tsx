@@ -20,6 +20,7 @@ import {
 } from "@kukui/core/components/registry";
 import { EditCanvas } from "./EditCanvas/index.js";
 import { useResolvedDeck } from "./slides/resolveDeckAssets.js";
+import { useResolvedBranching } from "./slides/resolveBranchingAssets.js";
 
 export type PreviewMode = "live" | "edit";
 
@@ -42,6 +43,27 @@ function ResolvedDeckPreview({
   suspendData?: string;
 }) {
   const resolved = useResolvedDeck(config);
+  return <Component config={resolved ?? config} {...activityProps} />;
+}
+
+/**
+ * Branching-scenario live preview: resolves node/outcome image assetIds
+ * (IndexedDB) into object URLs before handing the config to the runtime, which
+ * only reads `image.src`. Mirrors ResolvedDeckPreview.
+ */
+function ResolvedBranchingPreview({
+  Component,
+  config,
+  ...activityProps
+}: {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  Component: React.ComponentType<any>;
+  config: unknown;
+  onSubmit: (s: ScoreState) => void;
+  onPersist?: (suspendData: string) => void;
+  suspendData?: string;
+}) {
+  const resolved = useResolvedBranching(config);
   return <Component config={resolved ?? config} {...activityProps} />;
 }
 
@@ -371,6 +393,15 @@ export function Preview({
             // Slide backgrounds live in IndexedDB by assetId; resolve them to
             // object URLs so the Live preview renders imported decks offline.
             <ResolvedDeckPreview
+              Component={Component}
+              config={config}
+              onSubmit={handleSubmit}
+              onPersist={handlePersist}
+              suspendData={attemptRef.current.get(kind)}
+            />
+          ) : kind === "branching-scenario" ? (
+            // Node/outcome images live in IndexedDB by assetId; resolve them.
+            <ResolvedBranchingPreview
               Component={Component}
               config={config}
               onSubmit={handleSubmit}
