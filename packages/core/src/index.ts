@@ -39,6 +39,11 @@ export {
   type StatusTone,
 } from "./components/_shared/StatusBadge.js";
 export {
+  KukuiLoader,
+  type KukuiLoaderProps,
+  type KukuiLoaderState,
+} from "./components/_shared/KukuiLoader.js";
+export {
   KukuiGlyphIcon,
   CheckIcon,
   XIcon,

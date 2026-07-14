@@ -16,6 +16,7 @@ import { PLANNED_ACTIVITY_KINDS } from "./planned.js";
 import { applyColorScheme, type ResolvedColorScheme } from "./colorScheme.js";
 import { WebCompletionPanel } from "./WebCompletionPanel.js";
 import { ActivityFooter } from "./activity-footer.js";
+import { KukuiLoader } from "./components/_shared/KukuiLoader.js";
 
 export type { ActivityKind };
 
@@ -53,6 +54,9 @@ export function ActivityHost({
 }: ActivityHostProps) {
   const [state, setState] = useState<LoadState>({ status: "loading" });
   const [completion, setCompletion] = useState<ScoreState | null>(null);
+  // Gate on the loader's completion pop: once content validates we play the
+  // punchy "done" animation, then reveal the activity. One-shot per mount.
+  const [revealed, setRevealed] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -153,8 +157,8 @@ export function ActivityHost({
 
   if (state.status === "loading") {
     return (
-      <div role="status" aria-live="polite" style={loadingStyle}>
-        Loading activity…
+      <div style={loadingStyle}>
+        <KukuiLoader label="Loading activity…" />
       </div>
     );
   }
@@ -172,6 +176,16 @@ export function ActivityHost({
             <pre style={{ whiteSpace: "pre-wrap", fontSize: 12 }}>{state.details}</pre>
           </details>
         ) : null}
+      </div>
+    );
+  }
+
+  // Content is valid but not yet revealed: play the completion pop, then flip
+  // `revealed` so the activity mounts. Skipped forever after the first pass.
+  if (!revealed) {
+    return (
+      <div style={loadingStyle}>
+        <KukuiLoader state="done" label="Ready" onComplete={() => setRevealed(true)} />
       </div>
     );
   }
@@ -200,7 +214,13 @@ export function ActivityHost({
 
   return (
     <>
-      <Suspense fallback={<div style={loadingStyle}>Loading activity…</div>}>
+      <Suspense
+        fallback={
+          <div style={loadingStyle}>
+            <KukuiLoader label="Loading activity…" />
+          </div>
+        }
+      >
         {isPlanned || !Component ? (
           <Stub config={cfg} kind={kind as never} {...callbackProps} />
         ) : (
@@ -235,7 +255,13 @@ const baseCard: CSSProperties = {
   borderRadius: 12,
 };
 
-const loadingStyle: CSSProperties = { ...baseCard, color: "var(--color-text-secondary)" };
+const loadingStyle: CSSProperties = {
+  ...baseCard,
+  color: "var(--color-text-secondary)",
+  display: "grid",
+  placeItems: "center",
+  minHeight: 180,
+};
 const errorStyle: CSSProperties = {
   ...baseCard,
   borderColor: "var(--color-error, #c34132)",

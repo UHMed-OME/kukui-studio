@@ -1,0 +1,138 @@
+/*
+ * Kukui brand loader. The logo's green disc is the progress surface: a radial
+ * (angular) fill sweeps it while loading, with the drupe subtracted as an
+ * empty silhouette. Completion tops the disc off and pops the mark.
+ *
+ * The green is the logo's brand disc colour — a fixed brand value, not a theme
+ * token, so the mark stays itself in every scheme. Flat fills, no glow.
+ */
+.kukui-loader {
+  --kukui-loader-green: #6aa76a;
+  --dur: 0.56s;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.kukui-loader__mark {
+  display: block;
+  overflow: visible;
+}
+
+.kukui-loader__track {
+  fill: var(--kukui-loader-green);
+  fill-opacity: 0.16;
+}
+
+.kukui-loader__arc {
+  stroke: var(--kukui-loader-green);
+}
+
+.kukui-loader__burst {
+  stroke: var(--kukui-loader-green);
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.kukui-loader__label {
+  font-size: var(--font-size-small, 14px);
+  color: var(--color-text-secondary, #5b6159);
+  letter-spacing: 0.01em;
+}
+
+/* Rotate the fill around the disc centre. */
+.kukui-loader__spin {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: kukui-loader-spin 1.4s linear infinite;
+}
+
+/* Resting fill: a ~70%-filled sector (offset 27 of dasharray 91.1). */
+.kukui-loader__arc {
+  stroke-dashoffset: 27;
+}
+
+/* While loading, the sector surges and eases back once per revolution. Sharing
+   the rotation's period keeps the two in lockstep — a deliberate pulse, not the
+   drifting beat two mismatched periods produce. */
+.kukui-loader[data-state="loading"] .kukui-loader__arc {
+  animation: kukui-loader-dash 1.4s ease-in-out infinite;
+}
+
+@keyframes kukui-loader-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Offset 55 ≈ 40% filled (short comet), 9 ≈ 90% filled (long comet). */
+@keyframes kukui-loader-dash {
+  0%,
+  100% {
+    stroke-dashoffset: 55;
+  }
+  50% {
+    stroke-dashoffset: 9;
+  }
+}
+
+/* ---- Done: sector closes to a full disc, mark pops, burst flares ---- */
+.kukui-loader[data-state="done"] .kukui-loader__arc {
+  animation: kukui-loader-fill var(--dur) ease-out forwards;
+}
+.kukui-loader[data-state="done"] .kukui-loader__mark {
+  animation: kukui-loader-pop var(--dur) cubic-bezier(0.2, 0.7, 0.2, 1.4);
+}
+.kukui-loader[data-state="done"] .kukui-loader__burst {
+  animation: kukui-loader-burst var(--dur) ease-out forwards;
+}
+
+@keyframes kukui-loader-fill {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes kukui-loader-pop {
+  0% {
+    transform: scale(1);
+  }
+  35% {
+    transform: scale(1.12);
+  }
+  70% {
+    transform: scale(0.98);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes kukui-loader-burst {
+  0% {
+    opacity: 0.55;
+    transform: scale(0.94);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.4);
+  }
+}
+
+/* Motion-sensitive viewers: hold a static three-quarter disc, no sweep. */
+@media (prefers-reduced-motion: reduce) {
+  .kukui-loader__spin,
+  .kukui-loader__arc,
+  .kukui-loader__mark,
+  .kukui-loader__burst {
+    animation: none !important;
+  }
+  .kukui-loader__arc {
+    stroke-dashoffset: 23; /* ~75% filled */
+  }
+  .kukui-loader[data-state="done"] .kukui-loader__arc {
+    stroke-dashoffset: 0;
+  }
+}
