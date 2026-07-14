@@ -3614,9 +3614,17 @@ button {
    render the author's image as a real in-flow <img> so the editing surface
    is the exact box the learner runtime shows — full image, natural aspect
    ratio, no crop. Normalized marks then line up between edit and live. The
-   fixed 16:10 ratio above is only the no-image placeholder. */
+   fixed 16:10 ratio above is only the no-image placeholder.
+
+   Cap the board at the learner card's content width and center it, so the
+   image renders at the same on-screen scale as the runtime, not the full
+   panel width. 880px is the card max-width; subtract its 2 x --spacing-3xl
+   padding and the 2px-per-side image frame border, so the image inside the
+   board matches the runtime image width to the pixel. */
 .ks-edit-canvas__board:has(> .ks-edit-canvas__img) {
   aspect-ratio: auto;
+  max-width: calc(880px - 2 * var(--spacing-3xl) - 4px);
+  margin-inline: auto;
 }
 
 .ks-edit-canvas__img {
