@@ -627,8 +627,7 @@ export function InteractiveVideoEditor({
 
       {showNoPauseWarning ? (
         <p className="ks-iv-tl__warn" role="alert">
-          No checkpoint pauses the video, so learners are never prompted. Turn on
-          Pause and wait for at least one.
+          No checkpoint pauses the video. Turn on "Pause and wait" for at least one.
         </p>
       ) : null}
 

@@ -360,7 +360,30 @@ export default function Component({
 
   const handleSeekToMarker = (id: string) => {
     const it = validated.find((v) => v.id === id);
-    if (it) handleSeek(it.atSeconds);
+    if (!it) return;
+    if (state.stage !== "watching") {
+      handleSeek(it.atSeconds);
+      return;
+    }
+    // Jumping forward past an unresolved required pausing checkpoint lands on
+    // that checkpoint instead (same gate as a scrub).
+    let target = it;
+    if (it.atSeconds > media.currentTime) {
+      const block = blockingBetween(media.currentTime, it.atSeconds);
+      if (block) target = block;
+    }
+    // Open a pausing, unanswered checkpoint directly. A plain seek while the
+    // video is paused fires no timeupdate, so the overlay would never appear:
+    // clicking a question marker has to show the question, not silently move
+    // the playhead.
+    if (target.kind !== "invalid" && target.pauseOnReach && !state.resolvedInteractions[target.id]) {
+      const c = ctl();
+      c?.seek(target.atSeconds);
+      c?.pause();
+      openInteraction(target.id);
+      return;
+    }
+    handleSeek(target.atSeconds);
   };
 
   const recordResolved = (id: string, score: ScoreState) => {

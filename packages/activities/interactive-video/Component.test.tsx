@@ -694,3 +694,21 @@ describe("answer-adaptive jumps (onWrong)", () => {
     expect(onSubmit.mock.calls[0]?.[0]).toMatchObject({ raw: 0, max: 1, success: false });
   });
 });
+
+describe("jumping to a checkpoint via its marker", () => {
+  it("opens the question overlay when a marker is clicked while paused", async () => {
+    const user = userEvent.setup();
+    render(<Component config={cfg} onSubmit={vi.fn()} />);
+    const video = screen.getByTestId("kukui-iv-video") as HTMLVideoElement;
+    stubVideoMethods(video);
+    Object.defineProperty(video, "currentTime", { configurable: true, get: () => 0, set: () => {} });
+
+    // No timeupdate, no playback: click the first interaction's seek marker.
+    const marker = screen.getByRole("button", { name: /interaction at 0:05/i });
+    await user.click(marker);
+
+    // The overlay opens (previously a bare seek left the learner with no prompt).
+    expect(screen.getByRole("dialog")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /^a,/i })).toBeInTheDocument();
+  });
+});
