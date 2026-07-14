@@ -3610,6 +3610,24 @@ button {
   touch-action: none;
 }
 
+/* Image-overlay editors (Hotspot 2D, Image Annotation, Anatomy Labeling)
+   render the author's image as a real in-flow <img> so the editing surface
+   is the exact box the learner runtime shows — full image, natural aspect
+   ratio, no crop. Normalized marks then line up between edit and live. The
+   fixed 16:10 ratio above is only the no-image placeholder. */
+.ks-edit-canvas__board:has(> .ks-edit-canvas__img) {
+  aspect-ratio: auto;
+}
+
+.ks-edit-canvas__img {
+  display: block;
+  width: 100%;
+  height: auto;
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
 .ks-edit-canvas__board.is-drawing {
   cursor: crosshair;
 }

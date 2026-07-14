@@ -252,12 +252,14 @@ export function ImageAnnotationEditor({
         ]
           .filter(Boolean)
           .join(" ")}
-        style={{ backgroundImage: config.image?.src ? `url(${config.image.src})` : undefined }}
         onPointerDown={startDraw}
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
         onPointerCancel={handlePointerUp}
       >
+        {config.image?.src ? (
+          <img className="ks-edit-canvas__img" src={config.image.src} alt="" draggable={false} />
+        ) : null}
         {annotations.map((a) => {
           const rect = liveRect && liveRect.id === a.id ? liveRect.rect : a.rect;
           const style: CSSProperties = {

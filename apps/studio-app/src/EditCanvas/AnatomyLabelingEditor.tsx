@@ -207,12 +207,14 @@ export function AnatomyLabelingEditor({
       <div
         ref={boardRef}
         className="ks-edit-canvas__board is-dropping"
-        style={{ backgroundImage: config.image?.src ? `url(${config.image.src})` : undefined }}
         onPointerDown={startBoardDown}
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
         onPointerCancel={handlePointerUp}
       >
+        {config.image?.src ? (
+          <img className="ks-edit-canvas__img" src={config.image.src} alt="" draggable={false} />
+        ) : null}
         {config.targets.map((t) => {
           const pos = livePos && livePos.id === t.id ? livePos.position : t.position;
           const style: CSSProperties = {

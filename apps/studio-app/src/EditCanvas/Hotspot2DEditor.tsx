@@ -261,12 +261,14 @@ export function Hotspot2DEditor({
         ]
           .filter(Boolean)
           .join(" ")}
-        style={{ backgroundImage: config.image?.src ? `url(${config.image.src})` : undefined }}
         onPointerDown={startDraw}
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
         onPointerCancel={handlePointerUp}
       >
+        {config.image?.src ? (
+          <img className="ks-edit-canvas__img" src={config.image.src} alt="" draggable={false} />
+        ) : null}
         {config.hotspots.map((h) => {
           const rect = liveRect && liveRect.id === h.id ? liveRect.rect : h.rect;
           const style: CSSProperties = {
