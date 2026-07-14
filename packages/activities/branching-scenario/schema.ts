@@ -1,15 +1,42 @@
 import { z } from "zod";
-import { ScoringSchema, AppearanceSchema } from "@kukui/schemas/shared";
+import { ScoringSchema, AppearanceSchema, SAFE_MEDIA_URL } from "@kukui/schemas/shared";
 
 const versionRe = /^\d+\.\d+(\.\d+)?$/;
 
+/**
+ * An optional image on a node or an outcome. Same asset model as
+ * course-presentation slide backgrounds: the bytes live outside the config
+ * (IndexedDB keyed by `assetId` in Studio, a transient object-URL `src` for
+ * preview), and at SCORM/web export the blob is bundled and `src` rewritten to
+ * a relative `./assets/<assetId>.png`. So `src` is optional until previewed or
+ * exported.
+ */
+const NodeImage = z
+  .object({
+    /** IndexedDB asset key (Studio authoring). Absent once fully external. */
+    assetId: z.string().min(1).optional(),
+    /** Resolved media URL: object URL (preview), relative path (export), or https. */
+    src: SAFE_MEDIA_URL.optional(),
+    /** Required accessible name. */
+    alt: z.string().min(1),
+    /** Natural pixel dimensions, used to size the image at its real aspect. */
+    naturalWidth: z.number().positive(),
+    naturalHeight: z.number().positive(),
+  })
+  .strict();
+
 const Outcome = z
   .object({
-    // 0..1 — the runtime emits this as raw with max=1 for SCORM, so
-    // out-of-range values would yield unpredictable LMS behavior.
+    // 0..1 — used as the SCORM score in "terminal" scoreMode (raw, max=1).
+    // Ignored in "path" scoreMode, where points accumulate along the route.
     score: z.number().min(0).max(1),
     success: z.boolean(),
+    /** Optional end-screen heading (e.g. "Well handled"). Plain text. */
+    title: z.string().optional(),
+    /** Optional end-screen body. HTML, sanitized at render. */
     message: z.string().optional(),
+    /** Optional end-screen image. */
+    image: NodeImage.optional(),
   })
   .strict();
 
@@ -21,6 +48,11 @@ const Choice = z
     nextNodeId: z.string().min(1),
     /** Optional inline feedback shown after the learner picks this choice. */
     feedback: z.string().optional(),
+    /**
+     * Points this choice contributes in "path" scoreMode (default 0). Ignored
+     * in "terminal" scoreMode. See the scoreMode note on the config below.
+     */
+    points: z.number().min(0).optional(),
   })
   .strict();
 
@@ -29,6 +61,16 @@ const Node = z
     id: z.string().min(1),
     /** HTML — author-controlled prompt at this decision point. Sanitized at render. */
     prompt: z.string().min(1),
+    /** Optional image shown above the prompt. */
+    image: NodeImage.optional(),
+    /**
+     * Optional normalized (0..1) canvas position for the Studio graph editor.
+     * Pure authoring metadata; the runtime ignores it.
+     */
+    position: z
+      .object({ x: z.number().min(0).max(1), y: z.number().min(0).max(1) })
+      .strict()
+      .optional(),
     /**
      * Choices the learner can pick at this node. `null` (or empty) marks the
      * node as terminal — the learner has reached an outcome.
@@ -39,13 +81,22 @@ const Node = z
   .strict();
 
 /**
- * Branching Scenario — the learner walks a decision tree of prompt nodes.
- * Each non-terminal node has 1+ choices that route to another node. Terminal
- * nodes (choices=null or empty) carry an optional outcome; the activity
- * completes when one is reached.
+ * Branching Scenario — the learner walks a decision tree of nodes. Each node
+ * shows an optional image plus an HTML prompt; non-terminal nodes offer 1+
+ * choices that route to another node, terminal nodes (choices=null or empty)
+ * show an end screen (outcome title / message / image). The activity completes
+ * when a terminal node is reached.
  *
- * This is the parent activity for DDx Tree and OSCE — those compose pre-baked
- * node graphs around this same schema.
+ * Scoring is set by `behaviour.scoreMode`:
+ *   - "terminal" (default): the score is the terminal node's `outcome.score`
+ *     (0..1), emitted as raw with max=1. Today's behavior.
+ *   - "path": each picked choice's `points` are summed. Raw = points earned;
+ *     max = the best attainable on the route the learner actually walked (the
+ *     sum, at each visited node, of the highest-points choice there). Success
+ *     follows the resolved pass threshold.
+ *
+ * DDx Tree and OSCE are separate activities with their own schemas; they
+ * resemble this tree but do not share code with it.
  */
 export const BranchingScenarioConfigSchema = z
   .object({
@@ -63,6 +114,8 @@ export const BranchingScenarioConfigSchema = z
     behaviour: z
       .object({
         enableRetry: z.boolean().optional(),
+        /** How the score is computed. Default "terminal". See the config note. */
+        scoreMode: z.enum(["terminal", "path"]).optional(),
       })
       .strict()
       .optional(),

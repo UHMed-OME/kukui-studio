@@ -155,3 +155,48 @@
     transition: none;
   }
 }
+
+/* Optional node / outcome image: capped, centered, keeps its aspect. */
+.kukui-bs__image {
+  margin: 0 0 var(--spacing-md, 12px);
+  border-radius: var(--radius-md, 8px);
+  overflow: hidden;
+  background: var(--color-tip-bg, #e9edf3);
+}
+
+.kukui-bs__image img {
+  display: block;
+  width: 100%;
+  max-height: 320px;
+  object-fit: contain;
+  background: var(--color-tip-bg, #e9edf3);
+}
+
+.kukui-bs__image-missing {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 120px;
+  padding: var(--spacing-md, 12px);
+  color: var(--color-text-secondary, #49515b);
+  font-size: var(--font-size-meta, 13px);
+}
+
+/* End-screen heading + running score line (path scoring). */
+.kukui-bs__outcome-title {
+  margin: 0 0 var(--spacing-sm, 8px);
+  font-size: var(--font-size-subtitle, 18px);
+  color: var(--color-text-primary);
+}
+
+.kukui-bs__outcome-score {
+  margin: var(--spacing-sm, 8px) 0 0;
+  font-size: var(--font-size-answer, 15px);
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.kukui-bs__outcome-band {
+  font-weight: 400;
+  color: var(--color-text-secondary, #49515b);
+}

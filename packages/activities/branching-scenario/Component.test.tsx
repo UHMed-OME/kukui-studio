@@ -288,3 +288,105 @@ describe("BranchingScenario", () => {
     expect(screen.getByText(/bp is 150\/95/i)).toBeInTheDocument();
   });
 });
+
+describe("images and rich end screens", () => {
+  const imgCfg: BranchingScenarioConfig = {
+    version: "1.0",
+    title: "Scene",
+    startNodeId: "n1",
+    nodes: [
+      {
+        id: "n1",
+        prompt: "<p>Look at the scene.</p>",
+        image: { src: "https://example.test/scene.jpg", alt: "A busy ward", naturalWidth: 800, naturalHeight: 600 },
+        choices: [{ id: "go", text: "Continue", nextNodeId: "end" }],
+      },
+      {
+        id: "end",
+        prompt: "<p>Done.</p>",
+        choices: null,
+        outcome: {
+          score: 1,
+          success: true,
+          title: "Nicely handled",
+          image: { src: "https://example.test/win.jpg", alt: "A calm ward", naturalWidth: 800, naturalHeight: 600 },
+          message: "<p>The ward is calm.</p>",
+        },
+      },
+    ],
+  };
+
+  it("renders a node image with its alt text", () => {
+    render(<Component config={imgCfg} onSubmit={vi.fn()} />);
+    expect(screen.getByAltText("A busy ward")).toBeInTheDocument();
+  });
+
+  it("renders the outcome title and image on the end screen", async () => {
+    const user = userEvent.setup();
+    render(<Component config={imgCfg} onSubmit={vi.fn()} />);
+    await user.click(screen.getByRole("button", { name: /continue/i }));
+    expect(screen.getByRole("heading", { name: /nicely handled/i })).toBeInTheDocument();
+    expect(screen.getByAltText("A calm ward")).toBeInTheDocument();
+  });
+});
+
+describe("path-sum scoring", () => {
+  const pathCfg: BranchingScenarioConfig = {
+    version: "1.0",
+    title: "Points",
+    startNodeId: "q1",
+    behaviour: { scoreMode: "path" },
+    scoring: { mode: "points", passPercentage: 50 },
+    nodes: [
+      {
+        id: "q1",
+        prompt: "<p>Q1</p>",
+        choices: [
+          { id: "best1", text: "Best", nextNodeId: "q2", points: 2 },
+          { id: "ok1", text: "OK", nextNodeId: "q2", points: 1 },
+        ],
+      },
+      {
+        id: "q2",
+        prompt: "<p>Q2</p>",
+        choices: [
+          { id: "best2", text: "Best", nextNodeId: "end", points: 3 },
+          { id: "bad2", text: "Bad", nextNodeId: "end", points: 0 },
+        ],
+      },
+      { id: "end", prompt: "<p>End</p>", choices: null, outcome: { score: 0, success: false } },
+    ],
+  };
+
+  it("sums picked points as raw, best-per-node as max, and shows the score", async () => {
+    const user = userEvent.setup();
+    const onSubmit = vi.fn();
+    render(<Component config={pathCfg} onSubmit={onSubmit} />);
+    // Pick OK (1 of best 2), then Best (3 of best 3) -> raw 4, max 5.
+    await user.click(screen.getByRole("button", { name: /^ok$/i }));
+    await user.click(screen.getByRole("button", { name: /^best$/i }));
+    expect(onSubmit).toHaveBeenCalledTimes(1);
+    expect(onSubmit.mock.calls[0]?.[0]).toMatchObject({ raw: 4, max: 5, success: true });
+    expect(screen.getByText(/4 of 5 points/i)).toBeInTheDocument();
+  });
+
+  it("marks failure when the path falls below the pass threshold", async () => {
+    const user = userEvent.setup();
+    const onSubmit = vi.fn();
+    render(<Component config={pathCfg} onSubmit={onSubmit} />);
+    // Pick OK (1/2) then Bad (0/3) -> raw 1, max 5 = 20% < 50%.
+    await user.click(screen.getByRole("button", { name: /^ok$/i }));
+    await user.click(screen.getByRole("button", { name: /^bad$/i }));
+    expect(onSubmit.mock.calls[0]?.[0]).toMatchObject({ raw: 1, max: 5, success: false });
+  });
+
+  it("terminal scoreMode still emits the terminal outcome score", async () => {
+    const user = userEvent.setup();
+    const onSubmit = vi.fn();
+    const terminalCfg = { ...pathCfg, behaviour: { scoreMode: "terminal" as const } };
+    render(<Component config={terminalCfg} onSubmit={onSubmit} />);
+    await user.click(screen.getByRole("button", { name: /^best$/i }));
+    await user.click(screen.getByRole("button", { name: /^bad$/i }));
+    expect(onSubmit.mock.calls[0]?.[0]).toMatchObject({ raw: 0, max: 1, success: false });
+  });
+});

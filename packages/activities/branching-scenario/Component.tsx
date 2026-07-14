@@ -1,8 +1,26 @@
-import { useEffect, useId, useMemo, useRef, useState } from "react";
+import { useEffect, useId, useMemo, useRef, useState, type ReactNode } from "react";
 import type { BranchingScenarioConfig } from "./schema.js";
-import { resolveScoring } from "@kukui/core/scoring";
+import { resolveScoring, percentage, bandMessage } from "@kukui/core/scoring";
 import { ActivityHeader, SafeHtml, htmlToText, StatusBadge, DotIcon, CheckIcon, type ActivityProps } from "@kukui/core";
 import "./Component.css";
+
+type NodeImageConfig = NonNullable<BranchingScenarioConfig["nodes"][number]["image"]>;
+
+/** Optional node/outcome image with an alt-required accessible name and a
+ *  fallback when the src has not resolved (asset not yet cached/exported). */
+function NodeImageView({ image }: { image: NodeImageConfig }) {
+  return (
+    <div className="kukui-bs__image">
+      {image.src ? (
+        <img src={image.src} alt={image.alt} />
+      ) : (
+        <div className="kukui-bs__image-missing" role="img" aria-label={image.alt}>
+          Image unavailable
+        </div>
+      )}
+    </div>
+  );
+}
 
 type LastPick = {
   /** Id of the node the learner was on when they picked (not the destination). */
@@ -26,11 +44,16 @@ type State = {
   terminalReached: boolean;
   /** The last choice picked, captured at pick time (see LastPick). */
   lastPick: LastPick | null;
+  /** "path" scoreMode: points earned so far (sum of picked choices' points). */
+  earned: number;
+  /** "path" scoreMode: best attainable on the route walked (sum of the highest
+   *  points available at each decision node the learner passed through). */
+  maxEarnable: number;
 };
 
-type DefaultOutcome = { score: number; success: boolean; message?: string };
+type Outcome = NonNullable<BranchingScenarioConfig["nodes"][number]["outcome"]>;
 
-const COMPLETION_DEFAULT: DefaultOutcome = { score: 1, success: true };
+const COMPLETION_DEFAULT: Outcome = { score: 1, success: true };
 
 export default function Component({
   config,
@@ -47,9 +70,13 @@ export default function Component({
       path: [],
       terminalReached: false,
       lastPick: null,
+      earned: 0,
+      maxEarnable: 0,
     }),
     [config.startNodeId],
   );
+
+  const scoreMode = config.behaviour?.scoreMode ?? "terminal";
 
   const [state, setState] = useState<State>(
     () => parseSuspend(suspendData, config) ?? initialState,
@@ -110,19 +137,27 @@ export default function Component({
     if (submittedFor.current === currentNode.id) return;
     submittedFor.current = currentNode.id;
     const outcome = currentNode.outcome ?? COMPLETION_DEFAULT;
-    // Under completion scoring, reaching any ending completes the activity
-    // successfully — per-node outcome scores only apply in points modes.
-    const isCompletion = scoring.mode === "completion";
     const next: State = { ...state, terminalReached: true };
     setState(next);
-    onSubmit({
-      raw: isCompletion ? 1 : outcome.score,
-      max: 1,
-      success: isCompletion ? true : outcome.success,
-      suspendData: JSON.stringify({ ...next, path: [...state.path] }),
-    });
+    let score: { raw: number; max: number; success: boolean };
+    if (scoring.mode === "completion") {
+      // Reaching any ending completes the activity successfully.
+      score = { raw: 1, max: 1, success: true };
+    } else if (scoreMode === "path") {
+      // Points summed along the walked route. Zero-max (no points authored)
+      // reads as completion success, matching @kukui/core's aggregate.
+      const pct = state.maxEarnable === 0 ? 100 : (state.earned / state.maxEarnable) * 100;
+      score = {
+        raw: state.earned,
+        max: state.maxEarnable,
+        success: pct >= scoring.passPercentage,
+      };
+    } else {
+      score = { raw: outcome.score, max: 1, success: outcome.success };
+    }
+    onSubmit({ ...score, suspendData: JSON.stringify({ ...next }) });
     // We intentionally depend only on currentNode + reached flag — onSubmit /
-    // state.path are referentially stable enough for our use here.
+    // state.* are referentially stable enough for our use here.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentNode, state.terminalReached, scoring.mode]);
 
@@ -177,10 +212,18 @@ export default function Component({
       }));
       return;
     }
+    // Path scoring: add this choice's points, and the best points available at
+    // this decision node, so max reflects what was attainable on this route.
+    const bestHere = Math.max(
+      0,
+      ...(currentNode.choices ?? []).map((c) => c.points ?? 0),
+    );
     setState((s) => ({
       currentNodeId: choice.nextNodeId,
       path: [...s.path, s.currentNodeId],
       terminalReached: false,
+      earned: s.earned + (choice.points ?? 0),
+      maxEarnable: s.maxEarnable + bestHere,
       lastPick: {
         nodeId: s.currentNodeId,
         choiceId,
@@ -195,6 +238,22 @@ export default function Component({
   const brokenNext = lastPick?.brokenNext === true;
 
   const outcome = currentNode.outcome ?? (isTerminal ? COMPLETION_DEFAULT : null);
+
+  // Path scoring shows the learner their earned/attainable points on the end
+  // screen (terminal-mode outcomes convey result through the message + styling).
+  const endScore =
+    isTerminal && scoring.mode !== "completion" && scoreMode === "path"
+      ? (() => {
+          const pct = percentage({ raw: state.earned, max: state.maxEarnable });
+          return {
+            line:
+              state.maxEarnable === 0
+                ? "Complete."
+                : `${state.earned} of ${state.maxEarnable} points (${pct}%)`,
+            band: bandMessage(scoring.bands, pct),
+          };
+        })()
+      : null;
 
   const headerBadge = state.terminalReached ? (
     <StatusBadge tone="success" icon={<CheckIcon />}>
@@ -218,6 +277,7 @@ export default function Component({
         />
 
         <div className="kukui-bs__prompt" ref={promptRef} tabIndex={-1}>
+          {currentNode.image ? <NodeImageView image={currentNode.image} /> : null}
           <SafeHtml html={currentNode.prompt} />
         </div>
 
@@ -282,6 +342,10 @@ export default function Component({
             ].join(" ")}
             aria-live="polite"
           >
+            {outcome.title ? (
+              <OutcomeHeading headingLevel={headingLevel}>{outcome.title}</OutcomeHeading>
+            ) : null}
+            {outcome.image ? <NodeImageView image={outcome.image} /> : null}
             {outcome.message ? (
               <SafeHtml
                 className="kukui-bs__outcome-message"
@@ -291,9 +355,15 @@ export default function Component({
               <p className="kukui-bs__outcome-message">
                 {outcome.success
                   ? "Scenario complete."
-                  : "Scenario complete — review your path and try again."}
+                  : "Scenario complete. Review your path and try again."}
               </p>
             )}
+            {endScore ? (
+              <p className="kukui-bs__outcome-score">
+                <output>{endScore.line}</output>
+                {endScore.band ? <span className="kukui-bs__outcome-band"> {endScore.band}</span> : null}
+              </p>
+            ) : null}
             {scoring.enableRetry ? (
               <button
                 type="button"
@@ -308,6 +378,18 @@ export default function Component({
       </article>
     </div>
   );
+}
+
+/** End-screen heading, one level below the activity title. */
+function OutcomeHeading({
+  headingLevel,
+  children,
+}: {
+  headingLevel: 1 | 2 | 3;
+  children: ReactNode;
+}) {
+  const Tag = `h${Math.min(headingLevel + 1, 3)}` as "h2" | "h3";
+  return <Tag className="kukui-bs__outcome-title">{children}</Tag>;
 }
 
 function parseSuspend(
@@ -331,6 +413,11 @@ function parseSuspend(
         path: parsed.path.filter((p): p is string => typeof p === "string"),
         terminalReached: parsed.terminalReached === true,
         lastPick: parseLastPick(parsed.lastPick),
+        earned: typeof parsed.earned === "number" && parsed.earned >= 0 ? parsed.earned : 0,
+        maxEarnable:
+          typeof parsed.maxEarnable === "number" && parsed.maxEarnable >= 0
+            ? parsed.maxEarnable
+            : 0,
       };
     }
   } catch {
