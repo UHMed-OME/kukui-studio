@@ -70,7 +70,12 @@ export function EditCanvas({
   if (Editor) {
     return (
       <Suspense fallback={<EditLoading />}>
-        <Editor config={value} onChange={onChange} />
+        {/* Shared gutter for every visual editor. The preview panel itself has
+            padding: 0 (so Live activities center edge-to-edge), so the edit
+            stage supplies the consistent inset all editors render within. */}
+        <div className="ks-edit-stage">
+          <Editor config={value} onChange={onChange} />
+        </div>
       </Suspense>
     );
   }

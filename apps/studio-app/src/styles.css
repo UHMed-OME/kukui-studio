@@ -3573,11 +3573,18 @@ button {
    Annotation. Mirrors the DnD board chrome; element-specific styling lives
    in per-editor classes below. */
 
+/* Shared gutter for every visual editor (see EditCanvas/index.tsx). The
+   preview panel is padding: 0, so this inset is what keeps editor content
+   off the panel edges — consistently, whether the editor root is the
+   flex .ks-edit-canvas or a two-pane grid like .ks-cp-ed / .ks-bs-ed. */
+.ks-edit-stage {
+  padding: var(--spacing-lg);
+}
+
 .ks-edit-canvas {
   display: flex;
   flex-direction: column;
   gap: var(--spacing-md);
-  padding: var(--spacing-lg);
 }
 
 .ks-edit-canvas__hint {
@@ -5732,7 +5739,12 @@ html[data-theme="glass"] .kukui-studio-footer {
   margin-bottom: 0;
 }
 
-@container ks-stage (max-width: 640px) {
+/* Stack the 3D editor (viewport on top, rail below) until the panel is wide
+   enough for the WebGL viewport to keep a usable width beside the rail. The
+   r3f canvas takes a fixed pixel width at mount, so a too-narrow 2fr column
+   leaves it overflowing the rail; give it the full panel width instead until
+   there is real room for two panes. */
+@container ks-stage (max-width: 900px) {
   .ks-h3d-editor {
     grid-template-columns: 1fr;
   }
