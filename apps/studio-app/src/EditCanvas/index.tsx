@@ -25,6 +25,9 @@ const InteractiveVideoEditor = lazy(() =>
 const CoursePresentationEditor = lazy(() =>
   import("./CoursePresentationEditor.js").then((m) => ({ default: m.CoursePresentationEditor })),
 );
+const BranchingScenarioEditor = lazy(() =>
+  import("./BranchingScenarioEditor.js").then((m) => ({ default: m.BranchingScenarioEditor })),
+);
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type AnyEditor = ComponentType<{ config: any; onChange: (next: any) => void }>;
@@ -38,6 +41,7 @@ const EDITORS: Partial<Record<ActivityKind, AnyEditor>> = {
   "hotspot-3d": Hotspot3DEditor as AnyEditor,
   "interactive-video": InteractiveVideoEditor as AnyEditor,
   "course-presentation": CoursePresentationEditor as AnyEditor,
+  "branching-scenario": BranchingScenarioEditor as AnyEditor,
 };
 
 /** Single source of truth for which activities have a visual editor. */

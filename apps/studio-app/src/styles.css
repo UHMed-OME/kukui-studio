@@ -7064,3 +7064,419 @@ html[data-theme="glass"] .kukui-studio-footer {
   color: var(--color-text-primary);
   font-size: 14px;
 }
+
+/* ===================================================================
+ * Branching-scenario visual editor (BranchingScenarioEditor.tsx).
+ * Two-pane node-graph editor: a positioned graph canvas on the left and
+ * a sticky rail inspector on the right, mirroring .ks-cp-ed. Tokens only;
+ * 44px tap targets; borders constant across states (color changes only).
+ * =================================================================== */
+.ks-bs-ed {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(280px, 1fr);
+  gap: var(--spacing-md);
+  align-items: start;
+}
+
+.ks-bs-ed > .ks-stage-head {
+  grid-column: 1 / -1;
+  margin-bottom: 0;
+}
+
+.ks-bs-ed__notice {
+  grid-column: 1 / -1;
+  margin: 0;
+  padding: var(--spacing-sm) var(--spacing-md);
+  border: 1px solid var(--color-info);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+  font-size: var(--font-size-meta);
+}
+
+.ks-bs-ed__main {
+  grid-column: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+/* Sticky so selecting a step never requires scrolling to its inspector. */
+.ks-bs-ed__rail {
+  grid-column: 2;
+  position: sticky;
+  top: var(--spacing-md);
+  align-self: start;
+  max-height: calc(100vh - 2 * var(--spacing-md));
+  overflow: auto;
+}
+
+@container ks-stage (max-width: 720px) {
+  .ks-bs-ed {
+    grid-template-columns: 1fr;
+  }
+
+  .ks-bs-ed__main,
+  .ks-bs-ed__rail {
+    grid-column: 1;
+  }
+
+  .ks-bs-ed__rail {
+    position: static;
+    max-height: none;
+  }
+}
+
+/* Staged empty state. */
+.ks-bs-ed__start {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-md);
+  padding: var(--spacing-2xl);
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  text-align: center;
+}
+
+.ks-bs-ed__start-title {
+  margin: 0;
+  font-size: var(--font-size-body);
+  color: var(--color-text-primary);
+}
+
+.ks-bs-ed__start-body {
+  margin: 0;
+  max-width: 46ch;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-meta);
+}
+
+.ks-bs-ed__toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.ks-bs-ed__count {
+  font-size: var(--font-size-meta);
+  color: var(--color-text-secondary);
+}
+
+.ks-bs-ed__hint {
+  margin: 0;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--radius-sm);
+  background: var(--color-primary-soft);
+  color: var(--color-text-primary);
+  font-size: var(--font-size-meta);
+}
+
+/* Graph canvas. */
+.ks-bs-ed__board {
+  position: relative;
+  min-height: 380px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  overflow: hidden;
+  touch-action: none;
+}
+
+.ks-bs-ed__board.is-linking {
+  cursor: crosshair;
+  outline: 2px dashed var(--color-info);
+  outline-offset: -2px;
+}
+
+.ks-bs-ed__edges {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  color: var(--color-text-secondary);
+  pointer-events: none;
+}
+
+.ks-bs-ed__edge {
+  stroke: currentColor;
+  stroke-width: 1.5;
+  fill: none;
+}
+
+/* Node card. Border width is constant across states; selection changes color. */
+.ks-bs-ed__node {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 168px;
+  min-height: 44px;
+  padding: var(--spacing-sm);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-bg, var(--color-surface));
+  box-shadow: var(--shadow-sm, 0 1px 3px rgb(0 0 0 / 0.12));
+  cursor: grab;
+  touch-action: none;
+}
+
+.ks-bs-ed__node:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.ks-bs-ed__node.is-selected {
+  border-color: var(--color-primary);
+}
+
+.ks-bs-ed__node.is-start {
+  border-color: var(--color-info);
+}
+
+.ks-bs-ed__node.is-terminal {
+  border-color: var(--color-success);
+}
+
+.ks-bs-ed__node-label {
+  font-size: var(--font-size-meta);
+  color: var(--color-text-primary);
+  line-height: 1.3;
+}
+
+.ks-bs-ed__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  align-self: flex-start;
+  padding: 1px 6px;
+  border-radius: var(--radius-sm);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  color: var(--color-text-secondary);
+  background: var(--color-primary-soft);
+}
+
+.ks-bs-ed__badge.is-start {
+  color: var(--color-info);
+}
+
+.ks-bs-ed__badge.is-terminal {
+  color: var(--color-success);
+}
+
+.ks-bs-ed__badge-glyph {
+  font-size: 10px;
+}
+
+.ks-bs-ed__connect {
+  align-self: flex-start;
+  min-height: 28px;
+  padding: 2px 8px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: var(--color-primary);
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.ks-bs-ed__connect:hover {
+  border-color: var(--color-primary);
+}
+
+.ks-bs-ed__connect:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* Accessible edge list below the canvas: focusable, Delete removes the choice. */
+.ks-bs-ed__edge-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-xs);
+}
+
+.ks-bs-ed__edge-handle {
+  min-height: 32px;
+  padding: 4px 10px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-meta);
+  cursor: pointer;
+}
+
+.ks-bs-ed__edge-handle:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+  color: var(--color-text-primary);
+}
+
+/* Rail inspector + graph panel. */
+.ks-bs-ed__inspector,
+.ks-bs-ed__panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  padding: var(--spacing-md);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+}
+
+.ks-bs-ed__inspector-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-sm);
+}
+
+.ks-bs-ed__inspector-head h3,
+.ks-bs-ed__panel-title {
+  margin: 0;
+  font-size: var(--font-size-body);
+  color: var(--color-text-primary);
+}
+
+.ks-bs-ed__field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: var(--font-size-meta);
+  color: var(--color-text-secondary);
+}
+
+.ks-bs-ed__field--tight {
+  gap: 2px;
+}
+
+.ks-bs-ed__field--inline {
+  flex: 1;
+  min-width: 0;
+}
+
+.ks-bs-ed__field-label {
+  font-size: var(--font-size-meta);
+  color: var(--color-text-secondary);
+}
+
+.ks-bs-ed__field input[type="text"],
+.ks-bs-ed__field input[type="number"],
+.ks-bs-ed__field select,
+.ks-bs-ed__field textarea {
+  min-height: 36px;
+  padding: 6px 10px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-bg, var(--color-surface));
+  color: var(--color-text-primary);
+  font-size: 14px;
+}
+
+.ks-bs-ed__field textarea {
+  resize: vertical;
+}
+
+.ks-bs-ed__help,
+.ks-bs-ed__noselect {
+  margin: 0;
+  font-size: var(--font-size-meta);
+  color: var(--color-text-secondary);
+}
+
+.ks-bs-ed__row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.ks-bs-ed__check {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  min-height: 44px;
+  font-size: var(--font-size-meta);
+  color: var(--color-text-primary);
+}
+
+.ks-bs-ed__choices,
+.ks-bs-ed__outcome {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  margin: 0;
+  padding: var(--spacing-sm);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+}
+
+.ks-bs-ed__outcome legend,
+.ks-bs-ed__choices-label {
+  padding: 0 4px;
+  font-size: var(--font-size-meta);
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+.ks-bs-ed__choice {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-sm);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-bg, var(--color-surface));
+}
+
+.ks-bs-ed__image {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.ks-bs-ed__image-thumb {
+  max-width: 100%;
+  max-height: 120px;
+  border-radius: var(--radius-sm);
+  object-fit: contain;
+}
+
+.ks-bs-ed__image-missing {
+  font-size: var(--font-size-meta);
+  color: var(--color-text-secondary);
+}
+
+.ks-bs-ed__confirm {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm);
+  border: 1px solid var(--color-warning);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+}
+
+.ks-bs-ed__confirm-msg {
+  margin: 0;
+  font-size: var(--font-size-meta);
+  color: var(--color-text-primary);
+}
+
+.ks-bs-ed__confirm-actions {
+  display: flex;
+  gap: var(--spacing-sm);
+}

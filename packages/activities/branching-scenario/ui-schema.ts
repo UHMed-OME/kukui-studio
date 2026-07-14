@@ -59,37 +59,16 @@ const BEHAVIOUR_RETRY = HIDDEN;
 
 const uiSchema = {
   ...COMMON,
-  "ui:order": ["title", "startNodeId", "nodes", "behaviour", "ui", "*"],
+  "ui:order": ["title", "author", "behaviour", "ui", "*"],
   title: TITLE,
   author: AUTHOR,
-  startNodeId: f("Starting step", "Which step the learner sees first.", {
-    "ui:widget": "nodeSelect",
-  }),
-  nodes: {
-    "ui:title": "Scenario steps",
-    "ui:help":
-      "Each step shows a prompt, then either a list of choices that lead elsewhere or a final outcome.",
-    items: {
-      id: HIDDEN,
-      prompt: f("Prompt", "Shown when the learner reaches this step.", {
-        "ui:widget": "html",
-      }),
-      choices: {
-        "ui:title": "Choices",
-        items: {
-          id: HIDDEN,
-          text: f("Choice text", "What the learner sees on the button."),
-          nextNodeId: f("Goes to step", "Which step this choice leads to.", {
-            "ui:widget": "nodeSelect",
-          }),
-          feedback: f("Feedback (optional)", "Shown when this choice is picked.", {
-            "ui:widget": "textarea",
-            "ui:options": { rows: 2 },
-          }),
-        },
-      },
-    },
-  },
+  // The decision tree (steps, their choices, and which one starts) is built on
+  // the visual Edit canvas, not in this form: a raw RJSF array can't draw the
+  // node graph, wire choice targets, or keep the tree's reachability
+  // refinements satisfied, so exposing `nodes` / `startNodeId` here would only
+  // produce broken, unfixable items. Both are HIDDEN; the canvas owns them.
+  startNodeId: HIDDEN,
+  nodes: HIDDEN,
   behaviour: {
     "ui:title": "Activity behaviour",
     enableRetry: BEHAVIOUR_RETRY,
