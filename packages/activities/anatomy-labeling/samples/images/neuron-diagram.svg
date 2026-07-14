@@ -1,18 +1,18 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 480" width="1024" height="480" role="img" aria-label="Neuron diagram (placeholder art)">
   <rect width="1024" height="480" fill="#f2f4f7"/>
   <rect x="12" y="12" width="1000" height="456" rx="14" fill="#ffffff" stroke="#d1d7df" stroke-width="2"/>
-  <g stroke="#4a7a5f" stroke-width="3" fill="none">
+  <g stroke="#6aa76a" stroke-width="3" fill="none">
      <path d="M200 240 L120 160 M200 240 L110 240 M200 240 L130 320 M200 240 L200 120 M200 240 L240 340"/>
    </g>
-   <circle cx="240" cy="240" r="56" fill="#e6eeea" stroke="#4a7a5f" stroke-width="3"/>
-   <circle cx="240" cy="240" r="20" fill="#ffffff" stroke="#4a7a5f" stroke-width="2"/>
-   <path d="M296 240 L720 240" stroke="#4a7a5f" stroke-width="8" fill="none" stroke-linecap="round"/>
+   <circle cx="240" cy="240" r="56" fill="#e6eeea" stroke="#6aa76a" stroke-width="3"/>
+   <circle cx="240" cy="240" r="20" fill="#ffffff" stroke="#6aa76a" stroke-width="2"/>
+   <path d="M296 240 L720 240" stroke="#6aa76a" stroke-width="8" fill="none" stroke-linecap="round"/>
    <ellipse cx="470" cy="240" rx="34" ry="16" fill="#ffffff" stroke="#49515b" stroke-width="2"/>
    <ellipse cx="600" cy="240" rx="34" ry="16" fill="#ffffff" stroke="#49515b" stroke-width="2"/>
-   <g stroke="#4a7a5f" stroke-width="3" fill="none" stroke-linecap="round">
+   <g stroke="#6aa76a" stroke-width="3" fill="none" stroke-linecap="round">
      <path d="M720 240 L800 190 M720 240 L810 240 M720 240 L800 290"/>
    </g>
-   <circle cx="808" cy="188" r="8" fill="#4a7a5f"/><circle cx="818" cy="240" r="8" fill="#4a7a5f"/><circle cx="808" cy="292" r="8" fill="#4a7a5f"/>
+   <circle cx="808" cy="188" r="8" fill="#6aa76a"/><circle cx="818" cy="240" r="8" fill="#6aa76a"/><circle cx="808" cy="292" r="8" fill="#6aa76a"/>
   <text x="512" y="450" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="20" fill="#49515b">Neuron diagram (placeholder art)</text>
-  <text x="512" y="40" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="14" fill="#4a7a5f" font-weight="700" letter-spacing="1.5">KUKUI PLACEHOLDER</text>
+  <text x="512" y="40" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="14" fill="#6aa76a" font-weight="700" letter-spacing="1.5">KUKUI PLACEHOLDER</text>
 </svg>

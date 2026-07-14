@@ -1,8 +1,8 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720" width="1280" height="720" role="img" aria-label="Cardiac cycle overview (placeholder art)">
   <rect width="1280" height="720" fill="#f2f4f7"/>
   <rect x="12" y="12" width="1256" height="696" rx="14" fill="#ffffff" stroke="#d1d7df" stroke-width="2"/>
-  <path d="M640 250 q-140 -120 -220 20 q-70 130 220 300 q290 -170 220 -300 q-80 -140 -220 -20 z" fill="#e6eeea" stroke="#4a7a5f" stroke-width="4"/>
-   <path d="M470 300 q80 60 170 20 M810 300 q-80 60 -170 20" stroke="#4a7a5f" stroke-width="3" fill="none"/>
+  <path d="M640 250 q-140 -120 -220 20 q-70 130 220 300 q290 -170 220 -300 q-80 -140 -220 -20 z" fill="#e6eeea" stroke="#6aa76a" stroke-width="4"/>
+   <path d="M470 300 q80 60 170 20 M810 300 q-80 60 -170 20" stroke="#6aa76a" stroke-width="3" fill="none"/>
   <text x="640" y="690" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="20" fill="#49515b">Cardiac cycle overview (placeholder art)</text>
-  <text x="640" y="40" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="14" fill="#4a7a5f" font-weight="700" letter-spacing="1.5">KUKUI PLACEHOLDER</text>
+  <text x="640" y="40" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="14" fill="#6aa76a" font-weight="700" letter-spacing="1.5">KUKUI PLACEHOLDER</text>
 </svg>

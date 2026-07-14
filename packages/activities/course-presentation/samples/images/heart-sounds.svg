@@ -2,9 +2,9 @@
   <rect width="1280" height="720" fill="#f2f4f7"/>
   <rect x="12" y="12" width="1256" height="696" rx="14" fill="#ffffff" stroke="#d1d7df" stroke-width="2"/>
   <line x1="140" y1="380" x2="1140" y2="380" stroke="#d1d7df" stroke-width="2"/>
-   <path d="M140 380 L360 380 L390 250 L420 380 L700 380 L730 300 L760 380 L1140 380" stroke="#4a7a5f" stroke-width="4" fill="none"/>
+   <path d="M140 380 L360 380 L390 250 L420 380 L700 380 L730 300 L760 380 L1140 380" stroke="#6aa76a" stroke-width="4" fill="none"/>
    <text x="390" y="230" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="28" fill="#15191d" font-weight="700">S1</text>
    <text x="730" y="280" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="28" fill="#15191d" font-weight="700">S2</text>
   <text x="640" y="690" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="20" fill="#49515b">Heart sounds S1 and S2 (placeholder art)</text>
-  <text x="640" y="40" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="14" fill="#4a7a5f" font-weight="700" letter-spacing="1.5">KUKUI PLACEHOLDER</text>
+  <text x="640" y="40" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="14" fill="#6aa76a" font-weight="700" letter-spacing="1.5">KUKUI PLACEHOLDER</text>
 </svg>

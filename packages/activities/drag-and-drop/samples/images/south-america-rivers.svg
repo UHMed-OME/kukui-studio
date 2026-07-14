@@ -1,12 +1,12 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 640" width="1024" height="640" role="img" aria-label="River map (placeholder art)">
   <rect width="1024" height="640" fill="#f2f4f7"/>
   <rect x="12" y="12" width="1000" height="616" rx="14" fill="#ffffff" stroke="#d1d7df" stroke-width="2"/>
-  <path d="M470 90 q140 20 150 160 q60 60 20 170 q-10 150 -110 210 q-90 -40 -110 -170 q-80 -50 -70 -180 q-20 -120 120 -190 z" fill="#e6eeea" stroke="#4a7a5f" stroke-width="4"/>
+  <path d="M470 90 q140 20 150 160 q60 60 20 170 q-10 150 -110 210 q-90 -40 -110 -170 q-80 -50 -70 -180 q-20 -120 120 -190 z" fill="#e6eeea" stroke="#6aa76a" stroke-width="4"/>
    <g stroke="#2a6f97" stroke-width="6" fill="none" stroke-linecap="round">
      <path d="M420 210 q120 30 220 20 M540 232 q-40 60 -30 140 M540 232 q40 40 30 120"/>
      <path d="M470 420 q60 -20 120 10"/>
    </g>
    <circle cx="420" cy="210" r="8" fill="#2a6f97"/>
   <text x="512" y="610" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="20" fill="#49515b">River map (placeholder art)</text>
-  <text x="512" y="40" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="14" fill="#4a7a5f" font-weight="700" letter-spacing="1.5">KUKUI PLACEHOLDER</text>
+  <text x="512" y="40" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="14" fill="#6aa76a" font-weight="700" letter-spacing="1.5">KUKUI PLACEHOLDER</text>
 </svg>

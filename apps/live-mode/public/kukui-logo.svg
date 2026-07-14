@@ -23,14 +23,14 @@
 
   <!-- Filled sage disc (brand green) sitting directly behind the drupe, drawn
        before it so it reads as an even backdrop with a slim halo — not a ring. -->
-  <circle cx="50" cy="50" r="29" fill="#4a7a5f"/>
+  <circle cx="50" cy="50" r="29" fill="#6aa76a"/>
 
   <!--
     The drupe artwork (silhouette + gloss + seam) centered inside the ring at
     ~60% of the frame. The silhouette is authored "dimple at top"; rotating the
     group 35° clockwise lands the dimple in the 1–2 o'clock area.
   -->
-  <svg x="22" y="22" width="56" height="56" viewBox="-5 -5 74 74" overflow="visible">
+  <svg x="19" y="19" width="62" height="62" viewBox="-5 -5 74 74" overflow="visible">
     <g transform="rotate(35 32 32)">
       <path d="M24 6 C 16 7, 8 15, 6 26 C 4 39, 12 57, 32 60 C 52 57, 60 39, 58 26 C 56 15, 48 7, 40 6 C 37 8, 35 13, 32 14 C 29 13, 27 8, 24 6 Z" fill="url(#kukui-body)"/>
       <g clip-path="url(#kukui-clip)">

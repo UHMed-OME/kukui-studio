@@ -17,7 +17,7 @@
   </defs>
 
   <!-- Simple sage ring framing the drupe (brand green). -->
-  <circle cx="60" cy="37" r="37" fill="none" stroke="#4a7a5f" stroke-width="3"/>
+  <circle cx="60" cy="37" r="37" fill="none" stroke="#6aa76a" stroke-width="3"/>
 
   <svg x="33" y="10" width="54" height="54" viewBox="-5 -5 74 74" overflow="visible">
     <g transform="rotate(35 32 32)">

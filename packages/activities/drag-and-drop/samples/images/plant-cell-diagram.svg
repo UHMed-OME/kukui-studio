@@ -1,14 +1,14 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 640" width="1024" height="640" role="img" aria-label="Plant cell diagram (placeholder art)">
   <rect width="1024" height="640" fill="#f2f4f7"/>
   <rect x="12" y="12" width="1000" height="616" rx="14" fill="#ffffff" stroke="#d1d7df" stroke-width="2"/>
-  <rect x="180" y="120" width="664" height="400" rx="26" fill="#e6eeea" stroke="#4a7a5f" stroke-width="5"/>
-   <rect x="210" y="150" width="604" height="340" rx="18" fill="#ffffff" stroke="#4a7a5f" stroke-width="2"/>
-   <rect x="330" y="230" width="360" height="180" rx="16" fill="#e6eeea" stroke="#4a7a5f" stroke-width="2"/>
+  <rect x="180" y="120" width="664" height="400" rx="26" fill="#e6eeea" stroke="#6aa76a" stroke-width="5"/>
+   <rect x="210" y="150" width="604" height="340" rx="18" fill="#ffffff" stroke="#6aa76a" stroke-width="2"/>
+   <rect x="330" y="230" width="360" height="180" rx="16" fill="#e6eeea" stroke="#6aa76a" stroke-width="2"/>
    <circle cx="270" cy="230" r="42" fill="#ffffff" stroke="#49515b" stroke-width="3"/>
    <circle cx="270" cy="230" r="16" fill="#e6eeea" stroke="#49515b" stroke-width="2"/>
-   <ellipse cx="740" cy="250" rx="40" ry="22" fill="#e6eeea" stroke="#4a7a5f" stroke-width="2" transform="rotate(-20 740 250)"/>
-   <ellipse cx="720" cy="440" rx="40" ry="22" fill="#e6eeea" stroke="#4a7a5f" stroke-width="2" transform="rotate(15 720 440)"/>
-   <ellipse cx="300" cy="440" rx="40" ry="22" fill="#e6eeea" stroke="#4a7a5f" stroke-width="2" transform="rotate(-8 300 440)"/>
+   <ellipse cx="740" cy="250" rx="40" ry="22" fill="#e6eeea" stroke="#6aa76a" stroke-width="2" transform="rotate(-20 740 250)"/>
+   <ellipse cx="720" cy="440" rx="40" ry="22" fill="#e6eeea" stroke="#6aa76a" stroke-width="2" transform="rotate(15 720 440)"/>
+   <ellipse cx="300" cy="440" rx="40" ry="22" fill="#e6eeea" stroke="#6aa76a" stroke-width="2" transform="rotate(-8 300 440)"/>
   <text x="512" y="610" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="20" fill="#49515b">Plant cell diagram (placeholder art)</text>
-  <text x="512" y="40" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="14" fill="#4a7a5f" font-weight="700" letter-spacing="1.5">KUKUI PLACEHOLDER</text>
+  <text x="512" y="40" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="14" fill="#6aa76a" font-weight="700" letter-spacing="1.5">KUKUI PLACEHOLDER</text>
 </svg>

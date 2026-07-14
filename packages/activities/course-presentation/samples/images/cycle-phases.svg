@@ -1,10 +1,10 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720" width="1280" height="720" role="img" aria-label="Systole and diastole phases (placeholder art)">
   <rect width="1280" height="720" fill="#f2f4f7"/>
   <rect x="12" y="12" width="1256" height="696" rx="14" fill="#ffffff" stroke="#d1d7df" stroke-width="2"/>
-  <circle cx="440" cy="360" r="150" fill="#e6eeea" stroke="#4a7a5f" stroke-width="4"/>
-   <circle cx="840" cy="360" r="110" fill="#ffffff" stroke="#4a7a5f" stroke-width="4"/>
+  <circle cx="440" cy="360" r="150" fill="#e6eeea" stroke="#6aa76a" stroke-width="4"/>
+   <circle cx="840" cy="360" r="110" fill="#ffffff" stroke="#6aa76a" stroke-width="4"/>
    <text x="440" y="560" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="26" fill="#49515b">Diastole (filled)</text>
    <text x="840" y="560" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="26" fill="#49515b">Systole (contracted)</text>
   <text x="640" y="690" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="20" fill="#49515b">Systole and diastole phases (placeholder art)</text>
-  <text x="640" y="40" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="14" fill="#4a7a5f" font-weight="700" letter-spacing="1.5">KUKUI PLACEHOLDER</text>
+  <text x="640" y="40" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="14" fill="#6aa76a" font-weight="700" letter-spacing="1.5">KUKUI PLACEHOLDER</text>
 </svg>
