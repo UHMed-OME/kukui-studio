@@ -1,38 +1,52 @@
 /**
  * Minimal valid config used as Studio's "new activity" template.
  *
- * Extracted from apps/studio-app/src/starters.ts. The PLACEHOLDER_IMAGE
- * constant from that file (an inline SVG data URL used as a swap-in
- * placeholder until the author uploads or links a real image) is inlined
- * here as a local constant so this module is standalone.
+ * Ships with a real CC0 kukui (candlenut) photo so the activity shows a
+ * working example the moment it loads or resets, rather than an empty
+ * placeholder. The image is inlined (see kukuiStarterImage.ts) so it renders
+ * in Studio, engine-web, and SCORM zips alike. Authors replace the image and
+ * hotspots with their own.
  */
 
-const PLACEHOLDER_IMAGE =
-  "data:image/svg+xml;utf8," +
-  encodeURIComponent(
-    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 640" role="img" aria-label="Image placeholder"><defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f4ede2"/><stop offset="1" stop-color="#e9dec9"/></linearGradient><pattern id="dots" x="0" y="0" width="32" height="32" patternUnits="userSpaceOnUse"><circle cx="16" cy="16" r="1.5" fill="#bbae9a" opacity="0.45"/></pattern></defs><rect width="1024" height="640" fill="url(#bg)"/><rect width="1024" height="640" fill="url(#dots)"/><g transform="translate(512 280)" fill="#7b4324" opacity="0.18"><ellipse cx="0" cy="10" rx="90" ry="80"/><ellipse cx="0" cy="10" rx="70" ry="60" fill="#f4ede2"/></g><g transform="translate(512 420)" text-anchor="middle" font-family="-apple-system, system-ui, sans-serif" fill="#7b4324"><text x="0" y="0" font-size="22" font-weight="600" opacity="0.85">Replace this with your image</text><text x="0" y="32" font-size="14" opacity="0.6">Or delete it — image is optional</text></g></svg>`,
-  );
+import { KUKUI_STARTER_IMAGE } from "./kukuiStarterImage.js";
 
 const starter = {
   version: "1.0",
-  title: "Image Hotspot",
-  prompt: "Click the correct region.",
+  title: "Identify the kukui nut",
+  prompt:
+    "This is a kukui (candlenut) tree. Click one of the developing nuts, the round fuzzy fruits on the branch.",
   image: {
-    src: PLACEHOLDER_IMAGE,
-    alt: "Replace with the image authors will mark up",
+    src: KUKUI_STARTER_IMAGE,
+    alt: "A kukui (candlenut) tree branch with three round, fuzzy developing fruits among broad green leaves.",
+    attribution: {
+      author: "Philipola",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:Kukui_(Candlenut).jpg",
+      license: "CC0",
+      licenseUrl: "https://creativecommons.org/publicdomain/zero/1.0/",
+    },
   },
   hotspots: [
     {
-      id: "h1",
-      label: "Region A",
-      rect: { x: 0.2, y: 0.3, w: 0.2, h: 0.2 },
+      id: "nut-upper",
+      label: "Developing kukui nut",
+      rect: { x: 0.2, y: 0.28, w: 0.18, h: 0.22 },
       correct: true,
+      feedback: "Correct. That is a developing kukui nut, still in its fuzzy green husk.",
     },
     {
-      id: "h2",
-      label: "Region B",
-      rect: { x: 0.6, y: 0.3, w: 0.2, h: 0.2 },
+      id: "nut-center",
+      label: "Developing kukui nut",
+      rect: { x: 0.37, y: 0.41, w: 0.18, h: 0.19 },
+      correct: true,
+      feedback: "Correct. Inside this husk are the hard shell and the oily kukui seed.",
+    },
+    {
+      id: "leaf",
+      label: "Kukui leaf",
+      rect: { x: 0.72, y: 0.4, w: 0.24, h: 0.18 },
       correct: false,
+      feedback:
+        "That is a kukui leaf, not the fruit. Look for the round fuzzy nuts on the branch.",
     },
   ],
   behaviour: { enableRetry: true, showHotspotMarkers: true },
