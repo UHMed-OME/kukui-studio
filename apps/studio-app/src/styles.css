@@ -7603,11 +7603,17 @@ html[data-theme="glass"] .kukui-studio-footer {
   gap: var(--spacing-xs);
 }
 
-.ks-bs-ed__image-thumb {
+.ks-bs-ed__image-thumb,
+.ks-bs-ed__video-thumb {
   max-width: 100%;
   max-height: 120px;
   border-radius: var(--radius-sm);
   object-fit: contain;
+}
+
+.ks-bs-ed__video-thumb {
+  width: 100%;
+  background: var(--color-canvas-3d);
 }
 
 .ks-bs-ed__image-missing {

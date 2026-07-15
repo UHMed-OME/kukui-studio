@@ -55,6 +55,9 @@ export async function resolveBranchingAssets(config: unknown): Promise<Resolved>
       if (!isObj(node)) return node;
       const next: Json = { ...node };
       if (isObj(node.image)) next.image = await resolveImage(node.image, urls);
+      // Uploaded videos carry an assetId too; YouTube links resolve to a plain
+      // src and pass through resolveImage untouched (no assetId).
+      if (isObj(node.video)) next.video = await resolveImage(node.video, urls);
       if (isObj(node.outcome) && isObj(node.outcome.image)) {
         next.outcome = { ...node.outcome, image: await resolveImage(node.outcome.image, urls) };
       }

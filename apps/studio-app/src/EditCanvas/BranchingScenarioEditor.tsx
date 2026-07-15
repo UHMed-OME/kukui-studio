@@ -40,6 +40,13 @@ type NodeImage = {
   naturalHeight: number;
 };
 
+type NodeVideo = {
+  type: "youtube" | "html5";
+  assetId?: string;
+  src?: string;
+  title?: string;
+};
+
 type Outcome = {
   score: number;
   success: boolean;
@@ -60,6 +67,7 @@ type BNode = {
   id: string;
   prompt: string;
   image?: NodeImage;
+  video?: NodeVideo;
   position?: { x: number; y: number };
   choices: Choice[] | null;
   outcome?: Outcome;
@@ -324,6 +332,7 @@ export function BranchingScenarioEditor({
     const ids: string[] = [];
     for (const n of nodes) {
       if (n.image?.assetId) ids.push(n.image.assetId);
+      if (n.video?.assetId) ids.push(n.video.assetId);
       if (n.outcome?.image?.assetId) ids.push(n.outcome.image.assetId);
     }
     return ids;
@@ -994,8 +1003,20 @@ function NodeInspector({
   onDelete: () => void;
 }) {
   const nodeFileRef = useRef<HTMLInputElement>(null);
+  const nodeVideoFileRef = useRef<HTMLInputElement>(null);
   const outcomeFileRef = useRef<HTMLInputElement>(null);
   const [confirmDelete, setConfirmDelete] = useState(false);
+
+  const pickVideoFile = async (file: File) => {
+    const id = newAssetId();
+    await putSlideAsset(id, file);
+    onPatchNode({
+      video: { type: "html5", assetId: id, title: file.name.replace(/\.[^.]+$/, "") || "Video" },
+    });
+  };
+  const nodeVideoUrl = node.video
+    ? (node.video.assetId ? urlMap[node.video.assetId] : undefined) ?? node.video.src
+    : undefined;
 
   const terminal = isTerminal(node);
 
@@ -1114,6 +1135,57 @@ function NodeInspector({
             const f = e.target.files?.[0];
             e.target.value = "";
             if (f) void pickImage(f, (img) => onPatchNode({ image: img }));
+          }}
+        />
+      </div>
+
+      {/* Node video: a YouTube link or an uploaded file (shown above the prompt). */}
+      <div className="ks-bs-ed__field">
+        <span className="ks-bs-ed__field-label">Video (optional)</span>
+        {node.video?.type === "html5" ? (
+          <div className="ks-bs-ed__image">
+            {nodeVideoUrl ? (
+              <video className="ks-bs-ed__video-thumb" src={nodeVideoUrl} controls preload="metadata" />
+            ) : (
+              <span className="ks-bs-ed__image-missing">Video file attached</span>
+            )}
+            <button
+              type="button"
+              className="kukui-studio-btn kukui-studio-btn--ghost kukui-studio-btn--sm"
+              onClick={() => onPatchNode({ video: undefined })}
+            >
+              Remove video
+            </button>
+          </div>
+        ) : (
+          <>
+            <input
+              type="url"
+              placeholder="Paste a YouTube link…"
+              value={node.video?.src ?? ""}
+              onChange={(e) => {
+                const v = e.target.value.trim();
+                onPatchNode({ video: v ? { type: "youtube", src: v } : undefined });
+              }}
+            />
+            <button
+              type="button"
+              className="kukui-studio-btn kukui-studio-btn--secondary kukui-studio-btn--sm"
+              onClick={() => nodeVideoFileRef.current?.click()}
+            >
+              Upload MP4 instead
+            </button>
+          </>
+        )}
+        <input
+          ref={nodeVideoFileRef}
+          type="file"
+          accept="video/*"
+          hidden
+          onChange={(e) => {
+            const f = e.target.files?.[0];
+            e.target.value = "";
+            if (f) void pickVideoFile(f);
           }}
         />
       </div>

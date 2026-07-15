@@ -22,6 +22,58 @@ function NodeImageView({ image }: { image: NodeImageConfig }) {
   );
 }
 
+type NodeVideoConfig = NonNullable<BranchingScenarioConfig["nodes"][number]["video"]>;
+
+/** Extract the 11-char YouTube id from watch / youtu.be / embed URLs. */
+function parseYouTubeId(src: string): string | null {
+  try {
+    const u = new URL(src);
+    if (u.hostname.includes("youtu.be")) return u.pathname.slice(1) || null;
+    if (u.pathname.startsWith("/embed/")) return u.pathname.slice(7) || null;
+    return u.searchParams.get("v");
+  } catch {
+    return null;
+  }
+}
+
+/** Optional node video: a YouTube embed or an uploaded/hosted file. Rendered
+ *  above the prompt so the learner watches before choosing. */
+function NodeVideoView({ video }: { video: NodeVideoConfig }) {
+  const title = video.title ?? "Video";
+  if (video.type === "youtube") {
+    const id = video.src ? parseYouTubeId(video.src) : null;
+    if (!id) {
+      return (
+        <div className="kukui-bs__video-missing" role="img" aria-label={title}>
+          Video unavailable
+        </div>
+      );
+    }
+    return (
+      <div className="kukui-bs__video kukui-bs__video--embed">
+        <iframe
+          src={`https://www.youtube-nocookie.com/embed/${id}`}
+          title={title}
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowFullScreen
+        />
+      </div>
+    );
+  }
+  if (!video.src) {
+    return (
+      <div className="kukui-bs__video-missing" role="img" aria-label={title}>
+        Video unavailable
+      </div>
+    );
+  }
+  return (
+    <div className="kukui-bs__video">
+      <video src={video.src} controls preload="metadata" title={title} />
+    </div>
+  );
+}
+
 type LastPick = {
   /** Id of the node the learner was on when they picked (not the destination). */
   nodeId: string;
@@ -277,6 +329,7 @@ export default function Component({
         />
 
         <div className="kukui-bs__prompt" ref={promptRef} tabIndex={-1}>
+          {currentNode.video ? <NodeVideoView video={currentNode.video} /> : null}
           {currentNode.image ? <NodeImageView image={currentNode.image} /> : null}
           <SafeHtml html={currentNode.prompt} />
         </div>

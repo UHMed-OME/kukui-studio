@@ -163,12 +163,16 @@ export async function embedSlideAssets(
   return next;
 }
 
-/** Pick a file extension from an image blob's MIME type (default png). */
+/** Pick a file extension from an image/video blob's MIME type (default png). */
 function extFor(type: string): string {
   if (type === "image/jpeg") return "jpg";
   if (type === "image/webp") return "webp";
   if (type === "image/gif") return "gif";
   if (type === "image/svg+xml") return "svg";
+  if (type === "video/mp4") return "mp4";
+  if (type === "video/webm") return "webm";
+  if (type === "video/ogg") return "ogv";
+  if (type === "video/quicktime") return "mov";
   return "png";
 }
 
@@ -206,6 +210,9 @@ export async function embedBranchingAssets(
   };
   for (const node of next.nodes) {
     await embed(node?.image as { assetId?: string; src?: string } | undefined);
+    // Uploaded node videos embed the same way; YouTube links have no assetId
+    // and pass through untouched.
+    await embed(node?.video as { assetId?: string; src?: string } | undefined);
     const outcome = node?.outcome as { image?: { assetId?: string; src?: string } } | undefined;
     await embed(outcome?.image);
   }

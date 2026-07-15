@@ -25,6 +25,28 @@ const NodeImage = z
   })
   .strict();
 
+/**
+ * An optional video on a node: a YouTube link or an uploaded / hosted file.
+ * Same asset model as images — an uploaded file's bytes live in IndexedDB
+ * (keyed by `assetId` in Studio) and are bundled at SCORM/web export with
+ * `src` rewritten to a relative path; a YouTube link is just its `src`.
+ * Rendered above the prompt so the learner watches, then chooses.
+ */
+const NodeVideo = z
+  .object({
+    /** "youtube" for a share/watch link, "html5" for an uploaded/hosted file. */
+    type: z.enum(["youtube", "html5"]),
+    /** IndexedDB asset key for uploaded files (Studio authoring). */
+    assetId: z.string().min(1).optional(),
+    /** Resolved URL: YouTube link, object URL (preview), relative path (export),
+     *  or https. Optional: an uploaded file has only an `assetId` until it is
+     *  resolved for preview or bundled at export. */
+    src: SAFE_MEDIA_URL.optional(),
+    /** Optional accessible title / caption. */
+    title: z.string().optional(),
+  })
+  .strict();
+
 const Outcome = z
   .object({
     // 0..1 — used as the SCORM score in "terminal" scoreMode (raw, max=1).
@@ -63,6 +85,8 @@ const Node = z
     prompt: z.string().min(1),
     /** Optional image shown above the prompt. */
     image: NodeImage.optional(),
+    /** Optional video shown above the prompt (YouTube link or uploaded file). */
+    video: NodeVideo.optional(),
     /**
      * Optional normalized (0..1) canvas position for the Studio graph editor.
      * Pure authoring metadata; the runtime ignores it.
