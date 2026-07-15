@@ -84,6 +84,15 @@ function clamp01(n: number): number {
   return n;
 }
 
+/** Base pixel size of the graph canvas (nodes are positioned as % of this).
+ *  Large enough to give a real working area; the viewport scrolls over it and
+ *  zoom scales it. */
+const CANVAS_W = 1100;
+const CANVAS_H = 820;
+const ZOOM_MIN = 0.4;
+const ZOOM_MAX = 1.6;
+const ZOOM_STEP = 0.2;
+
 function htmlToText(html: string): string {
   return html.replace(/<[^>]+>/g, "").trim();
 }
@@ -264,14 +273,34 @@ export function BranchingScenarioEditor({
   const railRef = useRef<HTMLElement>(null);
   const draggedRef = useRef(false);
 
-  // The canvas is wider/taller than its scroll viewport; nodes auto-layout
-  // around the horizontal center, so on first mount scroll the viewport to
-  // reveal them (otherwise the graph starts off to the right, out of view).
+  const [zoom, setZoom] = useState(1);
+
+  // The canvas is larger than its scroll viewport; nodes auto-layout around
+  // the center, so on first mount scroll the viewport to reveal them
+  // (otherwise the graph starts off-screen).
   useEffect(() => {
     const vp = viewportRef.current;
     if (!vp) return;
     vp.scrollLeft = Math.max(0, (vp.scrollWidth - vp.clientWidth) / 2);
+    vp.scrollTop = Math.max(0, (vp.scrollHeight - vp.clientHeight) / 2);
   }, []);
+
+  /** Zoom while keeping the viewport's center point fixed on the canvas. */
+  const applyZoom = (next: number) => {
+    const nz = Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, Math.round(next * 10) / 10));
+    const vp = viewportRef.current;
+    if (!vp) {
+      setZoom(nz);
+      return;
+    }
+    const cx = (vp.scrollLeft + vp.clientWidth / 2) / zoom;
+    const cy = (vp.scrollTop + vp.clientHeight / 2) / zoom;
+    setZoom(nz);
+    requestAnimationFrame(() => {
+      vp.scrollLeft = cx * nz - vp.clientWidth / 2;
+      vp.scrollTop = cy * nz - vp.clientHeight / 2;
+    });
+  };
 
   const nodes = useMemo<BNode[]>(
     () => (Array.isArray(config.nodes) ? config.nodes : []),
@@ -685,6 +714,35 @@ export function BranchingScenarioEditor({
                   Cancel link
                 </button>
               )}
+              <div className="ks-bs-ed__zoom" role="group" aria-label="Zoom">
+                <button
+                  type="button"
+                  className="ks-bs-ed__zoom-btn"
+                  onClick={() => applyZoom(zoom - ZOOM_STEP)}
+                  disabled={zoom <= ZOOM_MIN}
+                  aria-label="Zoom out"
+                >
+                  −
+                </button>
+                <button
+                  type="button"
+                  className="ks-bs-ed__zoom-pct"
+                  onClick={() => applyZoom(1)}
+                  aria-label="Reset zoom to 100%"
+                  title="Reset zoom"
+                >
+                  {Math.round(zoom * 100)}%
+                </button>
+                <button
+                  type="button"
+                  className="ks-bs-ed__zoom-btn"
+                  onClick={() => applyZoom(zoom + ZOOM_STEP)}
+                  disabled={zoom >= ZOOM_MAX}
+                  aria-label="Zoom in"
+                >
+                  +
+                </button>
+              </div>
             </div>
 
             {pending && (
@@ -703,10 +761,20 @@ export function BranchingScenarioEditor({
               onPointerCancel={endDrag}
             >
               <div
+                className="ks-bs-ed__sizer"
+                style={{ width: CANVAS_W * zoom, height: CANVAS_H * zoom }}
+              >
+              <div
                 ref={boardRef}
                 className={["ks-bs-ed__canvas", pending ? "is-linking" : ""]
                   .filter(Boolean)
                   .join(" ")}
+                style={{
+                  width: CANVAS_W,
+                  height: CANVAS_H,
+                  transform: `scale(${zoom})`,
+                  transformOrigin: "0 0",
+                }}
                 onClick={(e) => {
                   if (e.target === boardRef.current) {
                     setSelectedId(null);
@@ -806,6 +874,7 @@ export function BranchingScenarioEditor({
                   </div>
                 );
               })}
+              </div>
               </div>
             </div>
 

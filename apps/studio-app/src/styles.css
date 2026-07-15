@@ -7276,12 +7276,15 @@ html[data-theme="glass"] .kukui-studio-footer {
   touch-action: none;
 }
 
+/* Scroll-content sizer: takes the canvas's zoomed pixel size so the viewport
+   scrollbars span the whole zoomed canvas. */
+.ks-bs-ed__sizer {
+  position: relative;
+}
+
 .ks-bs-ed__canvas {
   position: relative;
-  width: 100%;
-  height: 100%;
-  min-width: 720px;
-  min-height: 620px;
+  /* width/height set inline (base canvas size); transform: scale() applies zoom. */
   /* Dot grid so it reads as a proper node-editor canvas, not a blank box.
      Tokened so it adapts per color scheme. */
   background-image: radial-gradient(
@@ -7298,6 +7301,51 @@ html[data-theme="glass"] .kukui-studio-footer {
   cursor: crosshair;
   outline: 2px dashed var(--color-info);
   outline-offset: -2px;
+}
+
+/* Zoom control cluster (sits at the right of the graph toolbar). */
+.ks-bs-ed__zoom {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  overflow: hidden;
+}
+
+.ks-bs-ed__zoom-btn,
+.ks-bs-ed__zoom-pct {
+  min-height: 30px;
+  border: none;
+  background: transparent;
+  color: var(--color-text-primary);
+  font-size: var(--font-size-meta);
+  cursor: pointer;
+}
+
+.ks-bs-ed__zoom-btn {
+  min-width: 32px;
+  font-size: 16px;
+  line-height: 1;
+}
+
+.ks-bs-ed__zoom-pct {
+  min-width: 50px;
+  padding: 0 6px;
+  font-variant-numeric: tabular-nums;
+  border-left: 1px solid var(--color-border);
+  border-right: 1px solid var(--color-border);
+}
+
+.ks-bs-ed__zoom-btn:hover:not(:disabled),
+.ks-bs-ed__zoom-pct:hover {
+  background: var(--color-primary-soft);
+}
+
+.ks-bs-ed__zoom-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
 }
 
 .ks-bs-ed__edges {
