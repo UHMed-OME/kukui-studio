@@ -368,9 +368,12 @@ export function BranchingScenarioEditor({
     const source = nodes.find((n) => n.id === sourceId);
     if (!source) return;
     const base = resolvePos(source);
+    // Fan each new terminal out below the source, offset by how many choices
+    // it already has, so multiple choices from one node don't stack.
+    const i = source.choices?.length ?? 0;
     const pos = {
-      x: clamp01(roundCoord(base.x + 0.08)),
-      y: clamp01(roundCoord(base.y + 0.16)),
+      x: clamp01(roundCoord(base.x + (i - 1) * 0.16)),
+      y: clamp01(roundCoord(base.y + 0.2)),
     };
     const target = seedTerminalNode(nodes.map((n) => n.id), pos);
     const choice: Choice = {

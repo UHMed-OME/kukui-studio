@@ -250,8 +250,19 @@ const RECT_DEFAULTS: Record<string, number> = { x: 0.1, y: 0.1, w: 0.2, h: 0.2 }
 function seedDefaults(itemSchema: Record<string, unknown>): void {
   const props = itemSchema.properties;
   if (!props || typeof props !== "object") return;
+  // Only pre-fill REQUIRED properties. Seeding a default for an optional
+  // field makes RJSF materialise it into existing data (via getDefaultFormState),
+  // which corrupts canvas-owned arrays: e.g. branching-scenario nodes would each
+  // gain an invalid empty `image` ({ alt: "", naturalWidth: 0 }) and a stray
+  // `position` — breaking schema validation (so Live renders nothing) and
+  // stacking every node at the same spot. Required fields still seed, so
+  // form "Add item" keeps producing a fully-shaped item.
+  const required = Array.isArray(itemSchema.required)
+    ? (itemSchema.required as string[])
+    : [];
   for (const [name, raw] of Object.entries(props as Record<string, unknown>)) {
     if (!raw || typeof raw !== "object") continue;
+    if (!required.includes(name)) continue;
     const propSchema = raw as Record<string, unknown>;
     if (propSchema.default !== undefined) continue;
     const type = propSchema.type;
