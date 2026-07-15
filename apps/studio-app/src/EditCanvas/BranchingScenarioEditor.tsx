@@ -260,8 +260,18 @@ export function BranchingScenarioEditor({
   onChange: (next: BSConfig) => void;
 }) {
   const boardRef = useRef<HTMLDivElement>(null);
+  const viewportRef = useRef<HTMLDivElement>(null);
   const railRef = useRef<HTMLElement>(null);
   const draggedRef = useRef(false);
+
+  // The canvas is wider/taller than its scroll viewport; nodes auto-layout
+  // around the horizontal center, so on first mount scroll the viewport to
+  // reveal them (otherwise the graph starts off to the right, out of view).
+  useEffect(() => {
+    const vp = viewportRef.current;
+    if (!vp) return;
+    vp.scrollLeft = Math.max(0, (vp.scrollWidth - vp.clientWidth) / 2);
+  }, []);
 
   const nodes = useMemo<BNode[]>(
     () => (Array.isArray(config.nodes) ? config.nodes : []),
@@ -339,10 +349,14 @@ export function BranchingScenarioEditor({
   };
 
   const addNode = () => {
-    const node = seedTerminalNode(
-      nodes.map((n) => n.id),
-      { x: 0.5, y: 0.5 },
-    );
+    // Spread new nodes across the canvas (5 columns, stepping down each row)
+    // instead of stacking them at the center where they'd bury each other.
+    const k = nodes.length;
+    const pos = {
+      x: roundCoord(clamp01(0.16 + (k % 5) * 0.17)),
+      y: roundCoord(clamp01(0.2 + (Math.floor(k / 5) % 3) * 0.26)),
+    };
+    const node = seedTerminalNode(nodes.map((n) => n.id), pos);
     setNodes([...nodes, node]);
     setSelectedId(node.id);
     setNotice(null);
@@ -676,21 +690,27 @@ export function BranchingScenarioEditor({
               </p>
             )}
 
+            {/* Scroll viewport onto a larger grid canvas — pan a big graph by
+                scrolling; the canvas (boardRef) is what pointer math maps to. */}
             <div
-              ref={boardRef}
-              className={["ks-bs-ed__board", pending ? "is-linking" : ""]
-                .filter(Boolean)
-                .join(" ")}
+              ref={viewportRef}
+              className="ks-bs-ed__board"
               onPointerMove={onBoardMove}
               onPointerUp={endDrag}
               onPointerCancel={endDrag}
-              onClick={(e) => {
-                if (e.target === boardRef.current) {
-                  setSelectedId(null);
-                  setPending(null);
-                }
-              }}
             >
+              <div
+                ref={boardRef}
+                className={["ks-bs-ed__canvas", pending ? "is-linking" : ""]
+                  .filter(Boolean)
+                  .join(" ")}
+                onClick={(e) => {
+                  if (e.target === boardRef.current) {
+                    setSelectedId(null);
+                    setPending(null);
+                  }
+                }}
+              >
               <svg className="ks-bs-ed__edges" aria-hidden="true">
                 <defs>
                   <marker
@@ -783,6 +803,7 @@ export function BranchingScenarioEditor({
                   </div>
                 );
               })}
+              </div>
             </div>
 
             {edges.length > 0 && (
