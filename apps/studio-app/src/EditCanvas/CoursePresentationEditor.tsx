@@ -10,7 +10,7 @@ import { minNormalized, enforceMinRect } from "./minRect.js";
 import { seedMcConfig, seedFitbConfig } from "./checkpointSeeds.js";
 import { reorder, roundCoord } from "./zorder.js";
 import { InlineEdit } from "./InlineEdit.js";
-import { loadSlideAsset } from "../slides/slideAssetStore.js";
+import { loadSlideAsset, newAssetId, putSlideAsset } from "../slides/slideAssetStore.js";
 import {
   importGoogleSlides,
   GoogleSlidesUnavailableError,
@@ -92,6 +92,23 @@ function htmlToText(html: string): string {
   return html.replace(/<[^>]+>/g, "").trim();
 }
 
+/** Read an image file's natural pixel dimensions via a transient object URL. */
+function readImageDims(file: File): Promise<{ w: number; h: number }> {
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => {
+      resolve({ w: img.naturalWidth, h: img.naturalHeight });
+      URL.revokeObjectURL(url);
+    };
+    img.onerror = () => {
+      URL.revokeObjectURL(url);
+      reject(new Error("Could not read that image."));
+    };
+    img.src = url;
+  });
+}
+
 function hasRequiredCheckpoint(s: Slide): boolean {
   return s.overlays.some((o) => o.kind === "checkpoint" && o.required !== false);
 }
@@ -156,6 +173,7 @@ export function CoursePresentationEditor({
 }) {
   const boardRef = useRef<HTMLDivElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+  const imageFileRef = useRef<HTMLInputElement>(null);
   const railRef = useRef<HTMLElement>(null);
   /** Rect of the most recently added overlay — new ones cascade from it. */
   const lastAddedRectRef = useRef<Rect | null>(null);
@@ -270,6 +288,29 @@ export function CoursePresentationEditor({
         return;
       }
       setNotice(`Couldn't import: ${(err as Error).message}`);
+    }
+  };
+
+  /** Set an image file as the current slide's background (single-image path —
+   *  no PDF required). Reads natural dimensions so the board keeps the image's
+   *  real aspect, stores the blob in IndexedDB, and points the slide at it. */
+  const onPickImage = async (file: File) => {
+    setNotice(null);
+    if (!file.type.startsWith("image/")) {
+      setNotice("That's not an image. Pick a PNG, JPG, or WebP (or use Import PDF for a whole deck).");
+      return;
+    }
+    if (!slide) return;
+    try {
+      const dims = await readImageDims(file);
+      const id = newAssetId();
+      await putSlideAsset(id, file);
+      const alt = file.name.replace(/\.[^.]+$/, "").trim() || "Slide image";
+      patchSlide(clampedCurrent, {
+        background: { kind: "image", assetId: id, alt, naturalWidth: dims.w, naturalHeight: dims.h },
+      });
+    } catch (err) {
+      setNotice(`Couldn't add that image: ${(err as Error).message}`);
     }
   };
 
@@ -526,6 +567,9 @@ export function CoursePresentationEditor({
   /* ---- render ------------------------------------------------------------- */
 
   const title = typeof config.title === "string" ? config.title : "";
+  // Interactions attach to a slide image; on a blank slide the placement
+  // buttons are disabled rather than looking active and only erroring.
+  const canPlace = bg?.kind === "image";
   const overlayCount = slide?.overlays.length ?? 0;
   const plural = (n: number) => (n === 1 ? "" : "s");
 
@@ -571,6 +615,18 @@ export function CoursePresentationEditor({
           const f = e.target.files?.[0];
           e.target.value = "";
           if (f) void onPickFile(f);
+        }}
+      />
+
+      <input
+        ref={imageFileRef}
+        type="file"
+        accept="image/*"
+        hidden
+        onChange={(e) => {
+          const f = e.target.files?.[0];
+          e.target.value = "";
+          if (f) void onPickImage(f);
         }}
       />
 
@@ -674,6 +730,8 @@ export function CoursePresentationEditor({
                   type="button"
                   className="kukui-studio-btn kukui-studio-btn--primary kukui-studio-btn--sm"
                   onClick={() => addOverlay("info")}
+                  disabled={!canPlace}
+                  title={canPlace ? undefined : "Add a slide image before placing interactions"}
                 >
                   + Hotspot
                 </button>
@@ -681,6 +739,8 @@ export function CoursePresentationEditor({
                   type="button"
                   className="kukui-studio-btn kukui-studio-btn--primary kukui-studio-btn--sm"
                   onClick={() => addOverlay("checkpoint")}
+                  disabled={!canPlace}
+                  title={canPlace ? undefined : "Add a slide image before placing interactions"}
                 >
                   + Checkpoint
                 </button>
@@ -730,7 +790,7 @@ export function CoursePresentationEditor({
             {slide && (
               <div
                 ref={boardRef}
-                className="ks-cp-ed__board"
+                className={["ks-cp-ed__board", canPlace ? "" : "is-blank"].filter(Boolean).join(" ")}
                 style={
                   bg && bg.kind === "image"
                     ? { aspectRatio: `${bg.naturalWidth} / ${bg.naturalHeight}` }
@@ -750,8 +810,29 @@ export function CoursePresentationEditor({
                     <div className="ks-cp-ed__board-missing">Loading slide image…</div>
                   )
                 ) : (
-                  <div className="ks-cp-ed__board-blank">
-                    Blank slide: a title or section divider. Interactions need a slide image.
+                  <div className="ks-cp-ed__board-empty">
+                    <p className="ks-cp-ed__board-empty-title">This slide has no image</p>
+                    <p className="ks-cp-ed__board-empty-body">
+                      Add a slide image to place info hotspots and question checkpoints on it. A
+                      blank slide still works on its own as a title or section divider.
+                    </p>
+                    <div className="ks-cp-ed__board-empty-actions">
+                      <button
+                        type="button"
+                        className="kukui-studio-btn kukui-studio-btn--primary kukui-studio-btn--sm"
+                        onClick={() => imageFileRef.current?.click()}
+                      >
+                        Add slide image
+                      </button>
+                      <button
+                        type="button"
+                        className="kukui-studio-btn kukui-studio-btn--secondary kukui-studio-btn--sm"
+                        onClick={() => fileRef.current?.click()}
+                        disabled={Boolean(importing)}
+                      >
+                        {importing ?? "Import a deck (PDF)"}
+                      </button>
+                    </div>
                   </div>
                 )}
 
@@ -875,16 +956,39 @@ export function CoursePresentationEditor({
                     }
                   />
                 </label>
-                <p className="ks-cp-ed__bg-summary">
-                  {bg && bg.kind === "image" ? (
-                    <>
-                      Background: image
-                      <span className="ks-cp-ed__bg-alt"> (alt: {bg.alt})</span>
-                    </>
-                  ) : (
-                    <>Background: blank (title or section divider)</>
-                  )}
-                </p>
+                {bg && bg.kind === "image" ? (
+                  <>
+                    <label className="ks-cp-ed__field">
+                      Image description (alt text)
+                      <input
+                        type="text"
+                        value={bg.alt}
+                        placeholder="Describe the slide image"
+                        onChange={(e) =>
+                          patchSlide(clampedCurrent, { background: { ...bg, alt: e.target.value } })
+                        }
+                      />
+                    </label>
+                    <button
+                      type="button"
+                      className="kukui-studio-btn kukui-studio-btn--ghost kukui-studio-btn--sm"
+                      onClick={() => imageFileRef.current?.click()}
+                    >
+                      Replace image
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <p className="ks-cp-ed__bg-summary">Background: blank (title or section divider)</p>
+                    <button
+                      type="button"
+                      className="kukui-studio-btn kukui-studio-btn--ghost kukui-studio-btn--sm"
+                      onClick={() => imageFileRef.current?.click()}
+                    >
+                      Add slide image
+                    </button>
+                  </>
+                )}
                 <div className="ks-cp-ed__panel-actions">
                   <button
                     type="button"

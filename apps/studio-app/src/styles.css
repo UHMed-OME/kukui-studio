@@ -6771,15 +6771,27 @@ html[data-theme="glass"] .kukui-studio-footer {
   gap: var(--spacing-xs);
 }
 
+/* The slide canvas. White surface (not --color-tip-bg, which equals the
+   panel background and made the slide vanish into it) with a soft shadow so
+   the deck reads as a distinct page you place things on. */
 .ks-cp-ed__board {
   position: relative;
   width: 100%;
   max-height: 60vh;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
-  background: var(--color-tip-bg, #f2f0e8);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-sm, 0 1px 3px rgb(0 0 0 / 0.1));
   overflow: hidden;
   touch-action: none;
+}
+
+/* A slide with no image yet: a dashed drop-zone so it reads as "add
+   something here", not an undefined empty box. */
+.ks-cp-ed__board.is-blank {
+  border-style: dashed;
+  border-color: var(--color-border-hover, var(--color-border));
+  box-shadow: none;
 }
 
 .ks-cp-ed__board-img {
@@ -6790,8 +6802,7 @@ html[data-theme="glass"] .kukui-studio-footer {
   user-select: none;
 }
 
-.ks-cp-ed__board-missing,
-.ks-cp-ed__board-blank {
+.ks-cp-ed__board-missing {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -6799,6 +6810,42 @@ html[data-theme="glass"] .kukui-studio-footer {
   padding: var(--spacing-lg);
   color: var(--color-text-secondary);
   text-align: center;
+}
+
+/* Actionable empty state shown on a blank slide: what this slide is, and the
+   two ways to give it an image, right where the author is looking. */
+.ks-cp-ed__board-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-sm);
+  min-height: 240px;
+  padding: var(--spacing-2xl) var(--spacing-lg);
+  text-align: center;
+}
+
+.ks-cp-ed__board-empty-title {
+  margin: 0;
+  font-size: var(--font-size-body);
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+.ks-cp-ed__board-empty-body {
+  margin: 0;
+  max-width: 42ch;
+  font-size: var(--font-size-meta);
+  color: var(--color-text-secondary);
+  line-height: 1.5;
+}
+
+.ks-cp-ed__board-empty-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--spacing-sm);
+  margin-top: var(--spacing-xs);
 }
 
 .ks-cp-ed__overlay {
