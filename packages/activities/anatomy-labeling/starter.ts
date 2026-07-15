@@ -1,38 +1,52 @@
 /**
- * Minimal valid config used as Studio's "new activity" template. The
- * placeholder SVG image lets authors see the layout immediately; they
- * can replace or clear it via the file upload widget.
+ * Minimal valid config used as Studio's "new activity" template.
  *
- * Extracted from apps/studio-app/src/starters.ts (LEGACY_STARTERS).
+ * Ships a worked example so "reset" is a real labeling task: an original
+ * unlabeled neuron diagram (inline SVG, so public-domain / CC0, no
+ * attribution) with drop targets on the actual structures. Authors replace
+ * the image via the file upload widget and reposition the targets.
  */
 
-/**
- * Inline placeholder diagram used as the default image. A neutral
- * dotted card with the prompt "Replace this with your image". Inlined
- * here verbatim from apps/studio-app/src/starters.ts so this module is
- * standalone.
- */
-const PLACEHOLDER_IMAGE =
+/** Original CC0 neuron illustration with NO text labels — the learner drags
+ *  the labels onto the targets. Embedded as a data URL so it is standalone. */
+const NEURON_IMAGE =
   "data:image/svg+xml;utf8," +
   encodeURIComponent(
-    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 640" role="img" aria-label="Image placeholder"><defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f4ede2"/><stop offset="1" stop-color="#e9dec9"/></linearGradient><pattern id="dots" x="0" y="0" width="32" height="32" patternUnits="userSpaceOnUse"><circle cx="16" cy="16" r="1.5" fill="#bbae9a" opacity="0.45"/></pattern></defs><rect width="1024" height="640" fill="url(#bg)"/><rect width="1024" height="640" fill="url(#dots)"/><g transform="translate(512 280)" fill="#7b4324" opacity="0.18"><ellipse cx="0" cy="10" rx="90" ry="80"/><ellipse cx="0" cy="10" rx="70" ry="60" fill="#f4ede2"/></g><g transform="translate(512 420)" text-anchor="middle" font-family="-apple-system, system-ui, sans-serif" fill="#7b4324"><text x="0" y="0" font-size="22" font-weight="600" opacity="0.85">Replace this with your image</text><text x="0" y="32" font-size="14" opacity="0.6">Or delete it — image is optional</text></g></svg>`,
+    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 640" role="img" aria-label="Unlabeled diagram of a neuron">
+<rect width="1024" height="640" fill="#fbfaf6"/>
+<g stroke="#4a7a5f" stroke-width="6" fill="none" stroke-linecap="round">
+<path d="M232 300 L150 220"/><path d="M232 300 L140 300"/><path d="M232 300 L160 380"/><path d="M240 350 L180 430"/><path d="M270 250 L230 160"/>
+<path d="M150 220 L120 190"/><path d="M150 220 L130 250"/><path d="M140 300 L108 285"/><path d="M160 380 L128 400"/>
+</g>
+<line x1="300" y1="320" x2="820" y2="320" stroke="#3f6b52" stroke-width="16" stroke-linecap="round"/>
+<g fill="#c9e2d4" stroke="#3f6b52" stroke-width="3">
+<ellipse cx="430" cy="320" rx="46" ry="26"/><ellipse cx="560" cy="320" rx="46" ry="26"/><ellipse cx="690" cy="320" rx="46" ry="26"/>
+</g>
+<g stroke="#3f6b52" stroke-width="7" fill="none" stroke-linecap="round">
+<path d="M820 320 L880 280"/><path d="M820 320 L890 320"/><path d="M820 320 L880 360"/><path d="M880 280 L910 260"/><path d="M880 360 L910 380"/>
+</g>
+<circle cx="272" cy="316" r="70" fill="#4a7a5f"/>
+<circle cx="255" cy="300" r="26" fill="#2f5140"/>
+</svg>`,
   );
 
 const starter = {
   version: "1.0",
-  title: "Anatomy Labeling",
-  prompt: "Drag each label onto the correct target.",
+  title: "Label the Neuron",
+  prompt: "Drag each label onto the correct part of the neuron.",
   image: {
-    src: PLACEHOLDER_IMAGE,
-    alt: "Diagram placeholder",
+    src: NEURON_IMAGE,
+    alt: "Unlabeled neuron: dendrites and cell body on the left, a myelinated axon leading to terminals on the right.",
   },
   labels: [
-    { id: "l1", text: "Label A", correctTargetId: "t1" },
-    { id: "l2", text: "Label B", correctTargetId: "t2" },
+    { id: "l1", text: "Cell body (soma)", correctTargetId: "t1" },
+    { id: "l2", text: "Dendrites", correctTargetId: "t2" },
+    { id: "l3", text: "Axon terminals", correctTargetId: "t3" },
   ],
   targets: [
-    { id: "t1", position: { x: 0.3, y: 0.4 } },
-    { id: "t2", position: { x: 0.7, y: 0.4 } },
+    { id: "t1", position: { x: 0.27, y: 0.49 } },
+    { id: "t2", position: { x: 0.12, y: 0.33 } },
+    { id: "t3", position: { x: 0.87, y: 0.5 } },
   ],
   behaviour: { enableRetry: true },
 };
