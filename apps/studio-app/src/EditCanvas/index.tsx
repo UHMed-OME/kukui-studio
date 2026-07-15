@@ -1,5 +1,5 @@
 import { lazy, Suspense, type ComponentType } from "react";
-import type { ActivityKind } from "@kukui/core";
+import { KukuiLoader, type ActivityKind } from "@kukui/core";
 
 const DnDEditor = lazy(() =>
   import("./DnDEditor.js").then((m) => ({ default: m.DnDEditor })),
@@ -83,7 +83,11 @@ export function EditCanvas({
 }
 
 function EditLoading() {
-  return <div className="ks-edit-empty">Loading editor…</div>;
+  return (
+    <div className="ks-edit-empty">
+      <KukuiLoader label="Loading editor…" />
+    </div>
+  );
 }
 
 function EditUnsupported({ kind }: { kind: ActivityKind }) {

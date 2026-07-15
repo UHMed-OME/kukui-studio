@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import {
   ContentLoadError,
+  KukuiLoader,
   loadContent,
   type ActivityKind,
 } from "@kukui/core";
@@ -117,8 +118,8 @@ export function LiveHost({
   if (loadState.status === "loading") {
     return (
       <div className="live-shell">
-        <article className="live-card" role="status" aria-live="polite">
-          Loading activity…
+        <article className="live-card">
+          <KukuiLoader label="Loading activity…" />
         </article>
       </div>
     );

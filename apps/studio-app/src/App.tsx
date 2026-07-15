@@ -9,7 +9,7 @@ import {
   type KeyboardEvent as ReactKeyboardEvent,
 } from "react";
 import { Link } from "react-router-dom";
-import { type ActivityKind, PLANNED_ACTIVITY_KINDS } from "@kukui/core";
+import { type ActivityKind, PLANNED_ACTIVITY_KINDS, KukuiLoader } from "@kukui/core";
 import { ACTIVITY_MANIFESTS } from "@kukui/activities";
 import {
   SchemaRegistry,
@@ -954,8 +954,8 @@ export function App() {
             ) : (
               <Suspense
                 fallback={
-                  <div className="kukui-studio-preview-loading" role="status">
-                    Loading AI Assist…
+                  <div className="kukui-studio-preview-loading">
+                    <KukuiLoader label="Loading AI Assist…" />
                   </div>
                 }
               >

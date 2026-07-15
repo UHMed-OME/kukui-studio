@@ -13,6 +13,7 @@ import {
   type ScoreState,
   PLANNED_ACTIVITY_KINDS,
   ActivityFooter,
+  KukuiLoader,
 } from "@kukui/core";
 import {
   ACTIVITY_REGISTRY,
@@ -708,16 +709,8 @@ function randomAdminKey(): string {
 
 function PreviewLoading() {
   return (
-    <div
-      role="status"
-      aria-live="polite"
-      style={{
-        padding: 28,
-        color: "var(--color-text-secondary)",
-        fontSize: 13,
-      }}
-    >
-      Loading preview…
+    <div style={{ display: "grid", placeItems: "center", minHeight: 160, padding: 28 }}>
+      <KukuiLoader label="Loading preview…" />
     </div>
   );
 }

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { KukuiLoader } from "@kukui/core";
 import { parseAuthCallback } from "../sketchfab/client.js";
 import { saveSketchfabToken } from "../sketchfab/settings.js";
 import {
@@ -84,9 +85,21 @@ export function AuthCallback() {
   }
 
   return (
-    <div role="status" aria-live="polite" style={{ maxWidth: 480, margin: "80px auto", padding: 24 }}>
-      <h1 style={{ marginTop: 0 }}>Finishing Sketchfab sign-in…</h1>
-      <p>This usually takes less than a second.</p>
+    <div
+      style={{
+        maxWidth: 480,
+        margin: "80px auto",
+        padding: 24,
+        display: "grid",
+        placeItems: "center",
+        gap: 6,
+        textAlign: "center",
+      }}
+    >
+      <KukuiLoader label="Finishing Sketchfab sign-in…" />
+      <p style={{ margin: 0, color: "var(--color-text-secondary)" }}>
+        This usually takes less than a second.
+      </p>
     </div>
   );
 }
