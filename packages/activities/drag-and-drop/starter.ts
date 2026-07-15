@@ -1,27 +1,39 @@
 /**
  * Minimal valid config used as Studio's "new activity" template.
- * Extracted from apps/studio-app/src/starters.ts.
  *
- * The `background.src` is the shared `PLACEHOLDER_IMAGE` data-URL from
- * the original starters file — inlined here so this module is standalone.
- * Authors swap it via Studio's file-upload widget.
+ * Ships a worked example so "reset" is a real matching task: an original
+ * ECG trace (inline SVG, so public-domain / CC0, no attribution) with drop
+ * zones over the P wave, QRS complex, and T wave. Authors swap the
+ * background via Studio's file-upload widget and reposition the zones.
  */
-const PLACEHOLDER_IMAGE =
+const ECG_IMAGE =
   "data:image/svg+xml;utf8," +
   encodeURIComponent(
-    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 640" role="img" aria-label="Image placeholder"><defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f4ede2"/><stop offset="1" stop-color="#e9dec9"/></linearGradient><pattern id="dots" x="0" y="0" width="32" height="32" patternUnits="userSpaceOnUse"><circle cx="16" cy="16" r="1.5" fill="#bbae9a" opacity="0.45"/></pattern></defs><rect width="1024" height="640" fill="url(#bg)"/><rect width="1024" height="640" fill="url(#dots)"/><g transform="translate(512 280)" fill="#7b4324" opacity="0.18"><ellipse cx="0" cy="10" rx="90" ry="80"/><ellipse cx="0" cy="10" rx="70" ry="60" fill="#f4ede2"/></g><g transform="translate(512 420)" text-anchor="middle" font-family="-apple-system, system-ui, sans-serif" fill="#7b4324"><text x="0" y="0" font-size="22" font-weight="600" opacity="0.85">Replace this with your image</text><text x="0" y="32" font-size="14" opacity="0.6">Or delete it — image is optional</text></g></svg>`,
+    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 400" role="img" aria-label="A single ECG beat showing the P wave, QRS complex, and T wave">
+<rect width="1024" height="400" fill="#fbfaf6"/>
+<g stroke="#e7d9c6" stroke-width="1"><path d="M0 80H1024M0 160H1024M0 240H1024M0 320H1024" fill="none"/><path d="M128 0V400M256 0V400M384 0V400M512 0V400M640 0V400M768 0V400M896 0V400" fill="none"/></g>
+<path d="M40 220 L200 220 Q235 178 270 220 L360 220 L384 236 L416 96 L448 250 L480 220 L580 220 Q670 158 760 220 L984 220" fill="none" stroke="#a11c11" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>`,
   );
 
 const starter = {
   version: "1.0",
-  title: "Drag and Drop",
-  prompt: "Drag each label to its matching drop zone, then tap Check to score your answers.",
+  title: "Label the ECG",
+  prompt: "Drag each label onto the matching part of the ECG trace, then tap Check.",
   background: {
-    src: PLACEHOLDER_IMAGE,
-    alt: "Replace this placeholder with a description of your background image",
+    src: ECG_IMAGE,
+    alt: "A single ECG beat: a small P wave, a tall narrow QRS complex, then a rounded T wave.",
   },
-  draggables: [{ id: "d1", label: "Label A", correctZones: ["z1"] }],
-  dropZones: [{ id: "z1", label: "Zone 1", rect: { x: 0.4, y: 0.4, w: 0.2, h: 0.2 } }],
+  draggables: [
+    { id: "d1", label: "P wave", correctZones: ["z1"] },
+    { id: "d2", label: "QRS complex", correctZones: ["z2"] },
+    { id: "d3", label: "T wave", correctZones: ["z3"] },
+  ],
+  dropZones: [
+    { id: "z1", label: "", rect: { x: 0.19, y: 0.4, w: 0.12, h: 0.32 } },
+    { id: "z2", label: "", rect: { x: 0.36, y: 0.16, w: 0.12, h: 0.6 } },
+    { id: "z3", label: "", rect: { x: 0.55, y: 0.36, w: 0.18, h: 0.34 } },
+  ],
   behaviour: { enableRetry: true },
 };
 
