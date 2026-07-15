@@ -1675,11 +1675,12 @@ button {
 }
 
 .kukui-studio-preview {
-  /* Stage bg sits a notch darker than --color-surface so the activity
-     card (which uses --color-surface) has visible separation from the
-     panel chrome. Was --color-bg (stone-50, #fafaf9) which was too
-     close to the card's #fdfbf6 surface — they blended. */
-  background: var(--color-surface-alt);
+  /* Stage bg: the app page background, a hair off pure white. Light enough
+     to read as a clean page (not a saturated blue panel), while the white
+     activity card / slide board still separate via their own shadows. Was
+     --color-surface-alt (#e9edf3), which read as an off-blue field with the
+     editor's chrome text sitting directly on it. */
+  background: var(--color-bg);
   padding: 0;
   /* Query container for the visual editors that render inside this panel.
      Their two-pane -> stacked collapse must key off THIS panel's width, not
