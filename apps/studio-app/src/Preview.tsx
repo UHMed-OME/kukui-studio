@@ -333,12 +333,12 @@ export function Preview({
                 suspendData={attemptRef.current.get(kind)}
               />
             )}
-            {/* Mirror the integrated runtime's credit line so the preview shows
-                exactly what learners see at the bottom of the activity. */}
-            <ActivityFooter author={(fallbackConfig as { author?: string })?.author} />
             {isLiveActivity(kind) ? (
               <LiveTestLauncher kind={kind} config={fallbackConfig} onChange={onChange} />
             ) : null}
+            {/* Mirror the integrated runtime's credit line so the preview shows
+                exactly what learners see at the bottom of the activity. */}
+            <ActivityFooter author={(fallbackConfig as { author?: string })?.author} config={fallbackConfig} />
           </div>
         </Suspense>
       </PreviewErrorBoundary>
@@ -417,12 +417,12 @@ export function Preview({
               suspendData={attemptRef.current.get(kind)}
             />
           )}
-          {/* Mirror the integrated runtime's credit line so the preview shows
-              exactly what learners see at the bottom of the activity. */}
-          <ActivityFooter author={(config as { author?: string })?.author} />
           {isLiveActivity(kind) ? (
             <LiveTestLauncher kind={kind} config={config} onChange={onChange} />
           ) : null}
+          {/* Mirror the integrated runtime's credit line so the preview shows
+              exactly what learners see at the bottom of the activity. */}
+          <ActivityFooter author={(config as { author?: string })?.author} config={config} />
         </div>
       </Suspense>
     </PreviewErrorBoundary>
@@ -442,6 +442,7 @@ const LIVE_ACTIVITY_KINDS: readonly ActivityKind[] = [
   "word-cloud",
   "qa-board",
   "quick-quiz",
+  "leaderboard-quiz",
   // "isometric-chatroom" — hidden from the Live launcher while the
   // runtime is being overhauled. Studio editing still works.
 ];
@@ -453,11 +454,11 @@ function isLiveActivity(kind: ActivityKind): boolean {
 /**
  * "Test in Kukui Live" launcher. Emits two URL variants:
  *
- *   - **Instructor URL**: `?config=…&adminKey=…` — auto-claims host role
+ *   - **Instructor URL**: `?adminKey=…#config=…` — auto-claims host role
  *     because the URL's adminKey matches `config.live.adminKey`. The
  *     embedded config still includes the admin key so the runtime can
  *     verify the match client-side.
- *   - **Student URL**: `?config=…` only, with `live.adminKey` stripped
+ *   - **Student URL**: `#config=…` only, with `live.adminKey` stripped
  *     from the encoded config so it can't be decoded back to an
  *     instructor URL. Safe to share with anyone.
  *
@@ -503,9 +504,10 @@ function LiveTestLauncher({
       const sanitized = asInstructor ? config : stripAdminKey(config);
       const json = JSON.stringify(sanitized);
       const b64 = toBase64Url(json);
-      const params = new URLSearchParams({ activity: kind, config: b64 });
+      const params = new URLSearchParams({ activity: kind });
       if (asInstructor && adminKey) params.set("adminKey", adminKey);
-      return `${liveBaseUrl}?${params.toString()}`;
+      // Config goes in the #hash so it never reaches the server (431 otherwise).
+      return `${liveBaseUrl}?${params.toString()}#config=${b64}`;
     } catch {
       return liveBaseUrl;
     }

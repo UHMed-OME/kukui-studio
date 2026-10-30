@@ -15,6 +15,7 @@ import { SvgUploadWidget } from "./widgets/SvgUploadWidget.js";
 import { IconPickerWidget } from "./widgets/IconPickerWidget.js";
 import { NodeSelectWidget } from "./widgets/NodeSelectWidget.js";
 import { PasswordCopyWidget } from "./widgets/PasswordCopyWidget.js";
+import { TopicSelectWidget } from "./widgets/TopicSelectWidget.js";
 import { ModelSourceField } from "./fields/ModelSourceField.js";
 
 // Lazy-loaded — Tiptap + StarterKit + linkify is ~90-120 KB gz and only
@@ -122,6 +123,7 @@ export function EditorForm({
             iconPicker: IconPickerWidget,
             nodeSelect: NodeSelectWidget,
             passwordCopy: PasswordCopyWidget,
+            topicSelect: TopicSelectWidget,
           }}
           fields={{
             modelSource: ModelSourceField,

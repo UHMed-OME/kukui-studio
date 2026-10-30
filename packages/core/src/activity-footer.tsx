@@ -8,7 +8,27 @@ import type { CSSProperties } from "react";
  * JSON sets one. Stays out of the way visually so it doesn't compete with the
  * activity's own UI.
  */
-export function ActivityFooter({ author }: { author?: string }) {
+type Credit = { author: string; authorUrl?: string; sourceUrl?: string; license?: string; licenseUrl?: string };
+
+const link = (href: string | undefined, text: string) =>
+  href ? (
+    <a href={href} target="_blank" rel="noopener noreferrer" style={linkStyle}>
+      {text}
+    </a>
+  ) : (
+    text
+  );
+
+/** Distinct per-question image credits (quiz-style activities with questions[].image.attribution). */
+function questionCredits(config: unknown): Credit[] {
+  const qs = (config as { questions?: { image?: { attribution?: Credit } }[] } | undefined)?.questions;
+  if (!Array.isArray(qs)) return [];
+  const seen = new Map<string, Credit>();
+  for (const q of qs) if (q?.image?.attribution) seen.set(JSON.stringify(q.image.attribution), q.image.attribution);
+  return [...seen.values()];
+}
+
+export function ActivityFooter({ author, config }: { author?: string; config?: unknown }) {
   return (
     <footer style={footerStyle}>
       {author ? (
@@ -17,6 +37,14 @@ export function ActivityFooter({ author }: { author?: string }) {
           {" · "}
         </>
       ) : null}
+      {questionCredits(config).map((c) => (
+        <span key={JSON.stringify(c)}>
+          Image by {link(c.authorUrl, c.author)}
+          {c.sourceUrl ? <> · {link(c.sourceUrl, "View original")}</> : null}
+          {c.license ? <> · {link(c.licenseUrl, c.license)}</> : null}
+          {" · "}
+        </span>
+      ))}
       Made with{" "}
       <a
         href="https://github.com/UHMed-OME/kukui-studio"

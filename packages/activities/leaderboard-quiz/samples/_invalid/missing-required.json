@@ -1,0 +1,10 @@
+{
+  "_comment": "INTENTIONALLY INVALID: required field 'topics' is missing.",
+  "version": "1.0",
+  "title": "Medical Terms: Timed Recall",
+  "questions": [
+    { "id": "q1", "topicId": "cardio", "prompt": "Heart attack?", "acceptedAnswers": ["MI"] }
+  ],
+  "round": { "questionCount": 1, "timeLimitSeconds": 30 },
+  "pointsPerCorrect": 10
+}

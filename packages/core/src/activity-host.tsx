@@ -236,7 +236,7 @@ export function ActivityHost({
           getResults={scorm.getWebResults?.bind(scorm)}
         />
       ) : null}
-      <ActivityFooter author={cfg?.author} />
+      <ActivityFooter author={cfg?.author} config={cfg} />
     </>
   );
 }
