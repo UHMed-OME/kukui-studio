@@ -26,6 +26,8 @@
     "./ddx-tree/schema": "./ddx-tree/schema.ts",
     "./drag-and-drop/Component": "./drag-and-drop/Component.tsx",
     "./drag-and-drop/schema": "./drag-and-drop/schema.ts",
+    "./evidence-weighing/Component": "./evidence-weighing/Component.tsx",
+    "./evidence-weighing/schema": "./evidence-weighing/schema.ts",
     "./fill-in-the-blanks/Component": "./fill-in-the-blanks/Component.tsx",
     "./fill-in-the-blanks/schema": "./fill-in-the-blanks/schema.ts",
     "./flashcards/Component": "./flashcards/Component.tsx",

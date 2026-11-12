@@ -64,8 +64,14 @@ export function EditorForm({
     // Zod 4 ships its own JSON-Schema export. RJSF + AJV speak draft-7,
     // so target that explicitly (the default is draft-2020-12).
     const raw = z.toJSONSchema(zod, { target: "draft-7" }) as RJSFSchema;
-    return injectArrayItemDefaults(injectStepConstraints(enrichVariantTitles(raw)));
-  }, [kind]);
+    const schema = injectArrayItemDefaults(injectStepConstraints(enrichVariantTitles(raw)));
+
+    if (kind === "evidence-weighing") {
+      return updateEvidenceRatingOptions(schema, value);
+    }
+
+    return schema;
+  }, [kind, value]);
 
   const handleChange = (e: IChangeEvent) => {
     onChange(e.formData);
@@ -321,4 +327,43 @@ function findConstName(variant: Record<string, unknown>): string | null {
 
 function capitalize(s: string): string {
   return s.charAt(0).toUpperCase() + s.slice(1).replace(/([A-Z])/g, " $1");
+}
+
+function updateEvidenceRatingOptions(
+  schema: RJSFSchema,
+  value: unknown,
+): RJSFSchema {
+  const ratings = (value as { ratings?: { id: string; label: string }[]; })?.ratings ?? [];
+
+  const ratingOptions = ratings
+    .filter((rating) => rating.id.trim() !== "")
+    .map((rating) => ({
+      const: rating.id,
+      title: rating.label,
+    }));
+
+  const claims = schema.properties?.claims;
+  if (!claims || typeof claims !== "object") return schema;
+
+  const claimItems = claims.items;
+  if (!claimItems || typeof claimItems !== "object" || Array.isArray(claimItems)) {
+    return schema;
+  }
+
+  const evidence = claimItems.properties?.evidence;
+  if (!evidence || typeof evidence !== "object") return schema;
+
+  const evidenceItems = evidence.items;
+  if (!evidenceItems || typeof evidenceItems !== "object" || Array.isArray(evidenceItems)) {
+    return schema;
+  }
+
+  const expectedRating = evidenceItems.properties?.expectedRating;
+  if (!expectedRating || typeof expectedRating !== "object") {
+    return schema;
+  }
+
+  expectedRating.oneOf = ratingOptions;
+
+  return schema;
 }

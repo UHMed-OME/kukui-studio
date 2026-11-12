@@ -1,0 +1,36 @@
+{
+  "_comment": "INTENTIONALLY INVALID: 'claims[0].evidence[0].expectedRating' is a number instead of a string.",
+  "version": "1.0",
+  "title": "Evidence Weighing",
+  "ratings": [
+    {
+      "id": "weak",
+      "label": "Weak"
+    },
+    {
+      "id": "moderate",
+      "label": "Moderate"
+    },
+    {
+      "id": "strong",
+      "label": "Strong"
+    }
+  ],
+  "claims": [
+    {
+      "claim": "A patient has the influenza.",
+      "evidence": [
+        {
+          "text": "The patient has a fever, cough, and muscle aches.",
+          "expectedRating": 0,
+          "feedback": "These symptoms are consistent with influenza, but several other illnesses can cause similar symptoms."
+        },
+        {
+          "text": "The patient has a positive influenza PCR test.",
+          "expectedRating": "strong",
+          "feedback": "A positive molecular test provides strong evidence of influenza infection."
+        }
+      ]
+    }
+  ]
+}

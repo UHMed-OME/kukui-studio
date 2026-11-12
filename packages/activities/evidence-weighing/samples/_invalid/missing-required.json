@@ -1,0 +1,19 @@
+{
+  "_comment": "INTENTIONALLY INVALID: required field 'claims' is missing.",
+  "version": "1.0",
+  "title": "Evidence Weighing",
+  "ratings": [
+    {
+      "id": "weak",
+      "label": "Weak"
+    },
+    {
+      "id": "moderate",
+      "label": "Moderate"
+    },
+    {
+      "id": "strong",
+      "label": "Strong"
+    }
+  ]
+}
