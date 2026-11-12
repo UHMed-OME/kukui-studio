@@ -69,5 +69,6 @@
     { "from": 0, "to": 50, "message": "Review how strongly each finding supports the diagnosis." },
     { "from": 51, "to": 99, "message": "Good effort! Consider which findings are more specific." },
     { "from": 100, "to": 100, "message": "Excellent! You evaluated all the evidence correctly." }
-  ]
+  ],
+  "appearance": { "theme": "auto" }
 }

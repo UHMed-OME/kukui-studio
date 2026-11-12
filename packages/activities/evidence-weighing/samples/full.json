@@ -70,5 +70,6 @@
     "checkAnswerButton": "Check my answers",
     "showSolutionButton": "Show the correct ratings",
     "tryAgainButton": "Try again"
-  }
+  },
+  "appearance": { "theme": "auto" }
 }
