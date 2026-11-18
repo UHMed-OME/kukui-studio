@@ -78,7 +78,7 @@ const uiSchema = {
         attribution: {
           "ui:title": "Image credit (optional)",
           "ui:options": { foldable: true, compact: true },
-          "ui:help": "Shows as a small credit line at the bottom while this question is on screen.",
+          "ui:help": "Listed in a small credit line at the bottom of the activity.",
           author: f("Author", "Name of the photographer or source."),
           authorUrl: f("Author URL", "Optional link to the author's page."),
           sourceUrl: f("Source URL", "Optional link to the original image page."),

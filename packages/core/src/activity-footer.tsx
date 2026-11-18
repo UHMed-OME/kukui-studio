@@ -11,7 +11,7 @@ import type { CSSProperties } from "react";
 type Credit = { author: string; authorUrl?: string; sourceUrl?: string; license?: string; licenseUrl?: string };
 
 const link = (href: string | undefined, text: string) =>
-  href ? (
+  href && /^https?:\/\//i.test(href) ? (
     <a href={href} target="_blank" rel="noopener noreferrer" style={linkStyle}>
       {text}
     </a>

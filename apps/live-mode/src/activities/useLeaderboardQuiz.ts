@@ -110,7 +110,7 @@ export function useLeaderboardQuiz(
     return {
       shuffle: typeof sh === "boolean" ? sh : defaultShuffle,
       showBoard: settings.get("showBoard") !== false,
-      timeLimit: typeof tl === "number" && tl >= 1 ? Math.floor(tl) : defaultTimeLimit,
+      timeLimit: typeof tl === "number" && Number.isFinite(tl) && tl >= 1 ? Math.floor(tl) : defaultTimeLimit,
       pace: (settings.get("pace") === "manual" ? "manual" : "auto") as Pace,
       manual: {
         // Peers can send anything: keep only integers.
