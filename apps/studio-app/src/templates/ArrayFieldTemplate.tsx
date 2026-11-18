@@ -25,11 +25,38 @@ export function ArrayFieldTemplate(props: ArrayFieldTemplateProps) {
     | Record<string, unknown>
     | undefined;
   const hideIndex = uiOptions?.hideItemIndex === true;
+  // Optional override for the add button's text (default: "+ Add <singular title>").
+  const addLabel = typeof uiOptions?.addLabel === "string" ? uiOptions.addLabel : null;
+  // `blankCountFrom: "<sibling field>"`: only offer Add while that sibling text
+  // (e.g. a prompt) has more `___` blanks than this list has entries; an empty
+  // list can always add its first. Siblings are found from this array's path.
+  const blankCountFrom = typeof uiOptions?.blankCountFrom === "string" ? uiOptions.blankCountFrom : null;
+  let showAdd = canAdd;
+  let blankHint: string | null = null;
+  if (blankCountFrom) {
+    let node: unknown = (props.formContext as { formData?: unknown } | undefined)?.formData;
+    for (const seg of (props.idSchema?.$id ?? "").split("_").slice(1, -1)) {
+      node = (node as Record<string, unknown> | undefined)?.[seg];
+    }
+    const text = (node as Record<string, unknown> | undefined)?.[blankCountFrom];
+    const blanks = typeof text === "string" ? (text.match(/_{3,}/g)?.length ?? 0) : 0;
+    showAdd = canAdd && (arr.length === 0 || blanks > arr.length);
+    if (blanks > arr.length) {
+      blankHint = `Your prompt has ${blanks} blanks but ${arr.length} answer${arr.length === 1 ? "" : "s"}. Click "+ Add another blank" below for each remaining blank.`;
+    } else if (blanks === 0 && typeof text === "string" && /_{1,2}(?!_)/.test(text)) {
+      blankHint = "A blank needs three underscores (___) in the prompt.";
+    }
+  }
 
   return (
     <div className="ks-array">
       {title ? <h3 className="ks-array__title">{title}</h3> : null}
       {description ? <p className="ks-array__desc">{description}</p> : null}
+      {blankHint ? (
+        <p className="ks-array__desc" role="status">
+          {blankHint}
+        </p>
+      ) : null}
       {items && items.length > 0 ? (
         <ul className="ks-array__list">
           {items.map((item, idx) => (
@@ -46,7 +73,7 @@ export function ArrayFieldTemplate(props: ArrayFieldTemplateProps) {
       ) : (
         <p className="ks-array__empty">No items yet. Use Add below.</p>
       )}
-      {canAdd ? (
+      {showAdd ? (
         <button
           type="button"
           className="ks-array__add"
@@ -55,7 +82,7 @@ export function ArrayFieldTemplate(props: ArrayFieldTemplateProps) {
             onAddClick();
           }}
         >
-          + Add {singular(title)}
+          {addLabel ? `+ ${addLabel}` : `+ Add ${singular(title)}`}
         </button>
       ) : null}
     </div>

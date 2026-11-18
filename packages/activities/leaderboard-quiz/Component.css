@@ -1,0 +1,233 @@
+/*
+ * Leaderboard Quiz — same card, header, button and feedback idioms as Fill in
+ * the Blanks / Multiple Choice. Layout-stable: borders are a constant 2 px,
+ * the feedback row is always present (opacity-only reveal), and correctness
+ * changes color only.
+ */
+
+.kukui-tq {
+  display: flex;
+  justify-content: center;
+  padding: var(--spacing-2xl, 24px);
+}
+
+.kukui-tq__card {
+  width: 100%;
+  max-width: 720px;
+  background: var(--color-surface, #ffffff);
+  border: 1px solid var(--color-border, #d1d7df);
+  border-radius: var(--radius-card, 12px);
+  box-shadow: var(--shadow-card);
+  padding: var(--spacing-3xl, 28px);
+  overflow: hidden;
+  --kukui-card-pad: var(--spacing-3xl, 28px);
+}
+
+.kukui-tq__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-sm, 8px);
+  margin: 0 0 var(--spacing-xl, 20px);
+}
+
+/* Topic chips share Multiple Choice's answer-row look. */
+.kukui-tq__chip {
+  min-height: 48px;
+  padding: var(--spacing-md, 12px) var(--spacing-lg, 16px);
+  background: var(--color-surface, #ffffff);
+  border: 2px solid var(--color-border, #d1d7df);
+  border-radius: var(--radius-md, 8px);
+  font-size: var(--font-size-answer, 15px);
+  color: var(--color-text-primary);
+  cursor: pointer;
+  transition:
+    background-color 150ms ease,
+    border-color 150ms ease;
+}
+
+.kukui-tq__chip:hover {
+  border-color: var(--color-border-hover, #adb6c0);
+}
+
+.kukui-tq__chip[aria-pressed="true"] {
+  border-color: var(--color-primary, #4a7a5f);
+  background: var(--color-primary-soft);
+}
+
+.kukui-tq__meta {
+  margin: 0 0 var(--spacing-xl, 20px);
+  font-size: var(--font-size-meta, 13px);
+  color: var(--color-text-secondary, #49515b);
+}
+
+.kukui-tq__check {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm, 8px);
+  min-height: 44px;
+  margin: 0 0 var(--spacing-md, 12px);
+  font-size: var(--font-size-meta, 13px);
+  color: var(--color-text-secondary, #49515b);
+}
+
+.kukui-tq__check input {
+  width: 20px;
+  height: 20px;
+}
+
+.kukui-tq__bar {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--spacing-md, 12px);
+  margin: 0 0 var(--spacing-lg, 16px);
+  font-size: var(--font-size-meta, 13px);
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text-secondary, #49515b);
+}
+
+.kukui-tq__prompt {
+  margin: 0 0 var(--spacing-xl, 20px);
+  font-size: var(--font-size-prompt, 16px);
+  line-height: 1.5;
+  color: var(--color-text-primary);
+}
+
+.kukui-tq__form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-sm, 8px);
+}
+
+.kukui-tq__input {
+  flex: 1;
+  min-width: 0;
+  min-height: 44px;
+  padding: 4px 10px;
+  background: var(--color-surface, #ffffff);
+  border: 2px solid var(--color-border, #d1d7df);
+  border-radius: var(--radius-md, 8px);
+  font-size: var(--font-size-answer, 15px);
+  color: var(--color-text-primary);
+  transition:
+    background-color 150ms ease,
+    border-color 150ms ease;
+}
+
+.kukui-tq__input:hover:not(:read-only) {
+  border-color: var(--color-border-hover, #adb6c0);
+}
+
+.kukui-tq__input:focus-visible,
+.kukui-tq__chip:focus-visible,
+.kukui-tq__primary:focus-visible,
+.kukui-tq__secondary:focus-visible {
+  outline: 2px solid var(--color-primary, #4a7a5f);
+  outline-offset: 2px;
+}
+
+.kukui-tq__input.is-correct {
+  border-color: var(--color-success, #2e6e41);
+  background: var(--color-success-soft);
+}
+
+.kukui-tq__input.is-incorrect {
+  border-color: var(--color-error, #c34132);
+  background: var(--color-error-soft);
+}
+
+/* Pattern A: feedback area is always present at constant min-height. */
+.kukui-tq__feedback {
+  min-height: 28px;
+  margin: var(--spacing-lg, 16px) 0 0;
+  font-size: var(--font-size-meta, 13px);
+  color: var(--color-text-secondary, #49515b);
+  opacity: 0;
+  transition: opacity 200ms ease;
+}
+
+.kukui-tq__feedback.is-visible {
+  opacity: 1;
+}
+
+.kukui-tq__actions {
+  margin-top: var(--spacing-xl, 20px);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--spacing-md, 12px);
+}
+
+.kukui-tq__primary {
+  min-height: 44px;
+  padding: 10px 20px;
+  background: var(--color-primary, #4a7a5f);
+  color: var(--color-on-primary, #ffffff);
+  border: none;
+  border-radius: var(--radius-md, 8px);
+  font-size: var(--font-size-answer, 15px);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.kukui-tq__primary:hover:not(:disabled) {
+  background: var(--color-primary-hover, #3f6b52);
+}
+
+.kukui-tq__primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.kukui-tq__secondary {
+  min-height: 44px;
+  padding: 10px 20px;
+  background: transparent;
+  color: var(--color-primary, #4a7a5f);
+  border: 2px solid var(--color-primary, #4a7a5f);
+  border-radius: var(--radius-md, 8px);
+  font-size: var(--font-size-answer, 15px);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.kukui-tq__score {
+  display: block;
+  margin: 0 0 var(--spacing-md, 12px);
+  font-size: var(--font-size-prompt, 16px);
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+.kukui-tq__band {
+  font-weight: 400;
+  color: var(--color-text-secondary, #49515b);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kukui-tq__chip,
+  .kukui-tq__input,
+  .kukui-tq__feedback {
+    transition: none;
+  }
+}
+
+.kukui-tq__image {
+  display: block;
+  max-width: 100%;
+  max-height: 280px;
+  margin: 0 auto var(--spacing-xl, 20px);
+  object-fit: contain;
+}
+
+/* Fill-in-the-blank: the answer input sits inline where the ___ was. */
+.kukui-tq__blank {
+  flex-basis: 100%;
+}
+
+.kukui-tq__blank .kukui-tq__input {
+  display: inline-block;
+  width: 10em;
+  max-width: 100%;
+  margin: 0 var(--spacing-xs, 4px);
+  vertical-align: middle;
+}

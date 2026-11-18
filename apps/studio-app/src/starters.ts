@@ -93,6 +93,7 @@ const LIVE_KIND_SET = new Set<ActivityKind>([
   "word-cloud",
   "qa-board",
   "quick-quiz",
+  "leaderboard-quiz",
   "isometric-chatroom",
 ]);
 

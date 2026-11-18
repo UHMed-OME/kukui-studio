@@ -1871,9 +1871,58 @@ button {
   user-select: none;
 }
 
-.ks-object--advanced[open] .ks-object__title--summary {
+.ks-object--advanced[open] > .ks-object__title--summary {
   padding-bottom: var(--spacing-sm);
   margin-bottom: var(--spacing-md);
+}
+
+/* The flex summary hides the native disclosure marker, so foldable (non-advanced)
+ * sections draw their own chevron: points right when closed, down when open. */
+.ks-object--foldable .ks-object__title--summary::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: rotate(-45deg);
+  flex: none;
+}
+
+.ks-object--foldable[open] > .ks-object__title--summary::before {
+  transform: rotate(45deg);
+}
+
+/* Foldable sections keep their closed padding when open so the title doesn't
+ * move; the extra room goes below the content. */
+.ks-object--foldable[open] {
+  padding: var(--spacing-sm) var(--spacing-md) var(--spacing-md);
+}
+
+/* Compact foldable (`compact: true`): a tight one-line toggle for minor
+ * sub-sections, so the closed state has no spare space around the title. */
+.ks-object--compact {
+  padding: 0 var(--spacing-md);
+}
+
+/* Keep the closed padding when open so the toggle row doesn't move; the extra
+ * room goes below the content instead. */
+.ks-object--compact[open] {
+  padding: 0 var(--spacing-md) var(--spacing-sm);
+}
+
+/* Fixed-height, vertically centred row: the text sits in the middle by construction. */
+.ks-object--compact .ks-object__title--summary {
+  align-items: center;
+  min-height: 36px;
+  margin: 0;
+  padding: 0;
+  font-size: var(--font-size-caption, 14px);
+  line-height: 1;
+}
+
+.ks-object--compact[open] > .ks-object__title--summary {
+  padding-bottom: 0;
+  margin-bottom: var(--spacing-sm);
 }
 
 .ks-object__advanced-tag {
@@ -5628,7 +5677,7 @@ html[data-theme="glass"] .kukui-studio-footer {
 /* "Test in Kukui Live" launcher panel, shown below the preview for
  * live-only activities (Straw Poll today; more later). */
 .kukui-studio-live-launch {
-  margin: var(--spacing-lg, 16px) auto 0;
+  margin: var(--spacing-lg, 16px) auto var(--spacing-2xl, 24px);
   max-width: 720px;
   padding: var(--spacing-md, 12px) var(--spacing-lg, 16px);
   background: color-mix(in srgb, var(--color-accent, #b69b5d) 10%, var(--color-surface, #ffffff));
