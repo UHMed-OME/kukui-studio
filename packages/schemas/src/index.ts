@@ -3,6 +3,10 @@ export {
   type MultipleChoiceConfig,
 } from "@kukui/activities/multiple-choice/schema";
 export {
+  EvidenceWeighingConfigSchema,
+  type EvidenceWeighingConfig,
+} from "@kukui/activities/evidence-weighing/schema";
+export {
   FillInTheBlanksConfigSchema,
   type FillInTheBlanksConfig,
   parseClozeText,

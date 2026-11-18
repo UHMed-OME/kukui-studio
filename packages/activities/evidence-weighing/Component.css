@@ -1,0 +1,123 @@
+/*
+ * Evidence Weighing activity styles.
+ * Includes evidence cards, rating options, feedback,
+ * scoring, and action buttons.
+ */
+
+.kukui-ew {
+  display: flex;
+  justify-content: center;
+  padding: var(--spacing-2xl, 24px);
+}
+
+.kukui-ew__card {
+  width: 100%;
+  max-width: 720px;
+  background: var(--color-surface, #ffffff);
+  border: 1px solid var(--color-border, #d1d7df);
+  border-radius: var(--radius-card, 12px);
+  padding: var(--spacing-3xl, 28px);
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
+  --kukui-card-pad: var(--spacing-3xl, 28px);
+}
+
+.kukui-ew__evidence-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md, 12px);
+}
+
+.kukui-ew__evidence {
+  padding: var(--spacing-lg, 16px);
+  background: var(--color-surface, #ffffff);
+  border: 2px solid var(--color-border, #d1d7df);
+  border-radius: var(--radius-md, 8px);
+}
+
+.kukui-ew__ratings {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-lg, 16px);
+  margin-top: var(--spacing-md, 12px);
+}
+
+.kukui-ew__rating {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  min-height: 44px;
+  padding: var(--spacing-md, 12px) var(--spacing-lg, 16px);
+}
+
+.kukui-ew__feedback {
+  margin-top: var(--spacing-md, 12px);
+  font-size: var(--font-size-meta, 13px);
+  color: var(--color-text-secondary, #49515b);
+}
+
+.kukui-ew__solution {
+  margin-top: var(--spacing-sm, 8px);
+  font-size: var(--font-size-meta, 13px);
+  font-weight: 700;
+  color: var(--color-success, #2e6e41);
+}
+
+.kukui-ew__actions {
+  margin-top: var(--spacing-xl, 20px);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--spacing-md, 12px);
+}
+
+.kukui-ew__primary {
+  min-height: 44px;
+  padding: 10px 20px;
+  background: var(--color-primary, #4a7a5f);
+  color: var(--color-on-primary, #ffffff);
+  border: none;
+  border-radius: var(--radius-md, 8px);
+  font-size: var(--font-size-answer, 15px);
+  font-weight: 700;
+}
+
+.kukui-ew__primary:hover:not(:disabled) {
+  background: var(--color-primary-hover, #3f6b52);
+}
+
+.kukui-ew__primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.kukui-ew__secondary {
+  min-height: 44px;
+  padding: 10px 20px;
+  background: transparent;
+  color: var(--color-primary, #4a7a5f);
+  border: 2px solid var(--color-primary, #4a7a5f);
+  border-radius: var(--radius-md, 8px);
+  font-size: var(--font-size-answer, 15px);
+  font-weight: 700;
+}
+
+.kukui-ew__score {
+  font-size: var(--font-size-prompt, 16px);
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+.kukui-ew__band {
+  font-weight: 400;
+  color: var(--color-text-secondary);
+}
+
+.kukui-ew__claim {
+  padding-block: 1.5rem;
+}
+
+.kukui-ew__claim + .kukui-ew__claim {
+  border-top: 1px solid var(--kukui-border, #d1d7df);
+}

@@ -1,0 +1,75 @@
+{
+  "version": "1.0",
+  "title": "Evidence for Photosynthesis",
+  "ratings": [
+    {
+      "id": "weak",
+      "label": "Weak"
+    },
+    {
+      "id": "moderate",
+      "label": "Moderate"
+    },
+    {
+      "id": "strong",
+      "label": "Strong"
+    }
+  ],
+  "claims": [
+    {
+      "claim": "A plant is actively performing photosynthesis.",
+      "evidence": [
+        {
+          "text": "The plant has green leaves containing chlorophyll.",
+          "expectedRating": "weak",
+          "feedback": "Chlorophyll allows the plant to absorb light, but its presence alone does not prove photosynthesis is currently occurring."
+        },
+        {
+          "text": "The plant is exposed to sunlight and has access to water and carbon dioxide.",
+          "expectedRating": "moderate",
+          "feedback": "These conditions support photosynthesis, but having the necessary inputs does not establish that the process is actively occurring."
+        },
+        {
+          "text": "Measurements show the plant absorbing carbon dioxide and releasing oxygen while exposed to light.",
+          "expectedRating": "strong",
+          "feedback": "These measurements provide strong evidence of active photosynthesis under the observed conditions."
+        },
+        {
+          "text": "The plant is growing taller over several weeks.",
+          "expectedRating": "moderate",
+          "feedback": "Growth is consistent with photosynthesis but does not directly measure photosynthetic activity."
+        },
+        {
+          "text": "The plant is located near a window.",
+          "expectedRating": "weak",
+          "feedback": "Being near a window does not establish whether sufficient light is reaching the plant or whether photosynthesis is occurring."
+        }
+      ]
+    },
+    {
+      "claim": "The plant is experiencing water stress.",
+      "evidence": [
+        {
+          "text": "The plant has wilting leaves.",
+          "expectedRating": "moderate",
+          "feedback": "Wilting can indicate water stress, but it may also have other causes."
+        },
+        {
+          "text": "Measurements show the soil is very dry.",
+          "expectedRating": "strong",
+          "feedback": "Low soil moisture provides strong evidence that the plant has limited access to water."
+        }
+      ]
+    }
+  ],
+  "behaviour": {
+    "enableRetry": true,
+    "enableSolutionsButton": true
+  },
+  "ui": {
+    "checkAnswerButton": "Check my answers",
+    "showSolutionButton": "Show the correct ratings",
+    "tryAgainButton": "Try again"
+  },
+  "appearance": { "theme": "auto" }
+}
