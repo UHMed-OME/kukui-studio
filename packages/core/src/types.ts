@@ -49,6 +49,7 @@ export type BuiltActivityKind =
   | "multiple-choice"
   | "fill-in-the-blanks"
   | "drag-and-drop"
+  | "evidence-weighing"
   | "question-set"
   | "hotspot-3d"
   | "hotspot-2d"
@@ -89,6 +90,7 @@ export const BUILT_ACTIVITY_KINDS: readonly BuiltActivityKind[] = [
   "multiple-choice",
   "fill-in-the-blanks",
   "drag-and-drop",
+  "evidence-weighing",
   "question-set",
   "hotspot-3d",
   "hotspot-2d",
