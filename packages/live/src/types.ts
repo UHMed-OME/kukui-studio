@@ -77,6 +77,11 @@ export type TransportOptions = {
   relayUrls?: string[];
   /** Optional TURN endpoint; falls back to public STUN otherwise. */
   turn?: TurnConfig;
+  /**
+   * Extra ICE servers appended as-is (e.g. short-lived credentials fetched
+   * from a managed TURN service). Combined with `turn` when both are set.
+   */
+  iceServers?: RTCIceServer[];
   /** App identifier — segregates rooms across deployments using the same relays. */
   appId?: string;
 };

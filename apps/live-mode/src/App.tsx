@@ -145,9 +145,36 @@ function readTurnFromEnv(): TurnConfig | null {
   };
 }
 
-/** True when a build-time TURN default ("ours") is baked into this build. */
+/**
+ * Optional managed-TURN endpoint (`VITE_KUKUI_TURN_ENDPOINT`), e.g. a
+ * Cloudflare Worker that returns `{ iceServers }` with short-lived
+ * credentials. Failure is non-fatal: Live falls back to STUN only.
+ */
+async function fetchIceServers(): Promise<RTCIceServer[] | undefined> {
+  const env = (import.meta as unknown as { env?: Record<string, string> }).env ?? {};
+  const endpoint = env.VITE_KUKUI_TURN_ENDPOINT;
+  if (!endpoint) return undefined;
+  try {
+    const res = await fetch(endpoint, {
+      method: "POST",
+      signal: AbortSignal.timeout(4000),
+    });
+    if (!res.ok) return undefined;
+    const body = (await res.json()) as { iceServers?: RTCIceServer | RTCIceServer[] };
+    if (!body.iceServers) return undefined;
+    return Array.isArray(body.iceServers) ? body.iceServers : [body.iceServers];
+  } catch {
+    return undefined;
+  }
+}
+
+/**
+ * True when a built-in relay is configured for this build: either a static
+ * build-time TURN URL or a managed-credentials endpoint.
+ */
 function hasEnvTurn(): boolean {
-  return readTurnFromEnv() !== null;
+  const env = (import.meta as unknown as { env?: Record<string, string> }).env ?? {};
+  return readTurnFromEnv() !== null || Boolean(env.VITE_KUKUI_TURN_ENDPOINT);
 }
 
 /** The instructor's saved custom TURN (lobby setting), or null. */
@@ -435,9 +462,13 @@ export function App() {
         if (envTurn) effectiveTurn = envTurn;
       }
 
+      // Only fetch managed credentials when no explicit TURN was chosen.
+      const fetchedIce = effectiveTurn ? undefined : await fetchIceServers();
+
       const handle = joinLiveRoom(roomCode, {
         appId: "kukui-live",
         backend: effectiveBackend,
+        ...(fetchedIce ? { iceServers: fetchedIce } : {}),
         ...(effectiveRelays ? { relayUrls: effectiveRelays } : {}),
         ...(effectiveTurn ? { turn: effectiveTurn } : {}),
       });
@@ -705,8 +736,8 @@ export function App() {
             >
               <option value="builtin">
                 {hasEnvTurn()
-                  ? "Use built-in relay (recommended)"
-                  : "Built-in relay (none configured — direct P2P only)"}
+                  ? "Built-in relay as a fallback (recommended) — connects directly when possible"
+                  : "Built-in relay (not configured, direct connections only)"}
               </option>
               <option value="custom">Use a custom TURN server</option>
             </select>
