@@ -165,6 +165,7 @@ function realRoomFactory(
         : {}),
     });
   }
+  if (options.iceServers) iceServers.push(...options.iceServers);
   const room: TrysteroRoom = joinFn(
     {
       appId,
